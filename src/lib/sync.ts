@@ -6,7 +6,7 @@ import { mergeValues } from './merge'
 // 'tab', 'activeRun', 'activeWorkout' ไม่ sync — เป็นสถานะของเครื่องนั้น
 export const SYNCED_KEYS = [
   'profile', 'mode', 'week', 'done', 'sessions', 'runs', 'log', 'program', 'raceDate', 'dayLocation',
-  'onboarded', 'readiness', 'foodLog',
+  'onboarded', 'readiness', 'foodLog', 'screening',
 ] as const
 
 // เจ้าของข้อมูลใน localStorage — กันข้อมูลคนหนึ่งไหลไปบัญชีอื่นบนเครื่องเดียวกัน
@@ -42,8 +42,11 @@ function flush(): Promise<void> {
 
 async function doFlush() {
   if (!userId || pending.size === 0) return
+  // key ที่ไม่มีค่าแล้วไม่ต้องส่ง (คอลัมน์ value เป็น NOT NULL — ส่ง null จะทำให้ทั้งรอบล้มเหลว)
+  for (const k of [...pending]) if (readStored(k) === undefined) pending.delete(k)
   const keys = [...pending]
-  const rows = keys.map(key => ({ user_id: userId!, key, value: readStored(key) ?? null, updated_at: new Date().toISOString() }))
+  if (!keys.length) return savePending()
+  const rows = keys.map(key => ({ user_id: userId!, key, value: readStored(key), updated_at: new Date().toISOString() }))
   setStatus('saving')
   const { error } = await supabase.from('user_data').upsert(rows)
   if (error) {

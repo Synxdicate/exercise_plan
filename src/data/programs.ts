@@ -1,11 +1,13 @@
 import { gymWeek, parkWeek, type Day, type Exercise } from './workouts'
 
-export type ProgramId = 'physique' | 'half' | 'full'
+export type ProgramId = 'physique' | 'ten' | 'half' | 'full'
+type RaceId = Exclude<ProgramId, 'physique'>
 export type Mode = 'gym' | 'park'
 export type LocationPref = Mode | 'mix'
 
 export const programs: Record<ProgramId, { name: string; short: string; weeks: number; raceKm?: number; summary: string }> = {
   physique: { name: 'หุ่นลีนแบบ Tom Holland', short: 'หุ่น', weeks: 12, summary: 'เวท 3 วัน + วิ่ง 2 วัน เน้นเพิ่มกล้าม ลดไขมัน' },
+  ten: { name: '10K', short: '10K', weeks: 10, raceKm: 10, summary: 'ขั้นต่อจากฐานตอนนี้: วิ่ง 3 วัน (สัปดาห์ 1–3) → 4 วัน + เวท 2 วัน ระยะรวม ~10 → ~22 กม./สัปดาห์' },
   half: { name: 'ฮาล์ฟมาราธอน 21.1 กม.', short: 'ฮาล์ฟ', weeks: 16, raceKm: 21.1, summary: 'วิ่ง 4 วัน + เวท 2 วัน (รักษากล้าม) ระยะรวมค่อย ๆ เพิ่มจาก ~14 เป็น ~37 กม./สัปดาห์' },
   full: { name: 'ฟูลมาราธอน 42.2 กม.', short: 'ฟูล', weeks: 18, raceKm: 42.2, summary: 'ต่อจากฮาล์ฟ: วิ่ง 4 วัน + เวท 2 วัน ระยะรวม ~36 → ~60 กม./สัปดาห์' },
 }
@@ -22,6 +24,20 @@ const reps = (km: number, set: string): Q => ({ km, kind: 'interval', title: `In
 const pace = (km: number, set: string, label: string): Q => ({ km, kind: 'tempo', title: `${label} ${set}`, how: `วอร์ม 2 กม. → ${set} ที่${label} พักจ็อก 2 นาที → คูลดาวน์` })
 
 // ปริมาณเพิ่มทีละน้อย มีสัปดาห์ลด (cutback) ทุก 3–4 สัปดาห์ และ taper ก่อนแข่ง
+// easyB = 0 → วันเสาร์เป็นวันพัก (ช่วงแรกของ 10K วิ่ง 3 วันเท่ากับที่วิ่งอยู่เดิม)
+const tenWeeks: RunWeek[] = [
+  { easyA: 3, q: fartlek(3), easyB: 0, long: 4 },
+  { easyA: 3, q: tempo(4, '2×5'), easyB: 0, long: 5 },
+  { easyA: 3, q: strides(3), easyB: 0, long: 4, note: 'สัปดาห์ลดปริมาณ ให้ร่างกายปรับตัว' },
+  { easyA: 3, q: reps(4, '6 × 1 นาที / จ็อก 2 นาที'), easyB: 2, long: 5, note: 'เริ่มวิ่ง 4 วัน — วันเสาร์วิ่งสั้น ๆ เบามาก' },
+  { easyA: 3, q: tempo(4, '15'), easyB: 3, long: 6 },
+  { easyA: 4, q: reps(5, '5 × 800 ม. / จ็อก 2 นาที'), easyB: 3, long: 7 },
+  { easyA: 3, q: strides(4), easyB: 3, long: 5, note: 'สัปดาห์ลดปริมาณ' },
+  { easyA: 4, q: pace(6, '3 × 2 กม.', 'เพซ 10K'), easyB: 4, long: 8, note: 'สัปดาห์พีค' },
+  { easyA: 3, q: pace(4, '2 × 1 กม.', 'เพซ 10K'), easyB: 3, long: 6, note: 'Taper: ลดระยะ คงความเร็วไว้' },
+  { easyA: 3, q: strides(3), easyB: 0, long: 10, note: 'สัปดาห์แข่ง! วิ่งเบาให้ขาสด นอนให้พอ' },
+]
+
 const halfWeeks: RunWeek[] = [
   { easyA: 3, q: fartlek(3), easyB: 3, long: 5 },
   { easyA: 3, q: fartlek(4), easyB: 3, long: 6 },
@@ -62,8 +78,11 @@ const fullWeeks: RunWeek[] = [
   { easyA: 5, q: strides(5), easyB: 3, long: 42.2, note: 'สัปดาห์แข่ง! กินคาร์บ 8–10 ก./กก. 1–2 วันก่อนแข่ง' },
 ]
 
+// วิ่งนานเกิน ~75–90 นาที ควรเติมคาร์บระหว่างวิ่ง 30–60 ก./ชม. (ACSM 2016, Jeukendrup 2014)
+const fuelNote = 'วิ่งนานเกิน ~75 นาที: พกเจล/เครื่องดื่มเกลือแร่ เติมคาร์บ 30–60 ก./ชม. (เจล 1 ซองทุก 30–40 นาที) และซ้อมกินแบบนี้ก่อนวันแข่ง'
 const runDay = (key: string, day: string, title: string, km: number, runKind: Day['runKind'], how: string, note?: string): Day => ({
-  key, day, title, type: 'run', duration: `${km} กม.`, targetKm: km, runKind, note,
+  key, day, title, type: 'run', duration: `${km} กม.`, targetKm: km, runKind,
+  note: km >= 14 && (runKind === 'long' || runKind === 'race') ? [note, fuelNote].filter(Boolean).join(' · ') : note,
   exercises: [{ name: title, th: how, sets: '1', reps: `${km} กม.`, rest: '-', cue: how, video: `${title} running workout how to` }],
 })
 
@@ -113,8 +132,10 @@ const runnerStrength: Record<Mode, [Exercise[], Exercise[]]> = {
 
 const strengthNote = 'เหลือแรง 2–3 ครั้งทุกเซ็ต ไม่เล่นจนหมดแรง เพื่อไม่ให้ขาล้าก่อนวันวิ่งคุณภาพ'
 
-function raceWeek(program: 'half' | 'full', mode: Mode, week: number): Day[] {
-  const table = program === 'half' ? halfWeeks : fullWeeks
+const tables: Record<RaceId, RunWeek[]> = { ten: tenWeeks, half: halfWeeks, full: fullWeeks }
+
+function raceWeek(program: RaceId, mode: Mode, week: number): Day[] {
+  const table = tables[program]
   const w = table[Math.min(Math.max(week, 1), table.length) - 1]
   const last = week === table.length
   const taper = last || (w.note?.startsWith('Taper') ?? false)
@@ -123,13 +144,16 @@ function raceWeek(program: 'half' | 'full', mode: Mode, week: number): Day[] {
 
   return [
     { key: 'strA', day: 'จันทร์', title: 'เวท A — ทั้งตัว', type: 'strength', duration: '45 นาที', note: taper ? `ช่วง taper: ลดเหลือ 2 เซ็ต น้ำหนักเท่าเดิม` : strengthNote, exercises: lighten(a) },
-    runDay('quality', 'อังคาร', w.q.title, w.q.km, w.q.kind, w.q.how),
-    runDay('easyA', 'พุธ', 'Easy run', w.easyA, 'easy', 'วิ่งเบาระดับพูดคุยได้ (Zone 2)'),
+    // วิ่งหนักห่างจากเวทขาอย่างน้อย 48 ชม. — เวทขาทำให้วิ่งได้แย่ลงได้นาน 6–48 ชม. (Doma 2017)
+    runDay('easyA', 'อังคาร', 'Easy run', w.easyA, 'easy', 'วิ่งเบาระดับพูดคุยได้ (Zone 2)'),
+    runDay('quality', 'พุธ', w.q.title, w.q.km, w.q.kind, w.q.how),
     last
       ? { key: 'strB', day: 'พฤหัสบดี', title: 'พัก / เดินเบา ๆ', type: 'rest', duration: '-', note: 'สัปดาห์แข่ง งดเวท ยืดเหยียดเบา ๆ', exercises: [] }
       : { key: 'strB', day: 'พฤหัสบดี', title: 'เวท B — ทั้งตัว', type: 'strength', duration: '45 นาที', note: taper ? 'ช่วง taper: ลดเหลือ 2 เซ็ต' : strengthNote, exercises: lighten(b) },
     { key: 'rest', day: 'ศุกร์', title: 'พัก', type: 'rest', duration: '-', note: 'พักเต็มวัน นอน 8 ชม. ก่อนวิ่งยาว', exercises: [] },
-    runDay('easyB', 'เสาร์', 'Easy run + Strides', w.easyB, 'easy', 'วิ่งเบา แล้ว Strides 4 × 20 วิ'),
+    w.easyB > 0
+      ? runDay('easyB', 'เสาร์', 'Easy run + Strides', w.easyB, 'easy', 'วิ่งเบา แล้ว Strides 4 × 20 วิ')
+      : { key: 'easyB', day: 'เสาร์', title: 'พัก / เดินเบา ๆ', type: 'rest', duration: '-', note: 'เดิน 20–30 นาที หรือยืดเหยียด', exercises: [] },
     last
       ? runDay('long', 'อาทิตย์', `วันแข่ง ${programs[program].raceKm} กม.`, w.long, 'race', 'ออกตัวช้ากว่าเพซเป้าหมาย 5–10 วิ/กม. ช่วงแรก ดื่มน้ำทุกจุด', w.note)
       : runDay('long', 'อาทิตย์', 'วิ่งยาว (Long run)', w.long, 'long', 'ช้า ๆ ระดับพูดคุยได้ — ความช้าคือหัวใจของวิ่งยาว'),
@@ -165,6 +189,6 @@ export const locationInfo: Record<LocationPref, { label: string; text: string }>
 }
 
 export const weekNote = (program: ProgramId, week: number) =>
-  program === 'half' ? halfWeeks[week - 1]?.note : program === 'full' ? fullWeeks[week - 1]?.note : week === 9 ? 'สัปดาห์ Deload: ทำทุกท่าครึ่งหนึ่งของจำนวนเซ็ต น้ำหนักเท่าเดิม วิ่งเบาอย่างเดียว' : undefined
+  program !== 'physique' ? tables[program][week - 1]?.note : week === 9 ? 'สัปดาห์ Deload: ทำทุกท่าครึ่งหนึ่งของจำนวนเซ็ต น้ำหนักเท่าเดิม วิ่งเบาอย่างเดียว' : undefined
 
 export const thaiDays = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์']

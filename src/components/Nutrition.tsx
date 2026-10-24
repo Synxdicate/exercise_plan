@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { carbFoods, nutritionRules, proteinFoods, sampleDays, streetDishes, type Food } from '../data/nutrition'
 import { targets, type Profile } from '../lib/calc'
 import { useProgram } from '../lib/program'
-import { Badge, Card, Segmented, Stat } from './ui'
+import { Badge, Card, Segmented } from './ui'
 import { cx } from '../lib/cx'
 import { FoodLog } from './FoodLog'
 
@@ -21,12 +21,15 @@ export function Nutrition({ profile }: { profile: Profile }) {
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-2">
-        <Stat label="พลังงาน" value={t.kcal} sub="kcal/วัน" accent />
-        <Stat label="โปรตีน" value={`${t.protein} ก.`} sub={`~${Math.round(t.protein / 4)} ก. × 4 มื้อ`} accent />
-        <Stat label="ไขมัน" value={`${t.fat} ก.`} sub="ขั้นต่ำเพื่อฮอร์โมน" />
-        <Stat label="คาร์บ" value={`${t.carbs} ก.`} sub={`≈ ${Math.round(t.carbs / 18)} ทัพพีข้าว`} />
-      </div>
+      <section className="grid grid-cols-4 divide-x divide-line rounded-2xl bg-card py-2.5 text-center shadow-sm ring-1 ring-line">
+        {[['พลังงาน', t.kcal, 'kcal', true], ['โปรตีน', t.protein, 'ก.', true], ['ไขมัน', t.fat, 'ก.', false], ['คาร์บ', t.carbs, 'ก.', false]].map(([l, v, u, a]) => (
+          <div key={String(l)} className="px-1">
+            <div className="text-[11px] text-muted">{l}</div>
+            <div className={cx('text-lg font-bold leading-tight tabular-nums', !!a && 'text-accent')}>{v}</div>
+            <div className="text-[10px] text-muted">{u}/วัน</div>
+          </div>
+        ))}
+      </section>
 
       <FoodLog proteinTarget={t.protein} kcalTarget={t.kcal} />
 

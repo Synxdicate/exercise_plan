@@ -34,6 +34,8 @@ const easyRun: Day = {
   title: 'วิ่ง Easy (Zone 2)',
   type: 'run',
   duration: '30–40 นาที',
+  runKind: 'easy',
+  targetKm: 5,
   note: 'ใช้ความเร็วที่ยังพูดเป็นประโยคได้ ถ้าหอบจนพูดไม่ได้แปลว่าเร็วไป ให้เดินสลับได้',
   exercises: [
     {
@@ -54,6 +56,8 @@ const intervalRun: Day = {
   title: 'วิ่ง Interval',
   type: 'run',
   duration: '25–35 นาที',
+  runKind: 'interval',
+  targetKm: 5,
   note: 'วอร์ม 10 นาที → วิ่งเร็ว 1 นาที / จ็อกเบา 2 นาที → คูลดาวน์ 5 นาที',
   exercises: [
     {
@@ -101,12 +105,14 @@ export const gymWeek: Day[] = [
     day: 'พุธ',
     title: 'Lower + Core (ช่วงล่าง)',
     type: 'strength',
-    duration: '55–60 นาที',
+    duration: '65–70 นาที',
     note: warmupNote,
     exercises: [
-      { name: 'Back Squat', th: 'สควอทบาร์หลัง', sets: '3', reps: '6–8', rest: '2–3 นาที', cue: 'หายใจเข้าเกร็งท้อง ลงให้ต้นขาขนานพื้นหรือต่ำกว่า เข่าตามแนวปลายเท้า', video: 'Jeff Nippard how to squat', easier: 'Goblet squat' },
+      { name: 'Back Squat', th: 'สควอทบาร์หลัง', sets: '4', reps: '6–8', rest: '2–3 นาที', cue: 'หายใจเข้าเกร็งท้อง ลงให้ต้นขาขนานพื้นหรือต่ำกว่า เข่าตามแนวปลายเท้า', video: 'Jeff Nippard how to squat', easier: 'Goblet squat' },
       { name: 'Romanian Deadlift', th: 'โรมาเนียนเดดลิฟต์', sets: '3', reps: '8–10', rest: '2 นาที', cue: 'ดันสะโพกไปหลัง หลังตรง บาร์ชิดขา รู้สึกตึงต้นขาหลัง', video: 'romanian deadlift proper form' },
-      { name: 'Bulgarian Split Squat', th: 'สควอทขาเดียว เท้าหลังพาดม้านั่ง', sets: '2', reps: '8–12 / ข้าง', rest: '90 วิ', cue: 'ลำตัวเอนหน้าเล็กน้อย ลงช้า ๆ', video: 'bulgarian split squat form' },
+      { name: 'Bulgarian Split Squat', th: 'สควอทขาเดียว เท้าหลังพาดม้านั่ง', sets: '3', reps: '8–12 / ข้าง', rest: '90 วิ', cue: 'ลำตัวเอนหน้าเล็กน้อย ลงช้า ๆ', video: 'bulgarian split squat form' },
+      { name: 'Lying Leg Curl', th: 'นอนคว่ำงอเข่า (ต้นขาหลัง)', sets: '3', reps: '10–12', rest: '60 วิ', cue: 'ยกช้า ค้าง 1 วิ ลงช้า สะโพกแนบเบาะ', video: 'lying leg curl proper form', easier: 'Nordic curl แบบลงช้า (สวน)' },
+      { name: 'Leg Extension', th: 'เตะขาเครื่อง (ต้นขาหน้า)', sets: '2', reps: '12–15', rest: '60 วิ', cue: 'เหยียดสุดแล้วบีบค้าง 1 วิ ลงช้า', video: 'leg extension proper form' },
       { name: 'Standing Calf Raise', th: 'เขย่งน่อง', sets: '3', reps: '12–15', rest: '60 วิ', cue: 'ค้างด้านบน 1 วิ ลงให้สุดยืดน่อง', video: 'calf raise proper form' },
       { name: 'Plank', th: 'แพลงก์', sets: '3', reps: '30–60 วิ', rest: '60 วิ', cue: 'ตัวตรงเป็นแนวเดียว บีบก้น', video: 'how to plank correctly' },
     ],
@@ -126,6 +132,7 @@ export const gymWeek: Day[] = [
       { name: 'Face Pull', th: 'ดึงเชือกเข้าหน้า', sets: '3', reps: '12–15', rest: '60 วิ', cue: 'ดึงไปที่หน้าผาก หมุนแขนออก ช่วยไหล่หลังและท่าทาง', video: 'face pull proper form' },
       { name: 'DB Curl', th: 'ดัมเบลเคิร์ล', sets: '2', reps: '10–12', rest: '60 วิ', cue: 'ศอกนิ่งข้างลำตัว', video: 'dumbbell curl proper form' },
       { name: 'Triceps Pushdown', th: 'กดเคเบิลหลังแขน', sets: '2', reps: '10–12', rest: '60 วิ', cue: 'ล็อกศอก กดจนแขนเหยียดสุด', video: 'tricep pushdown form' },
+      { name: 'Lateral Raise', th: 'ยกดัมเบลด้านข้าง (ไหล่กว้าง)', sets: '2', reps: '12–15', rest: '60 วิ', cue: 'ยกถึงระดับไหล่ ช้า ๆ ควบคุมขาลง', video: 'Jeff Nippard lateral raise form' },
     ],
   },
   intervalRun,
@@ -177,6 +184,7 @@ export const parkWeek: Day[] = [
       { name: 'Chin-up', th: 'ดึงข้อมือหงาย', sets: '3', reps: '5–8', rest: '2 นาที', cue: 'เน้นหลังและไบเซ็ป', video: 'chin up proper form' },
       { name: 'Archer / Decline Push-up', th: 'วิดพื้นแบบยาก', sets: '3', reps: '6–10', rest: '90 วิ', cue: 'เลือกท่าที่ทำได้ 6–10 ครั้ง', video: 'archer push up progression' },
       { name: 'Straight Bar Dip', th: 'ดิปบาร์เดี่ยว', sets: '3', reps: '6–10', rest: '90 วิ', cue: 'พื้นฐานสู่ muscle-up', video: 'straight bar dip tutorial', easier: 'Parallel bar dip' },
+      { name: 'Prone Y-T-W Raise', th: 'นอนคว่ำยกแขนเป็นตัว Y-T-W (ไหล่หลัง/ข้าง)', sets: '3', reps: '8 / ตัวอักษร', rest: '60 วิ', cue: 'บีบสะบัก ยกช้า ค้าง 2 วิ ไม่ต้องใช้อุปกรณ์', video: 'prone YTW raise exercise' },
       { name: 'Cindy (AMRAP)', th: '5 ดึงข้อ + 10 วิดพื้น + 15 สควอท วนให้ได้มากรอบที่สุด', sets: '1', reps: '10 นาที (wk 1–4) → 15 → 20', rest: '-', cue: 'จดจำนวนรอบไว้ทุกครั้ง ดึงข้อไม่ไหวใช้ Australian row แทน', video: 'Tom Holland Cindy workout' },
     ],
   },

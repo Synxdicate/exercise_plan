@@ -1,14 +1,15 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import { useState, type ButtonHTMLAttributes, type ReactNode } from 'react'
+import { ChevronDown } from 'lucide-react'
 import { createPortal } from 'react-dom'
 
 import { cx } from '../lib/cx'
 
 export function Card({ children, className, title, action }: { children: ReactNode; className?: string; title?: ReactNode; action?: ReactNode }) {
   return (
-    <section className={cx('rounded-3xl bg-card p-4 shadow-sm ring-1 ring-line', className)}>
+    <section className={cx('rounded-2xl bg-card p-3.5 shadow-sm ring-1 ring-line', className)}>
       {(title || action) && (
-        <div className="mb-3 flex items-center justify-between gap-2">
-          {title && <h2 className="text-base font-bold">{title}</h2>}
+        <div className="mb-2.5 flex items-center justify-between gap-2">
+          {title && <h2 className="text-[15px] font-bold">{title}</h2>}
           {action}
         </div>
       )}
@@ -44,10 +45,10 @@ export function Button({ variant = 'primary', size = 'md', className, ...rest }:
 
 export function Stat({ label, value, sub, accent }: { label: string; value: ReactNode; sub?: ReactNode; accent?: boolean }) {
   return (
-    <div className="rounded-2xl bg-raised p-3">
-      <div className="text-xs text-muted">{label}</div>
-      <div className={cx('text-xl font-bold tabular-nums', accent && 'text-accent')}>{value}</div>
-      {sub && <div className="text-xs text-muted">{sub}</div>}
+    <div className="rounded-xl bg-raised px-3 py-2">
+      <div className="text-[11px] text-muted">{label}</div>
+      <div className={cx('text-lg font-bold leading-tight tabular-nums', accent && 'text-accent')}>{value}</div>
+      {sub && <div className="text-[11px] leading-tight text-muted">{sub}</div>}
     </div>
   )
 }
@@ -110,5 +111,22 @@ export function Sheet({ onClose, children, title }: { onClose: () => void; child
       </div>
     </div>
     </Portal>
+  )
+}
+
+// การ์ดที่พับเก็บได้ — ใช้กับเนื้อหาอ่านประกอบ ให้หน้าไม่ยาวเกินไป
+export function Disclosure({ title, summary, children, defaultOpen = false }: { title: ReactNode; summary?: ReactNode; children: ReactNode; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen)
+  return (
+    <section className="rounded-2xl bg-card shadow-sm ring-1 ring-line">
+      <button onClick={() => setOpen(!open)} aria-expanded={open} className="flex w-full items-center gap-2 p-3.5 text-left active:scale-100">
+        <span className="min-w-0 flex-1">
+          <span className="block text-[15px] font-bold">{title}</span>
+          {summary && !open && <span className="block truncate text-xs text-muted">{summary}</span>}
+        </span>
+        <ChevronDown size={18} className={cx('shrink-0 text-muted transition-transform duration-300', open && 'rotate-180')} />
+      </button>
+      <Collapse open={open}><div className="px-3.5 pb-3.5">{children}</div></Collapse>
+    </section>
   )
 }

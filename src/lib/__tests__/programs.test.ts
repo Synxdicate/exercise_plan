@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { programs, variants, weekKm, weekPlan } from '../../data/programs'
+import { weeklySets } from '../../data/muscles'
 
-const race = ['half', 'full'] as const
+const race = ['ten', 'half', 'full'] as const
 
 describe('โปรแกรมวิ่ง', () => {
   for (const p of race) {
@@ -26,6 +27,13 @@ describe('โปรแกรมวิ่ง', () => {
       expect(weekKm(p, n) - race.targetKm!).toBeLessThanOrEqual(peak * 0.5)
     })
 
+    it(`${p}: วิ่งหนัก (tempo/interval) ไม่เกิน 1 ครั้งต่อสัปดาห์ ที่เหลือเป็นวิ่งเบา (Seiler 2010)`, () => {
+      for (let w = 1; w <= n; w++) {
+        const hard = variants(p, w).gym.filter(d => d.runKind === 'tempo' || d.runKind === 'interval')
+        expect(hard.length).toBeLessThanOrEqual(1)
+      }
+    })
+
     it(`${p}: ทุกสัปดาห์มี 7 วัน มีวันพักอย่างน้อย 1 วัน และเวทไม่เกิน 2 วัน`, () => {
       for (let w = 1; w <= n; w++) {
         const days = weekPlan(p, w, () => 'gym')
@@ -35,6 +43,27 @@ describe('โปรแกรมวิ่ง', () => {
       }
     })
   }
+
+  it('ไม่วิ่งหนัก/วิ่งยาวในวันถัดจากเวทขา — ผลกระทบอยู่ราว 6–48 ชม. (Doma 2017)', () => {
+    const legs = /squat|deadlift|rdl|split|lunge|leg curl|pistol|bridge/i
+    for (const p of ['physique', ...race] as const) {
+      const weeks = programs[p].weeks
+      for (let w = 1; w <= weeks; w++) for (const m of ['gym', 'park'] as const) {
+        const days = variants(p, w)[m]
+        days.forEach((d, i) => {
+          if (d.type !== 'strength' || !d.exercises.some(e => legs.test(e.name))) return
+          for (const next of [days[i + 1]].filter(Boolean)) {
+            expect(['tempo', 'interval', 'long', 'race'].includes(next.runKind ?? ''), `${p} w${w} ${m}: ${d.day} → ${next.day}`).toBe(false)
+          }
+        })
+      }
+    }
+  })
+
+  it('โปรแกรมหุ่นในยิม: กล้ามหลักได้ ≥ 8 เซ็ต/สัปดาห์ (Schoenfeld 2017: ~10+ ดีกว่า)', () => {
+    const sets = weeklySets(variants('physique', 1).gym)
+    for (const m of ['chest', 'lats', 'upperBack', 'quads', 'hamstrings', 'glutes', 'sideDelts'] as const) expect(sets[m] ?? 0, m).toBeGreaterThanOrEqual(8)
+  })
 
   it('ยิมกับสวนต่างกันแค่วันเวท', () => {
     for (const p of ['physique', ...race] as const) {

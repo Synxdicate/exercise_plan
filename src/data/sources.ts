@@ -28,6 +28,8 @@ export const references: { cat: string; title: string; url: string; used: string
   // เวท
   { cat: 'เวทเทรนนิ่ง', level: 'guideline', title: 'ACSM Position Stand: Progression Models in Resistance Training (2009)', url: pm('19204579'), used: 'ช่วงจำนวนครั้ง เวลาพัก และ progressive overload' },
   { cat: 'เวทเทรนนิ่ง', level: 'meta', title: 'Schoenfeld et al. 2017 — Dose-response of weekly training volume', url: pm('27433992'), used: 'จำนวนเซ็ตต่อกล้ามเนื้อต่อสัปดาห์ (~10+ เซ็ต)' },
+  { cat: 'เวทเทรนนิ่ง', level: 'meta', title: 'Doma et al. 2017 — Impaired endurance performance after resistance training', url: pm('28702901'), used: 'วิ่งหนักห่างจากเวทขาอย่างน้อย 48 ชม.' },
+  { cat: 'เวทเทรนนิ่ง', level: 'trial', title: 'Bickel et al. 2011 — Exercise dosing to retain resistance training adaptations', url: pm('21131862'), used: 'เวท 2 วัน/สัปดาห์พอรักษากล้ามช่วงซ้อมมาราธอน' },
   { cat: 'เวทเทรนนิ่ง', level: 'meta', title: 'Wilson et al. 2012 — Concurrent training: interference meta-analysis', url: pm('22002517'), used: 'เหตุผลที่ควรเน้นทีละเป้า (หุ่น vs มาราธอน)' },
   // วิ่ง
   { cat: 'วิ่ง', level: 'meta', title: 'Seiler 2010 — Training intensity distribution in endurance athletes', url: pm('20861519'), used: 'วิ่งเบาเป็นส่วนใหญ่ (~80%) วิ่งหนักส่วนน้อย' },
@@ -39,12 +41,20 @@ export const references: { cat: string; title: string; url: string; used: string
   // โภชนาการ
   { cat: 'โภชนาการ', level: 'guideline', title: 'ISSN Position Stand: Protein and Exercise (Jäger et al., 2017)', url: 'https://jissn.biomedcentral.com/articles/10.1186/s12970-017-0177-8', used: 'โปรตีน 1.4–2.0 ก./กก./วัน' },
   { cat: 'โภชนาการ', level: 'meta', title: 'Schoenfeld & Aragon 2018 — Protein per meal for muscle building', url: pm('29497353'), used: 'แบ่งโปรตีน ~4 มื้อ มื้อละ ~0.4 ก./กก.' },
+  { cat: 'โภชนาการ', level: 'guideline', title: 'ACSM/AND/DC Joint Position: Nutrition and Athletic Performance (2016)', url: pm('26891166'), used: 'คาร์บ 5–7 ก./กก. (ซ้อมปานกลาง) ถึง 6–10 ก./กก. (ซ้อม 1–3 ชม./วัน) และเติมคาร์บระหว่างวิ่งยาว' },
+  { cat: 'โภชนาการ', level: 'meta', title: 'Jeukendrup 2014 — Carbohydrate intake during exercise', url: pm('24791914'), used: 'เติมคาร์บ 30–60 ก./ชม. เมื่อวิ่งนานกว่า ~1–2 ชม.' },
   { cat: 'โภชนาการ', level: 'guideline', title: 'IOC Consensus: Relative Energy Deficiency in Sport (RED-S) 2018', url: pm('29773536'), used: 'ไม่กินขาดช่วงซ้อมมาราธอน' },
   { cat: 'โภชนาการ', level: 'guideline', title: 'ISSN Position Stand: Creatine supplementation (Kreider et al., 2017)', url: pm('28615996'), used: 'ครีเอทีน 3–5 ก./วัน ปลอดภัยและได้ผล' },
   { cat: 'โภชนาการ', level: 'trial', title: 'Mifflin et al. 1990 — Predictive equation for resting energy expenditure', url: pm('2305711'), used: 'สูตรคำนวณ BMR / TDEE' },
   { cat: 'โภชนาการ', level: 'guideline', title: 'WHO Expert Consultation 2004 — BMI for Asian populations', url: pm('14726171'), used: 'เกณฑ์ BMI ปกติของคนเอเชีย 18.5–22.9' },
   { cat: 'โภชนาการ', level: 'database', title: 'Thai Food Composition Database (สถาบันโภชนาการ ม.มหิดล)', url: 'https://inmu.mahidol.ac.th/thaifcd/home', used: 'ใช้ตรวจค่าพลังงาน/โปรตีนอาหารไทยเพิ่มเติม' },
   // ความปลอดภัย / ฟื้นตัว
+  { cat: 'ความปลอดภัยและการฟื้นตัว', level: 'guideline', title: 'Riebe et al. 2015 — ACSM preparticipation health screening', url: pm('26473759'), used: 'คำถามคัดกรองก่อนเริ่มออกกำลังกายหนัก' },
+  { cat: 'ความปลอดภัยและการฟื้นตัว', level: 'guideline', title: 'Warburton et al. 2011 — PAR-Q+ consensus on physical activity clearance', url: pm('21800945'), used: 'คำถามเรื่องกระดูก/ข้อในแบบคัดกรอง' },
+  { cat: 'ความปลอดภัยและการฟื้นตัว', level: 'trial', title: 'Stull 2011 — Wet-bulb temperature from relative humidity and air temperature', url: 'https://doi.org/10.1175/JAMC-D-11-0143.1', used: 'คำนวณ WBGT ในที่ร่มจากพยากรณ์อากาศ' },
+  { cat: 'ความปลอดภัยและการฟื้นตัว', level: 'guideline', title: 'Roberts et al. 2023 — ACSM Expert Consensus on Exertional Heat Illness', url: pm('37036463'), used: 'ปรับการวิ่งตามความร้อน (ปรับตามภูมิภาคได้)' },
+  { cat: 'ความปลอดภัยและการฟื้นตัว', level: 'meta', title: 'Mujika & Padilla 2000 — Detraining Part I (short term)', url: pm('10966148'), used: 'หยุดฝึก 2–4 สัปดาห์ สมรรถภาพเริ่มลด → ย้อนแผนก่อนกลับมาฝึกเต็ม' },
+  { cat: 'ความปลอดภัยและการฟื้นตัว', level: 'meta', title: 'Mujika & Padilla 2000 — Detraining Part II (long term)', url: pm('10999420'), used: 'หยุดเกิน 4 สัปดาห์ ย้อนแผนมากขึ้น' },
   { cat: 'ความปลอดภัยและการฟื้นตัว', level: 'guideline', title: 'ACSM Position Stand: Exercise and Fluid Replacement (2007)', url: pm('17277604'), used: 'ดื่มน้ำก่อนและระหว่างวิ่ง' },
   { cat: 'ความปลอดภัยและการฟื้นตัว', level: 'guideline', title: 'ACSM Position Stand: Exertional Heat Illness (2007)', url: pm('17473783'), used: 'อาการ heat stroke และการวิ่งในอากาศร้อน' },
   { cat: 'ความปลอดภัยและการฟื้นตัว', level: 'guideline', title: 'AASM/SRS 2015 — Recommended amount of sleep for adults', url: pm('25979105'), used: 'นอนอย่างน้อย 7 ชม./คืน' },

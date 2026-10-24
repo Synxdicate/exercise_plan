@@ -1,11 +1,13 @@
 import { lazy, Suspense, useState } from 'react'
-import { CalendarCheck, Check, FileUp, ChevronRight, Footprints, Gauge, Pause, Play, Plus, Satellite, Trash2, X } from 'lucide-react'
+import { CalendarCheck, Check, FileUp, TriangleAlert, ChevronRight, Footprints, Gauge, Pause, Play, Plus, Satellite, Trash2, X } from 'lucide-react'
 import { GOOD_ACCURACY_M, useRunTracker, type Point } from '../lib/gps'
 import { formatDuration, formatPace, runKinds, uid, useRuns, type Run } from '../lib/log'
 import { estimate, paceHint, type Estimate } from '../lib/pace'
 import { useProgram } from '../lib/program'
 import { parseGpx } from '../lib/gpx'
+import { isNative } from '../lib/native'
 import { RunTypeCard } from './RunTypes'
+import { HeatCard } from './Heat'
 import { ReadinessSheet } from './Readiness'
 import { addDays, shortDate, today, weekStart } from '../lib/date'
 import { Badge, Button, Card, Collapse, Portal, Stat } from './ui'
@@ -67,10 +69,10 @@ export function Runs() {
 
   return (
     <div className="space-y-4">
-      <section className="space-y-4 rounded-3xl bg-gradient-to-br from-run to-accent p-5 text-white shadow-sm">
+      <section className="space-y-3 rounded-2xl bg-gradient-to-br from-run to-accent p-4 text-white shadow-sm">
         <div>
           <div className="text-sm opacity-80">สัปดาห์นี้</div>
-          <div className="text-5xl font-extrabold tabular-nums">{kmThisWeek.toFixed(1)}<span className="ml-1 text-xl font-semibold opacity-80">/ {target} กม.</span></div>
+          <div className="text-4xl font-extrabold tabular-nums">{kmThisWeek.toFixed(1)}<span className="ml-1 text-xl font-semibold opacity-80">/ {target} กม.</span></div>
         </div>
         <div className="h-2 overflow-hidden rounded-full bg-white/25">
           <div className="h-full rounded-full bg-white" style={{ width: `${Math.min(100, (kmThisWeek / target) * 100)}%` }} />
@@ -93,11 +95,13 @@ export function Runs() {
             </button>
           ))}
         </div>
-        <button onClick={() => setChecking(true)} className="flex w-full items-center justify-center gap-2 rounded-full bg-white py-4 text-lg font-bold text-accent shadow-lg active:scale-[.98]">
+        <button onClick={() => setChecking(true)} className="flex w-full items-center justify-center gap-2 rounded-full bg-white py-3 text-base font-bold text-accent shadow-lg active:scale-[.98]">
           <Play size={22} fill="currentColor" /> เริ่มวิ่ง
         </button>
         {t.error && <p className="rounded-xl bg-black/20 p-2 text-sm">{t.error}</p>}
       </section>
+
+      <HeatCard />
 
       <RunTypeCard kind={kind} />
 
@@ -144,8 +148,9 @@ export function Runs() {
       </Card>
 
       <p className="px-2 text-xs text-muted">
-        เว็บอ่าน GPS ได้เฉพาะตอนเปิดหน้านี้ค้างไว้ (แอปกันจอดับให้แล้ว) ถ้าปิดจอหรือสลับแอป การวิ่งจะถูกพักไว้และกลับมาวิ่งต่อได้
-        ถ้าต้องการบันทึกเบื้องหลังแบบ Strava/นาฬิกา ให้บันทึกที่นั่นแล้วกด "กรอกเอง"
+        {isNative
+          ? 'แอป Android บันทึก GPS ต่อได้แม้ปิดจอ (มีแจ้งเตือนค้างไว้ระหว่างวิ่ง) — ถ้าบันทึกหยุดเอง ให้ตั้งค่าแบตเตอรี่ของแอปเป็น "ไม่จำกัด"'
+          : 'เว็บอ่าน GPS ได้เฉพาะตอนเปิดหน้านี้ค้างไว้ (แอปกันจอดับให้แล้ว) ถ้าปิดจอหรือสลับแอป ช่วงนั้นจะไม่ถูกบันทึก — ใช้แอป Android หรือนำเข้า GPX จาก Strava แทนได้'}
       </p>
 
       {checking && (
@@ -197,6 +202,13 @@ function ActiveRun({ t, kind, target, onFinish }: { t: ReturnType<typeof useRunT
           <Stat label="เพซตอนนี้" value={t.currentPace ? formatPace(t.currentPace, 1) : '--:--'} />
         </div>
 
+        {t.lastGap && (
+          <div className="flex animate-fade-up items-start gap-2 rounded-2xl bg-warn/15 p-3 text-sm text-warn">
+            <TriangleAlert size={18} className="mt-0.5 shrink-0" />
+            <span className="flex-1">ปิดจอ/สลับแอปไป <b>{formatDuration(t.lastGap)}</b> — ช่วงนั้นเบราว์เซอร์หยุด GPS ระยะช่วงนั้นนับเป็นเส้นตรง (อาจน้อยกว่าจริง) เปิดหน้านี้ค้างไว้จะแม่นที่สุด</span>
+            <button onClick={t.dismissGap} aria-label="ปิด" className="shrink-0"><X size={16} /></button>
+          </div>
+        )}
         {t.splits.length > 0 && <Splits splits={t.splits} />}
         {t.error && <p className="text-center text-sm text-bad">{t.error}</p>}
 
@@ -278,6 +290,7 @@ function RunDetail({ run, onClose, onDelete }: { run: Run; onClose: () => void; 
           <Stat label="เวลาเคลื่อนที่" value={formatDuration(run.seconds)} sub={run.elapsedSeconds ? `รวม ${formatDuration(run.elapsedSeconds)}` : undefined} />
           <Stat label="เพซเฉลี่ย" value={formatPace(run.seconds, run.km)} sub="นาที/กม." />
         </div>
+        {run.gapSeconds ? <p className="mb-3 rounded-xl bg-warn/15 p-2 text-xs text-warn">มีช่วงปิดจอรวม {formatDuration(run.gapSeconds)} ที่ GPS ไม่ได้บันทึก — ระยะช่วงนั้นเป็นเส้นตรงโดยประมาณ</p> : null}
         {run.splits && run.splits.length > 0 && <Splits splits={run.splits} />}
         <Button variant="danger" size="sm" className="mt-3" onClick={() => confirm('ลบการวิ่งนี้?') && onDelete()}><Trash2 size={14} /> ลบ</Button>
       </div>
@@ -358,13 +371,15 @@ function PaceCard({ est }: { est: Estimate | null }) {
     ['Easy / วิ่งยาว', `${formatPace(est.paces.easy[0], 1)}–${formatPace(est.paces.easy[1], 1)}`],
     ['เพซมาราธอน', formatPace(est.paces.marathon, 1)],
     ['เพซฮาล์ฟ', formatPace(est.paces.half, 1)],
+    ['เพซ 10K', formatPace(est.paces.tenK, 1)],
     ['Tempo', formatPace(est.paces.tempo, 1)],
     ['Interval', formatPace(est.paces.interval, 1)],
   ]
   return (
     <Card title={<span className="flex items-center gap-2"><Gauge size={18} className="text-run" /> เพซแนะนำ</span>}>
-      <div className="grid grid-cols-3 gap-2 text-center">
+      <div className="grid grid-cols-2 gap-2 text-center">
         <Stat label="5K" value={formatDuration(est.fiveK)} />
+        <Stat label="10K" value={formatDuration(est.tenK)} />
         <Stat label="ฮาล์ฟ" value={formatDuration(est.half)} />
         <Stat label="ฟูล" value={formatDuration(est.full)} />
       </div>

@@ -13,6 +13,7 @@ export function estimate(runs: Run[]) {
   return {
     from: best,
     fiveK: t5,
+    tenK: riegel(best.seconds, best.km, 10),
     half: riegel(best.seconds, best.km, 21.1),
     full: riegel(best.seconds, best.km, 42.2),
     paces: {
@@ -20,6 +21,7 @@ export function estimate(runs: Run[]) {
       long: [p5 * 1.25, p5 * 1.4] as const,
       tempo: p5 * 1.08,
       interval: p5,
+      tenK: riegel(best.seconds, best.km, 10) / 10,
       half: riegel(best.seconds, best.km, 21.1) / 21.1,
       marathon: riegel(best.seconds, best.km, 42.2) / 42.2,
     },
@@ -33,6 +35,7 @@ const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).p
 // ข้อความเพซแนะนำของวันวิ่งตามชนิด
 export function paceHint(e: Estimate | null, kind?: string, title = '') {
   if (!e) return null
+  if (/10K/.test(title)) return `เพซ 10K ~${fmt(e.paces.tenK)} /กม.`
   if (/ฮาล์ฟ/.test(title)) return `เพซฮาล์ฟ ~${fmt(e.paces.half)} /กม.`
   if (/มาราธอน/.test(title)) return `เพซมาราธอน ~${fmt(e.paces.marathon)} /กม.`
   switch (kind) {

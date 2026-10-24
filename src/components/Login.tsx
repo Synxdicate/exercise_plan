@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Dumbbell, Lock, LogIn, Mail, UserPlus } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { isNative, SITE_URL } from '../lib/native'
 import { TextInput } from './Form'
 
 type Mode = 'signin' | 'signup' | 'reset'
@@ -34,7 +35,7 @@ export function Login() {
 
   const submit = (e: FormEvent) => {
     e.preventDefault()
-    const redirectTo = window.location.origin
+    const redirectTo = SITE_URL
     if (mode === 'signin') return run(() => supabase.auth.signInWithPassword({ email, password }))
     if (mode === 'signup')
       return run(() => supabase.auth.signUp({ email, password, options: { emailRedirectTo: redirectTo } }),
@@ -51,7 +52,7 @@ export function Login() {
         <h1 className="text-2xl font-extrabold text-accent">Exercise-Plan</h1>
         <p className="text-sm text-muted">เข้าสู่ระบบเพื่อบันทึกการฝึกและซิงก์ข้ามมือถือ/คอม</p>
 
-        {mode !== 'reset' && (
+        {mode !== 'reset' && !isNative && (
           <>
             <button className="inline-flex items-center justify-center gap-2.5 rounded-full bg-card px-4 py-3 font-semibold ring-1 ring-line hover:ring-muted disabled:opacity-50" onClick={google} disabled={busy}>
               <GoogleIcon /> ดำเนินการต่อด้วย Google

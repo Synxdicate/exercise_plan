@@ -4,7 +4,7 @@ import { activityLevels, bmi, bmr, goals, tdee, targets, type Profile } from '..
 import { phases, principles } from '../data/workouts'
 import { Dashboard } from './Dashboard'
 import { useProgram } from '../lib/program'
-import { Badge, Card, Stat } from './ui'
+import { Badge, Card, Disclosure, Stat } from './ui'
 import { NumberInput, SelectInput } from './Form'
 import { cx } from '../lib/cx'
 
@@ -58,7 +58,7 @@ export function Overview({ profile, setProfile }: Props) {
         <p className="mt-2 text-xs text-muted">คำนวณด้วยสูตร Mifflin-St Jeor (คลาดเคลื่อนได้ ±10%) ใช้เป็นจุดเริ่มต้น แล้วปรับตามน้ำหนักจริงทุก 2–3 สัปดาห์</p>
       </Card>
 
-      {program === 'physique' && <Card title="แผน 12 สัปดาห์">
+      {program === 'physique' && <Disclosure title="แผน 12 สัปดาห์" summary="ฐาน → เพิ่มความหนัก → Deload → ทดสอบ">
         <ol className="relative space-y-4 border-l-2 border-line pl-5">
           {phases.map(p => (
             <li key={p.weeks} className="relative">
@@ -69,9 +69,9 @@ export function Overview({ profile, setProfile }: Props) {
             </li>
           ))}
         </ol>
-      </Card>}
+      </Disclosure>}
 
-      <Card title="หุ่นแบบ Tom Holland — ความจริงที่ควรรู้">
+      <Disclosure title="หุ่นแบบ Tom Holland — ความจริงที่ควรรู้" summary="ทำได้จริงแค่ไหน ใช้เวลานานเท่าไร">
         <ul className="list-disc space-y-2 pl-5 text-sm">
           <li>เขาสูงราว 170–173 ซม. และรูปร่างที่เห็นในหนังเป็นแบบ <b>ลีน ไขมันต่ำ กล้ามพอดี</b> ไม่ใช่สายกล้ามใหญ่ ซึ่งเป็นเป้าที่ทำได้จริงสำหรับคุณ (165 ซม. / 64.5 กก.)</li>
           <li>การฝึกของเขาเน้น <b>บอดี้เวท ยิมนาสติก และ conditioning</b> (ดึงข้อ ดิป วิดพื้น) ตามที่เทรนเนอร์ให้สัมภาษณ์ และมีทีมงาน เชฟ และเวลาฝึกเต็มวันก่อนถ่ายทำ</li>
@@ -79,9 +79,9 @@ export function Overview({ profile, setProfile }: Props) {
           <li>มือใหม่เพิ่มกล้ามได้เร็วที่สุดในปีแรก แต่เป็นหลักไม่กี่กิโลกรัมต่อปี (ตัวเลขต่างกันมากตามพันธุกรรม การนอน และอาหาร — ยังไม่มีงานวิจัยที่ให้ตัวเลขแน่นอน) ส่วนการลดไขมัน ~0.5% ของน้ำหนักตัว/สัปดาห์ช่วยรักษากล้ามได้ดีกว่าการลดเร็ว</li>
           <li>เวลาที่สมเหตุสมผล: เห็นความเปลี่ยนแปลงใน <b>8–12 สัปดาห์</b> และได้รูปร่างใกล้เคียงใน <b>1–2 ปี</b> ถ้าฝึกสม่ำเสมอ</li>
         </ul>
-      </Card>
+      </Disclosure>
 
-      <Card title={<span className="flex items-center gap-2"><ShieldCheck size={18} className="text-good" /> ฝึกอย่างปลอดภัย</span>}>
+      <Disclosure title={<span className="flex items-center gap-2"><ShieldCheck size={18} className="text-good" /> ฝึกอย่างปลอดภัย</span>} summary="กฎความเจ็บ อากาศร้อน ซ้อมหนักเกิน ป่วย">
         <ul className="space-y-3 text-sm">
           {safety.map(([title, text]) => (
             <li key={title}>
@@ -90,9 +90,9 @@ export function Overview({ profile, setProfile }: Props) {
             </li>
           ))}
         </ul>
-      </Card>
+      </Disclosure>
 
-      <Card title="หลักการที่แผนนี้ใช้">
+      <Disclosure title="หลักการที่แผนนี้ใช้" summary="progressive overload, ปริมาณเซ็ต, วิ่งเบาเป็นหลัก">
         <div className="space-y-3">
           {principles.map(p => (
             <div key={p.title} className="rounded-2xl bg-raised p-3">
@@ -101,7 +101,7 @@ export function Overview({ profile, setProfile }: Props) {
             </div>
           ))}
         </div>
-      </Card>
+      </Disclosure>
     </>
   )
 }

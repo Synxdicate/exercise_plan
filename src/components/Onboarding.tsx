@@ -6,23 +6,29 @@ import { useProgram } from '../lib/program'
 import { usePersisted } from '../lib/storage'
 import { cx } from '../lib/cx'
 import { Button, Stat } from './ui'
+import { ScreeningForm } from './Screening'
+import { clearance, clearanceText, emptyScreening, useScreening, type Screening } from '../lib/screening'
+import { today } from '../lib/date'
 import { DateInput, NumberInput, SelectInput } from './Form'
 
-const STEPS = ['ข้อมูลร่างกาย', 'เป้าหมาย', 'สถานที่ฝึก', 'พร้อมแล้ว']
+const STEPS = ['เช็กสุขภาพ', 'ข้อมูลร่างกาย', 'เป้าหมาย', 'สถานที่ฝึก', 'พร้อมแล้ว']
 
 /** ตั้งค่าครั้งแรกหลัง login — ถามแค่ที่จำเป็น ที่เหลือแก้ทีหลังได้ */
 export function Onboarding({ onDone }: { onDone: () => void }) {
   const p = useProgram()
   const [profile, setProfile] = usePersisted<Profile>('profile', defaultProfile)
   const [step, setStep] = useState(0)
+  const [saved, setSaved] = useScreening()
   const [draft, setDraft] = useState(profile)
   const [program, setProgram] = useState<ProgramId>(p.program)
   const [where, setWhere] = useState<LocationPref>(p.location)
   const [raceDate, setRaceDate] = useState(p.raceDate)
+  const [screen, setScreen] = useState<Screening>(saved ?? emptyScreening)
   const set = <K extends keyof Profile>(k: K, v: Profile[K]) => setDraft(d => ({ ...d, [k]: v }))
 
   const finish = () => {
     setProfile(draft)
+    setSaved({ ...screen, date: today() })
     if (program !== p.program) p.setProgram(program)
     p.setLocationPref(where)
     if (program !== 'physique') p.setRaceDate(raceDate)
@@ -60,6 +66,13 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
 
         {step === 0 && (
           <>
+            <p className="text-sm text-muted">4 คำถามสั้น ๆ ตามแนวทางคัดกรองของ ACSM — ใช้เวลาไม่ถึง 30 วินาที</p>
+            <ScreeningForm value={screen} onChange={setScreen} />
+          </>
+        )}
+
+        {step === 1 && (
+          <>
             <p className="text-sm text-muted">ใช้คำนวณแคลอรี่และโปรตีนที่ควรกินต่อวัน</p>
             <div className="grid grid-cols-3 gap-2.5">
               <NumberInput label="อายุ" unit="ปี" value={draft.age} onChange={v => set('age', +v)} />
@@ -73,9 +86,9 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
           </>
         )}
 
-        {step === 1 && (
+        {step === 2 && (
           <>
-            <p className="text-sm text-muted">เริ่มจากโปรแกรมหุ่นก่อนถ้ายังวิ่งไม่ถึง 15 กม./สัปดาห์ แล้วค่อยต่อฮาล์ฟ → ฟูล</p>
+            <p className="text-sm text-muted">ถ้าวิ่งยังไม่ถึง 15 กม./สัปดาห์ เริ่มจากหุ่นหรือ 10K ก่อน แล้วค่อยต่อฮาล์ฟ → ฟูล</p>
             {(Object.keys(programs) as ProgramId[]).map(id => (
               <Option key={id} on={program === id} onClick={() => setProgram(id)} title={`${programs[id].name} · ${programs[id].weeks} สัปดาห์`} text={programs[id].summary} />
             ))}
@@ -85,7 +98,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
           </>
         )}
 
-        {step === 2 && (
+        {step === 3 && (
           <>
             <p className="text-sm text-muted">วันไหนอยากเปลี่ยนที่ สลับเฉพาะวันนั้นได้ในหน้าฝึก</p>
             {(['mix', 'gym', 'park'] as LocationPref[]).map(id => (
@@ -94,7 +107,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
           </>
         )}
 
-        {step === 3 && (
+        {step === 4 && (
           <>
             <p className="text-sm text-muted">เป้าต่อวันของคุณ (แก้ได้ที่หน้าหลัก)</p>
             <div className="grid grid-cols-2 gap-2">
@@ -106,6 +119,9 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
               <li><b>ฝึกเวทที่:</b> {locationInfo[where].label}</li>
               <li><b>เริ่มยังไง:</b> เปิดแอปทุกวันแล้วดูการ์ด "วันนี้" ที่หน้าหลัก กดเริ่มได้เลย</li>
             </ul>
+            {clearance(screen) !== 'clear' && (
+              <p className="rounded-2xl bg-bad/15 p-3 text-sm text-bad">{clearanceText[clearance(screen)].title}: {clearanceText[clearance(screen)].text}</p>
+            )}
           </>
         )}
       </div>

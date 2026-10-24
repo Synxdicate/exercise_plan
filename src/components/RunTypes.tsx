@@ -1,5 +1,5 @@
-import { useId } from 'react'
-import { Heart, MessageCircle, Target } from 'lucide-react'
+import { useId, useState } from 'react'
+import { ChevronDown, Heart, MessageCircle, Target } from 'lucide-react'
 import type { Run } from '../lib/log'
 import { cx } from '../lib/cx'
 
@@ -95,9 +95,10 @@ function smooth(points: [number, number][]) {
 const reduceMotion = () => typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches
 
 /** อธิบายประเภทการวิ่งด้วยกราฟความหนักที่วาดขึ้นมา + หัวใจเต้นตามความหนัก */
-export function RunTypeCard({ kind, compact }: { kind: Run['kind']; compact?: boolean }) {
+export function RunTypeCard({ kind, compact, defaultOpen = false }: { kind: Run['kind']; compact?: boolean; defaultOpen?: boolean }) {
   const info = runTypeInfo[kind]
   const id = useId().replace(/:/g, '')
+  const [open, setOpen] = useState(defaultOpen || !!compact)
   if (!info) return null
   const line = smooth(info.profile)
   const [x0] = px(info.profile[0])
@@ -106,16 +107,19 @@ export function RunTypeCard({ kind, compact }: { kind: Run['kind']; compact?: bo
   const motion = !reduceMotion()
 
   return (
-    <div key={kind} className={cx('animate-fade-up', !compact && 'rounded-3xl bg-card p-4 shadow-sm ring-1 ring-line')}>
+    <div key={kind} className={cx('animate-fade-up', !compact && 'rounded-2xl bg-card p-3.5 shadow-sm ring-1 ring-line')}>
       {!compact && (
-        <div className="mb-2 flex items-center justify-between">
-          <div className="font-bold">{info.name} คืออะไร?</div>
-          <span className="flex items-center gap-1 text-sm font-semibold text-accent">
-            <Heart size={18} fill="currentColor" style={motion ? { animation: `beat ${info.beat}s ease-in-out infinite` } : undefined} />
-            RPE {info.rpe[0]}–{info.rpe[1]}/10
+        <button onClick={() => setOpen(!open)} aria-expanded={open} className="flex w-full items-center gap-2 text-left active:scale-100">
+          <span className="min-w-0 flex-1 text-[15px] font-bold">{info.name} คืออะไร?</span>
+          <span className="flex items-center gap-1 text-xs font-semibold text-accent">
+            <Heart size={16} fill="currentColor" style={motion ? { animation: `beat ${info.beat}s ease-in-out infinite` } : undefined} />
+            RPE {info.rpe[0]}–{info.rpe[1]}
           </span>
-        </div>
+          <ChevronDown size={18} className={cx('shrink-0 text-muted transition-transform duration-300', open && 'rotate-180')} />
+        </button>
       )}
+      {/* render ตอนเปิด เพื่อให้แอนิเมชันวาดกราฟเล่นทุกครั้งที่กดดู */}
+      {open && <div className={cx('animate-fade-up', !compact && 'mt-2')}>
 
       <div className="relative">
         <svg viewBox={`0 0 ${W} ${H}`} className="block w-full overflow-visible" role="img" aria-label={`กราฟความหนักของ ${info.name}`}>
@@ -123,7 +127,8 @@ export function RunTypeCard({ kind, compact }: { kind: Run['kind']; compact?: bo
             {/* สูง = หนัก (แดง), ต่ำ = เบา (ฟ้า) */}
             <linearGradient id={`g${id}`} gradientUnits="userSpaceOnUse" x1="0" y1={PAD} x2="0" y2={H - PAD}>
               <stop offset="0%" stopColor="var(--c-accent)" />
-              <stop offset="55%" stopColor="var(--c-warn)" />
+              <stop offset="35%" stopColor="var(--c-warn)" />
+              <stop offset="62%" stopColor="var(--c-run)" />
               <stop offset="100%" stopColor="var(--c-run)" />
             </linearGradient>
             <clipPath id={`c${id}`}>
@@ -163,6 +168,7 @@ export function RunTypeCard({ kind, compact }: { kind: Run['kind']; compact?: bo
           {info.share && <li className="pl-6 text-xs text-muted">{info.share}</li>}
         </ul>
       )}
+      </div>}
     </div>
   )
 }

@@ -12,6 +12,8 @@ import { addDays, today, weekStart } from '../lib/date'
 import { BodyMap } from './BodyMap'
 import { heat } from '../lib/heat'
 import { WorkoutPlayer } from './WorkoutPlayer'
+import { Alerts } from './Alerts'
+import { HeatCard } from './Heat'
 import { ReadinessSheet } from './Readiness'
 import { Button, Card } from './ui'
 import { cx } from '../lib/cx'
@@ -46,17 +48,18 @@ export function Dashboard() {
 
   return (
     <>
-      <section className="rounded-3xl bg-gradient-to-br from-accent to-[#7c3aed] p-5 text-white shadow-sm">
+      <Alerts />
+      <section className="rounded-2xl bg-gradient-to-br from-accent to-[#7c3aed] p-4 text-white shadow-sm">
         <div className="flex items-center justify-between">
           <div>
             <div className="text-sm opacity-80">{p.meta.short} · สัปดาห์ที่ {week} จาก {p.meta.weeks}</div>
-            <div className="text-2xl font-extrabold">{p.daysToRace !== null && p.daysToRace >= 0 ? `อีก ${p.daysToRace} วันถึงวันแข่ง` : 'สัปดาห์นี้'}</div>
+            <div className="text-xl font-extrabold">{p.daysToRace !== null && p.daysToRace >= 0 ? `อีก ${p.daysToRace} วันถึงวันแข่ง` : 'สัปดาห์นี้'}</div>
           </div>
           <div className="flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm font-semibold">
             <Flame size={16} /> {streak} สัปดาห์ติด
           </div>
         </div>
-        <div className="mt-4 grid grid-cols-2 gap-3">
+        <div className="mt-3 grid grid-cols-2 gap-2">
           <Ring value={sessionsThisWeek} max={strengthTarget} label="เวท" text={`${sessionsThisWeek}/${strengthTarget}`} />
           <Ring value={kmThisWeek} max={kmTarget} label="วิ่ง (กม.)" text={`${kmThisWeek.toFixed(1)}/${kmTarget}`} />
         </div>
@@ -96,6 +99,8 @@ export function Dashboard() {
           onSaved={() => { setDone(prev => ({ ...prev, [p.doneId(week, todayIdx)]: true })); setPlaying(null) }} />
       )}
 
+      {todayPlan?.type === 'run' && <HeatCard />}
+
       <Card title="กิจกรรม 12 สัปดาห์">
         <ActivityCalendar dates={[...sessions.map(s => s.date), ...runs.map(r => r.date)]} />
       </Card>
@@ -103,7 +108,7 @@ export function Dashboard() {
       <Card title={`กล้ามเนื้อที่ฝึกต่อสัปดาห์ (${locationInfo[p.location].label.replace(/ \(.*\)/, '')})`}>
         <p className="-mt-2 mb-2 text-xs text-muted">สีเข้ม = ใกล้ {TARGET_SETS} เซ็ต/สัปดาห์ (กล้ามรองนับครึ่งเซ็ต)</p>
         <BodyMap intensity={intensity} label={m => `${muscleNames[m]}: ${fmt(sets[m] ?? 0)} เซ็ต/สัปดาห์`} />
-        <ul className="mt-3 space-y-1.5 text-sm">
+        <MuscleList>
           {(Object.keys(muscleNames) as Muscle[])
             .sort((a, b) => (sets[b] ?? 0) - (sets[a] ?? 0))
             .map(m => (
@@ -115,7 +120,7 @@ export function Dashboard() {
                 <span className="text-right tabular-nums text-muted">{fmt(sets[m] ?? 0)}</span>
               </li>
             ))}
-        </ul>
+        </MuscleList>
       </Card>
     </>
   )
@@ -128,8 +133,8 @@ function Ring({ value, max, label, text }: { value: number; max: number; label: 
   const c = 2 * Math.PI * r
   const pct = Math.min(1, max ? value / max : 0)
   return (
-    <div className="flex items-center gap-3 rounded-2xl bg-white/10 p-3">
-      <svg viewBox="0 0 72 72" className="size-16 shrink-0" aria-hidden>
+    <div className="flex items-center gap-2.5 rounded-xl bg-white/10 p-2.5">
+      <svg viewBox="0 0 72 72" className="size-12 shrink-0" aria-hidden>
         <circle cx="36" cy="36" r={r} fill="none" stroke="rgb(255 255 255 / .25)" strokeWidth="8" />
         {pct > 0 && <circle cx="36" cy="36" r={r} fill="none" stroke="white" strokeWidth="8" strokeLinecap="round"
           strokeDasharray={`${c * pct} ${c}`} transform="rotate(-90 36 36)" />}
@@ -185,4 +190,18 @@ function weekStreak(...lists: string[][]) {
     w = addDays(w, -7)
   }
   return n
+}
+
+// รายการกล้ามเนื้อ 17 แถวยาวเกินไป — แสดง 5 แถวที่ได้น้อยที่สุดก่อน (สิ่งที่ควรสนใจ)
+function MuscleList({ children }: { children: React.ReactNode[] | React.ReactNode }) {
+  const [all, setAll] = useState(false)
+  const items = Array.isArray(children) ? children.flat() : [children]
+  const shown = all ? items : items.slice(-5)
+  return (
+    <div className="mt-3">
+      {!all && <div className="mb-1 text-xs text-muted">ได้น้อยที่สุด 5 ส่วน</div>}
+      <ul className="space-y-1.5 text-sm">{shown}</ul>
+      <button onClick={() => setAll(!all)} className="mt-2 text-sm font-semibold text-run">{all ? 'ย่อ' : `ดูทั้งหมด ${items.length} ส่วน`}</button>
+    </div>
+  )
 }

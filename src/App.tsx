@@ -70,7 +70,7 @@ function Main({ session }: { session: Session }) {
         <UserMenu session={session} onSources={() => go('sources')} />
       </header>
 
-      <main key={tab} className="animate-fade-up space-y-4 px-4 pt-1 pb-[calc(env(safe-area-inset-bottom)+6rem)]">
+      <main key={tab} className="animate-fade-up space-y-3 px-4 pt-1 pb-[calc(env(safe-area-inset-bottom)+6rem)]">
         {tab === 'overview' && <Overview profile={profile} setProfile={setProfile} />}
         {tab === 'plan' && <Plan />}
         {tab === 'runs' && <Runs />}

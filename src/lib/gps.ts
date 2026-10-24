@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { BackgroundGeolocation, isNative } from './native'
 
 export type Point = [lat: number, lon: number]
 
@@ -58,6 +59,7 @@ type Live = {
   route: Point[]
   splits: number[] // วินาทีต่อกม.
   lastMoveAt: number
+  gapSeconds?: number // เวลารวมที่จอปิด/สลับแอประหว่างวิ่ง (GPS ไม่ได้บันทึก)
 }
 
 const empty = (): Live => ({ status: 'idle', startedAt: 0, activeMs: 0, segStart: null, meters: 0, route: [], splits: [], lastMoveAt: 0 })
@@ -77,7 +79,7 @@ function loadSaved(): Live {
 
 export const movingMs = (l: Live, now = Date.now()) => l.activeMs + (l.segStart !== null ? now - l.segStart : 0)
 
-export type FinishedRun = { km: number; seconds: number; elapsedSeconds: number; route: Point[]; splits: number[] }
+export type FinishedRun = { km: number; seconds: number; elapsedSeconds: number; route: Point[]; splits: number[]; gapSeconds?: number }
 
 export function useRunTracker() {
   const [live, setLive] = useState<Live>(loadSaved)
@@ -85,11 +87,14 @@ export function useRunTracker() {
   const [position, setPosition] = useState<Point | null>(null)
   const [accuracy, setAccuracy] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [lastGap, setLastGap] = useState<number | null>(null)
+  const hiddenAt = useRef<number | null>(null)
   const [autoPause, setAutoPause] = useState(true)
   const [currentPace, setCurrentPace] = useState<number | null>(null)
 
   const liveRef = useRef(live)
   const watchId = useRef<number | null>(null)
+  const nativeWatch = useRef<Promise<string> | null>(null)
   const kalman = useRef(new Kalman())
   const last = useRef<{ p: Point; t: number } | null>(null)
   const recent = useRef<{ t: number; m: number }[]>([])
@@ -133,13 +138,28 @@ export function useRunTracker() {
   useEffect(() => {
     const onVis = () => {
       const s = liveRef.current.status
-      if (document.visibilityState === 'visible' && (s === 'running' || s === 'autopaused' || s === 'acquiring')) void lockScreen()
+      const tracking = s === 'running' || s === 'autopaused'
+      if (document.visibilityState === 'hidden') {
+        if (tracking && !isNative) hiddenAt.current = Date.now()
+        return
+      }
+      if (tracking || s === 'acquiring') void lockScreen()
+      // กลับมาจากปิดจอ: เบราว์เซอร์หยุด GPS ไปช่วงนั้น — จดไว้และแจ้งผู้ใช้
+      if (hiddenAt.current && tracking) {
+        const gap = (Date.now() - hiddenAt.current) / 1000
+        if (gap > 15) {
+          setLastGap(gap)
+          update(x => ({ ...x, gapSeconds: (x.gapSeconds ?? 0) + gap }))
+        }
+      }
+      hiddenAt.current = null
     }
     document.addEventListener('visibilitychange', onVis)
     return () => document.removeEventListener('visibilitychange', onVis)
-  }, [lockScreen])
+  }, [lockScreen, update])
 
-  const onPosition = useCallback((pos: GeolocationPosition) => {
+  type Fix = { coords: { latitude: number; longitude: number; accuracy: number }; timestamp: number }
+  const onPosition = useCallback((pos: Fix) => {
     const acc = pos.coords.accuracy
     setAccuracy(acc)
     setError(null)
@@ -193,11 +213,31 @@ export function useRunTracker() {
   const stopWatching = useCallback(() => {
     if (watchId.current !== null) navigator.geolocation.clearWatch(watchId.current)
     watchId.current = null
+    nativeWatch.current?.then(id => BackgroundGeolocation.removeWatcher({ id })).catch(() => {})
+    nativeWatch.current = null
     wakeLock.current?.release().catch(() => {})
     wakeLock.current = null
   }, [])
 
   const startWatching = useCallback(() => {
+    if (isNative) {
+      // แอป Android: ใช้ GPS เบื้องหลัง ปิดจอแล้วยังบันทึกต่อ
+      if (nativeWatch.current) return true
+      nativeWatch.current = BackgroundGeolocation.addWatcher(
+        { backgroundTitle: 'Exercise-Plan กำลังบันทึกการวิ่ง', backgroundMessage: 'แตะเพื่อกลับเข้าแอป', requestPermissions: true, stale: false, distanceFilter: 0 },
+        (loc, err) => {
+          if (err) {
+            if (err.code === 'NOT_AUTHORIZED') {
+              setError('ไม่ได้อนุญาตให้ใช้ตำแหน่ง — แตะเพื่อเปิดการตั้งค่า แล้วเลือก "อนุญาตตลอดเวลา"')
+              if (confirm('แอปต้องใช้ตำแหน่งเพื่อบันทึกการวิ่ง เปิดการตั้งค่าเลยไหม?')) void BackgroundGeolocation.openSettings()
+            }
+            return
+          }
+          if (loc) onPosition({ coords: { latitude: loc.latitude, longitude: loc.longitude, accuracy: loc.accuracy }, timestamp: loc.time ?? Date.now() })
+        },
+      )
+      return true
+    }
     if (!('geolocation' in navigator)) {
       setError('เบราว์เซอร์นี้ไม่รองรับ GPS')
       return false
@@ -227,6 +267,8 @@ export function useRunTracker() {
     ...live,
     elapsed,
     currentPace: live.status === 'running' ? currentPace : null,
+    lastGap,
+    dismissGap: () => setLastGap(null),
     position,
     accuracy,
     error,
@@ -261,6 +303,7 @@ export function useRunTracker() {
         elapsedSeconds: Math.round((n - l.startedAt) / 1000),
         route: l.route,
         splits: l.splits,
+        gapSeconds: l.gapSeconds ? Math.round(l.gapSeconds) : undefined,
       }
       stopWatching()
       resetSegment()
