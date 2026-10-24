@@ -5,6 +5,7 @@ import { lastSetsFor, formatDuration, uid, useSessions, type SetEntry } from '..
 import { usePersisted } from '../lib/storage'
 import { today } from '../lib/date'
 import { restSeconds, suggest } from '../lib/progression'
+import { cancelRestEnd, scheduleRestEnd } from '../lib/notify'
 import { Badge, Button, Portal } from './ui'
 import { RpePicker } from './RpePicker'
 import { cx } from '../lib/cx'
@@ -52,7 +53,10 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
         return r
       })
     }, 250)
-    return () => clearInterval(id)
+    return () => {
+      clearInterval(id)
+      void cancelRestEnd()
+    }
   }, [])
 
   const restLeft = rest ? Math.max(0, Math.ceil((rest.end - now) / 1000)) : 0
@@ -80,7 +84,11 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
     // เซ็ตสุดท้ายของทั้งวันไม่ต้องพัก
     if (doneCount + 1 < total) {
       const sec = restSeconds(ex.rest)
-      setRest({ end: Date.now() + sec * 1000, total: sec })
+      const end = Date.now() + sec * 1000
+      setRest({ end, total: sec })
+      // ถ้าจอดับระหว่างพัก แจ้งเตือนของเครื่องจะเด้งตอนหมดเวลา
+      const nextName = advance ? day.exercises[state.idx + 1].name : `${ex.name} เซ็ต ${Math.min(i + 2, rows.length)}`
+      void scheduleRestEnd(new Date(end), nextName)
     }
   }
 
@@ -200,7 +208,12 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
       )}
       {rest && restLeft > 0 && (
         <RestOverlay left={restLeft} total={rest.total} next={currentSet >= 0 ? `${ex.name} เซ็ต ${currentSet + 1}` : undefined}
-          onAdd={() => setRest(r => r && { end: r.end + 15000, total: r.total + 15 })} onSkip={() => setRest(null)} />
+          onAdd={() => setRest(r => {
+            if (!r) return r
+            void scheduleRestEnd(new Date(r.end + 15000))
+            return { end: r.end + 15000, total: r.total + 15 }
+          })}
+          onSkip={() => { setRest(null); void cancelRestEnd() }} />
       )}
     </div>
     </Portal>

@@ -1,10 +1,13 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import type { Session } from '@supabase/supabase-js'
-import { BookOpen, Cloud, CloudOff, Download, Dumbbell, Footprints, House, LogOut, Monitor, Moon, RefreshCw, SlidersHorizontal, Sun, TrendingUp, Upload, Utensils } from 'lucide-react'
+import { Bell, BookOpen, Cloud, CloudOff, Download, Dumbbell, Footprints, House, LogOut, Monitor, Moon, RefreshCw, SlidersHorizontal, Sun, TrendingUp, Upload, Utensils } from 'lucide-react'
 import { AuthGate } from './components/AuthGate'
 import { Onboarding } from './components/Onboarding'
 import { ProgramSheet } from './components/ProgramSheet'
 import { useTheme, type Theme } from './lib/theme'
+import { useReminderSchedule, useReminderSetting } from './lib/reminders'
+import { isNative } from './lib/native'
+import { useUpdateAvailable } from './lib/update'
 import { supabase } from './lib/supabase'
 import { exportData, getSyncStatus, importData, stopSync, subscribeSyncStatus } from './lib/sync'
 import { today } from './lib/date'
@@ -39,6 +42,9 @@ function Main({ session }: { session: Session }) {
   const [tab, setTab] = usePersisted<Tab>('tab', 'overview')
   const [profile, setProfile] = usePersisted<Profile>('profile', defaultProfile)
   const [onboarded, setOnboarded] = usePersisted('onboarded', false)
+  useReminderSchedule()
+  const update = useUpdateAvailable()
+  const [dismissed, setDismissed] = usePersisted('updateDismissed', '')
 
   // ลิงก์ตรงไปแท็บได้ เช่น /#runs
   useEffect(() => {
@@ -69,6 +75,14 @@ function Main({ session }: { session: Session }) {
         </div>
         <UserMenu session={session} onSources={() => go('sources')} />
       </header>
+
+      {update && dismissed !== update && (
+        <div className="mx-4 mb-2 flex animate-fade-up items-center gap-2 rounded-2xl bg-run/10 px-3.5 py-2.5 text-sm text-run ring-1 ring-run/30">
+          <Download size={16} className="shrink-0" />
+          <span className="flex-1">มีเวอร์ชันใหม่ ({update.slice(0, 10)}) — ต่อ USB แล้วรัน <code className="font-mono">npm run android:update</code></span>
+          <button onClick={() => setDismissed(update)} aria-label="ปิด" className="shrink-0 text-xs font-semibold">ปิด</button>
+        </div>
+      )}
 
       <main key={tab} className="animate-fade-up space-y-3 px-4 pt-1 pb-[calc(var(--sab)+6rem)]">
         {tab === 'overview' && <Overview profile={profile} setProfile={setProfile} />}
@@ -107,6 +121,7 @@ function UserMenu({ session, onSources }: { session: Session; onSources: () => v
   const [busy, setBusy] = useState(false)
   const [programOpen, setProgramOpen] = useState(false)
   const [theme, setTheme] = useTheme()
+  const [reminder, setReminder] = useReminderSetting()
   const meta = session.user.user_metadata as { full_name?: string; avatar_url?: string } | undefined
   const name = meta?.full_name ?? session.user.email ?? ''
 
@@ -174,6 +189,18 @@ function UserMenu({ session, onSources }: { session: Session; onSources: () => v
                 </button>
               ))}
             </div>
+            {isNative && (
+              <div className="mx-1 mb-1 flex items-center gap-2 rounded-xl px-2 py-1.5">
+                <Bell size={16} className="shrink-0" />
+                <span className="flex-1 text-sm">เตือนการฝึกทุกวัน</span>
+                <input type="time" value={reminder.time} disabled={!reminder.on} onChange={e => setReminder({ ...reminder, time: e.target.value })}
+                  className="bare w-20 rounded-lg bg-raised px-1.5 py-1 text-sm disabled:opacity-40" />
+                <button role="switch" aria-checked={reminder.on} aria-label="เปิด/ปิดเตือนรายวัน" onClick={() => setReminder({ ...reminder, on: !reminder.on })}
+                  className={cx('relative h-6 w-10 shrink-0 rounded-full transition-colors', reminder.on ? 'bg-good' : 'bg-body')}>
+                  <span className={cx('absolute top-0.5 size-5 rounded-full bg-white shadow transition-all', reminder.on ? 'left-[18px]' : 'left-0.5')} />
+                </button>
+              </div>
+            )}
             <div className="my-1 h-px bg-line" />
             <button onClick={() => { setOpen(false); onSources() }} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left hover:bg-raised">
               <BookOpen size={16} /> แหล่งข้อมูลและช่อง YouTube

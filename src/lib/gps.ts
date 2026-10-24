@@ -76,7 +76,9 @@ export const movingMs = (l: Live, now = Date.now()) => l.activeMs + (l.segStart 
 
 export type FinishedRun = { km: number; seconds: number; elapsedSeconds: number; route: Point[]; times: number[]; splits: number[]; gapSeconds?: number }
 
-export function useRunTracker() {
+export function useRunTracker(opts: { onSplit?: (km: number, splitSec: number, totalSec: number) => void } = {}) {
+  const onSplitRef = useRef(opts.onSplit)
+  useEffect(() => { onSplitRef.current = opts.onSplit })
   const [live, setLive] = useState<Live>(loadSaved)
   const [now, setNow] = useState(() => Date.now())
   const [position, setPosition] = useState<Point | null>(null)
@@ -183,6 +185,7 @@ export function useRunTracker() {
     last.current = { p, t }
     const moving = dt <= 0 || d / dt >= MOVING_SPEED_MS
 
+    const splitsBefore = liveRef.current.splits.length
     update(x => {
       const n = Date.now()
       let next: Live = { ...x, meters: x.meters + d, route: [...x.route, p], times: [...x.times, Math.round(movingMs(x, n) / 1000)] }
@@ -198,6 +201,11 @@ export function useRunTracker() {
       }
       return next
     })
+    // ครบกิโลใหม่ → แจ้ง (เสียงบอกเพซ) — เรียกจาก callback ของ GPS โดยตรง จึงทำงานแม้จอดับ
+    const after = liveRef.current.splits
+    for (let k = splitsBefore; k < after.length; k++) {
+      onSplitRef.current?.(k + 1, after[k], after.slice(0, k + 1).reduce((s, v) => s + v, 0))
+    }
     const win = [...recent.current.filter(r => t - r.t < PACE_WINDOW_MS), { t, m: liveRef.current.meters }]
     recent.current = win
     const dm = win.at(-1)!.m - win[0].m

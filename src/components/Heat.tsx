@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronDown, Thermometer } from 'lucide-react'
+import { ChevronDown, MapPin, Thermometer } from 'lucide-react'
 import { bestHour, heatAdvice, heatLevel, useHeat, type HeatLevel } from '../lib/weather'
 import { cx } from '../lib/cx'
 import { Card, Collapse } from './ui'
@@ -20,7 +20,7 @@ const nowIso = () => {
 
 /** ความร้อนตอนนี้ + ช่วงเวลาที่เหมาะกับการวิ่ง (พยากรณ์จาก Open-Meteo) */
 export function HeatCard() {
-  const { hours, error } = useHeat()
+  const { hours, place, error } = useHeat()
   const [open, setOpen] = useState(false)
   if (error) return null
   if (!hours) return <Card><div className="h-20 animate-pulse rounded-2xl bg-raised" /></Card>
@@ -43,6 +43,12 @@ export function HeatCard() {
         </span>
         <ChevronDown size={18} className={cx('shrink-0 text-muted transition-transform duration-300', open && 'rotate-180')} />
       </button>
+      {place && (
+        <div className="mt-2 flex items-center gap-1 text-[11px] text-muted">
+          <MapPin size={12} className="shrink-0" />
+          <span className="truncate">{place.name}{!place.precise && ' (ค่าเริ่มต้น — อนุญาตตำแหน่งเพื่อดูอากาศตรงที่คุณอยู่)'}</span>
+        </div>
+      )}
       <Collapse open={open}>
         <div className="pt-3">
           <p className="text-sm">{heatAdvice[level].text}</p>

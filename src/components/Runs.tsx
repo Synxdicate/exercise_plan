@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState } from 'react'
-import { CalendarCheck, Check, FileUp, TriangleAlert, Trophy, ChevronRight, Footprints, Gauge, Pause, Play, Plus, Satellite, Trash2, X } from 'lucide-react'
+import { CalendarCheck, Check, FileUp, Pencil, TriangleAlert, Trophy, Volume2, VolumeX, ChevronRight, Footprints, Gauge, Pause, Play, Plus, Satellite, Trash2, X } from 'lucide-react'
 import { GOOD_ACCURACY_M, useRunTracker, type Point } from '../lib/gps'
 import { formatDuration, formatPace, runKinds, uid, useRuns, type Run } from '../lib/log'
 import { estimate, paceHint, type Estimate } from '../lib/pace'
@@ -9,6 +9,8 @@ import { paceSeries, personalBests, splitAnalysis } from '../lib/analysis'
 import { PaceChart } from './Charts'
 import { RpePicker } from './RpePicker'
 import { isNative } from '../lib/native'
+import { speak, splitAnnouncement } from '../lib/voice'
+import { usePersisted } from '../lib/storage'
 import { RunTypeCard } from './RunTypes'
 import { HeatCard } from './Heat'
 import { ReadinessSheet } from './Readiness'
@@ -37,7 +39,8 @@ export function Runs() {
   const [detail, setDetail] = useState<string | null>(null)
   const [manual, setManual] = useState(false)
   const [checking, setChecking] = useState(false)
-  const t = useRunTracker()
+  const [voice, setVoice] = usePersisted('voiceCues', true)
+  const t = useRunTracker({ onSplit: (km, split, total) => { if (voice) void speak(splitAnnouncement(km, total, split)) } })
 
   const save = (r: Run) => setRuns(prev => [...prev, r].sort((a, b) => a.date.localeCompare(b.date)))
 
@@ -61,7 +64,7 @@ export function Runs() {
     }
   }
 
-  if (t.status !== 'idle') return <ActiveRun t={t} kind={kind} target={todayRun?.targetKm} onFinish={finish} />
+  if (t.status !== 'idle') return <ActiveRun t={t} kind={kind} target={todayRun?.targetKm} voice={voice} setVoice={setVoice} onFinish={finish} />
 
   const thisWeek = weekStart(today())
   const kmThisWeek = runs.filter(r => weekStart(r.date) === thisWeek).reduce((s, r) => s + r.km, 0)
@@ -163,12 +166,12 @@ export function Runs() {
           onProceed={light => { if (light) setKind('easy'); setChecking(false); t.acquire() }} />
       )}
 
-      {open && <RunDetail run={open} onClose={() => setDetail(null)} onRate={rpe => setRuns(prev => prev.map(x => (x.id === open.id ? { ...x, rpe } : x)))} onDelete={() => { setRuns(prev => prev.filter(x => x.id !== open.id)); setDetail(null) }} />}
+      {open && <RunDetail run={open} onClose={() => setDetail(null)} onUpdate={patch => setRuns(prev => prev.map(x => (x.id === open.id ? { ...x, ...patch } : x)).sort((a, b) => a.date.localeCompare(b.date)))} onDelete={() => { setRuns(prev => prev.filter(x => x.id !== open.id)); setDetail(null) }} />}
     </div>
   )
 }
 
-function ActiveRun({ t, kind, target, onFinish }: { t: ReturnType<typeof useRunTracker>; kind: Run['kind']; target?: number; onFinish: () => void }) {
+function ActiveRun({ t, kind, target, voice, setVoice, onFinish }: { t: ReturnType<typeof useRunTracker>; kind: Run['kind']; target?: number; voice: boolean; setVoice: (v: boolean) => void; onFinish: () => void }) {
   const km = t.meters / 1000
   const weak = t.accuracy === null || t.accuracy > GOOD_ACCURACY_M
   const banner =
@@ -181,7 +184,13 @@ function ActiveRun({ t, kind, target, onFinish }: { t: ReturnType<typeof useRunT
     <div className="fixed inset-0 z-50 animate-sheet-up overflow-y-auto bg-bg">
       <div className="mx-auto flex min-h-full max-w-lg flex-col gap-4 p-4 pb-[calc(var(--sab)+1rem)] pt-[calc(var(--sat)+1rem)]">
         <div className="flex items-center justify-between">
-          <Badge tone="run">{runKinds[kind]}</Badge>
+          <span className="flex items-center gap-2">
+            <Badge tone="run">{runKinds[kind]}</Badge>
+            <button onClick={() => { setVoice(!voice); if (!voice) void speak('เปิดเสียงบอกทุกกิโลเมตร') }} aria-label={voice ? 'ปิดเสียงบอกกิโล' : 'เปิดเสียงบอกกิโล'}
+              className={cx('grid size-8 place-items-center rounded-full ring-1 ring-line', voice ? 'bg-run/15 text-run' : 'text-muted')}>
+              {voice ? <Volume2 size={15} /> : <VolumeX size={15} />}
+            </button>
+          </span>
           <span className={cx('inline-flex items-center gap-1 text-xs font-semibold', weak ? 'text-warn' : 'text-good')}>
             <Satellite size={14} /> GPS {t.accuracy !== null ? `±${Math.round(t.accuracy)} ม.` : '…'}
           </span>
@@ -277,7 +286,8 @@ function Splits({ splits }: { splits: number[] }) {
   )
 }
 
-function RunDetail({ run, onClose, onDelete, onRate }: { run: Run; onClose: () => void; onDelete: () => void; onRate: (rpe: number) => void }) {
+function RunDetail({ run, onClose, onDelete, onUpdate }: { run: Run; onClose: () => void; onDelete: () => void; onUpdate: (patch: Partial<Run>) => void }) {
+  const [editing, setEditing] = useState(false)
   const series = run.route && run.times ? paceSeries(run.route, run.times) : []
   const sa = splitAnalysis(run.splits)
   const saText = sa && {
@@ -317,8 +327,14 @@ function RunDetail({ run, onClose, onDelete, onRate }: { run: Run; onClose: () =
           </div>
         )}
         {run.splits && run.splits.length > 0 && <Splits splits={run.splits} />}
-        <div className="mt-3 rounded-2xl bg-raised p-3"><RpePicker value={run.rpe} onPick={onRate} /></div>
-        <Button variant="danger" size="sm" className="mt-3" onClick={() => confirm('ลบการวิ่งนี้?') && onDelete()}><Trash2 size={14} /> ลบ</Button>
+        <div className="mt-3 rounded-2xl bg-raised p-3"><RpePicker value={run.rpe} onPick={rpe => onUpdate({ rpe })} /></div>
+        <Collapse open={editing}>
+          <EditRun run={run} onSave={patch => { onUpdate(patch); setEditing(false) }} />
+        </Collapse>
+        <div className="mt-3 flex gap-2">
+          <Button variant="soft" size="sm" onClick={() => setEditing(!editing)}><Pencil size={14} /> {editing ? 'ยกเลิกแก้ไข' : 'แก้ไข'}</Button>
+          <Button variant="danger" size="sm" onClick={() => confirm('ลบการวิ่งนี้?') && onDelete()}><Trash2 size={14} /> ลบ</Button>
+        </div>
       </div>
     </div>
     </Portal>
@@ -434,5 +450,26 @@ function BestEfforts({ runs }: { runs: Run[] }) {
       </ul>
       <p className="mt-1 text-[11px] text-muted">หาช่วงที่เร็วที่สุดในทุกการวิ่ง (ไม่จำเป็นต้องวิ่งระยะนั้นพอดี) — การวิ่งที่กรอกเองนับเฉพาะเมื่อระยะตรง</p>
     </Card>
+  )
+}
+
+// แก้ไขข้อมูลการวิ่ง — ระยะ/เวลาแก้ได้เฉพาะที่กรอกเอง (การวิ่งที่มีเส้นทางคำนวณจาก GPS อยู่แล้ว)
+function EditRun({ run, onSave }: { run: Run; onSave: (patch: Partial<Run>) => void }) {
+  const [date, setDate] = useState(run.date)
+  const [kind, setKind] = useState(run.kind)
+  const [km, setKm] = useState(String(run.km))
+  const [min, setMin] = useState(String(Math.round((run.seconds / 60) * 10) / 10))
+  const manual = run.source === 'manual'
+  return (
+    <div className="mt-3 grid grid-cols-2 gap-2 rounded-2xl bg-raised p-3">
+      <DateInput label="วันที่" value={date} onChange={setDate} />
+      <SelectInput label="ประเภท" value={kind} onChange={setKind} options={Object.entries(runKinds).map(([k, v]) => ({ value: k as Run['kind'], label: v }))} />
+      {manual && <NumberInput label="ระยะ" unit="กม." step={0.1} value={km} onChange={setKm} />}
+      {manual && <NumberInput label="เวลา" unit="นาที" value={min} onChange={setMin} />}
+      <Button className="col-span-2" onClick={() => onSave({
+        date, kind,
+        ...(manual && +km > 0 && +min > 0 ? { km: +km, seconds: Math.round(+min * 60) } : {}),
+      })}>บันทึกการแก้ไข</Button>
+    </div>
   )
 }

@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { Activity, ChevronDown, Dumbbell, Scale, Trash2, Trophy, TrendingUp } from 'lucide-react'
+import { Activity, ChevronDown, Dumbbell, Pencil, Scale, Trash2, Trophy, TrendingUp } from 'lucide-react'
 import { usePersisted } from '../lib/storage'
 import { shortDate, today, weekStart } from '../lib/date'
-import { useRuns, useSessions } from '../lib/log'
+import { useRuns, useSessions, type Session } from '../lib/log'
 import { formLabel, trainingLoad } from '../lib/analysis'
 import { FitnessChart } from './Charts'
 import { allExercises, exerciseHistory, prsIn } from '../lib/strength'
@@ -117,6 +117,7 @@ function TrendChart({ points, unit }: { points: { label: string; value: number }
 function WorkoutHistory() {
   const [sessions, setSessions] = useSessions()
   const [open, setOpen] = useState<string | null>(null)
+  const [editing, setEditing] = useState<string | null>(null)
 
   if (sessions.length === 0)
     return <Card><p className="py-6 text-center text-sm text-muted">ยังไม่มีบันทึก — ไปที่แท็บ "ฝึก" แล้วกด "บันทึกการฝึก" ในวันเวท</p></Card>
@@ -138,7 +139,11 @@ function WorkoutHistory() {
               </div>
               <ChevronDown size={18} className={cx('shrink-0 text-muted transition', isOpen && 'rotate-180')} />
             </button>
-            {isOpen && (
+            {isOpen && editing === s.id && (
+              <EditSession session={s} onCancel={() => setEditing(null)}
+                onSave={patch => { setSessions(prev => prev.map(x => (x.id === s.id ? { ...x, ...patch } : x)).sort((a, b) => a.date.localeCompare(b.date))); setEditing(null) }} />
+            )}
+            {isOpen && editing !== s.id && (
               <>
                 <ul className="mt-3 space-y-1.5 rounded-2xl bg-raised p-3 text-sm">
                   {s.entries.map(e => (
@@ -148,9 +153,12 @@ function WorkoutHistory() {
                     </li>
                   ))}
                 </ul>
-                <Button variant="danger" size="sm" className="mt-2" onClick={() => confirm('ลบบันทึกนี้?') && setSessions(prev => prev.filter(x => x.id !== s.id))}>
-                  <Trash2 size={14} /> ลบ
-                </Button>
+                <div className="mt-2 flex gap-2">
+                  <Button variant="soft" size="sm" onClick={() => setEditing(s.id)}><Pencil size={14} /> แก้ไข</Button>
+                  <Button variant="danger" size="sm" onClick={() => confirm('ลบบันทึกนี้?') && setSessions(prev => prev.filter(x => x.id !== s.id))}>
+                    <Trash2 size={14} /> ลบ
+                  </Button>
+                </div>
               </>
             )}
           </Card>
@@ -242,5 +250,36 @@ function Fitness() {
         </ul>
       </Card>
     </>
+  )
+}
+
+// แก้น้ำหนัก/จำนวนครั้งที่กรอกผิด หรือวันที่
+function EditSession({ session, onSave, onCancel }: { session: Session; onSave: (patch: Partial<Session>) => void; onCancel: () => void }) {
+  const [date, setDate] = useState(session.date)
+  const [entries, setEntries] = useState(session.entries.map(e => ({ ...e, sets: e.sets.map(x => ({ kg: String(x.kg), reps: String(x.reps) })) })))
+  const setField = (ei: number, si: number, k: 'kg' | 'reps', v: string) =>
+    setEntries(prev => prev.map((e, i) => (i !== ei ? e : { ...e, sets: e.sets.map((x, j) => (j === si ? { ...x, [k]: v } : x)) })))
+  return (
+    <div className="mt-3 space-y-3 rounded-2xl bg-raised p-3">
+      <DateInput label="วันที่" value={date} onChange={setDate} />
+      {entries.map((e, ei) => (
+        <div key={e.name}>
+          <div className="mb-1 text-sm font-semibold">{e.name}</div>
+          <div className="space-y-1.5">
+            {e.sets.map((x, si) => (
+              <div key={si} className="grid grid-cols-[1.5rem_1fr_1fr] items-center gap-2">
+                <span className="text-center text-xs text-muted">{si + 1}</span>
+                <NumberInput unit="กก." step={2.5} value={x.kg} onChange={v => setField(ei, si, 'kg', v)} />
+                <NumberInput unit="ครั้ง" value={x.reps} onChange={v => setField(ei, si, 'reps', v)} />
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+      <div className="flex gap-2">
+        <Button className="flex-1" onClick={() => onSave({ date, entries: entries.map(e => ({ name: e.name, sets: e.sets.map(x => ({ kg: parseFloat(x.kg) || 0, reps: parseInt(x.reps, 10) || 0 })) })) })}>บันทึกการแก้ไข</Button>
+        <Button variant="soft" onClick={onCancel}>ยกเลิก</Button>
+      </div>
+    </div>
   )
 }

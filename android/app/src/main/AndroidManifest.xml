@@ -47,4 +47,7 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- นาฬิกาพักต้องเตือนตรงเวลาแม้จอดับ — Android 14+ ไม่ให้ SCHEDULE_EXACT_ALARM อัตโนมัติ
+         (แอปนี้ติดตั้งเองไม่ผ่าน Play Store จึงใช้ USE_EXACT_ALARM ได้) -->
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
 </manifest>

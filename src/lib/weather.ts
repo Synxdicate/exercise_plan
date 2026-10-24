@@ -36,25 +36,57 @@ const BANGKOK = { lat: 13.75, lon: 100.5 }
 const CACHE_KEY = 'heatCache'
 const TTL = 60 * 60 * 1000
 
-async function locate(): Promise<{ lat: number; lon: number }> {
+type Loc = { lat: number; lon: number; precise: boolean }
+export type Place = { name: string; precise: boolean }
+export type Forecast = { hours: Hour[]; place: Place }
+
+async function locate(): Promise<Loc> {
+  const fallback = { ...BANGKOK, precise: false }
   return new Promise(resolve => {
-    if (!('geolocation' in navigator)) return resolve(BANGKOK)
+    if (!('geolocation' in navigator)) return resolve(fallback)
     navigator.geolocation.getCurrentPosition(
-      p => resolve({ lat: +p.coords.latitude.toFixed(2), lon: +p.coords.longitude.toFixed(2) }), // ความละเอียด ~1 กม. พอสำหรับพยากรณ์
-      () => resolve(BANGKOK),
+      p => resolve({ lat: +p.coords.latitude.toFixed(2), lon: +p.coords.longitude.toFixed(2), precise: true }), // ความละเอียด ~1 กม. พอสำหรับพยากรณ์
+      () => resolve(fallback),
       { enableHighAccuracy: false, maximumAge: 6 * 60 * 60 * 1000, timeout: 5000 },
     )
   })
 }
 
-export async function fetchHours(): Promise<Hour[]> {
+// ชื่อสถานที่จากพิกัด: BigDataCloud (ฟรี สำหรับเรียกจากหน้าเว็บ) → สำรองด้วย Nominatim ของ OpenStreetMap
+// เรียกไม่เกินชั่วโมงละครั้ง (cache ร่วมกับพยากรณ์)
+async function placeName({ lat, lon }: Loc): Promise<string | null> {
   try {
-    const c = JSON.parse(localStorage.getItem(CACHE_KEY) ?? 'null') as { at: number; hours: Hour[] } | null
-    if (c && Date.now() - c.at < TTL) return c.hours
+    const r = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=th`)
+    if (r.ok) {
+      const d = await r.json() as { locality?: string; city?: string; principalSubdivision?: string }
+      const parts = [d.locality || d.city, d.principalSubdivision].filter((v, i, a): v is string => !!v && a.indexOf(v) === i)
+      if (parts.length) return parts.join(', ')
+    }
+  } catch {
+    /* ลองตัวสำรอง */
+  }
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&zoom=12&accept-language=th`)
+    if (r.ok) {
+      const a = (await r.json() as { address?: Record<string, string> }).address ?? {}
+      const parts = [a.suburb || a.city_district || a.town || a.county, a.city || a.state].filter((v, i, arr): v is string => !!v && arr.indexOf(v) === i)
+      if (parts.length) return parts.join(', ')
+    }
+  } catch {
+    /* ไม่มีชื่อก็แสดงพิกัดแทน */
+  }
+  return null
+}
+
+export async function fetchForecast(): Promise<Forecast> {
+  try {
+    const c = JSON.parse(localStorage.getItem(CACHE_KEY) ?? 'null') as ({ at: number } & Forecast) | null
+    if (c && c.place && Date.now() - c.at < TTL) return c
   } catch {
     /* ignore */
   }
-  const { lat, lon } = await locate()
+  const loc = await locate()
+  const { lat, lon } = loc
   const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,relative_humidity_2m&timezone=auto&forecast_days=2`
   const res = await fetch(url)
   if (!res.ok) throw new Error('weather')
@@ -64,12 +96,14 @@ export async function fetchHours(): Promise<Hour[]> {
     const rh = d.hourly.relative_humidity_2m[i]
     return { time, hour: +time.slice(11, 13), temp, rh, wbgt: +wbgtApprox(temp, rh).toFixed(1) }
   })
+  const name = loc.precise ? await placeName(loc) : null
+  const place: Place = { name: name ?? (loc.precise ? `${lat}, ${lon}` : 'กรุงเทพฯ'), precise: loc.precise }
   try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), hours }))
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), hours, place }))
   } catch {
     /* ignore */
   }
-  return hours
+  return { hours, place }
 }
 
 // ช่วงเวลาที่เย็นที่สุดจากนี้ไปจนถึงพรุ่งนี้เช้า (05:00–21:00)
@@ -79,12 +113,12 @@ export function bestHour(hours: Hour[], nowIso: string) {
 }
 
 export function useHeat() {
-  const [hours, setHours] = useState<Hour[] | null>(null)
+  const [data, setData] = useState<Forecast | null>(null)
   const [error, setError] = useState(false)
   useEffect(() => {
     let alive = true
-    fetchHours().then(h => alive && setHours(h)).catch(() => alive && setError(true))
+    fetchForecast().then(f => alive && setData(f)).catch(() => alive && setError(true))
     return () => { alive = false }
   }, [])
-  return { hours, error }
+  return { hours: data?.hours ?? null, place: data?.place ?? null, error }
 }
