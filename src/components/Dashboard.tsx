@@ -11,6 +11,7 @@ import { useNav } from '../lib/nav'
 import { addDays, today, weekStart } from '../lib/date'
 import { BodyMap } from './BodyMap'
 import { heat } from '../lib/heat'
+import { formLabel, trainingLoad } from '../lib/analysis'
 import { WorkoutPlayer } from './WorkoutPlayer'
 import { Alerts } from './Alerts'
 import { HeatCard } from './Heat'
@@ -31,6 +32,8 @@ export function Dashboard() {
   const { currentWeek: week } = p
 
   const plan = p.plan()
+  const loadDays = trainingLoad(runs, sessions, today())
+  const form = loadDays.length >= 7 ? formLabel(loadDays.at(-1)!.form, loadDays.at(-1)!.fitness, loadDays.at(-1)!.day) : null
   const strengthTarget = plan.filter(d => d.type === 'strength').length
   const thisWeek = weekStart(today())
   const sessionsThisWeek = sessions.filter(s => weekStart(s.date) === thisWeek).length
@@ -55,8 +58,11 @@ export function Dashboard() {
             <div className="text-sm opacity-80">{p.meta.short} · สัปดาห์ที่ {week} จาก {p.meta.weeks}</div>
             <div className="text-xl font-extrabold">{p.daysToRace !== null && p.daysToRace >= 0 ? `อีก ${p.daysToRace} วันถึงวันแข่ง` : 'สัปดาห์นี้'}</div>
           </div>
-          <div className="flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm font-semibold">
-            <Flame size={16} /> {streak} สัปดาห์ติด
+          <div className="flex flex-col items-end gap-1">
+            <div className="flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm font-semibold">
+              <Flame size={16} /> {streak} สัปดาห์ติด
+            </div>
+            {form && <button onClick={() => nav('progress')} className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">ฟอร์ม: {form.label}</button>}
           </div>
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">

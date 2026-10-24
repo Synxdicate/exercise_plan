@@ -59,7 +59,7 @@ function Main({ session }: { session: Session }) {
   return (
     <NavContext.Provider value={go}>
     <div className="mx-auto min-h-dvh max-w-lg">
-      <header className="sticky top-0 z-30 flex items-center justify-between gap-3 bg-bg/85 px-4 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] backdrop-blur">
+      <header className="sticky top-0 z-30 flex items-center justify-between gap-3 bg-bg/85 px-4 pb-3 pt-[calc(var(--sat)+0.75rem)] backdrop-blur">
         <div className="flex min-w-0 items-center gap-2.5">
           <div className="grid size-9 shrink-0 place-items-center rounded-xl bg-accent text-white"><Dumbbell size={18} /></div>
           <div className="min-w-0">
@@ -70,7 +70,7 @@ function Main({ session }: { session: Session }) {
         <UserMenu session={session} onSources={() => go('sources')} />
       </header>
 
-      <main key={tab} className="animate-fade-up space-y-3 px-4 pt-1 pb-[calc(env(safe-area-inset-bottom)+6rem)]">
+      <main key={tab} className="animate-fade-up space-y-3 px-4 pt-1 pb-[calc(var(--sab)+6rem)]">
         {tab === 'overview' && <Overview profile={profile} setProfile={setProfile} />}
         {tab === 'plan' && <Plan />}
         {tab === 'runs' && <Runs />}
@@ -80,7 +80,7 @@ function Main({ session }: { session: Session }) {
         <p className="pt-2 text-center text-xs text-muted">ข้อมูลเพื่อการศึกษา ไม่ใช่คำแนะนำทางการแพทย์</p>
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 mx-auto max-w-lg border-t border-line bg-card/95 px-2 pb-[calc(env(safe-area-inset-bottom)+0.25rem)] pt-1.5 backdrop-blur sm:bottom-4 sm:rounded-3xl sm:border sm:shadow-lg">
+      <nav className="fixed inset-x-0 bottom-0 z-40 mx-auto max-w-lg border-t border-line bg-card/95 px-2 pb-[calc(var(--sab)+0.25rem)] pt-1.5 backdrop-blur sm:bottom-4 sm:rounded-3xl sm:border sm:shadow-lg">
         <div className="grid grid-cols-5">
           {tabs.map(t => {
             const on = tab === t.id

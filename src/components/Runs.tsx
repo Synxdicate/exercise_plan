@@ -1,10 +1,13 @@
 import { lazy, Suspense, useState } from 'react'
-import { CalendarCheck, Check, FileUp, TriangleAlert, ChevronRight, Footprints, Gauge, Pause, Play, Plus, Satellite, Trash2, X } from 'lucide-react'
+import { CalendarCheck, Check, FileUp, TriangleAlert, Trophy, ChevronRight, Footprints, Gauge, Pause, Play, Plus, Satellite, Trash2, X } from 'lucide-react'
 import { GOOD_ACCURACY_M, useRunTracker, type Point } from '../lib/gps'
 import { formatDuration, formatPace, runKinds, uid, useRuns, type Run } from '../lib/log'
 import { estimate, paceHint, type Estimate } from '../lib/pace'
 import { useProgram } from '../lib/program'
 import { parseGpx } from '../lib/gpx'
+import { paceSeries, personalBests, splitAnalysis } from '../lib/analysis'
+import { PaceChart } from './Charts'
+import { RpePicker } from './RpePicker'
 import { isNative } from '../lib/native'
 import { RunTypeCard } from './RunTypes'
 import { HeatCard } from './Heat'
@@ -50,7 +53,7 @@ export function Runs() {
     try {
       const g = parseGpx(await file.text())
       if (!g.seconds && !confirm('ไฟล์นี้ไม่มีเวลา จะบันทึกแค่ระยะและเส้นทาง ต้องการต่อไหม?')) return
-      const run: Run = { id: uid(), date: g.date ?? today(), km: g.km, seconds: g.seconds, elapsedSeconds: g.elapsedSeconds, splits: g.splits, route: g.route, kind, source: 'gpx' }
+      const run: Run = { id: uid(), date: g.date ?? today(), km: g.km, seconds: g.seconds, elapsedSeconds: g.elapsedSeconds, splits: g.splits, route: g.route, times: g.times, kind, source: 'gpx' }
       save(run)
       setDetail(run.id)
     } catch (e) {
@@ -113,6 +116,8 @@ export function Runs() {
 
       <PaceCard est={est} />
 
+      <BestEfforts runs={runs} />
+
       <Card title="8 สัปดาห์ล่าสุด">
         <WeeklyBars runs={runs} target={target} />
       </Card>
@@ -158,7 +163,7 @@ export function Runs() {
           onProceed={light => { if (light) setKind('easy'); setChecking(false); t.acquire() }} />
       )}
 
-      {open && <RunDetail run={open} onClose={() => setDetail(null)} onDelete={() => { setRuns(prev => prev.filter(x => x.id !== open.id)); setDetail(null) }} />}
+      {open && <RunDetail run={open} onClose={() => setDetail(null)} onRate={rpe => setRuns(prev => prev.map(x => (x.id === open.id ? { ...x, rpe } : x)))} onDelete={() => { setRuns(prev => prev.filter(x => x.id !== open.id)); setDetail(null) }} />}
     </div>
   )
 }
@@ -174,7 +179,7 @@ function ActiveRun({ t, kind, target, onFinish }: { t: ReturnType<typeof useRunT
   return (
     <Portal>
     <div className="fixed inset-0 z-50 animate-sheet-up overflow-y-auto bg-bg">
-      <div className="mx-auto flex min-h-full max-w-lg flex-col gap-4 p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-[calc(env(safe-area-inset-top)+1rem)]">
+      <div className="mx-auto flex min-h-full max-w-lg flex-col gap-4 p-4 pb-[calc(var(--sab)+1rem)] pt-[calc(var(--sat)+1rem)]">
         <div className="flex items-center justify-between">
           <Badge tone="run">{runKinds[kind]}</Badge>
           <span className={cx('inline-flex items-center gap-1 text-xs font-semibold', weak ? 'text-warn' : 'text-good')}>
@@ -272,11 +277,18 @@ function Splits({ splits }: { splits: number[] }) {
   )
 }
 
-function RunDetail({ run, onClose, onDelete }: { run: Run; onClose: () => void; onDelete: () => void }) {
+function RunDetail({ run, onClose, onDelete, onRate }: { run: Run; onClose: () => void; onDelete: () => void; onRate: (rpe: number) => void }) {
+  const series = run.route && run.times ? paceSeries(run.route, run.times) : []
+  const sa = splitAnalysis(run.splits)
+  const saText = sa && {
+    negative: { t: 'Negative split 👍', c: 'text-good', d: `ครึ่งหลังเร็วกว่าครึ่งแรก ${Math.abs(sa.diffPct).toFixed(1)}% — คุมแรงได้ดี` },
+    even: { t: 'Even split', c: 'text-run', d: 'สองครึ่งเพซใกล้กัน — สม่ำเสมอดี' },
+    positive: { t: 'Positive split', c: 'text-warn', d: `ครึ่งหลังช้าลง ${sa.diffPct.toFixed(1)}% — ลองออกตัวช้าลงอีกนิด` },
+  }[sa.kind]
   return (
     <Portal>
     <div className="fixed inset-0 z-50 flex animate-fade-in items-end justify-center bg-black/50 sm:items-center" onClick={onClose}>
-      <div className="max-h-[92dvh] w-full max-w-lg animate-sheet-up overflow-y-auto rounded-t-3xl bg-card p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:animate-fade-up sm:rounded-3xl" onClick={e => e.stopPropagation()}>
+      <div className="max-h-[92dvh] w-full max-w-lg animate-sheet-up overflow-y-auto rounded-t-3xl bg-card p-4 pb-[calc(var(--sab)+1rem)] sm:animate-fade-up sm:rounded-3xl" onClick={e => e.stopPropagation()}>
         <div className="mb-3 flex items-center justify-between">
           <div>
             <div className="font-bold">{runKinds[run.kind]} · {run.date}</div>
@@ -291,7 +303,21 @@ function RunDetail({ run, onClose, onDelete }: { run: Run; onClose: () => void; 
           <Stat label="เพซเฉลี่ย" value={formatPace(run.seconds, run.km)} sub="นาที/กม." />
         </div>
         {run.gapSeconds ? <p className="mb-3 rounded-xl bg-warn/15 p-2 text-xs text-warn">มีช่วงปิดจอรวม {formatDuration(run.gapSeconds)} ที่ GPS ไม่ได้บันทึก — ระยะช่วงนั้นเป็นเส้นตรงโดยประมาณ</p> : null}
+        {series.length > 2 && <div className="mb-3 rounded-2xl bg-raised p-3"><PaceChart series={series} avg={run.seconds / run.km} /></div>}
+        {sa && saText && (
+          <div className="mb-3 grid grid-cols-2 gap-2">
+            <div className="rounded-xl bg-raised px-3 py-2">
+              <div className={cx('text-sm font-bold', saText.c)}>{saText.t}</div>
+              <div className="text-[11px] leading-snug text-muted">{saText.d}</div>
+            </div>
+            <div className="rounded-xl bg-raised px-3 py-2">
+              <div className="text-sm font-bold">ความสม่ำเสมอ {sa.cv < 3 ? 'ดีมาก' : sa.cv < 6 ? 'ดี' : 'แกว่ง'}</div>
+              <div className="text-[11px] leading-snug text-muted">เพซรายกิโลต่างกันเฉลี่ย {sa.cv.toFixed(1)}% · เร็วสุด กม. {sa.fastest + 1}</div>
+            </div>
+          </div>
+        )}
         {run.splits && run.splits.length > 0 && <Splits splits={run.splits} />}
+        <div className="mt-3 rounded-2xl bg-raised p-3"><RpePicker value={run.rpe} onPick={onRate} /></div>
         <Button variant="danger" size="sm" className="mt-3" onClick={() => confirm('ลบการวิ่งนี้?') && onDelete()}><Trash2 size={14} /> ลบ</Button>
       </div>
     </div>
@@ -387,6 +413,26 @@ function PaceCard({ est }: { est: Estimate | null }) {
         {rows.map(([k, v]) => <li key={k} className="flex justify-between py-2"><span>{k}</span><span className="font-semibold tabular-nums">{v} /กม.</span></li>)}
       </ul>
       <p className="mt-2 text-xs text-muted">คำนวณจากการวิ่ง {est.from.km} กม. วันที่ {est.from.date} ด้วยสูตร Riegel — เวลาคาดการณ์ฮาล์ฟ/ฟูลจะแม่นขึ้นเมื่อฝึกครบโปรแกรมแล้ว (ตอนนี้มักเร็วเกินจริงสำหรับมือใหม่)</p>
+    </Card>
+  )
+}
+
+function BestEfforts({ runs }: { runs: Run[] }) {
+  const pbs = personalBests(runs).filter(p => p.best)
+  if (!pbs.length) return null
+  return (
+    <Card title={<span className="flex items-center gap-2"><Trophy size={18} className="text-warn" /> สถิติเร็วสุด</span>}>
+      <ul className="divide-y divide-line text-sm">
+        {pbs.map(p => (
+          <li key={p.label} className="flex items-center justify-between gap-2 py-2">
+            <span className="w-12 font-bold">{p.label}</span>
+            <span className="flex-1 text-xs text-muted">{p.best!.date}</span>
+            <span className="tabular-nums text-muted">{formatPace(p.best!.seconds, p.km)} /กม.</span>
+            <span className="w-16 text-right font-bold tabular-nums">{formatDuration(p.best!.seconds)}</span>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-1 text-[11px] text-muted">หาช่วงที่เร็วที่สุดในทุกการวิ่ง (ไม่จำเป็นต้องวิ่งระยะนั้นพอดี) — การวิ่งที่กรอกเองนับเฉพาะเมื่อระยะตรง</p>
     </Card>
   )
 }

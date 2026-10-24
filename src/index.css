@@ -2,6 +2,9 @@
 
 /* สีทั้งหมดเป็น token — โหมดมืดเปลี่ยนค่าตัวแปรอย่างเดียว */
 :root {
+  /* ขอบจอ: บนเว็บใช้ env(), ในแอป Android Capacitor ส่งค่ามาเป็น --safe-area-inset-* */
+  --sat: max(env(safe-area-inset-top), var(--safe-area-inset-top, 0px));
+  --sab: max(env(safe-area-inset-bottom), var(--safe-area-inset-bottom, 0px));
   --c-bg: #f3f4f6;
   --c-card: #ffffff;
   --c-raised: #f8f9fb;

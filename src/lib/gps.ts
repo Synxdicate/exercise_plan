@@ -1,16 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { BackgroundGeolocation, isNative } from './native'
 
-export type Point = [lat: number, lon: number]
+import { haversine, type Point } from './geo'
 
-const R = 6371e3
-export function haversine([lat1, lon1]: Point, [lat2, lon2]: Point) {
-  const rad = Math.PI / 180
-  const dLat = (lat2 - lat1) * rad
-  const dLon = (lon2 - lon1) * rad
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * rad) * Math.cos(lat2 * rad) * Math.sin(dLon / 2) ** 2
-  return 2 * R * Math.asin(Math.sqrt(a))
-}
+export { haversine, type Point }
 
 // Kalman filter แบบง่ายสำหรับ lat/lon: ใช้ accuracy ของ GPS เป็น noise ของการวัด
 // ช่วยลดเส้นทางหยัก ๆ และระยะที่งอกจาก GPS สั่น (แนวเดียวกับที่แอปวิ่งทั่วไปใช้)
@@ -57,18 +50,20 @@ type Live = {
   segStart: number | null // เริ่มช่วงที่กำลังนับ
   meters: number
   route: Point[]
+  times: number[] // เวลาเคลื่อนที่สะสม (วินาที) ของแต่ละจุดใน route — ใช้วิเคราะห์เพซ
   splits: number[] // วินาทีต่อกม.
   lastMoveAt: number
   gapSeconds?: number // เวลารวมที่จอปิด/สลับแอประหว่างวิ่ง (GPS ไม่ได้บันทึก)
 }
 
-const empty = (): Live => ({ status: 'idle', startedAt: 0, activeMs: 0, segStart: null, meters: 0, route: [], splits: [], lastMoveAt: 0 })
+const empty = (): Live => ({ status: 'idle', startedAt: 0, activeMs: 0, segStart: null, meters: 0, route: [], times: [], splits: [], lastMoveAt: 0 })
 
 function loadSaved(): Live {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return empty()
     const s = JSON.parse(raw) as Live
+    s.times ??= [] // การวิ่งที่ค้างไว้จากเวอร์ชันก่อน
     // หน้าถูกปิดกลางทาง: กู้กลับมาเป็น "พัก" โดยนับเวลาถึงจุดสุดท้ายที่ขยับ
     if (s.segStart !== null) s.activeMs += Math.max(0, s.lastMoveAt - s.segStart)
     return { ...s, status: 'paused', segStart: null }
@@ -79,7 +74,7 @@ function loadSaved(): Live {
 
 export const movingMs = (l: Live, now = Date.now()) => l.activeMs + (l.segStart !== null ? now - l.segStart : 0)
 
-export type FinishedRun = { km: number; seconds: number; elapsedSeconds: number; route: Point[]; splits: number[]; gapSeconds?: number }
+export type FinishedRun = { km: number; seconds: number; elapsedSeconds: number; route: Point[]; times: number[]; splits: number[]; gapSeconds?: number }
 
 export function useRunTracker() {
   const [live, setLive] = useState<Live>(loadSaved)
@@ -178,7 +173,7 @@ export function useRunTracker() {
     const prev = last.current
     if (!prev) {
       last.current = { p, t }
-      update(x => ({ ...x, route: [...x.route, p], lastMoveAt: Date.now() }))
+      update(x => ({ ...x, route: [...x.route, p], times: [...x.times, Math.round(movingMs(x) / 1000)], lastMoveAt: Date.now() }))
       return
     }
     const d = haversine(prev.p, p)
@@ -190,7 +185,7 @@ export function useRunTracker() {
 
     update(x => {
       const n = Date.now()
-      let next: Live = { ...x, meters: x.meters + d, route: [...x.route, p] }
+      let next: Live = { ...x, meters: x.meters + d, route: [...x.route, p], times: [...x.times, Math.round(movingMs(x, n) / 1000)] }
       if (moving) {
         next.lastMoveAt = n
         if (x.status === 'autopaused') next = { ...next, status: 'running', segStart: n }
@@ -302,6 +297,7 @@ export function useRunTracker() {
         seconds: Math.round(movingMs(l, n) / 1000),
         elapsedSeconds: Math.round((n - l.startedAt) / 1000),
         route: l.route,
+        times: l.times,
         splits: l.splits,
         gapSeconds: l.gapSeconds ? Math.round(l.gapSeconds) : undefined,
       }

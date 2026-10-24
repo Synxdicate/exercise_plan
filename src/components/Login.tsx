@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Dumbbell, Lock, LogIn, Mail, UserPlus } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { isNative, SITE_URL } from '../lib/native'
+import { nativeGoogleSignIn } from '../lib/nativeAuth'
 import { TextInput } from './Form'
 
 type Mode = 'signin' | 'signup' | 'reset'
@@ -43,16 +44,16 @@ export function Login() {
     return run(() => supabase.auth.resetPasswordForEmail(email, { redirectTo }), 'ส่งลิงก์ตั้งรหัสผ่านใหม่ไปที่อีเมลแล้ว')
   }
 
-  const google = () => run(() => supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } }))
+  const google = () => run(() => (isNative ? nativeGoogleSignIn() : supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } })))
 
   return (
-    <div className="min-h-dvh flex flex-col items-center justify-center gap-3 p-4">
+    <div className="min-h-dvh flex flex-col items-center justify-center gap-3 p-4 pt-[calc(var(--sat)+1rem)] pb-[calc(var(--sab)+1rem)]">
       <div className="w-full max-w-sm rounded-3xl bg-card p-6 shadow-sm ring-1 ring-line flex flex-col gap-3 text-center">
         <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-accent text-white"><Dumbbell size={28} /></div>
         <h1 className="text-2xl font-extrabold text-accent">Exercise-Plan</h1>
         <p className="text-sm text-muted">เข้าสู่ระบบเพื่อบันทึกการฝึกและซิงก์ข้ามมือถือ/คอม</p>
 
-        {mode !== 'reset' && !isNative && (
+        {mode !== 'reset' && (
           <>
             <button className="inline-flex items-center justify-center gap-2.5 rounded-full bg-card px-4 py-3 font-semibold ring-1 ring-line hover:ring-muted disabled:opacity-50" onClick={google} disabled={busy}>
               <GoogleIcon /> ดำเนินการต่อด้วย Google
@@ -107,7 +108,7 @@ export function NewPassword({ onDone }: { onDone: () => void }) {
   }
 
   return (
-    <div className="min-h-dvh flex flex-col items-center justify-center gap-3 p-4">
+    <div className="min-h-dvh flex flex-col items-center justify-center gap-3 p-4 pt-[calc(var(--sat)+1rem)] pb-[calc(var(--sab)+1rem)]">
       <form className="w-full max-w-sm rounded-3xl bg-card p-6 shadow-sm ring-1 ring-line flex flex-col gap-3 text-left" onSubmit={submit}>
         <h1 className="text-xl font-bold">ตั้งรหัสผ่านใหม่</h1>
         <TextInput label="รหัสผ่านใหม่" type="password" autoComplete="new-password" required minLength={6} value={password} onChange={setPassword} icon={<Lock size={18} />} />

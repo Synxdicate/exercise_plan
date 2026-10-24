@@ -9,6 +9,8 @@ export type Run = {
   kind: 'easy' | 'tempo' | 'interval' | 'long' | 'race' | 'other'
   source: 'gps' | 'manual' | 'gpx'
   route?: Point[]
+  times?: number[] // เวลาเคลื่อนที่สะสมของแต่ละจุดใน route
+  rpe?: number // ความเหนื่อย 1–10 หลังวิ่ง (session-RPE)
   splits?: number[] // วินาทีต่อกม.
   elapsedSeconds?: number // รวมเวลาพัก
   gapSeconds?: number // ช่วงที่จอปิด GPS ไม่ได้บันทึก
@@ -23,6 +25,8 @@ export type Session = {
   dayKey: string
   title: string
   entries: { name: string; sets: SetEntry[] }[]
+  rpe?: number // ความเหนื่อย 1–10 หลังฝึก
+  minutes?: number
 }
 
 export const useRuns = () => usePersisted<Run[]>('runs', [])

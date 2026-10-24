@@ -48,7 +48,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
   )
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-lg flex-col gap-5 p-4 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-[calc(env(safe-area-inset-bottom)+1rem)]">
+    <div className="mx-auto flex min-h-dvh max-w-lg flex-col gap-5 p-4 pt-[calc(var(--sat)+1.5rem)] pb-[calc(var(--sab)+1rem)]">
       <div className="flex items-center gap-3">
         <div className="grid size-11 place-items-center rounded-2xl bg-accent text-white"><Dumbbell size={22} /></div>
         <div>

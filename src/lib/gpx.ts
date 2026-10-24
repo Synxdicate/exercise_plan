@@ -1,4 +1,4 @@
-import { haversine, type Point } from './gps'
+import { haversine, type Point } from './geo'
 import { toDateStr } from './date'
 
 // อ่านไฟล์ GPX จาก Strava / Garmin / นาฬิกา → ระยะ เวลาเคลื่อนที่ เพซรายกิโล และเส้นทาง
@@ -16,6 +16,7 @@ export function parseGpx(xml: string) {
 
   let meters = 0
   let moving = 0
+  const cum = [0] // เวลาเคลื่อนที่สะสมของแต่ละจุด
   const splits: number[] = []
   let splitStart = 0
   for (let i = 1; i < pts.length; i++) {
@@ -25,6 +26,7 @@ export function parseGpx(xml: string) {
       const dt = (pts[i].t - pts[i - 1].t) / 1000
       // นับเฉพาะช่วงที่ขยับจริง (ตัดช่วงหยุดรอไฟแดง/พัก)
       if (dt > 0 && dt < 60 && d / dt > 0.5) moving += dt
+      cum.push(Math.round(moving))
       while (meters >= (splits.length + 1) * 1000) {
         splits.push(Math.round(moving - splitStart))
         splitStart = moving
@@ -34,7 +36,9 @@ export function parseGpx(xml: string) {
 
   // ลดจุดให้ไม่เกิน ~1,500 จุด พอสำหรับวาดแผนที่ และไม่หนักตอนซิงก์
   const step = Math.ceil(pts.length / 1500)
-  const route = pts.filter((_, i) => i % step === 0 || i === pts.length - 1).map(x => x.p.map(v => +v.toFixed(6)) as Point)
+  const keep = (_: unknown, i: number) => i % step === 0 || i === pts.length - 1
+  const route = pts.filter(keep).map(x => x.p.map(v => +v.toFixed(6)) as Point)
+  const times = timed ? cum.filter(keep) : undefined
 
   return {
     date: timed ? toDateStr(new Date(pts[0].t)) : null,
@@ -43,5 +47,6 @@ export function parseGpx(xml: string) {
     elapsedSeconds: timed ? Math.round((pts.at(-1)!.t - pts[0].t) / 1000) : 0,
     splits: timed ? splits : [],
     route,
+    times,
   }
 }

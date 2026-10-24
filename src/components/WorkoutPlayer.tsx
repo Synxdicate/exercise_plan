@@ -6,6 +6,7 @@ import { usePersisted } from '../lib/storage'
 import { today } from '../lib/date'
 import { restSeconds, suggest } from '../lib/progression'
 import { Badge, Button, Portal } from './ui'
+import { RpePicker } from './RpePicker'
 import { cx } from '../lib/cx'
 
 type SetRow = { kg: string; reps: string; done: boolean }
@@ -83,15 +84,24 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
     }
   }
 
-  const finish = () => {
-    const entries = day.exercises
+  const [rating, setRating] = useState(false)
+
+  const doneEntries = () => day.exercises
       .map(e => ({ name: e.name, sets: state.rows[e.name].filter(r => r.done).map<SetEntry>(r => ({ kg: parseFloat(r.kg) || 0, reps: parseInt(r.reps, 10) || 0 })) }))
       .filter(e => e.sets.length)
-    if (!entries.length) {
+
+  const finish = () => {
+    if (!doneEntries().length) {
       if (confirm('ยังไม่ได้ทำเซ็ตไหนเลย ออกโดยไม่บันทึก?')) { setActive(null); onClose() }
       return
     }
-    setSessions(p => [...p, { id: uid(), date: today(), mode, dayKey: day.key, title: day.title, entries }])
+    setRating(true)
+  }
+
+  // บันทึกพร้อมความเหนื่อยทั้งรอบ (session-RPE) และเวลาที่ใช้ — ใช้คำนวณภาระการฝึก
+  const save = (rpe?: number) => {
+    const minutes = Math.max(1, Math.round((Date.now() - state.startedAt) / 60000))
+    setSessions(p => [...p, { id: uid(), date: today(), mode, dayKey: day.key, title: day.title, entries: doneEntries(), rpe, minutes }])
     setActive(null)
     onSaved()
   }
@@ -103,7 +113,7 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
   return (
     <Portal>
     <div className="fixed inset-0 z-50 animate-sheet-up overflow-y-auto bg-bg">
-      <div className="mx-auto flex min-h-full max-w-lg flex-col gap-4 p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-[calc(env(safe-area-inset-top)+1rem)]">
+      <div className="mx-auto flex min-h-full max-w-lg flex-col gap-4 p-4 pb-[calc(var(--sab)+1rem)] pt-[calc(var(--sat)+1rem)]">
         <div className="flex items-center gap-3">
           <button onClick={quit} aria-label="ปิด" className="grid size-10 place-items-center rounded-full bg-card ring-1 ring-line"><X size={18} /></button>
           <div className="min-w-0 flex-1">
@@ -179,6 +189,15 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
         </div>
       </div>
 
+      {rating && (
+        <div className="fixed inset-0 z-[60] flex animate-fade-in items-end justify-center bg-black/50 sm:items-center">
+          <div className="w-full max-w-lg animate-sheet-up space-y-4 rounded-t-3xl bg-card p-5 pb-[calc(var(--sab)+1.25rem)] sm:rounded-3xl">
+            <div className="text-lg font-bold">เยี่ยมมาก! จบการฝึกแล้ว 💪</div>
+            <RpePicker onPick={save} />
+            <button className="w-full py-2 text-sm text-muted" onClick={() => save()}>ข้าม</button>
+          </div>
+        </div>
+      )}
       {rest && restLeft > 0 && (
         <RestOverlay left={restLeft} total={rest.total} next={currentSet >= 0 ? `${ex.name} เซ็ต ${currentSet + 1}` : undefined}
           onAdd={() => setRest(r => r && { end: r.end + 15000, total: r.total + 15 })} onSkip={() => setRest(null)} />

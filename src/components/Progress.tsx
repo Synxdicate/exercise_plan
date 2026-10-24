@@ -1,8 +1,10 @@
 import { useState } from 'react'
-import { ChevronDown, Dumbbell, Scale, Trash2, Trophy, TrendingUp } from 'lucide-react'
+import { Activity, ChevronDown, Dumbbell, Scale, Trash2, Trophy, TrendingUp } from 'lucide-react'
 import { usePersisted } from '../lib/storage'
 import { shortDate, today, weekStart } from '../lib/date'
-import { useSessions } from '../lib/log'
+import { useRuns, useSessions } from '../lib/log'
+import { formLabel, trainingLoad } from '../lib/analysis'
+import { FitnessChart } from './Charts'
 import { allExercises, exerciseHistory, prsIn } from '../lib/strength'
 import { Badge, Button, Card, Segmented, Stat } from './ui'
 import { DateInput, NumberInput } from './Form'
@@ -11,15 +13,16 @@ import { cx } from '../lib/cx'
 type Entry = { date: string; weight: number; waist?: number }
 
 export function Progress() {
-  const [view, setView] = useState<'workouts' | 'stats' | 'body'>('workouts')
+  const [view, setView] = useState<'workouts' | 'stats' | 'fitness' | 'body'>('workouts')
   return (
     <>
       <Segmented value={view} onChange={setView} options={[
         { value: 'workouts', label: <><Dumbbell size={16} /> การฝึก</> },
         { value: 'stats', label: <><TrendingUp size={16} /> สถิติ</> },
+        { value: 'fitness', label: <><Activity size={16} /> ฟิตเนส</> },
         { value: 'body', label: <><Scale size={16} /> น้ำหนัก</> },
       ]} />
-      {view === 'workouts' ? <WorkoutHistory /> : view === 'stats' ? <StrengthStats /> : <BodyLog />}
+      {view === 'workouts' ? <WorkoutHistory /> : view === 'stats' ? <StrengthStats /> : view === 'fitness' ? <Fitness /> : <BodyLog />}
     </>
   )
 }
@@ -201,6 +204,42 @@ function StrengthStats() {
           ? <TrendChart unit={bodyweight ? 'ครั้ง' : 'กก. (1RM โดยประมาณ)'} points={hist.map(p => ({ label: shortDate(p.date), value: p.value }))} />
           : <p className="py-4 text-center text-sm text-muted">ต้องมีอย่างน้อย 2 ครั้งถึงจะเห็นเส้นกราฟ</p>}
         <p className="mt-2 text-xs text-muted">{bodyweight ? 'ท่าบอดี้เวทใช้จำนวนครั้งสูงสุดต่อเซ็ต' : '1RM โดยประมาณคำนวณด้วยสูตร Epley จากเซ็ตที่ดีที่สุดของแต่ละวัน — ใช้ดูแนวโน้ม ไม่ต้องลองยกจริง'}</p>
+      </Card>
+    </>
+  )
+}
+
+function Fitness() {
+  const [sessions] = useSessions()
+  const [runs] = useRuns()
+  const days = trainingLoad(runs, sessions, today())
+  if (days.length < 7)
+    return <Card><p className="py-6 text-center text-sm text-muted">บันทึกการฝึก/วิ่งอย่างน้อย 1 สัปดาห์ แล้วกราฟความฟิตจะขึ้นที่นี่</p></Card>
+  const cur = days.at(-1)!
+  const f = formLabel(cur.form, cur.fitness, cur.day)
+  const tones = { good: 'bg-good/15 text-good', run: 'bg-run/15 text-run', warn: 'bg-warn/15 text-warn', bad: 'bg-bad/15 text-bad', muted: 'bg-raised text-muted' }
+  const week = days.slice(-7).reduce((s, d) => s + d.load, 0)
+  const prev = days.slice(-14, -7).reduce((s, d) => s + d.load, 0)
+  return (
+    <>
+      <div className={cx('rounded-2xl px-3.5 py-3', tones[f.tone])}>
+        <div className="text-sm font-bold">ฟอร์มตอนนี้: {f.label}</div>
+        <div className="text-xs opacity-90">{f.text}</div>
+      </div>
+      <Card title="ความฟิต · ความล้า · ฟอร์ม (12 สัปดาห์)">
+        <FitnessChart days={days} />
+      </Card>
+      <div className="grid grid-cols-2 gap-2">
+        <Stat label="ภาระ 7 วันล่าสุด" value={Math.round(week)} sub="หน่วย (RPE × นาที)" />
+        <Stat label="เทียบสัปดาห์ก่อน" value={prev ? `${week >= prev ? '+' : ''}${Math.round((week / prev - 1) * 100)}%` : '-'} sub="ภาระรวม" />
+      </div>
+      <Card title="อ่านกราฟยังไง">
+        <ul className="list-disc space-y-1 pl-5 text-xs text-muted">
+          <li><b className="text-ink">ภาระ</b> ของแต่ละครั้ง = ความเหนื่อยที่ให้คะแนนหลังจบ (1–10) × นาที (session-RPE, Foster 2001) ถ้าไม่ได้ให้คะแนน แอปจะประมาณจากชนิดการฝึก</li>
+          <li><b className="text-ink">ฟิต</b> = ภาระเฉลี่ยระยะยาว (~6 สัปดาห์) ค่อย ๆ ขึ้นเมื่อฝึกสม่ำเสมอ · <b className="text-ink">ล้า</b> = ภาระเฉลี่ย ~1 สัปดาห์ ขึ้นลงเร็ว</li>
+          <li><b className="text-ink">ฟอร์ม</b> = ฟิต − ล้า: ติดลบตอนกำลังเพิ่มการฝึกเป็นเรื่องปกติ ก่อนแข่งควรกลับมาเป็นบวกจากการ taper</li>
+          <li>เป็นโมเดลดูแนวโน้ม (แนวคิดของ Banister) ไม่ใช่ตัวทำนายการบาดเจ็บ — งานวิจัยยังไม่สนับสนุนการใช้อัตราส่วนภาระเพื่อทำนายการบาดเจ็บ</li>
+        </ul>
       </Card>
     </>
   )

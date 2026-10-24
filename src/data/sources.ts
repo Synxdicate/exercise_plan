@@ -38,6 +38,10 @@ export const references: { cat: string; title: string; url: string; used: string
   { cat: 'วิ่ง', level: 'cohort', title: 'Nielsen et al. 2014 — Excessive progression in weekly running distance and injury', url: pm('25155475'), used: 'เพิ่มระยะต่อสัปดาห์ทีละน้อย (การเพิ่มเกิน ~30% สัมพันธ์กับการบาดเจ็บบางชนิด)' },
   { cat: 'วิ่ง', level: 'trial', title: 'Buist et al. 2008 — Graded training program and injuries in novice runners (RCT)', url: pm('17940147'), used: 'กฎ "เพิ่ม 10%" ไม่ได้ลดการบาดเจ็บชัดเจน — ใช้เป็นแนวทางคร่าว ๆ ไม่ใช่กฎตายตัว' },
   { cat: 'วิ่ง', level: 'cohort', title: 'Riegel 1981 — Athletic records and human endurance', url: pm('7235349'), used: 'สูตรคาดการณ์เวลาและเพซจากการวิ่งจริง' },
+  { cat: 'วิ่ง', level: 'trial', title: 'Foster et al. 2001 — A new approach to monitoring exercise training (session-RPE)', url: pm('11708692'), used: 'ภาระการฝึก = ความเหนื่อย × นาที' },
+  { cat: 'วิ่ง', level: 'meta', title: 'Haddad et al. 2017 — Session-RPE method: validity and usefulness', url: pm('29163016'), used: 'ยืนยันความน่าเชื่อถือของ session-RPE' },
+  { cat: 'วิ่ง', level: 'cohort', title: 'Hellard et al. 2006 — Limitations of the Banister model', url: pm('16608765'), used: 'กราฟฟิต/ล้า/ฟอร์มใช้ดูแนวโน้ม ไม่ใช่ตัวเลขแม่นยำ' },
+  { cat: 'วิ่ง', level: 'meta', title: 'Impellizzeri et al. 2020 — Acute:Chronic Workload Ratio: conceptual issues', url: pm('32502973'), used: 'เหตุผลที่ไม่ใช้อัตราส่วนภาระทำนายการบาดเจ็บ' },
   // โภชนาการ
   { cat: 'โภชนาการ', level: 'guideline', title: 'ISSN Position Stand: Protein and Exercise (Jäger et al., 2017)', url: 'https://jissn.biomedcentral.com/articles/10.1186/s12970-017-0177-8', used: 'โปรตีน 1.4–2.0 ก./กก./วัน' },
   { cat: 'โภชนาการ', level: 'meta', title: 'Schoenfeld & Aragon 2018 — Protein per meal for muscle building', url: pm('29497353'), used: 'แบ่งโปรตีน ~4 มื้อ มื้อละ ~0.4 ก./กก.' },
