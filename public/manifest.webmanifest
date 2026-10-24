@@ -1,0 +1,9 @@
+{
+  "name": "Lean & Athletic",
+  "short_name": "Lean",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f1115",
+  "theme_color": "#d6262f",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}
