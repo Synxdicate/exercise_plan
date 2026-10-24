@@ -1,94 +1,113 @@
+import { useState } from 'react'
 import { carbFoods, nutritionRules, proteinFoods, sampleDays, streetDishes, type Food } from '../data/nutrition'
 import { targets, type Profile } from '../lib/calc'
+import { Badge, Card, Segmented, Stat } from './ui'
+import { cx } from '../lib/cx'
 
-const verdictLabel = { good: 'แนะนำ', ok: 'พอได้', limit: 'นาน ๆ ครั้ง' }
+const verdict = {
+  good: { label: 'แนะนำ', cls: 'bg-good/15 text-good' },
+  ok: { label: 'พอได้', cls: 'bg-warn/15 text-warn' },
+  limit: { label: 'นาน ๆ ครั้ง', cls: 'bg-bad/15 text-bad' },
+}
+
+type View = 'menu' | 'street' | 'foods'
 
 export function Nutrition({ profile }: { profile: Profile }) {
   const t = targets(profile)
+  const [view, setView] = useState<View>('menu')
+
   return (
     <>
-      <section className="card">
-        <h2>เป้าต่อวันของคุณ</h2>
-        <div className="stats">
-          <div className="stat accent"><span className="label">พลังงาน</span><span className="value">{t.kcal}</span><span className="sub">kcal</span></div>
-          <div className="stat accent"><span className="label">โปรตีน</span><span className="value">{t.protein} ก.</span><span className="sub">~{Math.round(t.protein / 4)} ก. × 4 มื้อ</span></div>
-          <div className="stat"><span className="label">ไขมัน</span><span className="value">{t.fat} ก.</span><span className="sub">ขั้นต่ำเพื่อฮอร์โมน</span></div>
-          <div className="stat"><span className="label">คาร์บ</span><span className="value">{t.carbs} ก.</span><span className="sub">≈ {Math.round(t.carbs / 18)} ทัพพีข้าว (ถ้ามาจากข้าวล้วน)</span></div>
-        </div>
-        <ul className="list">{nutritionRules.map(r => <li key={r}>{r}</li>)}</ul>
-      </section>
+      <div className="grid grid-cols-2 gap-2">
+        <Stat label="พลังงาน" value={t.kcal} sub="kcal/วัน" accent />
+        <Stat label="โปรตีน" value={`${t.protein} ก.`} sub={`~${Math.round(t.protein / 4)} ก. × 4 มื้อ`} accent />
+        <Stat label="ไขมัน" value={`${t.fat} ก.`} sub="ขั้นต่ำเพื่อฮอร์โมน" />
+        <Stat label="คาร์บ" value={`${t.carbs} ก.`} sub={`≈ ${Math.round(t.carbs / 18)} ทัพพีข้าว`} />
+      </div>
 
-      <section className="card">
-        <h2>ตัวอย่างเมนู 1 วัน</h2>
-        <div className="grid2">
+      <Segmented value={view} onChange={setView} options={[
+        { value: 'menu', label: 'เมนูตัวอย่าง' },
+        { value: 'street', label: 'ร้านตามสั่ง' },
+        { value: 'foods', label: 'วัตถุดิบ' },
+      ]} />
+
+      {view === 'menu' && (
+        <>
           {sampleDays.map(d => {
             const kcal = d.meals.reduce((s, m) => s + m.kcal, 0)
             const protein = d.meals.reduce((s, m) => s + m.protein, 0)
             return (
-              <div key={d.title} className="meal-plan">
-                <h3>{d.title}</h3>
-                {d.meals.map(m => (
-                  <div key={m.time} className="meal">
-                    <span className="badge">{m.time}</span>
-                    <span>{m.items}</span>
-                    <span className="muted small">~{m.kcal} kcal · {m.protein} ก. โปรตีน</span>
-                  </div>
-                ))}
-                <p className="total">รวม ~{kcal} kcal · {protein} ก. โปรตีน</p>
-              </div>
+              <Card key={d.title} title={d.title}>
+                <ol className="space-y-3">
+                  {d.meals.map(m => (
+                    <li key={m.time} className="flex gap-3">
+                      <span className="w-16 shrink-0 pt-0.5"><Badge>{m.time}</Badge></span>
+                      <div className="min-w-0">
+                        <div className="text-sm">{m.items}</div>
+                        <div className="text-xs text-muted">~{m.kcal} kcal · {m.protein} ก. โปรตีน</div>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+                <div className="mt-3 rounded-2xl bg-accent-soft px-3 py-2 text-sm font-bold text-accent">รวม ~{kcal} kcal · {protein} ก. โปรตีน</div>
+              </Card>
             )
           })}
-        </div>
-        <p className="muted small">ปรับขนาดข้าวให้ตรงเป้าแคลอรี่ของคุณ: ข้าว 1 ทัพพี ≈ 80 kcal</p>
-      </section>
+          <p className="px-2 text-xs text-muted">ปรับขนาดข้าวให้ตรงเป้าแคลอรี่ของคุณ: ข้าว 1 ทัพพี ≈ 80 kcal</p>
+          <Card title="กฎง่าย ๆ">
+            <ul className="list-disc space-y-1.5 pl-5 text-sm">{nutritionRules.map(r => <li key={r}>{r}</li>)}</ul>
+          </Card>
+        </>
+      )}
 
-      <section className="card">
-        <h2>อาหารตามสั่ง / ร้านข้างทาง</h2>
-        <div className="table-wrap">
-          <table>
-            <thead><tr><th>เมนู</th><th>kcal (ประมาณ)</th><th></th><th>เคล็ดลับ</th></tr></thead>
-            <tbody>
-              {streetDishes.map(d => (
-                <tr key={d.name}>
-                  <td>{d.name}</td>
-                  <td>{d.kcal}</td>
-                  <td><span className={`pill ${d.verdict}`}>{verdictLabel[d.verdict]}</span></td>
-                  <td className="muted">{d.tip}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+      {view === 'street' && (
+        <Card title="อาหารตามสั่ง / ร้านข้างทาง">
+          <ul className="divide-y divide-line">
+            {streetDishes.map(d => (
+              <li key={d.name} className="py-3">
+                <div className="flex items-start justify-between gap-2">
+                  <span className="font-semibold">{d.name}</span>
+                  <span className="shrink-0 text-sm tabular-nums text-muted">~{d.kcal} kcal</span>
+                </div>
+                <div className="mt-1 flex items-center gap-2">
+                  <span className={cx('rounded-full px-2 py-0.5 text-xs font-semibold', verdict[d.verdict].cls)}>{verdict[d.verdict].label}</span>
+                  <span className="text-xs text-muted">{d.tip}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
 
-      <div className="grid2">
-        <FoodTable title="แหล่งโปรตีน" foods={proteinFoods} />
-        <FoodTable title="แหล่งคาร์บ" foods={carbFoods} />
-      </div>
-      <p className="muted small">ค่าทั้งหมดเป็นค่าประมาณจากฐานข้อมูลอาหาร (USDA FoodData Central, ฉลากสินค้า และตารางพลังงานอาหารจานเดียวที่เผยแพร่ในไทย) ค่าจริงขึ้นกับปริมาณและวิธีปรุงของแต่ละร้าน</p>
+      {view === 'foods' && (
+        <>
+          <FoodList title="แหล่งโปรตีน" foods={proteinFoods} />
+          <FoodList title="แหล่งคาร์บ" foods={carbFoods} />
+        </>
+      )}
+
+      <p className="px-2 text-xs text-muted">ค่าทั้งหมดเป็นค่าประมาณจากฐานข้อมูลอาหาร (USDA FoodData Central, ฉลากสินค้า และตารางพลังงานอาหารจานเดียวที่เผยแพร่ในไทย) ค่าจริงขึ้นกับปริมาณและวิธีปรุงของแต่ละร้าน</p>
     </>
   )
 }
 
-function FoodTable({ title, foods }: { title: string; foods: Food[] }) {
+function FoodList({ title, foods }: { title: string; foods: Food[] }) {
   return (
-    <section className="card">
-      <h2>{title}</h2>
-      <div className="table-wrap">
-        <table>
-          <thead><tr><th>อาหาร</th><th>ปริมาณ</th><th>kcal</th><th>โปรตีน</th></tr></thead>
-          <tbody>
-            {foods.map(f => (
-              <tr key={f.name}>
-                <td>{f.name}<div className="muted small">{f.where}</div></td>
-                <td>{f.portion}</td>
-                <td>{f.kcal}</td>
-                <td>{f.protein} ก.</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </section>
+    <Card title={title}>
+      <ul className="divide-y divide-line">
+        {foods.map(f => (
+          <li key={f.name} className="flex items-center justify-between gap-3 py-2.5">
+            <div className="min-w-0">
+              <div className="font-semibold">{f.name}</div>
+              <div className="text-xs text-muted">{f.portion} · {f.where}</div>
+            </div>
+            <div className="shrink-0 text-right">
+              <div className="font-bold tabular-nums text-accent">{f.protein} ก.</div>
+              <div className="text-xs tabular-nums text-muted">{f.kcal} kcal</div>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </Card>
   )
 }

@@ -71,19 +71,19 @@ export function BodyMap({ intensity, label = m => muscleNames[m], size = 'md' }:
     })
 
   return (
-    <div className={`bodymap ${size}`}>
-      <div className="figures">
+    <div>
+      <div className="flex justify-center gap-2">
         {[{ name: 'ด้านหน้า', shapes: front }, { name: 'ด้านหลัง', shapes: back }].map(f => (
-          <figure key={f.name}>
-            <svg viewBox="0 0 200 360" role="img" aria-label={`กล้ามเนื้อ${f.name}`}>
+          <figure key={f.name} className={`m-0 flex-1 text-center ${size === 'sm' ? 'max-w-28' : 'max-w-40'}`}>
+            <svg viewBox="0 0 200 360" role="img" aria-label={`กล้ามเนื้อ${f.name}`} className="block h-auto w-full">
               {render(silhouette, `s${f.name}`)}
               {render(f.shapes, f.name)}
             </svg>
-            <figcaption>{f.name}</figcaption>
+            <figcaption className="text-xs text-muted">{f.name}</figcaption>
           </figure>
         ))}
       </div>
-      <p className="hover-label">{hover ? label(hover) : 'แตะหรือชี้ที่กล้ามเนื้อเพื่อดูรายละเอียด'}</p>
+      <p className="mt-1 min-h-5 text-center text-sm text-muted">{hover ? label(hover) : 'แตะที่กล้ามเนื้อเพื่อดูรายละเอียด'}</p>
     </div>
   )
 }

@@ -9,6 +9,8 @@ export type Run = {
   kind: 'easy' | 'interval' | 'long' | 'other'
   source: 'gps' | 'manual'
   route?: Point[]
+  splits?: number[] // วินาทีต่อกม.
+  elapsedSeconds?: number // รวมเวลาพัก
 }
 
 export type SetEntry = { kg: number; reps: number }

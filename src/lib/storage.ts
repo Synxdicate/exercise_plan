@@ -4,6 +4,7 @@ import { useCallback, useSyncExternalStore } from 'react'
 // localStorage อาจใช้ไม่ได้ (private mode) — แอปต้องทำงานต่อได้เสมอ
 const cache = new Map<string, unknown>()
 const listeners = new Map<string, Set<() => void>>()
+const writeHooks = new Set<(key: string, value: unknown) => void>()
 
 function read<T>(key: string, initial: T): T {
   if (cache.has(key)) return cache.get(key) as T
@@ -18,7 +19,7 @@ function read<T>(key: string, initial: T): T {
   return value
 }
 
-function write<T>(key: string, value: T) {
+function store(key: string, value: unknown) {
   cache.set(key, value)
   try {
     localStorage.setItem(key, JSON.stringify(value))
@@ -26,6 +27,44 @@ function write<T>(key: string, value: T) {
     /* ignore */
   }
   listeners.get(key)?.forEach(l => l())
+}
+
+function write<T>(key: string, value: T) {
+  store(key, value)
+  writeHooks.forEach(h => h(key, value))
+}
+
+// ---- สำหรับ sync.ts ----
+
+// ค่าที่ผู้ใช้เขียน (undefined = ยังไม่เคยมีค่า)
+export function readStored(key: string): unknown {
+  if (cache.has(key)) return cache.get(key)
+  try {
+    const raw = localStorage.getItem(key)
+    return raw ? JSON.parse(raw) : undefined
+  } catch {
+    return undefined
+  }
+}
+
+// ใส่ค่าที่ดึงมาจาก server โดยไม่ยิงกลับขึ้นไปซ้ำ
+export const hydrate = store
+
+export function clearKeys(keys: string[]) {
+  for (const key of keys) {
+    cache.delete(key)
+    try {
+      localStorage.removeItem(key)
+    } catch {
+      /* ignore */
+    }
+    listeners.get(key)?.forEach(l => l())
+  }
+}
+
+export function onWrite(hook: (key: string, value: unknown) => void) {
+  writeHooks.add(hook)
+  return () => void writeHooks.delete(hook)
 }
 
 export function usePersisted<T>(key: string, initial: T) {
