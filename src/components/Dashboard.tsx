@@ -1,50 +1,63 @@
 import { useState } from 'react'
-import { Dumbbell, Flame, Footprints, Moon } from 'lucide-react'
-import { gymWeek, parkWeek } from '../data/workouts'
+import { Check, Dumbbell, Flag, Flame, Footprints, Moon, Play } from 'lucide-react'
+import { locationInfo } from '../data/programs'
+import type { Day } from '../data/workouts'
 import { muscleNames, weeklySets, type Muscle } from '../data/muscles'
-import { useRuns, useSessions, weeklyKmTarget } from '../lib/log'
+import { useRuns, useSessions } from '../lib/log'
+import { estimate, paceHint } from '../lib/pace'
+import { useProgram } from '../lib/program'
 import { usePersisted } from '../lib/storage'
+import { useNav } from '../lib/nav'
 import { addDays, today, weekStart } from '../lib/date'
 import { BodyMap } from './BodyMap'
-import { Card } from './ui'
+import { heat } from '../lib/heat'
+import { WorkoutPlayer } from './WorkoutPlayer'
+import { ReadinessSheet } from './Readiness'
+import { Button, Card } from './ui'
 import { cx } from '../lib/cx'
 
 const TARGET_SETS = 10
-const thaiDays = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์']
 
 export function Dashboard() {
   const [runs] = useRuns()
   const [sessions] = useSessions()
-  const [mode] = usePersisted<'gym' | 'park'>('mode', 'gym')
-  const [week] = usePersisted('week', 1)
+  const p = useProgram()
+  const [done, setDone] = usePersisted<Record<string, boolean>>('done', {})
+  const [playing, setPlaying] = useState<{ day: Day; light: boolean } | null>(null)
+  const [checking, setChecking] = useState(false)
+  const nav = useNav()
+  const { currentWeek: week } = p
 
-  const plan = mode === 'gym' ? gymWeek : parkWeek
+  const plan = p.plan()
+  const strengthTarget = plan.filter(d => d.type === 'strength').length
   const thisWeek = weekStart(today())
   const sessionsThisWeek = sessions.filter(s => weekStart(s.date) === thisWeek).length
   const kmThisWeek = runs.filter(r => weekStart(r.date) === thisWeek).reduce((s, r) => s + r.km, 0)
-  const kmTarget = weeklyKmTarget(week)
+  const kmTarget = p.kmTarget()
   const streak = weekStreak(sessions.map(s => s.date), runs.map(r => r.date))
-  const [weekday] = useState(() => new Date().getDay())
-  const todayPlan = plan.find(d => d.day === thaiDays[weekday])
+  const [todayIdx] = useState(() => (new Date().getDay() + 6) % 7) // 0 = จันทร์
+  const todayPlan = plan[todayIdx]
 
   const sets = weeklySets(plan)
   const intensity = Object.fromEntries(Object.entries(sets).map(([m, n]) => [m, Math.min(1, n! / TARGET_SETS)]))
-  const TodayIcon = todayPlan?.type === 'run' ? Footprints : todayPlan?.type === 'strength' ? Dumbbell : Moon
+  const TodayIcon = todayPlan?.runKind === 'race' ? Flag : todayPlan?.type === 'run' ? Footprints : todayPlan?.type === 'strength' ? Dumbbell : Moon
+  const todayDone = p.isDone(done, week, todayIdx)
+  const hint = todayPlan?.type === 'run' ? paceHint(estimate(runs), todayPlan.runKind, todayPlan.title) : null
 
   return (
     <>
       <section className="rounded-3xl bg-gradient-to-br from-accent to-[#7c3aed] p-5 text-white shadow-sm">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-sm opacity-80">สัปดาห์ที่ {week} จาก 12</div>
-            <div className="text-2xl font-extrabold">สัปดาห์นี้</div>
+            <div className="text-sm opacity-80">{p.meta.short} · สัปดาห์ที่ {week} จาก {p.meta.weeks}</div>
+            <div className="text-2xl font-extrabold">{p.daysToRace !== null && p.daysToRace >= 0 ? `อีก ${p.daysToRace} วันถึงวันแข่ง` : 'สัปดาห์นี้'}</div>
           </div>
           <div className="flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm font-semibold">
             <Flame size={16} /> {streak} สัปดาห์ติด
           </div>
         </div>
         <div className="mt-4 grid grid-cols-2 gap-3">
-          <Ring value={sessionsThisWeek} max={3} label="เวท" text={`${sessionsThisWeek}/3`} />
+          <Ring value={sessionsThisWeek} max={strengthTarget} label="เวท" text={`${sessionsThisWeek}/${strengthTarget}`} />
           <Ring value={kmThisWeek} max={kmTarget} label="วิ่ง (กม.)" text={`${kmThisWeek.toFixed(1)}/${kmTarget}`} />
         </div>
       </section>
@@ -56,20 +69,38 @@ export function Dashboard() {
               todayPlan.type === 'run' ? 'bg-run/15 text-run' : todayPlan.type === 'strength' ? 'bg-accent-soft text-accent' : 'bg-raised text-muted')}>
               <TodayIcon size={22} />
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="text-xs text-muted">วันนี้ ({todayPlan.day})</div>
               <div className="font-bold">{todayPlan.title}</div>
               <div className="text-xs text-muted">{todayPlan.duration !== '-' ? todayPlan.duration : todayPlan.note}</div>
+              {hint && <div className="text-xs font-semibold text-run">{hint}</div>}
             </div>
+            {todayDone && <span className="grid size-9 shrink-0 animate-pop place-items-center rounded-full bg-good text-white"><Check size={18} strokeWidth={3} /></span>}
           </div>
+          {!todayDone && todayPlan.type === 'strength' && (
+            <Button className="mt-3 w-full" onClick={() => setChecking(true)}><Play size={16} fill="currentColor" /> เริ่มฝึกเลย ({todayPlan.location === 'park' ? 'สวน' : 'ยิม'})</Button>
+          )}
+          {!todayDone && todayPlan.type === 'run' && (
+            <Button variant="run" className="mt-3 w-full" onClick={() => nav('runs')}><Footprints size={16} /> เริ่มวิ่ง</Button>
+          )}
         </Card>
+      )}
+
+      {checking && todayPlan && (
+        <ReadinessSheet kind="strength" onClose={() => setChecking(false)}
+          onProceed={light => { setPlaying({ day: todayPlan, light }); setChecking(false) }} />
+      )}
+      {playing && (
+        <WorkoutPlayer day={playing.day} mode={playing.day.location ?? 'gym'} light={playing.light} sessionKey={p.doneId(week, todayIdx)}
+          onClose={() => setPlaying(null)}
+          onSaved={() => { setDone(prev => ({ ...prev, [p.doneId(week, todayIdx)]: true })); setPlaying(null) }} />
       )}
 
       <Card title="กิจกรรม 12 สัปดาห์">
         <ActivityCalendar dates={[...sessions.map(s => s.date), ...runs.map(r => r.date)]} />
       </Card>
 
-      <Card title={`กล้ามเนื้อที่ฝึกต่อสัปดาห์ (${mode === 'gym' ? 'ยิม' : 'สวน'})`}>
+      <Card title={`กล้ามเนื้อที่ฝึกต่อสัปดาห์ (${locationInfo[p.location].label.replace(/ \(.*\)/, '')})`}>
         <p className="-mt-2 mb-2 text-xs text-muted">สีเข้ม = ใกล้ {TARGET_SETS} เซ็ต/สัปดาห์ (กล้ามรองนับครึ่งเซ็ต)</p>
         <BodyMap intensity={intensity} label={m => `${muscleNames[m]}: ${fmt(sets[m] ?? 0)} เซ็ต/สัปดาห์`} />
         <ul className="mt-3 space-y-1.5 text-sm">
@@ -79,7 +110,7 @@ export function Dashboard() {
               <li key={m} className="grid grid-cols-[6.5rem_1fr_2rem] items-center gap-2">
                 <span>{muscleNames[m]}</span>
                 <span className="h-2 overflow-hidden rounded-full bg-body">
-                  <span className="block h-full rounded-full bg-accent" style={{ width: `${Math.min(100, ((sets[m] ?? 0) / TARGET_SETS) * 100)}%` }} />
+                  <span className="block h-full rounded-full transition-[width] duration-700" style={{ width: `${Math.min(100, ((sets[m] ?? 0) / TARGET_SETS) * 100)}%`, background: heat((sets[m] ?? 0) / TARGET_SETS) }} />
                 </span>
                 <span className="text-right tabular-nums text-muted">{fmt(sets[m] ?? 0)}</span>
               </li>

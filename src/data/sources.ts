@@ -11,12 +11,46 @@ export const channels = [
   { name: 'SOLID Magazine', lang: 'TH', url: yt('SOLID Magazine เล่นเวท'), why: 'เล่นเวทและโภชนาการสำหรับผู้ชาย' },
 ]
 
-export const references = [
-  { title: 'ISSN Position Stand: Protein and Exercise (Jäger et al., 2017)', url: 'https://jissn.biomedcentral.com/articles/10.1186/s12970-017-0177-8', used: 'เป้าโปรตีน 1.4–2.0 ก./กก./วัน และกินมากขึ้นได้ช่วงกินขาด' },
-  { title: 'Schoenfeld et al. 2017 — Dose-response of weekly training volume', url: 'https://pubmed.ncbi.nlm.nih.gov/27433992/', used: 'จำนวนเซ็ตต่อกล้ามเนื้อต่อสัปดาห์' },
-  { title: 'ACSM Position Stand: Progression Models in Resistance Training (2009)', url: 'https://pubmed.ncbi.nlm.nih.gov/19204579/', used: 'ช่วงจำนวนครั้ง เวลาพัก และ progressive overload' },
-  { title: 'WHO Guidelines on Physical Activity and Sedentary Behaviour (2020)', url: 'https://www.who.int/publications/i/item/9789240015128', used: 'ขั้นต่ำการออกกำลังกายแบบแอโรบิกและเวทต่อสัปดาห์' },
-  { title: "Men's Health AU — Tom Holland's 1,500-rep bodyweight ladder", url: 'https://menshealth.com.au/?p=79796', used: 'สไตล์การฝึกของ Tom Holland (บอดี้เวท/ยิมนาสติก)' },
-  { title: "Men's Health AU — Tom Holland's CrossFit 'Cindy'", url: 'https://menshealth.com.au/?p=85030', used: 'ท่า Cindy ในวันศุกร์ของแผนสวน' },
-  { title: 'Fit & Well — Tom Holland bodyweight training', url: 'https://www.fitandwell.com/news/how-tom-holland-used-bodyweight-exercises-to-get-ripped-for-spider-man-3', used: 'ข้อมูลเทรนเนอร์และรูปแบบการฝึก' },
+// level = ระดับหลักฐาน: แนวทาง/position stand และ meta-analysis น่าเชื่อถือที่สุด สื่อทั่วไปใช้แค่เล่าเรื่องคนดัง
+export type Level = 'guideline' | 'meta' | 'trial' | 'cohort' | 'database' | 'media'
+export const levelLabel: Record<Level, string> = {
+  guideline: 'แนวทางวิชาการ',
+  meta: 'Meta-analysis / Review',
+  trial: 'งานทดลอง (RCT)',
+  cohort: 'งานติดตามกลุ่ม',
+  database: 'ฐานข้อมูลทางการ',
+  media: 'สื่อ (ไม่ใช่งานวิจัย)',
+}
+
+const pm = (id: string) => `https://pubmed.ncbi.nlm.nih.gov/${id}/`
+
+export const references: { cat: string; title: string; url: string; used: string; level: Level }[] = [
+  // เวท
+  { cat: 'เวทเทรนนิ่ง', level: 'guideline', title: 'ACSM Position Stand: Progression Models in Resistance Training (2009)', url: pm('19204579'), used: 'ช่วงจำนวนครั้ง เวลาพัก และ progressive overload' },
+  { cat: 'เวทเทรนนิ่ง', level: 'meta', title: 'Schoenfeld et al. 2017 — Dose-response of weekly training volume', url: pm('27433992'), used: 'จำนวนเซ็ตต่อกล้ามเนื้อต่อสัปดาห์ (~10+ เซ็ต)' },
+  { cat: 'เวทเทรนนิ่ง', level: 'meta', title: 'Wilson et al. 2012 — Concurrent training: interference meta-analysis', url: pm('22002517'), used: 'เหตุผลที่ควรเน้นทีละเป้า (หุ่น vs มาราธอน)' },
+  // วิ่ง
+  { cat: 'วิ่ง', level: 'meta', title: 'Seiler 2010 — Training intensity distribution in endurance athletes', url: pm('20861519'), used: 'วิ่งเบาเป็นส่วนใหญ่ (~80%) วิ่งหนักส่วนน้อย' },
+  { cat: 'วิ่ง', level: 'meta', title: 'Bosquet et al. 2007 — Effects of tapering on performance', url: pm('17762369'), used: 'ลดปริมาณ 2–3 สัปดาห์ก่อนแข่ง โดยคงความเร็วไว้' },
+  { cat: 'วิ่ง', level: 'meta', title: 'Blagrove et al. 2018 — Strength training for distance runners', url: pm('29249083'), used: 'เวท 2 วัน/สัปดาห์ในโปรแกรมวิ่ง' },
+  { cat: 'วิ่ง', level: 'cohort', title: 'Nielsen et al. 2014 — Excessive progression in weekly running distance and injury', url: pm('25155475'), used: 'เพิ่มระยะต่อสัปดาห์ทีละน้อย (การเพิ่มเกิน ~30% สัมพันธ์กับการบาดเจ็บบางชนิด)' },
+  { cat: 'วิ่ง', level: 'trial', title: 'Buist et al. 2008 — Graded training program and injuries in novice runners (RCT)', url: pm('17940147'), used: 'กฎ "เพิ่ม 10%" ไม่ได้ลดการบาดเจ็บชัดเจน — ใช้เป็นแนวทางคร่าว ๆ ไม่ใช่กฎตายตัว' },
+  { cat: 'วิ่ง', level: 'cohort', title: 'Riegel 1981 — Athletic records and human endurance', url: pm('7235349'), used: 'สูตรคาดการณ์เวลาและเพซจากการวิ่งจริง' },
+  // โภชนาการ
+  { cat: 'โภชนาการ', level: 'guideline', title: 'ISSN Position Stand: Protein and Exercise (Jäger et al., 2017)', url: 'https://jissn.biomedcentral.com/articles/10.1186/s12970-017-0177-8', used: 'โปรตีน 1.4–2.0 ก./กก./วัน' },
+  { cat: 'โภชนาการ', level: 'meta', title: 'Schoenfeld & Aragon 2018 — Protein per meal for muscle building', url: pm('29497353'), used: 'แบ่งโปรตีน ~4 มื้อ มื้อละ ~0.4 ก./กก.' },
+  { cat: 'โภชนาการ', level: 'guideline', title: 'IOC Consensus: Relative Energy Deficiency in Sport (RED-S) 2018', url: pm('29773536'), used: 'ไม่กินขาดช่วงซ้อมมาราธอน' },
+  { cat: 'โภชนาการ', level: 'guideline', title: 'ISSN Position Stand: Creatine supplementation (Kreider et al., 2017)', url: pm('28615996'), used: 'ครีเอทีน 3–5 ก./วัน ปลอดภัยและได้ผล' },
+  { cat: 'โภชนาการ', level: 'trial', title: 'Mifflin et al. 1990 — Predictive equation for resting energy expenditure', url: pm('2305711'), used: 'สูตรคำนวณ BMR / TDEE' },
+  { cat: 'โภชนาการ', level: 'guideline', title: 'WHO Expert Consultation 2004 — BMI for Asian populations', url: pm('14726171'), used: 'เกณฑ์ BMI ปกติของคนเอเชีย 18.5–22.9' },
+  { cat: 'โภชนาการ', level: 'database', title: 'Thai Food Composition Database (สถาบันโภชนาการ ม.มหิดล)', url: 'https://inmu.mahidol.ac.th/thaifcd/home', used: 'ใช้ตรวจค่าพลังงาน/โปรตีนอาหารไทยเพิ่มเติม' },
+  // ความปลอดภัย / ฟื้นตัว
+  { cat: 'ความปลอดภัยและการฟื้นตัว', level: 'guideline', title: 'ACSM Position Stand: Exercise and Fluid Replacement (2007)', url: pm('17277604'), used: 'ดื่มน้ำก่อนและระหว่างวิ่ง' },
+  { cat: 'ความปลอดภัยและการฟื้นตัว', level: 'guideline', title: 'ACSM Position Stand: Exertional Heat Illness (2007)', url: pm('17473783'), used: 'อาการ heat stroke และการวิ่งในอากาศร้อน' },
+  { cat: 'ความปลอดภัยและการฟื้นตัว', level: 'guideline', title: 'AASM/SRS 2015 — Recommended amount of sleep for adults', url: pm('25979105'), used: 'นอนอย่างน้อย 7 ชม./คืน' },
+  { cat: 'ความปลอดภัยและการฟื้นตัว', level: 'guideline', title: 'WHO Guidelines on Physical Activity and Sedentary Behaviour (2020)', url: 'https://www.who.int/publications/i/item/9789240015128', used: 'ขั้นต่ำการออกกำลังกายแบบแอโรบิกและเวทต่อสัปดาห์' },
+  // Tom Holland
+  { cat: 'Tom Holland', level: 'media', title: "Men's Health AU — Tom Holland's 1,500-rep bodyweight ladder", url: 'https://menshealth.com.au/?p=79796', used: 'สไตล์การฝึกบอดี้เวท/ยิมนาสติก' },
+  { cat: 'Tom Holland', level: 'media', title: "Men's Health AU — Tom Holland's CrossFit 'Cindy'", url: 'https://menshealth.com.au/?p=85030', used: 'ท่า Cindy ในแผนสวน' },
+  { cat: 'Tom Holland', level: 'media', title: 'Fit & Well — Tom Holland bodyweight training', url: 'https://www.fitandwell.com/news/how-tom-holland-used-bodyweight-exercises-to-get-ripped-for-spider-man-3', used: 'ข้อมูลเทรนเนอร์และรูปแบบการฝึก' },
 ]

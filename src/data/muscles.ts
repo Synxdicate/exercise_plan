@@ -58,6 +58,10 @@ const byExercise: Record<string, Target> = {
   'Archer / Decline Push-up': t(['chest', 'triceps'], ['frontDelts']),
   'Straight Bar Dip': t(['triceps', 'chest'], ['frontDelts']),
   'Cindy (AMRAP)': t(['lats', 'chest', 'quads'], ['biceps', 'triceps', 'glutes', 'abs']),
+  'Single-leg RDL': t(['hamstrings', 'glutes'], ['lowerBack']),
+  'Single-leg Calf Raise': t(['calves']),
+  'Side Plank': t(['obliques'], ['abs']),
+  'Dead Bug': t(['abs'], ['obliques']),
   'Easy run': t([], ['quads', 'hamstrings', 'glutes', 'calves']),
   'Intervals 1:2': t([], ['quads', 'hamstrings', 'glutes', 'calves']),
 }

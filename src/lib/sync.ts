@@ -1,14 +1,22 @@
 import { supabase } from './supabase'
 import { clearKeys, hydrate, onWrite, readStored } from './storage'
+import { mergeValues } from './merge'
 
 // key ที่เก็บขึ้น Supabase (ตาราง user_data: 1 แถวต่อ user ต่อ key)
-// 'tab' ไม่ sync — เป็นแค่สถานะหน้าจอของเครื่องนั้น
-export const SYNCED_KEYS = ['profile', 'mode', 'week', 'done', 'sessions', 'runs', 'log'] as const
+// 'tab', 'activeRun', 'activeWorkout' ไม่ sync — เป็นสถานะของเครื่องนั้น
+export const SYNCED_KEYS = [
+  'profile', 'mode', 'week', 'done', 'sessions', 'runs', 'log', 'program', 'raceDate', 'dayLocation',
+  'onboarded', 'readiness', 'foodLog',
+] as const
 
 // เจ้าของข้อมูลใน localStorage — กันข้อมูลคนหนึ่งไหลไปบัญชีอื่นบนเครื่องเดียวกัน
 const OWNER_KEY = 'owner'
+// key ที่แก้แล้วยังไม่ได้ส่งขึ้น server — เก็บถาวรไว้ ปิดแอปตอนออฟไลน์แล้วเปิดใหม่ก็ยังส่งต่อได้
+const PENDING_KEY = 'pendingKeys'
 
-const pending = new Map<string, unknown>()
+const pending = new Set<string>((readStored(PENDING_KEY) as string[] | undefined) ?? [])
+const savePending = () => hydrate(PENDING_KEY, [...pending])
+
 let userId: string | null = null
 let flushTimer: ReturnType<typeof setTimeout> | undefined
 let status: 'idle' | 'saving' | 'offline' = 'idle'
@@ -24,18 +32,27 @@ export const subscribeSyncStatus = (l: () => void) => {
   return () => void statusListeners.delete(l)
 }
 
-async function flush() {
+// ส่งทีละรอบ — ถ้ามีรอบที่กำลังส่งอยู่ ให้รอรอบนั้นก่อน (กัน pull ไปทับค่าที่ยังส่งไม่เสร็จ)
+let inFlight: Promise<void> | null = null
+function flush(): Promise<void> {
+  if (inFlight) return inFlight.then(() => flush())
+  inFlight = doFlush().finally(() => { inFlight = null })
+  return inFlight
+}
+
+async function doFlush() {
   if (!userId || pending.size === 0) return
-  const rows = [...pending].map(([key, value]) => ({ user_id: userId!, key, value, updated_at: new Date().toISOString() }))
-  pending.clear()
+  const keys = [...pending]
+  const rows = keys.map(key => ({ user_id: userId!, key, value: readStored(key) ?? null, updated_at: new Date().toISOString() }))
   setStatus('saving')
   const { error } = await supabase.from('user_data').upsert(rows)
   if (error) {
-    // เก็บกลับเข้าคิว (ค่าที่ใหม่กว่าที่เข้ามาระหว่างนี้ชนะ)
-    for (const r of rows) if (!pending.has(r.key)) pending.set(r.key, r.value)
     setStatus('offline')
     return
   }
+  // ลบเฉพาะ key ที่ค่าไม่ได้เปลี่ยนระหว่างส่ง
+  keys.forEach((k, i) => readStored(k) === rows[i].value && pending.delete(k))
+  savePending()
   setStatus(pending.size ? 'saving' : 'idle')
 }
 
@@ -44,56 +61,59 @@ const scheduleFlush = () => {
   flushTimer = setTimeout(flush, 800)
 }
 
-onWrite((key, value) => {
+const markDirty = (key: string) => {
+  pending.add(key)
+  savePending()
+}
+
+onWrite(key => {
   if (!userId || !(SYNCED_KEYS as readonly string[]).includes(key)) return
-  pending.set(key, value)
+  markDirty(key)
   scheduleFlush()
 })
 
-// ดึงข้อมูลจาก server มาแทนของในเครื่อง (server เป็นตัวจริง)
-// ยกเว้นครั้งแรกที่เครื่องนี้ยังไม่มีเจ้าของ: รวมข้อมูลเดิมในเครื่องขึ้นไปด้วย
+// ดึงข้อมูลจาก server มาแทนของในเครื่อง (server เป็นตัวจริง) — ยกเว้น key ที่ยังส่งไม่สำเร็จ
+// และครั้งแรกที่เครื่องนี้ยังไม่มีเจ้าของ: รวมข้อมูลเดิมในเครื่องขึ้นไปด้วย
 async function pull(migrate: boolean) {
   const { data, error } = await supabase.from('user_data').select('key, value')
   if (error) throw error
   const remote = new Map(data.map(r => [r.key as string, r.value as unknown]))
 
   for (const key of SYNCED_KEYS) {
+    if (pending.has(key)) continue
     const local = readStored(key)
     const server = remote.get(key)
     if (migrate && local !== undefined) {
-      const merged = server === undefined ? local : mergeValues(key, local, server)
-      hydrate(key, merged)
-      pending.set(key, merged)
-    } else if (server !== undefined) {
+      hydrate(key, server === undefined ? local : mergeValues(key, local, server))
+      markDirty(key)
+    } else if (server !== undefined && server !== null) {
       hydrate(key, server)
     } else if (local !== undefined) {
-      pending.set(key, local)
+      markDirty(key)
     }
   }
   await flush()
 }
 
-type WithId = { id?: string; date?: string }
-
-function mergeValues(key: string, local: unknown, server: unknown): unknown {
-  if (Array.isArray(local) && Array.isArray(server)) {
-    // sessions/runs ใช้ id, log น้ำหนักใช้ date
-    const idOf = (x: WithId) => (key === 'log' ? x.date : x.id) ?? JSON.stringify(x)
-    const byId = new Map<string, WithId>()
-    for (const x of [...server, ...local] as WithId[]) byId.set(idOf(x), x)
-    return [...byId.values()].sort((a, b) => (a.date ?? '').localeCompare(b.date ?? ''))
-  }
-  if (key === 'done' && local && server && typeof local === 'object' && typeof server === 'object') {
-    return { ...(server as object), ...(local as object) }
-  }
-  return server
-}
-
 export async function startSync(uid: string) {
   const owner = readStored(OWNER_KEY)
-  if (owner && owner !== uid) clearKeys([...SYNCED_KEYS])
+  if (owner && owner !== uid) {
+    clearKeys([...SYNCED_KEYS])
+    pending.clear()
+    savePending()
+  }
   userId = uid
-  await pull(!owner)
+  try {
+    await flush()
+    await pull(!owner)
+  } catch (e) {
+    // ออฟไลน์: ถ้าข้อมูลในเครื่องเป็นของคนนี้อยู่แล้ว ใช้ต่อได้เลย แล้วซิงก์เมื่อกลับมาออนไลน์
+    if (owner === uid) {
+      setStatus('offline')
+      return
+    }
+    throw e
+  }
   hydrate(OWNER_KEY, uid)
 }
 
@@ -109,12 +129,32 @@ export async function stopSync(force = false) {
   if (pending.size && !force) return false
   userId = null
   pending.clear()
-  clearKeys([...SYNCED_KEYS, OWNER_KEY])
+  clearKeys([...SYNCED_KEYS, OWNER_KEY, PENDING_KEY])
   return true
 }
 
+// ---------- backup ----------
+
+export function exportData() {
+  return { app: 'exercise-plan', version: 1, exportedAt: new Date().toISOString(), data: Object.fromEntries(SYNCED_KEYS.map(k => [k, readStored(k) ?? null])) }
+}
+
+export function importData(json: unknown) {
+  const d = (json as { app?: string; data?: Record<string, unknown> })
+  if (d?.app !== 'exercise-plan' || !d.data) throw new Error('ไม่ใช่ไฟล์ backup ของ Exercise-Plan')
+  for (const key of SYNCED_KEYS) {
+    if (d.data[key] === undefined || d.data[key] === null) continue
+    hydrate(key, d.data[key])
+    markDirty(key)
+  }
+  void flush()
+}
+
+// state ของโมดูลนี้ (userId, คิว) หายถ้า Vite HMR โหลดแค่ไฟล์นี้ใหม่ → ให้รีโหลดทั้งหน้าแทน
+if (import.meta.hot) import.meta.hot.accept(() => window.location.reload())
+
 if (typeof window !== 'undefined') {
-  window.addEventListener('online', () => void flush())
+  window.addEventListener('online', () => void refresh().catch(() => setStatus('offline')))
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') void flush()
     else void refresh().catch(() => setStatus('offline'))

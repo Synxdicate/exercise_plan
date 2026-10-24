@@ -21,6 +21,9 @@ export type Day = {
   duration: string
   note?: string
   exercises: Exercise[]
+  targetKm?: number // วันวิ่ง: ระยะเป้าหมาย
+  runKind?: 'easy' | 'tempo' | 'interval' | 'long' | 'race'
+  location?: 'gym' | 'park' // วันเวท: ฝึกที่ไหน (ตั้งโดย weekPlan)
 }
 
 const warmupNote = 'วอร์มอัพ 5–10 นาที: จ็อกเบา ๆ หรือกระโดดเชือก + หมุนข้อต่อ แล้วเล่นเซ็ตเบา 1–2 เซ็ตของท่าแรก'

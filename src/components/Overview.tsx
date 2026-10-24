@@ -1,17 +1,28 @@
 import { useState } from 'react'
-import { ChevronDown, Target } from 'lucide-react'
+import { ChevronDown, ShieldCheck, Target } from 'lucide-react'
 import { activityLevels, bmi, bmr, goals, tdee, targets, type Profile } from '../lib/calc'
 import { phases, principles } from '../data/workouts'
 import { Dashboard } from './Dashboard'
-import { Badge, Card, Field, Stat } from './ui'
+import { useProgram } from '../lib/program'
+import { Badge, Card, Stat } from './ui'
+import { NumberInput, SelectInput } from './Form'
 import { cx } from '../lib/cx'
 
 type Props = { profile: Profile; setProfile: (p: Profile) => void }
 
+const safety: [string, string][] = [
+  ['กฎความเจ็บ', 'ปวดเมื่อยกล้ามทั่วไป (≤3/10) ฝึกต่อได้ แต่ถ้าปวดแปลบ ปวดมากขึ้นระหว่างวิ่ง หรือทำให้ท่าวิ่งเปลี่ยน ให้หยุดทันที ถ้ายังปวดเกิน 3 วันควรพบแพทย์/นักกายภาพ'],
+  ['อากาศร้อนในไทย', 'วิ่งช่วงเช้าก่อน 7 โมงหรือหลัง 6 โมงเย็น ดื่มน้ำ ~300–450 มล. 2–4 ชม. ก่อนวิ่ง วิ่งเกิน 60 นาทีพกน้ำ + เกลือแร่ ถ้าเวียนหัว คลื่นไส้ สับสน หรือตัวร้อนแต่เหงื่อหยุด ให้หยุดเข้าที่ร่มทันที (อาการ heat stroke)'],
+  ['สัญญาณซ้อมหนักเกิน', 'เหนื่อยผิดปกติหลายวัน นอนไม่หลับ ชีพจรตอนตื่นสูงกว่าปกติชัดเจน หรือวิ่งช้าลงทั้งที่พยายาม → เปลี่ยนวันนั้นเป็นวันพักหรือวิ่งเบา'],
+  ['พลาดวันฝึก', 'ข้ามไปได้เลย ไม่ต้องชดเชยสองวันรวด ถ้าหยุดเกิน 2 สัปดาห์ให้ย้อนกลับไป 1–2 สัปดาห์'],
+  ['ป่วย', 'มีไข้หรืออาการทั้งตัว (ปวดเมื่อย ไอลงคอ) ให้พักจนหายดี ไม่ควรวิ่งฝืน'],
+]
+
 export function Overview({ profile, setProfile }: Props) {
-  const t = targets(profile)
   const set = <K extends keyof Profile>(k: K, v: Profile[K]) => setProfile({ ...profile, [k]: v })
   const [editing, setEditing] = useState(false)
+  const { program, isRace } = useProgram()
+  const t = targets(profile, isRace)
 
   return (
     <>
@@ -22,20 +33,14 @@ export function Overview({ profile, setProfile }: Props) {
           แก้ข้อมูล <ChevronDown size={16} className={cx('transition', editing && 'rotate-180')} />
         </button>}>
         {editing && (
-          <div className="mb-3 grid grid-cols-3 gap-2 rounded-2xl bg-raised p-3">
-            <Field label="อายุ"><input type="number" value={profile.age} onChange={e => set('age', +e.target.value)} /></Field>
-            <Field label="สูง (ซม.)"><input type="number" value={profile.heightCm} onChange={e => set('heightCm', +e.target.value)} /></Field>
-            <Field label="หนัก (กก.)"><input type="number" step="0.1" value={profile.weightKg} onChange={e => set('weightKg', +e.target.value)} /></Field>
-            <Field label="กิจกรรม" className="col-span-3">
-              <select value={profile.activity} onChange={e => set('activity', +e.target.value)}>
-                {activityLevels.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
-              </select>
-            </Field>
-            <Field label="เป้าหมาย" className="col-span-3">
-              <select value={profile.goal} onChange={e => set('goal', e.target.value as Profile['goal'])}>
-                {Object.entries(goals).map(([k, g]) => <option key={k} value={k}>{g.label}</option>)}
-              </select>
-            </Field>
+          <div className="mb-3 grid animate-fade-up grid-cols-3 gap-3 rounded-2xl bg-card p-1">
+            <NumberInput label="อายุ" unit="ปี" value={profile.age} onChange={v => set('age', +v)} />
+            <NumberInput label="ส่วนสูง" unit="ซม." value={profile.heightCm} onChange={v => set('heightCm', +v)} />
+            <NumberInput label="น้ำหนัก" unit="กก." step={0.1} value={profile.weightKg} onChange={v => set('weightKg', +v)} />
+            <SelectInput label="กิจกรรม" className="col-span-3" value={profile.activity} onChange={v => set('activity', v)}
+              options={activityLevels.map(a => ({ value: a.value, label: a.label }))} />
+            <SelectInput label="เป้าหมาย" className="col-span-3" value={profile.goal} onChange={v => set('goal', v)}
+              options={Object.entries(goals).map(([k, g]) => ({ value: k as Profile['goal'], label: g.label }))} />
           </div>
         )}
         <div className="grid grid-cols-2 gap-2">
@@ -49,10 +54,11 @@ export function Overview({ profile, setProfile }: Props) {
           <Stat label="BMR" value={Math.round(bmr(profile))} sub="kcal" />
           <Stat label="TDEE" value={Math.round(tdee(profile))} sub="kcal" />
         </div>
+        {t.raceAdjusted && <p className="mt-2 rounded-xl bg-run/10 p-2 text-xs text-run">อยู่ในโปรแกรมวิ่ง: ปรับเป็นกินเท่าที่ใช้ (ไม่กินขาด) และเพิ่มคาร์บ เพราะซ้อมวิ่งปริมาณมากขณะกินน้อยเสี่ยงบาดเจ็บและฟื้นตัวไม่ทัน</p>}
         <p className="mt-2 text-xs text-muted">คำนวณด้วยสูตร Mifflin-St Jeor (คลาดเคลื่อนได้ ±10%) ใช้เป็นจุดเริ่มต้น แล้วปรับตามน้ำหนักจริงทุก 2–3 สัปดาห์</p>
       </Card>
 
-      <Card title="แผน 12 สัปดาห์">
+      {program === 'physique' && <Card title="แผน 12 สัปดาห์">
         <ol className="relative space-y-4 border-l-2 border-line pl-5">
           {phases.map(p => (
             <li key={p.weeks} className="relative">
@@ -63,15 +69,26 @@ export function Overview({ profile, setProfile }: Props) {
             </li>
           ))}
         </ol>
-      </Card>
+      </Card>}
 
       <Card title="หุ่นแบบ Tom Holland — ความจริงที่ควรรู้">
         <ul className="list-disc space-y-2 pl-5 text-sm">
           <li>เขาสูงราว 170–173 ซม. และรูปร่างที่เห็นในหนังเป็นแบบ <b>ลีน ไขมันต่ำ กล้ามพอดี</b> ไม่ใช่สายกล้ามใหญ่ ซึ่งเป็นเป้าที่ทำได้จริงสำหรับคุณ (165 ซม. / 64.5 กก.)</li>
           <li>การฝึกของเขาเน้น <b>บอดี้เวท ยิมนาสติก และ conditioning</b> (ดึงข้อ ดิป วิดพื้น) ตามที่เทรนเนอร์ให้สัมภาษณ์ และมีทีมงาน เชฟ และเวลาฝึกเต็มวันก่อนถ่ายทำ</li>
           <li>ภาพโปรโมตถ่ายช่วงไขมันต่ำที่สุด พร้อมแสงและการปั๊มกล้าม ไม่ใช่สภาพทุกวัน</li>
-          <li>มือใหม่ที่ฝึกและกินถูกต้อง เพิ่มกล้ามได้ประมาณ <b>0.5–1 กก./เดือน</b> ในปีแรก และลดไขมันได้ราว 0.25–0.5 กก./สัปดาห์โดยไม่เสียกล้าม</li>
+          <li>มือใหม่เพิ่มกล้ามได้เร็วที่สุดในปีแรก แต่เป็นหลักไม่กี่กิโลกรัมต่อปี (ตัวเลขต่างกันมากตามพันธุกรรม การนอน และอาหาร — ยังไม่มีงานวิจัยที่ให้ตัวเลขแน่นอน) ส่วนการลดไขมัน ~0.5% ของน้ำหนักตัว/สัปดาห์ช่วยรักษากล้ามได้ดีกว่าการลดเร็ว</li>
           <li>เวลาที่สมเหตุสมผล: เห็นความเปลี่ยนแปลงใน <b>8–12 สัปดาห์</b> และได้รูปร่างใกล้เคียงใน <b>1–2 ปี</b> ถ้าฝึกสม่ำเสมอ</li>
+        </ul>
+      </Card>
+
+      <Card title={<span className="flex items-center gap-2"><ShieldCheck size={18} className="text-good" /> ฝึกอย่างปลอดภัย</span>}>
+        <ul className="space-y-3 text-sm">
+          {safety.map(([title, text]) => (
+            <li key={title}>
+              <div className="font-semibold">{title}</div>
+              <p className="text-muted">{text}</p>
+            </li>
+          ))}
         </ul>
       </Card>
 

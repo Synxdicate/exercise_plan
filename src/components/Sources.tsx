@@ -1,5 +1,5 @@
 import { ExternalLink, Play } from 'lucide-react'
-import { channels, references } from '../data/sources'
+import { channels, levelLabel, references } from '../data/sources'
 import { Badge, Card } from './ui'
 
 export function Sources() {
@@ -24,14 +24,25 @@ export function Sources() {
       </Card>
 
       <Card title="แหล่งอ้างอิง">
-        <ul className="space-y-3 text-sm">
-          {references.map(r => (
-            <li key={r.url}>
-              <a href={r.url} target="_blank" rel="noreferrer" className="font-semibold">{r.title}</a>
-              <div className="text-xs text-muted">ใช้สำหรับ: {r.used}</div>
-            </li>
+        <p className="-mt-1 mb-3 text-xs text-muted">ตัวเลขในแอปอ้างอิงจากแนวทางวิชาการและงานวิจัยเหล่านี้ (ตรวจกับ PubMed แล้ว) ส่วนข้อมูลของ Tom Holland มาจากสื่อ ใช้เล่าสไตล์การฝึกเท่านั้น</p>
+        <div className="space-y-4">
+          {[...new Set(references.map(r => r.cat))].map(cat => (
+            <div key={cat}>
+              <div className="mb-1.5 text-sm font-bold">{cat}</div>
+              <ul className="space-y-2.5 text-sm">
+                {references.filter(r => r.cat === cat).map(r => (
+                  <li key={r.url}>
+                    <a href={r.url} target="_blank" rel="noreferrer" className="font-semibold">{r.title}</a>
+                    <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-muted">
+                      <Badge tone={r.level === 'media' ? 'muted' : r.level === 'guideline' || r.level === 'meta' ? 'good' : 'run'}>{levelLabel[r.level]}</Badge>
+                      <span>ใช้สำหรับ: {r.used}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
           ))}
-        </ul>
+        </div>
       </Card>
 
       <Card title="ข้อควรระวัง">

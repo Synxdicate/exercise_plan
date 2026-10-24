@@ -19,8 +19,9 @@
   color-scheme: light;
 }
 
+/* โหมดมืด: ตามระบบ (ถ้าผู้ใช้ไม่ได้เลือกสว่าง) หรือเลือกมืดเอง — data-theme ตั้งใน index.html/ThemeToggle */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --c-bg: #0a0c0f;
     --c-card: #14171c;
     --c-raised: #1b1f26;
@@ -37,6 +38,23 @@
     --c-body-line: #353b45;
     color-scheme: dark;
   }
+}
+:root[data-theme="dark"] {
+  --c-bg: #0a0c0f;
+  --c-card: #14171c;
+  --c-raised: #1b1f26;
+  --c-ink: #eef0f3;
+  --c-muted: #9aa2ae;
+  --c-line: #262b33;
+  --c-accent: #fb3b64;
+  --c-accent-soft: #3b1420;
+  --c-good: #34d399;
+  --c-warn: #fbbf24;
+  --c-bad: #f87171;
+  --c-run: #60a5fa;
+  --c-body: #262b33;
+  --c-body-line: #353b45;
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -57,20 +75,49 @@
   --color-body-line: var(--c-body-line);
 }
 
+@theme {
+  --animate-fade-up: fade-up .32s cubic-bezier(.2,.8,.2,1) both;
+  --animate-fade-in: fade-in .2s ease-out both;
+  --animate-sheet-up: sheet-up .34s cubic-bezier(.2,.9,.25,1) both;
+  --animate-pop: pop .35s cubic-bezier(.2,.9,.3,1.4) both;
+  @keyframes fade-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  @keyframes fade-in { from { opacity: 0; } }
+  @keyframes sheet-up { from { transform: translateY(100%); } to { transform: none; } }
+  @keyframes pop { 0% { transform: scale(.6); } 100% { transform: scale(1); } }
+  @keyframes reveal { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @keyframes beat { 0%, 100% { transform: scale(1); } 15% { transform: scale(1.25); } 30% { transform: scale(1); } 45% { transform: scale(1.15); } }
+}
+
+/* ทยอยแสดงการ์ดทีละใบ */
+@utility stagger {
+  & > * { animation: fade-up .38s cubic-bezier(.2,.8,.2,1) both; }
+  & > *:nth-child(2) { animation-delay: 40ms; }
+  & > *:nth-child(3) { animation-delay: 80ms; }
+  & > *:nth-child(4) { animation-delay: 120ms; }
+  & > *:nth-child(5) { animation-delay: 160ms; }
+  & > *:nth-child(n+6) { animation-delay: 200ms; }
+}
+
 @layer base {
+  button, a { transition: transform .15s cubic-bezier(.2,.8,.2,1), background-color .2s, color .2s, box-shadow .2s, opacity .2s; }
+  button:not(:disabled):active { transform: scale(.96); }
+
   body { @apply bg-bg text-ink antialiased; -webkit-tap-highlight-color: transparent; }
-  input, select { @apply rounded-xl border border-line bg-raised px-3 py-2.5 text-base text-ink outline-none focus:border-accent; min-width: 0; }
+  input:not(.bare), select:not(.bare) { @apply rounded-xl border border-line bg-raised px-3 py-2.5 text-base text-ink outline-none focus:border-accent; min-width: 0; }
   a { @apply text-run; }
 }
 
-/* ---- BodyMap (SVG ใช้ fill-opacity ตามค่า จึงเก็บเป็น class) ---- */
-.muscle { fill: var(--c-body-line); stroke: var(--c-card); stroke-width: 1.5; cursor: pointer; transition: fill-opacity .15s; }
-.muscle.on { fill: var(--c-accent); }
-.muscle.hover { stroke: var(--c-ink); stroke-width: 2; }
-.sil { fill: var(--c-body); }
 
 /* ---- Leaflet ---- */
 .leaflet-container { font: inherit; background: var(--c-raised); }
 @media (prefers-color-scheme: dark) {
-  .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(.9) contrast(.9); }
+  :root:not([data-theme="light"]) .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(.9) contrast(.9); }
+}
+:root[data-theme="dark"] .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(.9) contrast(.9); }
+
+/* เปลี่ยนธีมแบบนุ่ม ๆ */
+html.theme-fade, html.theme-fade * { transition: background-color .3s, color .3s, border-color .3s, fill .3s !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0ms !important; transition-duration: .01ms !important; }
 }

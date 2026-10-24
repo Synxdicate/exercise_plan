@@ -23,6 +23,9 @@ export function addDays(s: string, n: number) {
   return toDateStr(d)
 }
 
+// จำนวนวันจาก a ถึง b
+export const daysBetween = (a: string, b: string) => Math.round((parse(b).getTime() - parse(a).getTime()) / 86400000)
+
 export const shortDate = (s: string) => {
   const d = parse(s)
   return `${d.getDate()}/${d.getMonth() + 1}`

@@ -6,8 +6,8 @@ export type Run = {
   date: string
   km: number
   seconds: number
-  kind: 'easy' | 'interval' | 'long' | 'other'
-  source: 'gps' | 'manual'
+  kind: 'easy' | 'tempo' | 'interval' | 'long' | 'race' | 'other'
+  source: 'gps' | 'manual' | 'gpx'
   route?: Point[]
   splits?: number[] // วินาทีต่อกม.
   elapsedSeconds?: number // รวมเวลาพัก
@@ -29,8 +29,10 @@ export const useSessions = () => usePersisted<Session[]>('sessions', [])
 
 export const runKinds: Record<Run['kind'], string> = {
   easy: 'Easy',
+  tempo: 'Tempo',
   interval: 'Interval',
   long: 'วิ่งยาว',
+  race: 'แข่ง',
   other: 'อื่น ๆ',
 }
 
@@ -49,9 +51,6 @@ export function formatPace(sec: number, km: number) {
   const p = sec / km
   return `${Math.floor(p / 60)}:${String(Math.round(p % 60)).padStart(2, '0')}`
 }
-
-// เป้าระยะต่อสัปดาห์ตามเฟสใน workouts.ts
-export const weeklyKmTarget = (week: number) => (week <= 4 ? 13 : week === 9 ? 8 : 16)
 
 // ครั้งล่าสุดที่เล่นท่านี้ — ใช้โชว์ตัวเลขเดิมเพื่อ progressive overload
 export function lastSetsFor(sessions: Session[], name: string) {

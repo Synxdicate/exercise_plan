@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
-import { Dumbbell, LogIn, Mail, UserPlus } from 'lucide-react'
+import { Dumbbell, Lock, LogIn, Mail, UserPlus } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { TextInput } from './Form'
 
 type Mode = 'signin' | 'signup' | 'reset'
 
@@ -59,13 +60,11 @@ export function Login() {
           </>
         )}
 
-        <form onSubmit={submit} className="flex flex-col gap-3 text-left [&_label]:flex [&_label]:flex-col [&_label]:gap-1 [&_label]:text-sm [&_label]:text-muted">
-          <label>อีเมล<input type="email" autoComplete="email" required value={email} onChange={e => setEmail(e.target.value)} /></label>
+        <form onSubmit={submit} className="flex flex-col gap-3 text-left">
+          <TextInput label="อีเมล" type="email" autoComplete="email" required value={email} onChange={setEmail} placeholder="you@example.com" icon={<Mail size={18} />} />
           {mode !== 'reset' && (
-            <label>รหัสผ่าน
-              <input type="password" autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} required minLength={6}
-                value={password} onChange={e => setPassword(e.target.value)} />
-            </label>
+            <TextInput label="รหัสผ่าน" type="password" autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} required minLength={6}
+              value={password} onChange={setPassword} placeholder="อย่างน้อย 6 ตัวอักษร" icon={<Lock size={18} />} />
           )}
           <button className="inline-flex items-center justify-center gap-2 rounded-full bg-accent px-4 py-3 font-semibold text-white disabled:opacity-50 active:scale-[.98]" type="submit" disabled={busy}>
             {mode === 'signin' && <><LogIn size={16} /> เข้าสู่ระบบ</>}
@@ -108,9 +107,9 @@ export function NewPassword({ onDone }: { onDone: () => void }) {
 
   return (
     <div className="min-h-dvh flex flex-col items-center justify-center gap-3 p-4">
-      <form className="w-full max-w-sm rounded-3xl bg-card p-6 shadow-sm ring-1 ring-line flex flex-col gap-3 text-center flex flex-col gap-3 text-left [&_label]:flex [&_label]:flex-col [&_label]:gap-1 [&_label]:text-sm [&_label]:text-muted" onSubmit={submit}>
+      <form className="w-full max-w-sm rounded-3xl bg-card p-6 shadow-sm ring-1 ring-line flex flex-col gap-3 text-left" onSubmit={submit}>
         <h1 className="text-xl font-bold">ตั้งรหัสผ่านใหม่</h1>
-        <label>รหัสผ่านใหม่<input type="password" autoComplete="new-password" required minLength={6} value={password} onChange={e => setPassword(e.target.value)} /></label>
+        <TextInput label="รหัสผ่านใหม่" type="password" autoComplete="new-password" required minLength={6} value={password} onChange={setPassword} icon={<Lock size={18} />} />
         <button className="inline-flex items-center justify-center gap-2 rounded-full bg-accent px-4 py-3 font-semibold text-white disabled:opacity-50 active:scale-[.98]" type="submit" disabled={busy}>บันทึกรหัสผ่าน</button>
         {error && <p className="text-sm text-bad">{error}</p>}
       </form>

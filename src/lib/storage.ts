@@ -86,3 +86,6 @@ export function usePersisted<T>(key: string, initial: T) {
 
   return [value, set] as const
 }
+
+// cache/listeners ต้องเป็นชุดเดียวทั้งแอป — แก้ไฟล์นี้ระหว่าง dev ให้รีโหลดทั้งหน้า
+if (import.meta.hot) import.meta.hot.accept(() => window.location.reload())

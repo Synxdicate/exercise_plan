@@ -13,6 +13,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet" />
     <title>Exercise-Plan</title>
+    <script>
+      // ตั้งธีมก่อนแอปโหลด กันหน้าจอกะพริบ
+      try {
+        var t = JSON.parse(localStorage.getItem('theme') || '"system"')
+        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

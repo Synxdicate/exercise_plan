@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { carbFoods, nutritionRules, proteinFoods, sampleDays, streetDishes, type Food } from '../data/nutrition'
 import { targets, type Profile } from '../lib/calc'
+import { useProgram } from '../lib/program'
 import { Badge, Card, Segmented, Stat } from './ui'
 import { cx } from '../lib/cx'
+import { FoodLog } from './FoodLog'
 
 const verdict = {
   good: { label: 'แนะนำ', cls: 'bg-good/15 text-good' },
@@ -13,7 +15,8 @@ const verdict = {
 type View = 'menu' | 'street' | 'foods'
 
 export function Nutrition({ profile }: { profile: Profile }) {
-  const t = targets(profile)
+  const { isRace } = useProgram()
+  const t = targets(profile, isRace)
   const [view, setView] = useState<View>('menu')
 
   return (
@@ -24,6 +27,8 @@ export function Nutrition({ profile }: { profile: Profile }) {
         <Stat label="ไขมัน" value={`${t.fat} ก.`} sub="ขั้นต่ำเพื่อฮอร์โมน" />
         <Stat label="คาร์บ" value={`${t.carbs} ก.`} sub={`≈ ${Math.round(t.carbs / 18)} ทัพพีข้าว`} />
       </div>
+
+      <FoodLog proteinTarget={t.protein} kcalTarget={t.kcal} />
 
       <Segmented value={view} onChange={setView} options={[
         { value: 'menu', label: 'เมนูตัวอย่าง' },
@@ -86,7 +91,7 @@ export function Nutrition({ profile }: { profile: Profile }) {
         </>
       )}
 
-      <p className="px-2 text-xs text-muted">ค่าทั้งหมดเป็นค่าประมาณจากฐานข้อมูลอาหาร (USDA FoodData Central, ฉลากสินค้า และตารางพลังงานอาหารจานเดียวที่เผยแพร่ในไทย) ค่าจริงขึ้นกับปริมาณและวิธีปรุงของแต่ละร้าน</p>
+      <p className="px-2 text-xs text-muted">ค่าทั้งหมดเป็นค่าประมาณ (USDA FoodData Central, ฉลากสินค้า และค่าอาหารจานเดียวที่เผยแพร่ทั่วไป) ค่าจริงขึ้นกับปริมาณและวิธีปรุงของแต่ละร้าน ตรวจค่าอาหารไทยเพิ่มเติมได้ที่ <a href="https://inmu.mahidol.ac.th/thaifcd/home" target="_blank" rel="noreferrer">Thai Food Composition Database (ม.มหิดล)</a></p>
     </>
   )
 }

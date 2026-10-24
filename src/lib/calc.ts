@@ -34,11 +34,15 @@ export const bmr = (p: Profile) => 10 * p.weightKg + 6.25 * p.heightCm - 5 * p.a
 
 export const tdee = (p: Profile) => bmr(p) * p.activity
 
-export function targets(p: Profile) {
-  const kcal = Math.round((tdee(p) + goals[p.goal].delta) / 10) * 10
+// race = อยู่ในโปรแกรมฮาล์ฟ/ฟูล: ใช้พลังงานมากขึ้น และไม่ควรกินขาด
+// (กินน้อยเกินขณะซ้อมหนักเสี่ยงภาวะพลังงานไม่พอ — บาดเจ็บ/ฮอร์โมนรวน)
+export function targets(p: Profile, race = false) {
+  const activity = race ? Math.max(p.activity, 1.725) : p.activity
+  const delta = race ? Math.max(goals[p.goal].delta, 0) : goals[p.goal].delta
+  const kcal = Math.round((bmr(p) * activity + delta) / 10) * 10
   // ISSN: 1.4–2.0 g/kg; ช่วงกินขาดใช้เอนไปทางสูง
-  const protein = Math.round(p.weightKg * (p.goal === 'lean-bulk' ? 1.8 : 2.0))
+  const protein = Math.round(p.weightKg * (p.goal === 'lean-bulk' || race ? 1.8 : 2.0))
   const fat = Math.round(p.weightKg * 0.9)
   const carbs = Math.max(0, Math.round((kcal - protein * 4 - fat * 9) / 4))
-  return { kcal, protein, fat, carbs }
+  return { kcal, protein, fat, carbs, raceAdjusted: race }
 }

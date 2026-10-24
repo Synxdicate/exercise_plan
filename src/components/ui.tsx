@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 
 import { cx } from '../lib/cx'
 
@@ -61,15 +62,6 @@ export function Badge({ children, tone = 'accent' }: { children: ReactNode; tone
   return <span className={cx('inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold', tones[tone])}>{children}</span>
 }
 
-export function Field({ label, children, className }: { label: string; children: ReactNode; className?: string }) {
-  return (
-    <label className={cx('flex min-w-0 flex-col gap-1 text-sm text-muted', className)}>
-      {label}
-      {children}
-    </label>
-  )
-}
-
 export function Segmented<T extends string>({ value, options, onChange }: { value: T; options: { value: T; label: ReactNode }[]; onChange: (v: T) => void }) {
   return (
     <div className="flex rounded-full bg-raised p-1 ring-1 ring-line">
@@ -90,5 +82,33 @@ export function Meter({ value, max, tone = 'accent' }: { value: number; max: num
     <div className="h-2 overflow-hidden rounded-full bg-body">
       <div className={cx('h-full rounded-full transition-all', bg)} style={{ width: `${Math.min(100, (value / max) * 100)}%` }} />
     </div>
+  )
+}
+
+// พับ/กางแบบนุ่ม ๆ ด้วย grid-rows (ไม่ต้องรู้ความสูงล่วงหน้า)
+export function Collapse({ open, children }: { open: boolean; children: ReactNode }) {
+  return (
+    <div className={cx('grid transition-[grid-template-rows,opacity] duration-300 ease-out', open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0')} aria-hidden={!open}>
+      <div className="min-h-0 overflow-hidden">{children}</div>
+    </div>
+  )
+}
+
+// แผ่นเลื่อนขึ้นจากด้านล่าง (มือถือ) / กล่องกลางจอ (จอใหญ่)
+// หน้าเต็มจอ/ป๊อปอัปต้องอยู่นอก <main> ที่มีแอนิเมชัน ไม่อย่างนั้นจะถูกหัวแอปกับเมนูล่างทับ
+export const Portal = ({ children }: { children: ReactNode }) => createPortal(children, document.body)
+
+export function Sheet({ onClose, children, title }: { onClose: () => void; children: ReactNode; title?: ReactNode }) {
+  return (
+    <Portal>
+    <div className="fixed inset-0 z-50 flex animate-fade-in items-end justify-center bg-black/50 sm:items-center" onClick={onClose}>
+      <div className="max-h-[92dvh] w-full max-w-lg animate-sheet-up overflow-y-auto rounded-t-3xl bg-card p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:animate-fade-up sm:rounded-3xl"
+        onClick={e => e.stopPropagation()}>
+        <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-line sm:hidden" />
+        {title && <div className="mb-3 text-lg font-bold">{title}</div>}
+        {children}
+      </div>
+    </div>
+    </Portal>
   )
 }
