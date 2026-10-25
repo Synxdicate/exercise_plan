@@ -101,3 +101,17 @@ describe('exercise library + swaps', () => {
     expect(out.find(d => d.key === d0.key)!.exercises.at(-1)).toMatchObject({ name: 'Hammer Curl', added: true })
   })
 })
+
+describe('projectRoute', () => {
+  it('fits the route inside the box keeping aspect ratio', async () => {
+    const { projectRoute } = await import('../geo')
+    const box = { x: 100, y: 200, w: 800, h: 400 }
+    const pts = projectRoute([[16.43, 102.82], [16.44, 102.82], [16.44, 102.83]], box)
+    for (const [x, y] of pts) {
+      expect(x).toBeGreaterThanOrEqual(box.x - 1e-6); expect(x).toBeLessThanOrEqual(box.x + box.w + 1e-6)
+      expect(y).toBeGreaterThanOrEqual(box.y - 1e-6); expect(y).toBeLessThanOrEqual(box.y + box.h + 1e-6)
+    }
+    // ไปทางเหนือ = ขึ้นบนจอ
+    expect(pts[1][1]).toBeLessThan(pts[0][1])
+  })
+})

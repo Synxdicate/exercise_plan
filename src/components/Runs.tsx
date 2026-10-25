@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState, type ReactNode } from 'react'
-import { CalendarCheck, Check, FileUp, Pencil, TriangleAlert, Trophy, Volume2, VolumeX, ChevronRight, Footprints, Gauge, Pause, Play, Plus, Satellite, Trash2, X } from 'lucide-react'
+import { CalendarCheck, Check, FileUp, Pencil, TriangleAlert, Trophy, Volume2, VolumeX, ChevronRight, Footprints, Gauge, Pause, Play, Plus, Satellite, Share2, Trash2, X } from 'lucide-react'
 import { GOOD_ACCURACY_M, useRunTracker, type Point } from '../lib/gps'
 import { formatDuration, formatPace, runKinds, uid, useRuns, type Run } from '../lib/log'
 import { estimate, paceHint, type Estimate } from '../lib/pace'
@@ -17,6 +17,7 @@ import { GuideCard } from './Guide'
 import { usePersisted } from '../lib/storage'
 import { RunTypeCard } from './RunTypes'
 import { CooldownSheet } from './Cooldown'
+import { ShareRunSheet } from './ShareRun'
 import { HeatCard } from './Heat'
 import { ReadinessSheet } from './Readiness'
 import { addDays, shortDate, today, weekStart } from '../lib/date'
@@ -309,10 +310,11 @@ function Splits({ splits, fiveK }: { splits: number[]; fiveK?: number }) {
 
 function RunDetail({ run, fiveK, onClose, onDelete, onUpdate }: { run: Run; fiveK?: number; onClose: () => void; onDelete: () => void; onUpdate: (patch: Partial<Run>) => void }) {
   const [editing, setEditing] = useState(false)
+  const [sharing, setSharing] = useState(false)
   const series = run.route && run.times ? paceSeries(run.route, run.times) : []
   const sa = splitAnalysis(run.splits)
   const saText = sa && {
-    negative: { t: 'Negative split 👍', c: 'text-good', d: `ครึ่งหลังเร็วกว่าครึ่งแรก ${Math.abs(sa.diffPct).toFixed(1)}% — คุมแรงได้ดี` },
+    negative: { t: 'Negative split', c: 'text-good', d: `ครึ่งหลังเร็วกว่าครึ่งแรก ${Math.abs(sa.diffPct).toFixed(1)}% — คุมแรงได้ดี` },
     even: { t: 'Even split', c: 'text-run', d: 'สองครึ่งเพซใกล้กัน — สม่ำเสมอดี' },
     positive: { t: 'Positive split', c: 'text-warn', d: `ครึ่งหลังช้าลง ${sa.diffPct.toFixed(1)}% — ลองออกตัวช้าลงอีกนิด` },
   }[sa.kind]
@@ -325,8 +327,12 @@ function RunDetail({ run, fiveK, onClose, onDelete, onUpdate }: { run: Run; five
             <div className="font-bold">{runKinds[run.kind]} · {run.date}</div>
             <div className="text-xs text-muted">{run.source === 'gps' ? 'บันทึกด้วย GPS' : run.source === 'gpx' ? 'นำเข้าจากไฟล์ GPX' : 'กรอกเอง'}</div>
           </div>
-          <button onClick={onClose} aria-label="ปิด" className="grid size-9 place-items-center rounded-full bg-raised"><X size={18} /></button>
+          <span className="flex gap-2">
+            <button onClick={() => setSharing(true)} aria-label="แชร์เป็นรูป" className="grid size-9 place-items-center rounded-full bg-raised"><Share2 size={17} /></button>
+            <button onClick={onClose} aria-label="ปิด" className="grid size-9 place-items-center rounded-full bg-raised"><X size={18} /></button>
+          </span>
         </div>
+        {sharing && <ShareRunSheet run={run} onClose={() => setSharing(false)} />}
         {run.route && run.route.length > 1 && <Map route={run.route} className="mb-3 h-56" />}
         <div className="mb-3 grid grid-cols-3 gap-2 text-center">
           <Stat label="ระยะ" value={run.km.toFixed(2)} sub="กม." accent />
