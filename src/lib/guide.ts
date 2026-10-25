@@ -4,7 +4,7 @@
 export type StepKind = 'warm' | 'work' | 'recover' | 'cool' | 'easy'
 export type PaceKey = 'easy' | 'tempo' | 'interval' | 'tenK' | 'half' | 'marathon' | 'stride'
 /** ขั้นหนึ่งของชุดซ้อม — กำหนดด้วยเวลา (sec) หรือระยะ (m) อย่างใดอย่างหนึ่ง */
-export type Step = { kind: StepKind; sec?: number; m?: number; pace?: PaceKey }
+export type Step = { kind: StepKind; sec?: number; m?: number; pace?: PaceKey; label?: string }
 
 const warm = (m = 2000): Step => ({ kind: 'warm', m, pace: 'easy' })
 const cool = (sec = 300): Step => ({ kind: 'cool', sec, pace: 'easy' })
@@ -39,6 +39,8 @@ export const guides = {
     const pace: PaceKey = /10K/.test(label) ? 'tenK' : /ฮาล์ฟ/.test(label) ? 'half' : 'marathon'
     return [warm(), ...repeat(Number(m[1] ?? 1), { kind: 'work', m: Number(m[2]) * 1000, pace }, { kind: 'recover', sec: 120, pace: 'easy' }), cool()]
   },
+  /** ทดสอบ 5K (แทนการตรวจ VO2max ในแล็บ): วอร์ม 10 นาที → 5 กม. เต็มที่แบบคุมได้ → คูลดาวน์ — ผลใช้อัปเดตโซนเพซ */
+  timeTrial: (): Step[] => [{ kind: 'warm', sec: 600, pace: 'easy' }, { kind: 'work', m: 5000, pace: 'interval', label: 'ทดสอบ 5K' }, cool(600)],
   /** โปรแกรมหุ่น: วอร์ม 10 นาที → เร็ว 1 / จ็อก 2 × n → คูลดาวน์ 5 นาที */
   intervals: (n: number): Step[] => [{ kind: 'warm', sec: 600, pace: 'easy' }, ...repeat(n, { kind: 'work', sec: 60, pace: 'interval' }, { kind: 'recover', sec: 120, pace: 'easy' }), cool()],
 }
@@ -46,7 +48,7 @@ export const guides = {
 export type Paces = Partial<Record<Exclude<PaceKey, 'stride' | 'easy'>, number>> & { easy?: readonly [number, number] }
 
 const KIND_LABEL: Record<StepKind, string> = { warm: 'วอร์มอัพ', work: 'ช่วงเร็ว', recover: 'พัก', cool: 'คูลดาวน์', easy: 'วิ่งเบา' }
-export const stepLabel = (s: Step) => (s.pace === 'stride' ? 'เร่ง (Stride)' : s.kind === 'recover' && !s.pace ? 'เดินกลับ' : KIND_LABEL[s.kind])
+export const stepLabel = (s: Step) => s.label ?? (s.pace === 'stride' ? 'เร่ง (Stride)' : s.kind === 'recover' && !s.pace ? 'เดินกลับ' : KIND_LABEL[s.kind])
 
 const spokenTime = (sec: number) => {
   const m = Math.floor(sec / 60), s = Math.round(sec % 60)

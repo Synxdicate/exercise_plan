@@ -60,3 +60,36 @@ export const earnedBadges = (c: Ctx) => BADGES.filter(b => b.earned(c)).map(b =>
 
 /** เป้าเริ่มต้นจากระยะต่อสัปดาห์ของโปรแกรม (~4.3 สัปดาห์/เดือน) ปัดเป็น 5 กม. */
 export const defaultMonthGoal = (weekKm: number) => Math.max(10, Math.round((weekKm * 4.3) / 5) * 5)
+
+// ---- เวลาเป้าหมายแข่ง (เทียบกับเวลาคาดการณ์) ----
+export type RaceKey = 'fiveK' | 'tenK' | 'half' | 'full'
+export const raceKm: Record<RaceKey, number> = { fiveK: 5, tenK: 10, half: 21.0975, full: 42.195 }
+export const raceLabel: Record<RaceKey, string> = { fiveK: '5K', tenK: '10K', half: 'ฮาล์ฟ', full: 'ฟูล' }
+
+/** "1:59:59", "55:00", "55" (นาที) → วินาที; อ่านไม่ได้ → null */
+export function parseDuration(text: string): number | null {
+  const parts = text.trim().split(/[:.]/).map(Number)
+  if (!parts.length || parts.some(n => !Number.isFinite(n) || n < 0)) return null
+  const [a, b = 0, c] = parts
+  const sec = parts.length === 1 ? a * 60 : parts.length === 2 ? a * 60 + b : a * 3600 + b * 60 + (c ?? 0)
+  return sec > 0 ? sec : null
+}
+
+// ---- เส้นทางสู่มาราธอน: ด่านแบบเกม (ฐาน 5 กม. → บอส 10K → ฮาล์ฟ → ฟูล) ----
+export const LEVELS = [
+  { id: 'base', title: 'ฐาน 5 กม.', km: 5, race: 'fiveK' as RaceKey, program: 'base' as const, text: 'วิ่งต่อเนื่อง 5 กม. ได้สบาย ๆ' },
+  { id: 'ten', title: 'บอส 10K', km: 10, race: 'tenK' as RaceKey, program: 'ten' as const, text: 'วิ่งจบ 10 กม.' },
+  { id: 'half', title: 'บอสฮาล์ฟ', km: 21.0, race: 'half' as RaceKey, program: 'half' as const, text: 'วิ่งจบ 21.1 กม.' },
+  { id: 'full', title: 'บอสฟูล', km: 42.0, race: 'full' as RaceKey, program: 'full' as const, text: 'วิ่งจบ 42.2 กม.' },
+]
+
+/** ด่านที่ผ่านแล้ว = เคยวิ่งต่อเนื่องถึงระยะนั้น (ครั้งแรกที่ทำได้) */
+export function journey(runs: Run[]) {
+  const sorted = [...runs].sort((a, b) => a.date.localeCompare(b.date))
+  const levels = LEVELS.map(l => {
+    const first = sorted.find(r => r.km >= l.km)
+    return { ...l, clearedOn: first?.date ?? null, clearedRun: first ?? null }
+  })
+  const current = levels.findIndex(l => !l.clearedOn)
+  return { levels, current: current === -1 ? levels.length : current }
+}

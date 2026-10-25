@@ -181,3 +181,46 @@ describe('niceDate', () => {
     expect(monthLabel('2026-10')).toBe('ตุลาคม 2569')
   })
 })
+
+describe('parseDuration', () => {
+  it('reads h:mm:ss, mm:ss and minutes', async () => {
+    const { parseDuration } = await import('../goals')
+    expect(parseDuration('1:59:59')).toBe(7199)
+    expect(parseDuration('55:00')).toBe(3300)
+    expect(parseDuration('55')).toBe(3300)
+    expect(parseDuration('abc')).toBeNull()
+    expect(parseDuration('0')).toBeNull()
+  })
+})
+
+describe('journey levels', () => {
+  it('clears levels by longest continuous run', async () => {
+    const { journey } = await import('../goals')
+    const r = (date: string, km: number) => ({ id: date, date, km, seconds: km * 360, kind: 'easy' as const, source: 'manual' as const })
+    expect(journey([]).current).toBe(0)
+    const j = journey([r('2026-09-01', 5.2), r('2026-10-01', 10.1)])
+    expect(j.current).toBe(2)
+    expect(j.levels[1].clearedOn).toBe('2026-10-01')
+    expect(journey([r('2026-01-01', 42.3)]).current).toBe(4)
+  })
+})
+
+describe('race plan', () => {
+  it('starts slower, total equals goal, fuel only for long races', async () => {
+    const { racePlan, START_SLOWER_S } = await import('../racePlan')
+    const p = racePlan('half', 2 * 3600)
+    expect(p.splits.at(-1)!.at).toBeCloseTo(7200, 6)
+    expect(p.startPace - p.goalPace).toBe(START_SLOWER_S)
+    expect(p.restPace).toBeLessThan(p.goalPace)
+    expect(p.fuel).toBeGreaterThan(0)
+    expect(racePlan('tenK', 3300).fuel).toBe(0)
+  })
+})
+
+describe('recentPainDays', () => {
+  it('counts pain answers in the last 7 days', async () => {
+    const { recentPainDays } = await import('../readiness')
+    const log = { '2026-10-10': { sleep: 0 as const, sore: 0 as const, pain: true }, '2026-10-20': { sleep: 0 as const, sore: 1 as const, pain: true }, '2026-10-24': { sleep: 1 as const, sore: 0 as const, pain: true }, '2026-10-23': { sleep: 0 as const, sore: 0 as const, pain: false } }
+    expect(recentPainDays(log, '2026-10-25')).toEqual(['2026-10-20', '2026-10-24'])
+  })
+})

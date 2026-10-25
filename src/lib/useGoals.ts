@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react'
-import { BADGES, defaultMonthGoal, earnedBadges } from './goals'
+import { BADGES, defaultMonthGoal, earnedBadges, type RaceKey } from './goals'
 import { useRuns, useSessions } from './log'
 import { usePersisted } from './storage'
 import { useProgram } from './program'
@@ -7,7 +7,7 @@ import { notify } from './dialog'
 
 export function useMonthGoal() {
   const p = useProgram()
-  const [goals, setGoals] = usePersisted<{ monthKm?: number }>('goals', {})
+  const [goals, setGoals] = usePersisted<{ monthKm?: number; race?: Partial<Record<RaceKey, number>> }>('goals', {})
   // เฉลี่ยทั้งโปรแกรม (ไม่นับสัปดาห์แข่ง) — ใช้สัปดาห์ปัจจุบันจะทำให้เป้าเดือนเปลี่ยนกลางเดือนตอนเข้าสัปดาห์ลด
   const weeks = Array.from({ length: p.meta.weeks - (p.isRace ? 1 : 0) }, (_, i) => p.kmTarget(i + 1))
   const avg = weeks.reduce((a, b) => a + b, 0) / Math.max(1, weeks.length)
@@ -30,3 +30,15 @@ export function useBadgeWatcher() {
   }, [earned, seen, setSeen])
 }
 
+
+/** เวลาเป้าหมายแต่ละระยะ (ซิงก์ใน key 'goals' เดียวกับเป้ารายเดือน) */
+export function useRaceGoals() {
+  const [goals, setGoals] = usePersisted<{ monthKm?: number; race?: Partial<Record<RaceKey, number>> }>('goals', {})
+  const set = (k: RaceKey, sec: number | null) => setGoals(g => {
+    const race = { ...g.race }
+    if (sec) race[k] = sec
+    else delete race[k]
+    return { ...g, race }
+  })
+  return [goals.race ?? {}, set] as const
+}

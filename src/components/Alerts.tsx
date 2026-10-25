@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { HeartPulse, History } from 'lucide-react'
+import { Bandage, HeartPulse, History } from 'lucide-react'
 import { clearance, clearanceText, useScreening } from '../lib/screening'
 import { comeback } from '../lib/detraining'
+import { recentPainDays, type Readiness } from '../lib/readiness'
 import { useRuns, useSessions } from '../lib/log'
 import { useProgram } from '../lib/program'
 import { usePersisted } from '../lib/storage'
@@ -18,6 +19,10 @@ export function Alerts() {
   const p = useProgram()
   const [dismissed, setDismissed] = usePersisted('comebackDismissed', '')
   const [open, setOpen] = useState(false)
+  const [readiness] = usePersisted<Record<string, Readiness>>('readiness', {})
+  const [painSeen, setPainSeen] = usePersisted('painDismissed', '')
+  const pain = recentPainDays(readiness, today())
+  const showPain = pain.length >= 2 && painSeen !== pain.at(-1)
 
   const dates = [...sessions.map(s => s.date), ...runs.map(r => r.date)]
   const lastActivity = dates.reduce((a, b) => (a > b ? a : b), '')
@@ -44,6 +49,18 @@ export function Alerts() {
             </div>
           } />
       )}
+      {showPain && (
+        <Banner tone="bad" icon={<Bandage size={20} />} title={`เจ็บ ${pain.length} วันใน 7 วันที่ผ่านมา`}
+          text="งดวิ่งหนักและวิ่งยาว 3–5 วัน เปลี่ยนเป็นวิ่งเบาสั้น ๆ เดิน หรือพัก แล้วค่อยกลับมาที่ระดับต่ำกว่าเดิม 1 สัปดาห์ ถ้าเจ็บเกิน 1 สัปดาห์ เจ็บจนเดินกะเผลก หรือบวม ควรพบแพทย์/นักกายภาพ"
+          action={
+            <div className="flex gap-2">
+              {!p.autoWeek && p.currentWeek > 1 && (
+                <Button size="sm" onClick={() => { p.setWeek(p.currentWeek - 1); setPainSeen(pain.at(-1)!) }}>ย้อน 1 สัปดาห์</Button>
+              )}
+              <Button size="sm" variant="soft" onClick={() => setPainSeen(pain.at(-1)!)}>รับทราบ</Button>
+            </div>
+          } />
+      )}
       {open && <ScreeningSheet onClose={() => setOpen(false)} />}
     </>
   )
@@ -55,11 +72,12 @@ function Banner({ tone, icon, title, text, action }: { tone: 'bad' | 'warn'; ico
     <section className={cx('animate-fade-up rounded-2xl px-3.5 py-3 ring-1', tones[tone])}>
       <div className="flex items-start gap-2.5">
         <span className="mt-0.5 shrink-0">{icon}</span>
+        {/* ปุ่มอยู่ใต้ข้อความ — วางข้าง ๆ แล้วข้อความยาวถูกบีบเป็นคอลัมน์แคบบนจอมือถือ */}
         <div className="min-w-0 flex-1">
           <div className="text-sm font-bold">{title}</div>
           <p className="text-xs text-ink/75">{text}</p>
+          <div className="mt-2">{action}</div>
         </div>
-        <div className="shrink-0">{action}</div>
       </div>
     </section>
   )

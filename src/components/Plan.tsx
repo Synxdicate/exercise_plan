@@ -17,6 +17,7 @@ import { RunTypeCard } from './RunTypes'
 import { ReadinessSheet } from './Readiness'
 import { Badge, Button, Collapse, Meter, Segmented } from './ui'
 import { AddSheet, SwapSheet } from './ExercisePicker'
+import { RacePlan } from './RacePlan'
 
 const short = ['จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส', 'อา']
 const todayIdx = () => (new Date().getDay() + 6) % 7 // 0 = จันทร์
@@ -125,7 +126,7 @@ function PlanBody() {
         done={isDone(selected)} hint={paceHint(est, day.runKind, day.title)}
         setDone={v => setDayDone(selected, v)}
         onStart={() => setChecking(selected)}
-        onLocation={m => p.setDayLocation(week, selected, m)} />
+        onLocation={m => p.setDayLocation(week, selected, m)} slotId={p.doneId(week, selected)} />
 
       {/* ทั้งสัปดาห์แบบย่อ */}
       <section className="rounded-3xl bg-card p-2 shadow-sm ring-1 ring-line">
@@ -164,9 +165,9 @@ function PlanBody() {
   )
 }
 
-function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation }: {
+function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slotId }: {
   day: Day; isToday: boolean; done: boolean; hint: string | null
-  setDone: (v: boolean) => void; onStart: () => void; onLocation: (m: 'gym' | 'park') => void
+  setDone: (v: boolean) => void; onStart: () => void; onLocation: (m: 'gym' | 'park') => void; slotId: string
 }) {
   const nav = useNav()
   const p = useProgram()
@@ -234,6 +235,7 @@ function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation }: {
             <p>{day.exercises[0]?.cue}</p>
             {hint && <p className="mt-1 font-semibold text-run">{hint}</p>}
           </div>
+          {day.runKind === 'race' && <RacePlan day={day} date={slotId} />}
           {day.runKind && <RunTypeCard kind={day.runKind} />}
           {day.runKind !== 'race' && (
             <Button size="lg" variant="run" className="w-full" onClick={() => nav('runs')}><Footprints size={18} /> ไปเริ่มวิ่ง</Button>

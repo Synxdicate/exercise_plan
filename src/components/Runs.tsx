@@ -13,6 +13,7 @@ import { RpePicker } from './RpePicker'
 import { isNative } from '../lib/native'
 import { speak, splitAnnouncement } from '../lib/voice'
 import { useGuide } from '../lib/useGuide'
+import { guides } from '../lib/guide'
 import { useBackClose } from '../lib/back'
 import { App } from '@capacitor/app'
 import { GuideCard } from './Guide'
@@ -24,12 +25,18 @@ import { PhotoStrip } from './Photos'
 import { useRemovePhotosFor } from '../lib/photos'
 import { HeatCard } from './Heat'
 import { ReadinessSheet } from './Readiness'
-import { addDays, niceDate, shortDate, today, weekStart } from '../lib/date'
+import { addDays, daysBetween, niceDate, shortDate, today, weekStart } from '../lib/date'
 import { Badge, Button, Card, Collapse, Portal, Segmented, Stat } from './ui'
 import { RunHistory } from './RunHistory'
+import { JourneyCard } from './Journey'
+import { useRaceGoals } from '../lib/useGoals'
+import { parseDuration, raceKm, raceLabel, type RaceKey } from '../lib/goals'
 import { DateInput, NumberInput, SelectInput, TextInput } from './Form'
 import { cx } from '../lib/cx'
 import { ask, notify } from '../lib/dialog'
+
+// วิ่งทดสอบ 5K (เลือกชนิด "แข่ง" ในวันที่ไม่ใช่วันแข่ง)
+const TRIAL = guides.timeTrial()
 
 const RunMap = lazy(() => import('./RunMap'))
 
@@ -57,7 +64,8 @@ export function Runs() {
   const [view, setView] = usePersisted<'start' | 'history' | 'stats'>('runsView', 'start')
   const [guideOn, setGuideOn] = usePersisted('guideOn', true)
   // เสียงนำใช้กับชุดซ้อมของวันนี้ เมื่อเลือกชนิดการวิ่งตรงกับแผน
-  const steps = todayRun?.guide && kind === todayRun.runKind ? todayRun.guide : null
+  // วันแข่งตามแผนไม่มีชุดซ้อม — เลือก "แข่ง" ในวันอื่นคือวิ่งทดสอบ 5K
+  const steps = todayRun?.guide && kind === todayRun.runKind ? todayRun.guide : kind === 'race' && todayRun?.runKind !== 'race' ? TRIAL : null
   const guide = useGuide(guideOn ? steps : null, est?.paces, voice)
   const t = useRunTracker({ onSplit: (km, split, total) => { if (voice) void speak(splitAnnouncement(km, total, split)) }, onTick: guide.onTick })
 
@@ -145,6 +153,7 @@ export function Runs() {
 
       {view === 'start' && (
         <>
+          <JourneyCard runs={runs} est={est} />
           <HeatCard />
           <RunTypeCard kind={kind} />
         </>
@@ -167,7 +176,7 @@ export function Runs() {
 
       {view === 'stats' && (
         <>
-          <PaceCard est={est} runs={runs} />
+          <PaceCard est={est} runs={runs} onTrial={() => { setKind('race'); setView('start'); window.scrollTo({ top: 0, behavior: 'smooth' }) }} />
           <BestEfforts runs={runs} />
           <Card title="8 สัปดาห์ล่าสุด">
             <WeeklyBars runs={runs} target={target} />
@@ -442,9 +451,11 @@ const roundedTop = (x: number, y: number, w: number, h: number) => {
   return `M${x} ${y + h} V${y + r} Q${x} ${y} ${x + r} ${y} H${x + w - r} Q${x + w} ${y} ${x + w} ${y + r} V${y + h} Z`
 }
 
-function PaceCard({ est, runs }: { est: Estimate | null; runs: Run[] }) {
+function PaceCard({ est, runs, onTrial }: { est: Estimate | null; runs: Run[]; onTrial: () => void }) {
   const trend = useMemo(() => predictionTrend(runs, 12), [runs])
-  const [pick, setPick] = useState<'fiveK' | 'tenK' | 'half' | 'full'>('tenK')
+  const [pick, setPick] = useState<RaceKey>('tenK')
+  const [goals, setGoal] = useRaceGoals()
+  const [draft, setDraft] = useState('')
   if (!est)
     return (
       <Card title={<span className="flex items-center gap-2"><Gauge size={18} className="text-run" /> เพซแนะนำ</span>}>
@@ -453,19 +464,31 @@ function PaceCard({ est, runs }: { est: Estimate | null; runs: Run[] }) {
     )
   // เทียบกับ 4 สัปดาห์ก่อน: ติดลบ = เร็วขึ้น
   const before = trend.at(-5)
-  const items = [['fiveK', '5K'], ['tenK', '10K'], ['half', 'ฮาล์ฟ'], ['full', 'ฟูล']] as const
+  const goal = goals[pick]
+  const saveGoal = () => { setGoal(pick, parseDuration(draft)); setDraft('') }
   return (
     <Card title={<span className="flex items-center gap-2"><Gauge size={18} className="text-run" /> เวลาคาดการณ์ & โซนเพซ</span>}>
+      {daysBetween(est.from.date, today()) > 42 && (
+        <div className="mb-3 flex items-center gap-2 rounded-xl bg-run/10 p-3 text-sm text-run">
+          <span className="flex-1">ผลที่ใช้คำนวณเก่าเกิน 6 สัปดาห์ — วิ่งทดสอบ 5K เพื่ออัปเดตโซนและเวลาคาดการณ์</span>
+          <Button size="sm" variant="run" onClick={onTrial}>ทดสอบ 5K</Button>
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-2">
-        {items.map(([k, label]) => {
+        {(Object.keys(raceLabel) as RaceKey[]).map(k => {
           const prev = before?.[k]
           const diff = prev ? est[k] - prev : 0
+          const g = goals[k]
           return (
             <button key={k} onClick={() => setPick(k)}
               className={cx('rounded-xl px-3 py-2 text-left ring-1 transition-colors', pick === k ? 'bg-run/10 ring-run/40' : 'bg-raised ring-transparent')}>
-              <div className="text-xs text-muted">{label}{k === 'full' && !est.fullReliable && ' (ค่าคร่าว ๆ)'}</div>
+              <div className="text-xs text-muted">{raceLabel[k]}{k === 'full' && !est.fullReliable && ' (ค่าคร่าว ๆ)'}</div>
               <div className="text-lg font-bold tabular-nums">{formatDuration(est[k])}</div>
-              {Math.abs(diff) >= 1 && (
+              {g ? (
+                <div className={cx('text-[11px] font-semibold tabular-nums', est[k] <= g ? 'text-good' : 'text-warn')}>
+                  {est[k] <= g ? `ถึงเป้า ${formatDuration(g)} แล้ว` : `ขาดอีก ${formatDuration(est[k] - g)} ถึงเป้า`}
+                </div>
+              ) : Math.abs(diff) >= 1 && (
                 <div className={cx('text-[11px] font-semibold tabular-nums', diff < 0 ? 'text-good' : 'text-warn')}>
                   {diff < 0 ? 'เร็วขึ้น' : 'ช้าลง'} {formatDuration(Math.abs(diff))} ใน 4 สัปดาห์
                 </div>
@@ -474,7 +497,21 @@ function PaceCard({ est, runs }: { est: Estimate | null; runs: Run[] }) {
           )
         })}
       </div>
-      <TrendLine points={trend.map(t => ({ date: t.date, v: t[pick] }))} />
+      <TrendLine points={trend.map(t => ({ date: t.date, v: t[pick] }))} goal={goal} />
+      <div className="mt-3 rounded-xl bg-raised p-3">
+        <div className="text-xs font-semibold text-muted">เป้าหมาย {raceLabel[pick]}</div>
+        {goal ? (
+          <div className="mt-1 flex items-center justify-between gap-2 text-sm">
+            <span><b className="tabular-nums">{formatDuration(goal)}</b> · ต้องวิ่งเพซ <b className="tabular-nums">{formatPace(goal, raceKm[pick])}</b> /กม.</span>
+            <button onClick={() => setGoal(pick, null)} className="text-xs font-semibold text-muted">ลบเป้า</button>
+          </div>
+        ) : (
+          <div className="mt-1.5 flex items-end gap-2">
+            <TextInput className="flex-1" value={draft} onChange={setDraft} placeholder={pick === 'half' || pick === 'full' ? 'เช่น 1:59:59' : 'เช่น 55:00'} />
+            <Button disabled={!parseDuration(draft)} onClick={saveGoal}>ตั้งเป้า</Button>
+          </div>
+        )}
+      </div>
       <div className="mt-3 text-xs font-semibold text-muted">โซนเพซของคุณ (นาที/กม.)</div>
       <div className="mt-1.5"><ZoneLegend fiveK={est.paces.interval} /></div>
       <p className="mt-2 text-xs text-muted">
@@ -486,12 +523,12 @@ function PaceCard({ est, runs }: { est: Estimate | null; runs: Run[] }) {
 }
 
 /** เส้นแนวโน้มเวลาคาดการณ์ 12 สัปดาห์ (ต่ำลง = เร็วขึ้น จึงกลับแกนให้ดีขึ้นอยู่ด้านบน) */
-function TrendLine({ points }: { points: { date: string; v: number | null }[] }) {
+function TrendLine({ points, goal }: { points: { date: string; v: number | null }[]; goal?: number }) {
   const pts = points.filter((p): p is { date: string; v: number } => p.v !== null)
   if (pts.length < 2) return null
   const W = 320, H = 70, pad = 6
   const vs = pts.map(p => p.v)
-  const lo = Math.min(...vs), hi = Math.max(...vs)
+  const lo = Math.min(...vs, goal ?? Infinity), hi = Math.max(...vs, goal ?? -Infinity)
   const x = (i: number) => pad + (i / (points.length - 1)) * (W - pad * 2)
   const y = (v: number) => (hi === lo ? H / 2 : pad + ((v - lo) / (hi - lo)) * (H - pad * 2))
   const idx = (d: string) => points.findIndex(p => p.date === d)
@@ -501,7 +538,12 @@ function TrendLine({ points }: { points: { date: string; v: number | null }[] })
     <div className="mt-3">
       <div className="mb-1 flex justify-between text-[11px] text-muted"><span>12 สัปดาห์ก่อน</span><span>วันนี้</span></div>
       <svg viewBox={`0 0 ${W} ${H}`} className="block w-full" role="img" aria-label="แนวโน้มเวลาคาดการณ์">
-        <line x1={0} x2={W} y1={H / 2} y2={H / 2} className="stroke-line" strokeDasharray="3 4" />
+        {goal ? (
+          <g>
+            <line x1={0} x2={W} y1={y(goal)} y2={y(goal)} className="stroke-good" strokeDasharray="5 4" strokeWidth={1.5} />
+            <text x={W - 2} y={y(goal) - 4} textAnchor="end" className="fill-good text-[9px] font-semibold">เป้า</text>
+          </g>
+        ) : <line x1={0} x2={W} y1={H / 2} y2={H / 2} className="stroke-line" strokeDasharray="3 4" />}
         <path d={path} fill="none" className="stroke-run" strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
         <circle cx={x(idx(last.date))} cy={y(last.v)} r={4.5} className="fill-run stroke-card" strokeWidth={2} />
       </svg>

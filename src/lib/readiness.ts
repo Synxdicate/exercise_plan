@@ -7,3 +7,12 @@ export function readinessLevel(r: Readiness): Level {
   const score = r.sleep + r.sore
   return score >= 4 ? 'red' : score >= 2 ? 'yellow' : 'green'
 }
+
+/** วันที่ตอบว่า "เจ็บแปลบ/เจ็บผิดปกติ" ใน 7 วันล่าสุด (นับวันนี้) — เจ็บซ้ำแปลว่าแผนหนักเกินสำหรับตอนนี้ */
+export function recentPainDays(log: Record<string, Readiness>, today: string, days = 7) {
+  const t = new Date(today).getTime()
+  return Object.entries(log)
+    .filter(([d, r]) => r.pain && (t - new Date(d).getTime()) / 864e5 < days && d <= today)
+    .map(([d]) => d)
+    .sort()
+}
