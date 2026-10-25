@@ -16,6 +16,7 @@ import { WorkoutPlayer } from './WorkoutPlayer'
 import { Alerts } from './Alerts'
 import { HeatCard } from './Heat'
 import { MonthGoalCard } from './Goals'
+import { WeekSummary } from './WeekSummary'
 import { ReadinessSheet } from './Readiness'
 import { Button, Card } from './ui'
 import { cx } from '../lib/cx'
@@ -73,6 +74,8 @@ export function Dashboard() {
       </section>
 
       <MonthGoalCard />
+
+      <WeekSummary />
 
       {todayPlan && (
         <Card>
