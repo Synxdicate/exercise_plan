@@ -195,3 +195,16 @@ test('รูปสาธิตท่าในตารางฝึก', async ({
   await expect(img).toBeVisible()
   expect(await img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth)).toBe(360)
 })
+
+test('ระหว่างวิ่ง: สัญญาณ GPS หายเกิน 20 วิ → แจ้งเตือน', async ({ page, context }) => {
+  await context.grantPermissions(['geolocation'])
+  await context.setGeolocation({ latitude: 16.4419, longitude: 102.8359, accuracy: 8 })
+  await seed(page, { readiness: { [ymd(0)]: { sleep: 0, sore: 0, pain: false, level: 'green' } } })
+  await nav(page, 'วิ่ง')
+  await page.getByRole('button', { name: 'เริ่มวิ่ง' }).click()
+  await page.getByRole('button', { name: /เริ่มจับเวลา|เริ่มเลย/ }).click()
+  // ไม่มีจุด GPS ใหม่เข้ามาอีก
+  await expect(page.getByText(/สัญญาณ GPS หาย/)).toBeVisible({ timeout: 30_000 })
+  await context.setGeolocation({ latitude: 16.4420, longitude: 102.8360, accuracy: 8 })
+  await expect(page.getByText(/สัญญาณ GPS หาย/)).toBeHidden({ timeout: 10_000 })
+})

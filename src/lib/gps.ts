@@ -51,12 +51,21 @@ type Opts = {
   onSplit?: (km: number, splitSec: number, totalSec: number) => void
   /** ทุกวินาที + ทุกจุด GPS ระหว่างวิ่ง (ใช้กับเสียงนำ — callback ของ GPS ทำงานแม้ปิดจอ) */
   onTick?: (meters: number, active: boolean, pace: number | null) => void
+  /** เหตุการณ์ระหว่างวิ่ง (ใช้พูดแจ้ง): หยุด/วิ่งต่ออัตโนมัติ, สัญญาณ GPS หาย/กลับมา */
+  onEvent?: (e: RunEvent) => void
 }
+
+export type RunEvent = 'autopause' | 'resume' | 'gpsLost' | 'gpsBack'
+const SIGNAL_LOST_MS = 20000
 
 export function useRunTracker(opts: Opts = {}) {
   const onSplitRef = useRef(opts.onSplit)
   const onTickRef = useRef(opts.onTick)
-  useEffect(() => { onSplitRef.current = opts.onSplit; onTickRef.current = opts.onTick })
+  const onEventRef = useRef(opts.onEvent)
+  useEffect(() => { onSplitRef.current = opts.onSplit; onTickRef.current = opts.onTick; onEventRef.current = opts.onEvent })
+  const lastFixAt = useRef(0)
+  const [signalLost, setSignalLost] = useState(false)
+  const lostRef = useRef(false)
   const [live, setLive] = useState<Live>(loadSaved)
   const [now, setNow] = useState(() => Date.now())
   const [position, setPosition] = useState<Point | null>(null)
@@ -77,8 +86,11 @@ export function useRunTracker(opts: Opts = {}) {
   const wakeLock = useRef<WakeLockSentinel | null>(null)
 
   const update = useCallback((fn: (l: Live) => Live) => {
+    const prev = liveRef.current.status
     const next = fn(liveRef.current)
     liveRef.current = next
+    if (prev === 'running' && next.status === 'autopaused') onEventRef.current?.('autopause')
+    if (prev === 'autopaused' && next.status === 'running') onEventRef.current?.('resume')
     setLive(next)
     try {
       if (next.status === 'idle') localStorage.removeItem(STORAGE_KEY)
@@ -110,6 +122,13 @@ export function useRunTracker(opts: Opts = {}) {
       const l = liveRef.current
       if (autoPause && l.status === 'running' && l.segStart !== null && t - l.lastMoveAt > AUTOPAUSE_AFTER_MS) {
         update(x => ({ ...x, status: 'autopaused', activeMs: x.activeMs + Math.max(0, x.lastMoveAt - x.segStart!), segStart: null }))
+      }
+      // ไม่มีจุด GPS เข้ามานานเกิน 20 วิ ระหว่างวิ่ง (ในอาคาร/อุโมงค์/ใต้สะพาน) → แจ้งครั้งเดียว
+      const tracking = l.status === 'running' || l.status === 'autopaused'
+      if (tracking && lastFixAt.current && t - lastFixAt.current > SIGNAL_LOST_MS && !lostRef.current) {
+        lostRef.current = true
+        setSignalLost(true)
+        onEventRef.current?.('gpsLost')
       }
       tick()
     }, 1000)
@@ -177,6 +196,12 @@ export function useRunTracker(opts: Opts = {}) {
     const acc = pos.coords.accuracy
     setAccuracy(acc)
     setError(null)
+    lastFixAt.current = Date.now()
+    if (lostRef.current) {
+      lostRef.current = false
+      setSignalLost(false)
+      onEventRef.current?.('gpsBack')
+    }
     const t = pos.timestamp
     const raw: Point = [pos.coords.latitude, pos.coords.longitude]
     const r = track.current.process({ lat: raw[0], lon: raw[1], acc, t, speed: pos.coords.speed ?? null })
@@ -203,6 +228,9 @@ export function useRunTracker(opts: Opts = {}) {
   }, [update, addDistance, tick])
 
   const stopWatching = useCallback(() => {
+    lastFixAt.current = 0
+    lostRef.current = false
+    setSignalLost(false)
     if (watchId.current !== null) navigator.geolocation.clearWatch(watchId.current)
     watchId.current = null
     nativeWatch.current?.then(id => BackgroundGeolocation.removeWatcher({ id })).catch(() => {})
@@ -265,6 +293,7 @@ export function useRunTracker(opts: Opts = {}) {
   return {
     ...live,
     elapsed,
+    signalLost: signalLost && (live.status === 'running' || live.status === 'autopaused'),
     currentPace: live.status === 'running' ? currentPace : null,
     lastGap,
     dismissGap: () => setLastGap(null),

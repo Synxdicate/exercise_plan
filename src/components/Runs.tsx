@@ -93,7 +93,12 @@ export function Runs() {
     const cue = coach.current.update(now, pace, band, target ? 20_000 : 45_000)
     if (cue) void speak(cueText(cue, !!target))
   }
-  const t = useRunTracker({ onSplit: (km, split, total) => { if (voice) void speak(splitAnnouncement(km, total, split)) }, onTick })
+  const eventText = { autopause: 'หยุดอัตโนมัติ', resume: 'วิ่งต่อ', gpsLost: 'สัญญาณ GPS หาย ระยะช่วงนี้อาจคลาดเคลื่อน', gpsBack: 'สัญญาณ GPS กลับมาแล้ว' }
+  const t = useRunTracker({
+    onSplit: (km, split, total) => { if (voice) void speak(splitAnnouncement(km, total, split)) },
+    onTick,
+    onEvent: e => { if (voice) void speak(eventText[e]) },
+  })
 
   const [shoes] = useShoes()
   const removePhotos = useRemovePhotosFor()
@@ -237,6 +242,8 @@ function ActiveRun({ t, kind, target, fiveK, voice, setVoice, coachOn, setCoachO
   const weak = t.accuracy === null || t.accuracy > GOOD_ACCURACY_M
   const banner =
     t.status === 'acquiring' ? (weak ? 'กำลังหาสัญญาณ GPS… ออกไปที่โล่ง' : 'GPS พร้อมแล้ว') :
+    // GPS หายมาก่อนหยุดอัตโนมัติ — ไม่มีจุดใหม่ก็ดูเหมือน "หยุดนิ่ง" ทั้งที่ยังวิ่งอยู่
+    t.signalLost ? 'สัญญาณ GPS หาย — ออกไปที่โล่ง ระยะช่วงนี้อาจคลาดเคลื่อน' :
     t.status === 'autopaused' ? 'หยุดอัตโนมัติ — เริ่มวิ่งต่อแล้วจะนับเวลาเอง' :
     t.status === 'paused' ? 'พักอยู่' : null
 
