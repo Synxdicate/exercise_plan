@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Check } from 'lucide-react'
-import { locationInfo, programs, type LocationPref, type ProgramId } from '../data/programs'
+import { locationInfo, programLength, programs, type LocationPref, type ProgramId } from '../data/programs'
 import { useProgram } from '../lib/program'
 import { daysBetween, today } from '../lib/date'
 import { cx } from '../lib/cx'
@@ -19,7 +19,7 @@ export function ProgramSheet({ onClose }: { onClose: () => void }) {
 
   const save = () => {
     if (choice !== p.program) p.setProgram(choice)
-    if (choice !== 'physique') p.setRaceDate(date)
+    if (programs[choice].raceKm) p.setRaceDate(date)
     p.setLocationPref(where)
     onClose()
   }
@@ -40,20 +40,20 @@ export function ProgramSheet({ onClose }: { onClose: () => void }) {
               choice === id ? 'bg-accent-soft/50 ring-accent' : 'bg-raised ring-transparent')}>
             <Radio on={choice === id} />
             <span className="min-w-0">
-              <span className="block font-bold">{programs[id].name} <span className="font-normal text-muted">· {programs[id].weeks} สัปดาห์</span></span>
+              <span className="block font-bold">{programs[id].name} <span className="font-normal text-muted">· {programLength(id)}</span></span>
               <span className="block text-sm text-muted">{programs[id].summary}</span>
             </span>
           </button>
         ))}
       </div>
 
-      <Collapse open={choice !== 'physique'}>
+      <Collapse open={!!programs[choice].raceKm}>
         <div className="pt-3">
           {screening && clearance(screening) !== 'clear' && (
             <p className="mb-3 rounded-xl bg-bad/15 p-2 text-xs text-bad">ผลเช็กสุขภาพแนะนำให้พบแพทย์ก่อนฝึกหนัก — โปรแกรมวิ่งแข่งมีวิ่ง tempo/interval ที่นับเป็นการฝึกหนัก</p>
           )}
           <DateInput label="วันแข่ง" hint="ไม่บังคับ — ใส่แล้วแอปจะนับสัปดาห์และ taper ให้เอง" value={date} onChange={setDate} />
-          {choice !== 'physique' && weeksAway !== null && weeksAway < programs[choice].weeks && (
+          {!!programs[choice].raceKm && weeksAway !== null && weeksAway < programs[choice].weeks && (
             <p className="mt-2 rounded-xl bg-warn/15 p-2 text-xs text-warn">
               เหลือ {Math.max(weeksAway, 0)} สัปดาห์ น้อยกว่าโปรแกรม {programs[choice].weeks} สัปดาห์ — แอปจะเริ่มจากกลางโปรแกรม ถ้าฐานยังไม่ถึง ควรเลือกงานที่ไกลกว่านี้
             </p>

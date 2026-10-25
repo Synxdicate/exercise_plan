@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ArrowLeft, ArrowRight, Check, Dumbbell } from 'lucide-react'
-import { locationInfo, programs, type LocationPref, type ProgramId } from '../data/programs'
+import { locationInfo, programLength, programs, type LocationPref, type ProgramId } from '../data/programs'
 import { activityLevels, defaultProfile, goals, targets, type Profile } from '../lib/calc'
 import { useProgram } from '../lib/program'
 import { usePersisted } from '../lib/storage'
@@ -31,11 +31,11 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
     setSaved({ ...screen, date: today() })
     if (program !== p.program) p.setProgram(program)
     p.setLocationPref(where)
-    if (program !== 'physique') p.setRaceDate(raceDate)
+    if (programs[program].raceKm) p.setRaceDate(raceDate)
     onDone()
   }
 
-  const t = targets(draft, program !== 'physique')
+  const t = targets(draft, !!programs[program].raceKm)
 
   const Option = ({ on, onClick, title, text }: { on: boolean; onClick: () => void; title: string; text: string }) => (
     <button onClick={onClick} className={cx('flex w-full items-start gap-3 rounded-2xl p-3 text-left ring-2 transition-colors active:scale-[.99]',
@@ -88,11 +88,11 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
 
         {step === 2 && (
           <>
-            <p className="text-sm text-muted">ถ้าวิ่งยังไม่ถึง 15 กม./สัปดาห์ เริ่มจากหุ่นหรือ 10K ก่อน แล้วค่อยต่อฮาล์ฟ → ฟูล</p>
+            <p className="text-sm text-muted">ไม่มีงานแข่งเลือก "วิ่งต่อเนื่อง" ได้ — ถ้าวิ่งยังไม่ถึง 15 กม./สัปดาห์ เริ่มจากหุ่นหรือ 10K ก่อนฮาล์ฟ/ฟูล</p>
             {(Object.keys(programs) as ProgramId[]).map(id => (
-              <Option key={id} on={program === id} onClick={() => setProgram(id)} title={`${programs[id].name} · ${programs[id].weeks} สัปดาห์`} text={programs[id].summary} />
+              <Option key={id} on={program === id} onClick={() => setProgram(id)} title={`${programs[id].name} · ${programLength(id)}`} text={programs[id].summary} />
             ))}
-            {program !== 'physique' && (
+            {!!programs[program].raceKm && (
               <DateInput label="วันแข่ง (ไม่บังคับ)" value={raceDate} onChange={setRaceDate} />
             )}
           </>

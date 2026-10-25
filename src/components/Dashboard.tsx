@@ -55,7 +55,7 @@ export function Dashboard() {
       <section className="rounded-2xl bg-gradient-to-br from-accent to-[#7c3aed] p-4 text-white shadow-sm">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-sm opacity-80">{p.meta.short} · สัปดาห์ที่ {week} จาก {p.meta.weeks}</div>
+            <div className="text-sm opacity-80">{p.meta.short} · {p.ongoing ? `สัปดาห์ที่ ${week} ของรอบ` : `สัปดาห์ที่ ${week} จาก ${p.meta.weeks}`}</div>
             <div className="text-xl font-extrabold">{p.daysToRace !== null && p.daysToRace >= 0 ? `อีก ${p.daysToRace} วันถึงวันแข่ง` : 'สัปดาห์นี้'}</div>
           </div>
           <div className="flex flex-col items-end gap-1">

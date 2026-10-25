@@ -3,9 +3,10 @@ import { programs, variants, weekKm, weekPlan } from '../../data/programs'
 import { weeklySets } from '../../data/muscles'
 
 const race = ['ten', 'half', 'full'] as const
+const running = ['base', ...race] as const
 
 describe('โปรแกรมวิ่ง', () => {
-  for (const p of race) {
+  for (const p of running) {
     const n = programs[p].weeks
 
     it(`${p}: ระยะต่อสัปดาห์ไม่เพิ่มเกิน 20% จากสัปดาห์ที่มากที่สุดก่อนหน้า (งานวิจัยพบความเสี่ยงที่ >30%)`, () => {
@@ -17,7 +18,7 @@ describe('โปรแกรมวิ่ง', () => {
       }
     })
 
-    it(`${p}: สัปดาห์สุดท้ายคือวันแข่งระยะเต็ม และมี taper ก่อนแข่ง`, () => {
+    if (p !== 'base') it(`${p}: สัปดาห์สุดท้ายคือวันแข่งระยะเต็ม และมี taper ก่อนแข่ง`, () => {
       const race = variants(p, n).gym.at(-1)!
       expect(race.runKind).toBe('race')
       expect(race.targetKm).toBe(programs[p].raceKm)
@@ -44,9 +45,15 @@ describe('โปรแกรมวิ่ง', () => {
     })
   }
 
+  it('base: วนรอบได้ — ข้ามจากสัปดาห์ลดกลับไปสัปดาห์ 1 เพิ่มไม่เกิน 20% และไม่มีวันแข่ง', () => {
+    const n = programs.base.weeks
+    expect(weekKm('base', 1) / weekKm('base', n)).toBeLessThanOrEqual(1.2)
+    for (let w = 1; w <= n; w++) expect(variants('base', w).gym.some(d => d.runKind === 'race')).toBe(false)
+  })
+
   it('ไม่วิ่งหนัก/วิ่งยาวในวันถัดจากเวทขา — ผลกระทบอยู่ราว 6–48 ชม. (Doma 2017)', () => {
     const legs = /squat|deadlift|rdl|split|lunge|leg curl|pistol|bridge/i
-    for (const p of ['physique', ...race] as const) {
+    for (const p of ['physique', ...running] as const) {
       const weeks = programs[p].weeks
       for (let w = 1; w <= weeks; w++) for (const m of ['gym', 'park'] as const) {
         const days = variants(p, w)[m]
@@ -66,7 +73,7 @@ describe('โปรแกรมวิ่ง', () => {
   })
 
   it('ยิมกับสวนต่างกันแค่วันเวท', () => {
-    for (const p of ['physique', ...race] as const) {
+    for (const p of ['physique', ...running] as const) {
       const v = variants(p, 3)
       v.gym.forEach((g, i) => {
         if (g.type !== 'strength') expect(v.park[i]).toEqual(g)

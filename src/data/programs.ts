@@ -1,13 +1,15 @@
 import { gymWeek, parkWeek, type Day, type Exercise } from './workouts'
 import { guides, type Step } from '../lib/guide'
 
-export type ProgramId = 'physique' | 'ten' | 'half' | 'full'
-type RaceId = Exclude<ProgramId, 'physique'>
+export type ProgramId = 'physique' | 'base' | 'ten' | 'half' | 'full'
+type RunProgram = Exclude<ProgramId, 'physique'>
 export type Mode = 'gym' | 'park'
 export type LocationPref = Mode | 'mix'
 
-export const programs: Record<ProgramId, { name: string; short: string; weeks: number; raceKm?: number; summary: string }> = {
+// ongoing = ไม่มีวันจบ วนรอบตามสัปดาห์ในปฏิทิน (weeks = ความยาวรอบ)
+export const programs: Record<ProgramId, { name: string; short: string; weeks: number; raceKm?: number; ongoing?: boolean; summary: string }> = {
   physique: { name: 'หุ่นลีนแบบ Tom Holland', short: 'หุ่น', weeks: 12, summary: 'เวท 3 วัน + วิ่ง 2 วัน เน้นเพิ่มกล้าม ลดไขมัน' },
+  base: { name: 'วิ่งต่อเนื่อง (ไม่มีเป้าแข่ง)', short: 'วิ่ง', weeks: 4, ongoing: true, summary: 'ไม่มีวันจบ วนรอบละ 4 สัปดาห์: วิ่ง 3 วัน (หนัก 1 วัน) + เวท 2 วัน ~12–16 กม./สัปดาห์ รักษาความฟิต อยากเพิ่มระยะค่อยเปลี่ยนเป็น 10K' },
   ten: { name: '10K', short: '10K', weeks: 10, raceKm: 10, summary: 'ขั้นต่อจากฐานตอนนี้: วิ่ง 3 วัน (สัปดาห์ 1–3) → 4 วัน + เวท 2 วัน ระยะรวม ~10 → ~22 กม./สัปดาห์' },
   half: { name: 'ฮาล์ฟมาราธอน 21.1 กม.', short: 'ฮาล์ฟ', weeks: 16, raceKm: 21.1, summary: 'วิ่ง 4 วัน + เวท 2 วัน (รักษากล้าม) ระยะรวมค่อย ๆ เพิ่มจาก ~14 เป็น ~37 กม./สัปดาห์' },
   full: { name: 'ฟูลมาราธอน 42.2 กม.', short: 'ฟูล', weeks: 18, raceKm: 42.2, summary: 'ต่อจากฮาล์ฟ: วิ่ง 4 วัน + เวท 2 วัน ระยะรวม ~36 → ~60 กม./สัปดาห์' },
@@ -26,6 +28,14 @@ const pace = (km: number, set: string, label: string): Q => ({ km, kind: 'tempo'
 
 // ปริมาณเพิ่มทีละน้อย มีสัปดาห์ลด (cutback) ทุก 3–4 สัปดาห์ และ taper ก่อนแข่ง
 // easyB = 0 → วันเสาร์เป็นวันพัก (ช่วงแรกของ 10K วิ่ง 3 วันเท่ากับที่วิ่งอยู่เดิม)
+// วิ่งต่อเนื่อง: ระดับใกล้กับที่วิ่งอยู่ (2.5–5 กม. × 3) ขยับเล็กน้อย 3 สัปดาห์ แล้วลด 1 สัปดาห์ วนไปเรื่อย ๆ
+const baseWeeks: RunWeek[] = [
+  { easyA: 4, q: fartlek(4), easyB: 0, long: 6 },
+  { easyA: 4, q: tempo(5, '2×5'), easyB: 0, long: 7 },
+  { easyA: 4, q: reps(5, '5 × 800 ม. / จ็อก 2 นาที'), easyB: 0, long: 7 },
+  { easyA: 3, q: strides(4), easyB: 0, long: 5, note: 'สัปดาห์ลดปริมาณ ให้ร่างกายปรับตัว ก่อนเริ่มรอบใหม่' },
+]
+
 const tenWeeks: RunWeek[] = [
   { easyA: 3, q: fartlek(3), easyB: 0, long: 4 },
   { easyA: 3, q: tempo(4, '2×5'), easyB: 0, long: 5 },
@@ -133,12 +143,12 @@ const runnerStrength: Record<Mode, [Exercise[], Exercise[]]> = {
 
 const strengthNote = 'เหลือแรง 2–3 ครั้งทุกเซ็ต ไม่เล่นจนหมดแรง เพื่อไม่ให้ขาล้าก่อนวันวิ่งคุณภาพ'
 
-const tables: Record<RaceId, RunWeek[]> = { ten: tenWeeks, half: halfWeeks, full: fullWeeks }
+const tables: Record<RunProgram, RunWeek[]> = { base: baseWeeks, ten: tenWeeks, half: halfWeeks, full: fullWeeks }
 
-function raceWeek(program: RaceId, mode: Mode, week: number): Day[] {
+function raceWeek(program: RunProgram, mode: Mode, week: number): Day[] {
   const table = tables[program]
   const w = table[Math.min(Math.max(week, 1), table.length) - 1]
-  const last = week === table.length
+  const last = !!programs[program].raceKm && week === table.length
   const taper = last || (w.note?.startsWith('Taper') ?? false)
   const [a, b] = runnerStrength[mode]
   const lighten = (list: Exercise[]) => (taper ? list.map(e => ({ ...e, sets: '2' })) : list)
@@ -183,6 +193,8 @@ export function weekKm(program: ProgramId, week: number) {
   return Math.round(variants(program, week).gym.reduce((s, d) => s + (d.targetKm ?? 0), 0))
 }
 
+export const programLength = (id: ProgramId) => (programs[id].ongoing ? `วนรอบ ${programs[id].weeks} สัปดาห์` : `${programs[id].weeks} สัปดาห์`)
+
 export const locationInfo: Record<LocationPref, { label: string; text: string }> = {
   gym: { label: 'ยิมทุกวัน', text: 'เพิ่มน้ำหนักได้ละเอียด เห็นผลเรื่องกล้ามเร็วที่สุด โดยเฉพาะขา' },
   mix: { label: 'ผสม (แนะนำถ้ามีสมาชิกยิม)', text: 'วันที่มีขา/ท่าหนักไปยิม วันเวทวันสุดท้ายของสัปดาห์ไปสวน (บอดี้เวทแบบ Tom Holland)' },
@@ -190,5 +202,5 @@ export const locationInfo: Record<LocationPref, { label: string; text: string }>
 }
 
 export const weekNote = (program: ProgramId, week: number) =>
-  program !== 'physique' ? tables[program][week - 1]?.note : week === 9 ? 'สัปดาห์ Deload: ทำทุกท่าครึ่งหนึ่งของจำนวนเซ็ต น้ำหนักเท่าเดิม วิ่งเบาอย่างเดียว' : undefined
+  program !== 'physique' ? tables[program][(week - 1) % tables[program].length]?.note : week === 9 ? 'สัปดาห์ Deload: ทำทุกท่าครึ่งหนึ่งของจำนวนเซ็ต น้ำหนักเท่าเดิม วิ่งเบาอย่างเดียว' : undefined
 

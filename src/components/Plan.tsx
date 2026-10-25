@@ -83,7 +83,7 @@ function PlanBody() {
               className={cx('relative flex min-w-14 shrink-0 snap-start flex-col items-center rounded-2xl px-3 py-1.5 ring-1',
                 w === week ? 'bg-ink text-bg ring-ink' : 'bg-card text-ink ring-line')}>
               <span className={cx('text-[10px]', w === week ? 'opacity-70' : 'text-muted')}>
-                {w === p.meta.weeks && p.isRace ? 'แข่ง' : light ? 'เบา' : 'สัปดาห์'}
+                {w === p.meta.weeks && p.isRace ? 'แข่ง' : light ? 'เบา' : p.ongoing ? 'รอบที่' : 'สัปดาห์'}
               </span>
               <span className="text-base font-bold leading-tight">{w}</span>
               {w === p.currentWeek && <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-accent" />}

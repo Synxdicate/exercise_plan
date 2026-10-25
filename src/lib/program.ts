@@ -2,6 +2,8 @@ import { programs, variants, weekKm, weekPlan, type LocationPref, type Mode, typ
 import { addDays, daysBetween, today, weekStart } from './date'
 import { usePersisted } from './storage'
 
+const CYCLE_EPOCH = '2024-01-01' // วันจันทร์
+
 // สถานะโปรแกรมปัจจุบัน — ใช้ร่วมกันทุกหน้า
 export function useProgram() {
   const [program, setProgramRaw] = usePersisted<ProgramId>('program', 'physique')
@@ -11,7 +13,9 @@ export function useProgram() {
   const [raceDate, setRaceDate] = usePersisted('raceDate', '')
 
   const meta = programs[program]
-  const isRace = program !== 'physique'
+  const isRace = !!meta.raceKm
+  const ongoing = !!meta.ongoing
+  const thisMonday = weekStart(today())
 
   // มีวันแข่ง: นับสัปดาห์ถอยหลังจากวันแข่ง ให้สัปดาห์สุดท้ายตรงกับสัปดาห์แข่ง
   let currentWeek = manualWeek
@@ -24,9 +28,12 @@ export function useProgram() {
     currentWeek = Math.min(Math.max(w, 1), meta.weeks)
     daysToRace = daysBetween(today(), raceDate)
   }
+  // โปรแกรมต่อเนื่อง: สัปดาห์ในรอบมาจากปฏิทิน (ทุกคนใช้จุดอ้างอิงเดียวกัน ไม่ต้องเก็บวันเริ่ม)
+  if (ongoing) currentWeek = (Math.floor(daysBetween(CYCLE_EPOCH, thisMonday) / 7) % meta.weeks) + 1
 
   // id ของช่องวัน (i = 0 จันทร์ … 6 อาทิตย์) — ไม่ผูกกับยิม/สวน สลับสถานที่แล้วสถานะไม่หาย
-  const slotId = (week: number, i: number) => `${program}-w${week}-d${i}`
+  // โปรแกรมต่อเนื่องวนเลขสัปดาห์ซ้ำ จึงผูก id กับวันจันทร์ของสัปดาห์จริงแทน (ไม่งั้นรอบใหม่จะติ๊กค้างจากรอบก่อน)
+  const slotId = (week: number, i: number) => (ongoing ? `${program}-${addDays(thisMonday, 7 * (week - currentWeek))}-d${i}` : `${program}-w${week}-d${i}`)
 
   const locationFor = (week: number, i: number): Mode => {
     const o = overrides[slotId(week, i)]
@@ -47,7 +54,8 @@ export function useProgram() {
     currentWeek,
     weeksUntilStart,
     daysToRace,
-    autoWeek: isRace && !!raceDate,
+    autoWeek: (isRace && !!raceDate) || ongoing,
+    ongoing,
     setWeek: setManualWeek,
     setProgram(p: ProgramId) {
       setProgramRaw(p)

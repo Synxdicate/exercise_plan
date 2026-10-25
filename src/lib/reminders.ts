@@ -25,11 +25,12 @@ export function useReminderSchedule() {
     for (let d = 0; d < 14; d++) {
       const at = new Date(now.getFullYear(), now.getMonth(), now.getDate() + d, hh, mm)
       const offset = todayIdx + d
-      const week = Math.min(p.meta.weeks, p.currentWeek + Math.floor(offset / 7))
+      const ahead = p.currentWeek + Math.floor(offset / 7)
+      const week = p.ongoing ? ((ahead - 1) % p.meta.weeks) + 1 : Math.min(p.meta.weeks, ahead)
       const day = p.plan(week)[offset % 7]
       if (!day) continue
       list.push(day.type === 'rest'
-        ? { at, title: 'วันนี้วันพัก 😴', body: 'เดินเบา ๆ ยืดเหยียด นอนให้พอ' }
+        ? { at, title: 'วันนี้วันพัก', body: 'เดินเบา ๆ ยืดเหยียด นอนให้พอ' }
         : {
           at,
           title: day.type === 'run' ? `วันนี้วิ่ง: ${day.title}` : `วันนี้ฝึก: ${day.title}`,
