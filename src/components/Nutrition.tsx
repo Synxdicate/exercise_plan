@@ -96,7 +96,7 @@ export function Nutrition({ profile }: { profile: Profile }) {
         </>
       )}
 
-      <p className="px-2 text-xs text-muted">ค่าทั้งหมดเป็นค่าประมาณ (USDA FoodData Central, ฉลากสินค้า และค่าอาหารจานเดียวที่เผยแพร่ทั่วไป) ค่าจริงขึ้นกับปริมาณและวิธีปรุงของแต่ละร้าน ตรวจค่าอาหารไทยเพิ่มเติมได้ที่ <a href="https://inmu.mahidol.ac.th/thaifcd/home" target="_blank" rel="noreferrer">Thai Food Composition Database (ม.มหิดล)</a></p>
+      <p className="px-2 text-xs text-muted">ค่าประมาณ ขึ้นกับปริมาณและวิธีปรุงของแต่ละร้าน · ดูเพิ่มที่ <a href="https://inmu.mahidol.ac.th/thaifcd/home" target="_blank" rel="noreferrer">Thai Food Composition Database (ม.มหิดล)</a></p>
     </>
   )
 }

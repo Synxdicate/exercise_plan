@@ -288,7 +288,7 @@ function WarmupPlates({ workKg }: { workKg: number }) {
             </li>
           ))}
         </ul>
-        <p className="mt-2 text-[11px] text-muted">วอร์มอัพเฉพาะท่าก่อนยกหนักช่วยให้ทำครั้งได้ดีขึ้น (Ribeiro 2014, 2020) — พักสั้น ๆ ระหว่างเซ็ตวอร์มอัพ ไม่ต้องติ๊กบันทึก</p>
+        <p className="mt-2 text-[11px] text-muted">พักสั้น ๆ ระหว่างเซ็ตวอร์มอัพ ไม่ต้องบันทึก</p>
       </Collapse>
     </div>
   )

@@ -159,8 +159,8 @@ export function Runs() {
 
       <p className="px-2 text-xs text-muted">
         {isNative
-          ? 'แอป Android บันทึก GPS ต่อได้แม้ปิดจอ (มีแจ้งเตือนค้างไว้ระหว่างวิ่ง) — ถ้าบันทึกหยุดเอง ให้ตั้งค่าแบตเตอรี่ของแอปเป็น "ไม่จำกัด"'
-          : 'เว็บอ่าน GPS ได้เฉพาะตอนเปิดหน้านี้ค้างไว้ (แอปกันจอดับให้แล้ว) ถ้าปิดจอหรือสลับแอป ช่วงนั้นจะไม่ถูกบันทึก — ใช้แอป Android หรือนำเข้า GPX จาก Strava แทนได้'}
+          ? 'ถ้าบันทึกหยุดเองตอนปิดจอ ให้ตั้งแบตเตอรี่ของแอปเป็น "ไม่จำกัด"'
+          : 'บนเว็บ GPS ทำงานเฉพาะตอนเปิดหน้านี้ค้างไว้ — ปิดจอได้ต้องใช้แอป Android'}
       </p>
 
       {cooldown && <CooldownSheet km={cooldown.km} onDone={() => { setDetail(cooldown.id); setCooldown(null) }} />}
@@ -223,7 +223,7 @@ function ActiveRun({ t, kind, target, fiveK, voice, setVoice, onFinish }: { t: R
         {t.lastGap && (
           <div className="flex animate-fade-up items-start gap-2 rounded-2xl bg-warn/15 p-3 text-sm text-warn">
             <TriangleAlert size={18} className="mt-0.5 shrink-0" />
-            <span className="flex-1">ปิดจอ/สลับแอปไป <b>{formatDuration(t.lastGap)}</b> — ช่วงนั้นเบราว์เซอร์หยุด GPS ระยะช่วงนั้นนับเป็นเส้นตรง (อาจน้อยกว่าจริง) เปิดหน้านี้ค้างไว้จะแม่นที่สุด</span>
+            <span className="flex-1">ปิดจอไป <b>{formatDuration(t.lastGap)}</b> — ช่วงนั้นนับระยะเป็นเส้นตรง (อาจน้อยกว่าจริง)</span>
             <button onClick={t.dismissGap} aria-label="ปิด" className="shrink-0"><X size={16} /></button>
           </div>
         )}
@@ -317,7 +317,7 @@ function RunDetail({ run, fiveK, onClose, onDelete, onUpdate }: { run: Run; five
           <Stat label="เวลาเคลื่อนที่" value={formatDuration(run.seconds)} sub={run.elapsedSeconds ? `รวม ${formatDuration(run.elapsedSeconds)}` : undefined} />
           <Stat label="เพซเฉลี่ย" value={formatPace(run.seconds, run.km)} sub="นาที/กม." />
         </div>
-        {run.gapSeconds ? <p className="mb-3 rounded-xl bg-warn/15 p-2 text-xs text-warn">มีช่วงปิดจอรวม {formatDuration(run.gapSeconds)} ที่ GPS ไม่ได้บันทึก — ระยะช่วงนั้นเป็นเส้นตรงโดยประมาณ</p> : null}
+        {run.gapSeconds ? <p className="mb-3 rounded-xl bg-warn/15 p-2 text-xs text-warn">ปิดจอรวม {formatDuration(run.gapSeconds)} — ระยะช่วงนั้นเป็นค่าประมาณ</p> : null}
         {series.length > 2 && (
           <div className="mb-3 space-y-3 rounded-2xl bg-raised p-3">
             <PaceChart series={series} avg={run.seconds / run.km} fiveK={fiveK} />
@@ -429,7 +429,7 @@ function PaceCard({ est }: { est: Estimate | null }) {
       </div>
       <div className="mt-3 text-xs font-semibold text-muted">โซนเพซของคุณ (นาที/กม.)</div>
       <div className="mt-1.5"><ZoneLegend fiveK={est.paces.interval} /></div>
-      <p className="mt-2 text-xs text-muted">คำนวณจากการวิ่ง {est.from.km} กม. วันที่ {est.from.date} ด้วยสูตร Riegel — เวลาคาดการณ์ฮาล์ฟ/ฟูลจะแม่นขึ้นเมื่อฝึกครบโปรแกรมแล้ว (ตอนนี้มักเร็วเกินจริงสำหรับมือใหม่)</p>
+      <p className="mt-2 text-xs text-muted">จากการวิ่ง {est.from.km} กม. ({est.from.date}) สูตร Riegel — ฮาล์ฟ/ฟูลมักเร็วเกินจริงจนกว่าจะซ้อมระยะยาวพอ</p>
     </Card>
   )
 }
@@ -456,7 +456,7 @@ function BestEfforts({ runs }: { runs: Run[] }) {
           </li>
         ))}
       </ul>
-      <p className="mt-1 text-[11px] text-muted">หาช่วงที่เร็วที่สุดในทุกการวิ่ง (ไม่จำเป็นต้องวิ่งระยะนั้นพอดี) — การวิ่งที่กรอกเองนับเฉพาะเมื่อระยะตรง</p>
+      <p className="mt-1 text-[11px] text-muted">ช่วงที่เร็วที่สุดจากทุกการวิ่ง ไม่ต้องวิ่งระยะนั้นพอดี</p>
     </Card>
   )
 }
@@ -538,7 +538,6 @@ function ShoesCard({ runs }: { runs: Run[] }) {
           )
         })}
       </ul>
-      {active.length > 0 && <p className="mt-3 text-[11px] text-muted">ระยะเปลี่ยน ~500–800 กม. เป็นแนวทางของผู้ผลิตและโค้ช ยังไม่มีงานวิจัยยืนยันตัวเลขที่แน่นอน</p>}
     </Card>
   )
 }

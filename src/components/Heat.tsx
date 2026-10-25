@@ -63,7 +63,7 @@ export function HeatCard() {
               <div className="mt-1 flex justify-between text-[10px] text-muted"><span>05:00</span><span>13:00</span><span>21:00</span></div>
             </div>
           )}
-          <p className="mt-2 text-[11px] text-muted">WBGT ในที่ร่ม ประมาณจากอุณหภูมิและความชื้น (Stull 2011) — กลางแดดจริงร้อนกว่านี้ ~2–3° ระดับอิงแนวทาง ACSM แบบระมัดระวัง</p>
+          <p className="mt-2 text-[11px] text-muted">WBGT ในที่ร่ม (ประมาณ) — กลางแดดร้อนกว่านี้ ~2–3°</p>
         </div>
       </Collapse>
     </section>

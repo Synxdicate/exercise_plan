@@ -6,7 +6,7 @@ export function Sources() {
   return (
     <>
       <Card title="ช่อง YouTube ที่แนะนำ">
-        <p className="-mt-1 mb-3 text-xs text-muted">เลือกช่องที่อธิบายโดยอิงงานวิจัยหรือโดยโค้ชที่มีใบรับรอง ปุ่มเล่นสีแดงในตารางฝึกจะเปิดผลค้นหา YouTube ของท่านั้น ให้เลือกคลิปจากช่องเหล่านี้</p>
+        <p className="-mt-1 mb-3 text-xs text-muted">ช่องที่อิงงานวิจัยหรือโค้ชที่มีใบรับรอง — ปุ่มเล่นในตารางฝึกเปิดคลิปท่านั้นบน YouTube</p>
         <ul className="divide-y divide-line">
           {channels.map(c => (
             <li key={c.name}>
@@ -24,7 +24,7 @@ export function Sources() {
       </Card>
 
       <Card title="แหล่งอ้างอิง">
-        <p className="-mt-1 mb-3 text-xs text-muted">ตัวเลขในแอปอ้างอิงจากแนวทางวิชาการและงานวิจัยเหล่านี้ (ตรวจกับ PubMed แล้ว) ส่วนข้อมูลของ Tom Holland มาจากสื่อ ใช้เล่าสไตล์การฝึกเท่านั้น</p>
+        <p className="-mt-1 mb-3 text-xs text-muted">ตัวเลขในแอปอ้างอิงจากรายการนี้ (ตรวจกับ PubMed แล้ว) — ข้อมูล Tom Holland มาจากสื่อ</p>
         <div className="space-y-4">
           {[...new Set(references.map(r => r.cat))].map(cat => (
             <div key={cat}>

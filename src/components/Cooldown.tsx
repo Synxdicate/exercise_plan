@@ -74,7 +74,7 @@ export function CooldownSheet({ km, onDone }: { km: number; onDone: () => void }
             <ul className="mt-2 space-y-1.5 text-sm">
               {stretches.map(([name, how]) => <li key={name}><b>{name}</b> <span className="text-muted">— {how} · ค้าง 30 วิ/ข้าง</span></li>)}
             </ul>
-            <p className="mt-2 text-[11px] text-muted">ยืดเพื่อความสบายตัวได้ แต่ไม่ได้ช่วยลดปวดเมื่อยมากนัก (Cochrane 2011) — ความยืดหยุ่นระยะยาวได้จากเวทเทรนนิ่งพอ ๆ กับการยืด</p>
+            <p className="mt-2 text-[11px] text-muted">ยืดเพื่อความสบายตัว — ไม่ได้ช่วยลดปวดเมื่อยมากนัก</p>
           </Collapse>
         </div>
         <Button size="lg" className="w-full" onClick={onDone}>ดูสรุปการวิ่ง</Button>

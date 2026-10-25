@@ -64,13 +64,12 @@ function BodyLog() {
           <NumberInput label="รอบเอว (ไม่บังคับ)" unit="ซม." step={0.5} stepper value={waist} placeholder={String(log.at(-1)?.waist ?? '')} onChange={setWaist} />
           <Button className="col-span-2" onClick={add}>บันทึก</Button>
         </div>
-        <p className="mt-2 text-xs text-muted">ชั่งตอนเช้าหลังเข้าห้องน้ำ วัดรอบเอวระดับสะดือ — recomp อาจทำให้น้ำหนักนิ่งแต่เอวลด</p>
+        <p className="mt-2 text-xs text-muted">ชั่งตอนเช้าหลังเข้าห้องน้ำ วัดเอวระดับสะดือ — น้ำหนักนิ่งแต่เอวลดก็คือไปถูกทาง</p>
       </Card>
 
       {weeks.length > 1 && (
         <Card title="น้ำหนักเฉลี่ยรายสัปดาห์">
           <TrendChart unit="กก." points={weeks.map(w => ({ label: shortDate(w.start), value: w.avg }))} />
-          <p className="mt-2 text-xs text-muted">เป้า recomp: ลด ~0.1–0.3 กก./สัปดาห์ หรือคงที่แต่รอบเอวลดและแรงเพิ่ม</p>
         </Card>
       )}
 
@@ -212,7 +211,7 @@ function StrengthStats() {
         {hist.length > 1
           ? <TrendChart unit={bodyweight ? 'ครั้ง' : 'กก. (1RM โดยประมาณ)'} points={hist.map(p => ({ label: shortDate(p.date), value: p.value }))} />
           : <p className="py-4 text-center text-sm text-muted">ต้องมีอย่างน้อย 2 ครั้งถึงจะเห็นเส้นกราฟ</p>}
-        <p className="mt-2 text-xs text-muted">{bodyweight ? 'ท่าบอดี้เวทใช้จำนวนครั้งสูงสุดต่อเซ็ต' : '1RM โดยประมาณคำนวณด้วยสูตร Epley จากเซ็ตที่ดีที่สุดของแต่ละวัน — ใช้ดูแนวโน้ม ไม่ต้องลองยกจริง'}</p>
+        <p className="mt-2 text-xs text-muted">{bodyweight ? 'ท่าบอดี้เวทใช้จำนวนครั้งสูงสุดต่อเซ็ต' : '1RM ประมาณจากเซ็ตที่ดีที่สุดของวัน (สูตร Epley) ไว้ดูแนวโน้ม ไม่ต้องลองยกจริง'}</p>
       </Card>
     </>
   )
