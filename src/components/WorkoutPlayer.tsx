@@ -10,6 +10,7 @@ import { cancelRestEnd, scheduleRestEnd } from '../lib/notify'
 import { Badge, Button, Collapse, Portal } from './ui'
 import { RpePicker } from './RpePicker'
 import { cx } from '../lib/cx'
+import { useBackClose } from '../lib/back'
 import { ask } from '../lib/dialog'
 
 type SetRow = { kg: string; reps: string; done: boolean }
@@ -119,6 +120,7 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
   const quit = async () => {
     if (doneCount === 0 || (await ask('ความคืบหน้าจะถูกเก็บไว้ กลับมาทำต่อได้', { title: 'ออกจากการฝึก?', ok: 'ออก' }))) onClose()
   }
+  useBackClose(() => void quit())
 
   return (
     <Portal>
@@ -204,7 +206,7 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
       {rating && (
         <div className="fixed inset-0 z-[60] flex animate-fade-in items-end justify-center bg-black/50 sm:items-center">
           <div className="w-full max-w-lg animate-sheet-up space-y-4 rounded-t-3xl bg-card p-5 pb-[calc(var(--sab)+1.25rem)] sm:rounded-3xl">
-            <div className="text-lg font-bold">เยี่ยมมาก! จบการฝึกแล้ว 💪</div>
+            <div className="text-lg font-bold">เยี่ยมมาก! จบการฝึกแล้ว</div>
             <RpePicker onPick={save} />
             <button className="w-full py-2 text-sm text-muted" onClick={() => save()}>ข้าม</button>
           </div>

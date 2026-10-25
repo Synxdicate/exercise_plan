@@ -65,3 +65,14 @@ export function usePhotoUrl(path: string) {
   }, [path])
   return { url, failed }
 }
+
+/** ลบรูปที่แนบกับการวิ่ง/การฝึกที่ถูกลบ — ลบไฟล์แบบพยายาม (ออฟไลน์ก็ลบรายการออกก่อน) */
+export function useRemovePhotosFor() {
+  const [photos, setPhotos] = usePhotos()
+  return (refId: string) => {
+    const gone = photos.filter(p => p.refId === refId)
+    if (!gone.length) return
+    void supabase.storage.from('photos').remove(gone.map(p => p.path))
+    setPhotos(prev => prev.filter(p => p.refId !== refId))
+  }
+}

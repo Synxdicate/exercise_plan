@@ -8,7 +8,10 @@ import { notify } from './dialog'
 export function useMonthGoal() {
   const p = useProgram()
   const [goals, setGoals] = usePersisted<{ monthKm?: number }>('goals', {})
-  return [goals.monthKm ?? defaultMonthGoal(p.kmTarget()), (km: number) => setGoals(g => ({ ...g, monthKm: km })), goals.monthKm === undefined] as const
+  // เฉลี่ยทั้งโปรแกรม (ไม่นับสัปดาห์แข่ง) — ใช้สัปดาห์ปัจจุบันจะทำให้เป้าเดือนเปลี่ยนกลางเดือนตอนเข้าสัปดาห์ลด
+  const weeks = Array.from({ length: p.meta.weeks - (p.isRace ? 1 : 0) }, (_, i) => p.kmTarget(i + 1))
+  const avg = weeks.reduce((a, b) => a + b, 0) / Math.max(1, weeks.length)
+  return [goals.monthKm ?? defaultMonthGoal(avg), (km: number) => setGoals(g => ({ ...g, monthKm: km })), goals.monthKm === undefined] as const
 }
 
 /** แจ้งเตือนเมื่อได้เหรียญใหม่ — ครั้งแรกบนเครื่องนี้ถือว่าเหรียญที่มีอยู่แล้ว "เห็นแล้ว" ไม่แจ้งย้อนหลัง */

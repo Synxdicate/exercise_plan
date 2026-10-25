@@ -28,7 +28,7 @@ export async function scheduleRestEnd(at: Date, next?: string) {
   if (!(await ensureNotifications())) return
   await LocalNotifications.cancel({ notifications: [{ id: REST_ID }] }).catch(() => {})
   await LocalNotifications.schedule({
-    notifications: [{ id: REST_ID, channelId: 'workout', title: 'หมดเวลาพัก 💪', body: next ? `ถัดไป: ${next}` : 'ได้เวลาเซ็ตถัดไป', schedule: { at, allowWhileIdle: true } }],
+    notifications: [{ id: REST_ID, channelId: 'workout', title: 'หมดเวลาพัก', body: next ? `ถัดไป: ${next}` : 'ได้เวลาเซ็ตถัดไป', schedule: { at, allowWhileIdle: true } }],
   }).catch(() => {})
 }
 

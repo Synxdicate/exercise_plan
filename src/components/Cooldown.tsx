@@ -52,14 +52,14 @@ export function CooldownSheet({ km, onDone }: { km: number; onDone: () => void }
   }, [endAt])
 
   return (
-    <Sheet onClose={onDone} title={`เยี่ยม! วิ่ง ${km.toFixed(2)} กม. 🎉 ต่อด้วยคูลดาวน์`}>
+    <Sheet onClose={onDone} title={`เยี่ยม! วิ่ง ${km.toFixed(2)} กม. — ต่อด้วยคูลดาวน์`}>
       <div className="space-y-4">
         <div className="rounded-2xl bg-raised p-4 text-center">
           <div className="text-xs text-muted">เดินหรือจ็อกเบามาก ๆ</div>
           <div className="text-5xl font-extrabold tabular-nums">{formatDuration(left)}</div>
           {!endAt && !walked && <Button className="mt-3" onClick={() => setEndAt(Date.now() + WALK_SEC * 1000)}><Play size={16} fill="currentColor" /> เริ่มคูลดาวน์ 5 นาที</Button>}
           {endAt && !walked && <Button variant="soft" className="mt-3" onClick={() => setWalked(true)}>ข้าม</Button>}
-          {walked && <div className="mt-2 text-sm font-semibold text-good">เสร็จแล้ว ✓</div>}
+          {walked && <div className="mt-2 text-sm font-semibold text-good">เสร็จแล้ว</div>}
         </div>
         <ul className="space-y-3">
           <Item icon={Footprints} title="เดิน 5 นาที" text="ให้ชีพจรค่อย ๆ ลง ลดอาการหน้ามืดจากการหยุดทันที (สำคัญตอนอากาศร้อน)" done={walked} />

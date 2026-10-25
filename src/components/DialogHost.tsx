@@ -2,12 +2,14 @@ import { useSyncExternalStore } from 'react'
 import { CircleCheck, CircleAlert, Info } from 'lucide-react'
 import { answer, getAsk, getToasts, subscribeDialogs } from '../lib/dialog'
 import { cx } from '../lib/cx'
+import { useBackClose } from '../lib/back'
 import { Button, Portal } from './ui'
 
 /** แสดงกล่องยืนยันและ toast ของทั้งแอป — วางไว้ครั้งเดียวที่ราก */
 export function DialogHost() {
   const pending = useSyncExternalStore(subscribeDialogs, getAsk)
   const toasts = useSyncExternalStore(subscribeDialogs, getToasts)
+  useBackClose(() => answer(false), !!pending)
   return (
     <Portal>
       {pending && (

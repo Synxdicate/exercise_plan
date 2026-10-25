@@ -10,6 +10,7 @@ import { Badge, Button, Card, Segmented, Stat } from './ui'
 import { DateInput, NumberInput } from './Form'
 import { cx } from '../lib/cx'
 import { PhotoStrip, ProgressPhotos } from './Photos'
+import { useRemovePhotosFor } from '../lib/photos'
 import { ask } from '../lib/dialog'
 
 type Entry = { date: string; weight: number; waist?: number }
@@ -121,6 +122,7 @@ function WorkoutHistory() {
   const [sessions, setSessions] = useSessions()
   const [open, setOpen] = useState<string | null>(null)
   const [editing, setEditing] = useState<string | null>(null)
+  const removePhotos = useRemovePhotosFor()
 
   if (sessions.length === 0)
     return <Card><p className="py-6 text-center text-sm text-muted">ยังไม่มีบันทึก — ไปที่แท็บ "ฝึก" แล้วกด "บันทึกการฝึก" ในวันเวท</p></Card>
@@ -159,7 +161,7 @@ function WorkoutHistory() {
                 <div className="mt-3"><PhotoStrip kind="workout" refId={s.id} date={s.date} label="รูปการฝึก" /></div>
                 <div className="mt-2 flex gap-2">
                   <Button variant="soft" size="sm" onClick={() => setEditing(s.id)}><Pencil size={14} /> แก้ไข</Button>
-                  <Button variant="danger" size="sm" onClick={async () => (await ask('ลบบันทึกการฝึกนี้?', { ok: 'ลบ', danger: true })) && setSessions(prev => prev.filter(x => x.id !== s.id))}>
+                  <Button variant="danger" size="sm" onClick={async () => (await ask('ลบบันทึกการฝึกนี้?', { ok: 'ลบ', danger: true })) && (setSessions(prev => prev.filter(x => x.id !== s.id)), removePhotos(s.id))}>
                     <Trash2 size={14} /> ลบ
                   </Button>
                 </div>

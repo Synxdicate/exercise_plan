@@ -1,8 +1,9 @@
-import { useState, type ButtonHTMLAttributes, type ReactNode } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { useRef, useState, type ButtonHTMLAttributes, type ReactNode } from 'react'
+import { ChevronDown, X } from 'lucide-react'
 import { createPortal } from 'react-dom'
 
 import { cx } from '../lib/cx'
+import { useBackClose } from '../lib/back'
 
 export function Card({ children, className, title, action }: { children: ReactNode; className?: string; title?: ReactNode; action?: ReactNode }) {
   return (
@@ -100,14 +101,36 @@ export function Collapse({ open, children }: { open: boolean; children: ReactNod
 export const Portal = ({ children }: { children: ReactNode }) => createPortal(children, document.body)
 
 export function Sheet({ onClose, children, title }: { onClose: () => void; children: ReactNode; title?: ReactNode }) {
+  useBackClose(onClose)
+  // ลากแถบด้านบนลงเพื่อปิด (เกิน 90 px หรือปัดเร็ว)
+  const [drag, setDrag] = useState(0)
+  const start = useRef<{ y: number; t: number } | null>(null)
+  const onDown = (e: React.PointerEvent) => { start.current = { y: e.clientY, t: Date.now() }; e.currentTarget.setPointerCapture(e.pointerId) }
+  const onMove = (e: React.PointerEvent) => { if (start.current) setDrag(Math.max(0, e.clientY - start.current.y)) }
+  const onUp = (e: React.PointerEvent) => {
+    if (!start.current) return
+    const dy = e.clientY - start.current.y
+    const fast = dy > 40 && dy / Math.max(1, Date.now() - start.current.t) > 0.6
+    start.current = null
+    if (dy > 90 || fast) onClose()
+    else setDrag(0)
+  }
   return (
     <Portal>
     <div className="fixed inset-0 z-50 flex animate-fade-in items-end justify-center bg-black/50 sm:items-center" onClick={onClose}>
-      <div className="max-h-[92dvh] w-full max-w-lg animate-sheet-up overflow-y-auto rounded-t-3xl bg-card p-4 pb-[calc(var(--sab)+1rem)] sm:animate-fade-up sm:rounded-3xl"
-        onClick={e => e.stopPropagation()}>
-        <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-line sm:hidden" />
-        {title && <div className="mb-3 text-lg font-bold">{title}</div>}
-        {children}
+      {/* ชั้นนอกเล่นแอนิเมชันตอนเปิด ชั้นในขยับตามนิ้ว (animation fill-mode จะทับ transform ถ้าอยู่ชั้นเดียวกัน) */}
+      <div className="w-full max-w-lg animate-sheet-up sm:animate-fade-up" onClick={e => e.stopPropagation()}>
+      <div className={cx('flex max-h-[92dvh] flex-col rounded-t-3xl bg-card sm:rounded-3xl', !drag && 'transition-transform duration-200')}
+        style={drag ? { transform: `translateY(${drag}px)` } : undefined}>
+        <div className="shrink-0 touch-none px-4 pt-2" onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}>
+          <div className="mx-auto mb-1 h-1.5 w-10 rounded-full bg-line sm:hidden" />
+          <div className="flex min-h-10 items-center gap-2 pb-2">
+            <div className="min-w-0 flex-1 text-lg font-bold">{title}</div>
+            <button onClick={onClose} onPointerDown={e => e.stopPropagation()} aria-label="ปิด" className="grid size-9 shrink-0 place-items-center rounded-full bg-raised text-muted"><X size={18} /></button>
+          </div>
+        </div>
+        <div className="min-h-0 overflow-y-auto overscroll-contain px-4 pb-[calc(var(--sab)+1rem)]">{children}</div>
+      </div>
       </div>
     </div>
     </Portal>

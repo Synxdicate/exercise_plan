@@ -11,6 +11,7 @@ import { useReminderSchedule, useReminderSetting } from './lib/reminders'
 import { useBadgeWatcher } from './lib/useGoals'
 import { isNative } from './lib/native'
 import { APP_VERSION, useUpdateAvailable } from './lib/update'
+import { useBackButton, useBackClose } from './lib/back'
 import { supabase } from './lib/supabase'
 import { exportData, getSyncStatus, importData, stopSync, subscribeSyncStatus } from './lib/sync'
 import { today } from './lib/date'
@@ -66,6 +67,12 @@ function Main({ session }: { session: Session }) {
     history.replaceState(null, '', `#${id}`)
     window.scrollTo({ top: 0 })
   }
+  // ปุ่มย้อนกลับ Android: ไม่มีอะไรเปิดซ้อน → กลับหน้าหลักก่อน แล้วค่อยย่อแอป
+  useBackButton(() => {
+    if (tab === 'overview') return false
+    go('overview')
+    return true
+  })
 
   if (!onboarded) return <Onboarding onDone={() => setOnboarded(true)} />
 
@@ -129,6 +136,7 @@ function UserMenu({ session, onSources }: { session: Session; onSources: () => v
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [programOpen, setProgramOpen] = useState(false)
+  useBackClose(() => setOpen(false), open)
   const [theme, setTheme] = useTheme()
   const [reminder, setReminder] = useReminderSetting()
   const meta = session.user.user_metadata as { full_name?: string; avatar_url?: string } | undefined

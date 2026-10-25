@@ -13,12 +13,15 @@ import { RpePicker } from './RpePicker'
 import { isNative } from '../lib/native'
 import { speak, splitAnnouncement } from '../lib/voice'
 import { useGuide } from '../lib/useGuide'
+import { useBackClose } from '../lib/back'
+import { App } from '@capacitor/app'
 import { GuideCard } from './Guide'
 import { usePersisted } from '../lib/storage'
 import { RunTypeCard } from './RunTypes'
 import { CooldownSheet } from './Cooldown'
 import { ShareRunSheet } from './ShareRun'
 import { PhotoStrip } from './Photos'
+import { useRemovePhotosFor } from '../lib/photos'
 import { HeatCard } from './Heat'
 import { ReadinessSheet } from './Readiness'
 import { addDays, shortDate, today, weekStart } from '../lib/date'
@@ -56,6 +59,7 @@ export function Runs() {
   const t = useRunTracker({ onSplit: (km, split, total) => { if (voice) void speak(splitAnnouncement(km, total, split)) }, onTick: guide.onTick })
 
   const [shoes] = useShoes()
+  const removePhotos = useRemovePhotosFor()
   // การวิ่งใหม่ผูกกับรองเท้าคู่หลักอัตโนมัติ (เปลี่ยนได้ในหน้ารายละเอียด)
   const save = (r: Run) => setRuns(prev => [...prev, { ...r, shoeId: r.shoeId ?? defaultShoe(shoes)?.id }].sort((a, b) => a.date.localeCompare(b.date)))
 
@@ -186,13 +190,15 @@ export function Runs() {
           onProceed={light => { if (light) setKind('easy'); setChecking(false); t.acquire() }} />
       )}
 
-      {open && <RunDetail run={open} fiveK={(est ?? estimate([open]))?.paces.interval} onClose={() => setDetail(null)} onUpdate={patch => setRuns(prev => prev.map(x => (x.id === open.id ? { ...x, ...patch } : x)).sort((a, b) => a.date.localeCompare(b.date)))} onDelete={() => { setRuns(prev => prev.filter(x => x.id !== open.id)); setDetail(null) }} />}
+      {open && <RunDetail run={open} fiveK={(est ?? estimate([open]))?.paces.interval} onClose={() => setDetail(null)} onUpdate={patch => setRuns(prev => prev.map(x => (x.id === open.id ? { ...x, ...patch } : x)).sort((a, b) => a.date.localeCompare(b.date)))} onDelete={() => { setRuns(prev => prev.filter(x => x.id !== open.id)); removePhotos(open.id); setDetail(null) }} />}
     </div>
   )
 }
 
 function ActiveRun({ t, kind, target, fiveK, voice, setVoice, onFinish, onDiscard, guide }: { t: ReturnType<typeof useRunTracker>; kind: Run['kind']; target?: number; fiveK?: number; voice: boolean; setVoice: (v: boolean) => void; onFinish: () => void; onDiscard: () => void; guide?: ReactNode }) {
   const km = t.meters / 1000
+  // ระหว่างวิ่ง ปุ่มย้อนกลับแค่ย่อแอป (GPS บันทึกต่อ) ไม่ออกจากหน้าวิ่ง
+  useBackClose(() => void App.minimizeApp())
   const weak = t.accuracy === null || t.accuracy > GOOD_ACCURACY_M
   const banner =
     t.status === 'acquiring' ? (weak ? 'กำลังหาสัญญาณ GPS… ออกไปที่โล่ง' : 'GPS พร้อมแล้ว') :
@@ -312,6 +318,7 @@ function Splits({ splits, fiveK }: { splits: number[]; fiveK?: number }) {
 function RunDetail({ run, fiveK, onClose, onDelete, onUpdate }: { run: Run; fiveK?: number; onClose: () => void; onDelete: () => void; onUpdate: (patch: Partial<Run>) => void }) {
   const [editing, setEditing] = useState(false)
   const [sharing, setSharing] = useState(false)
+  useBackClose(onClose)
   const series = run.route && run.times ? paceSeries(run.route, run.times) : []
   const sa = splitAnalysis(run.splits)
   const saText = sa && {
