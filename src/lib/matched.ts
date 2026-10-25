@@ -36,3 +36,12 @@ export function sameRoute(a: Run, b: Run) {
 export function matchedRuns(run: Run, runs: Run[]) {
   return runs.filter(r => r.id === run.id || sameRoute(run, r)).sort((x, y) => x.date.localeCompare(y.date))
 }
+
+/** เส้นทางสำหรับ heatmap: เฉพาะที่อยู่ใกล้การวิ่งล่าสุด (≤30 กม.) — ไปวิ่งต่างจังหวัดครั้งเดียวไม่ทำให้แผนที่ซูมออกจนดูอะไรไม่ออก */
+export function heatmapRoutes(runs: Run[], radiusKm = 30) {
+  const withRoute = runs.filter(r => r.route && r.route.length > 1).sort((a, b) => a.date.localeCompare(b.date))
+  const last = withRoute.at(-1)
+  if (!last) return { routes: [] as Point[][], hidden: 0 }
+  const near = withRoute.filter(r => haversine(r.route![0], last.route![0]) <= radiusKm * 1000)
+  return { routes: near.map(r => r.route!), hidden: withRoute.length - near.length }
+}

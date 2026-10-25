@@ -230,3 +230,17 @@ test('ปฏิทินการฝึก: วันที่วิ่ง/เ�
   await page.getByRole('button', { name: 'วันนี้', exact: true }).click()
   await expect(page.getByText('Easy 5.30 กม. · 31:40')).toBeVisible()
 })
+
+test('แผนที่รวมทุกการวิ่ง (heatmap)', async ({ page }) => {
+  await seed(page, {
+    runs: [
+      { id: 'h1', date: ymd(3), km: 3, seconds: 1200, kind: 'easy', source: 'gps', ...loopRoute() },
+      { id: 'h2', date: ymd(1), km: 3, seconds: 1150, kind: 'easy', source: 'gps', ...loopRoute() },
+    ],
+  })
+  await nav(page, 'วิ่ง')
+  await page.getByRole('button', { name: 'สถิติ' }).click()
+  await expect(page.getByText('แผนที่การวิ่งทั้งหมด')).toBeVisible()
+  await expect(page.getByText(/2 เส้นทาง/)).toBeVisible()
+  await expect(page.locator('.leaflet-container canvas, .leaflet-container svg').first()).toBeAttached()
+})

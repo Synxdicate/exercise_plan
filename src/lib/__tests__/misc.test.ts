@@ -298,3 +298,13 @@ describe('monthGrid', () => {
     expect(shiftMonth('2026-12', 1)).toBe('2027-01')
   })
 })
+
+describe('heatmapRoutes', () => {
+  it('keeps routes near the latest run only', async () => {
+    const { heatmapRoutes } = await import('../matched')
+    const mk = (id: string, date: string, lat: number) => ({ id, date, km: 3, seconds: 1000, kind: 'easy' as const, source: 'gps' as const, route: [[lat, 102.8], [lat + 0.001, 102.8]] as [number, number][] })
+    const r = heatmapRoutes([mk('a', '2026-10-01', 16.44), mk('b', '2026-10-02', 13.75), mk('c', '2026-10-03', 16.45)])
+    expect(r.routes).toHaveLength(2)
+    expect(r.hidden).toBe(1)
+  })
+})

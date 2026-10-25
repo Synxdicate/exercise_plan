@@ -1,5 +1,5 @@
 import { lazy, Suspense, useMemo, useRef, useState, type ReactNode } from 'react'
-import { CalendarCheck, Check, FileUp, Pencil, TriangleAlert, Trophy, Volume2, VolumeX, Footprints, Gauge, History, Pause, Play, Plus, Satellite, Share2, Trash2, X } from 'lucide-react'
+import { CalendarCheck, Check, FileUp, Pencil, TriangleAlert, Trophy, Volume2, VolumeX, Footprints, Gauge, History, Map as MapIcon, Pause, Play, Plus, Satellite, Share2, Trash2, X } from 'lucide-react'
 import { GOOD_ACCURACY_M, useRunTracker, type Point } from '../lib/gps'
 import { formatDuration, formatPace, runKinds, uid, useRuns, type Run } from '../lib/log'
 import { estimate, paceHint, predictionTrend, type Estimate } from '../lib/pace'
@@ -31,6 +31,7 @@ import { Badge, Button, Card, Collapse, Portal, Segmented, Stat } from './ui'
 import { RunHistory } from './RunHistory'
 import { JourneyCard } from './Journey'
 import { MatchedRuns } from './Matched'
+import { heatmapRoutes } from '../lib/matched'
 import { useRaceGoals } from '../lib/useGoals'
 import { parseDuration, raceKm, raceLabel, type RaceKey } from '../lib/goals'
 import { DateInput, NumberInput, SelectInput, TextInput } from './Form'
@@ -41,6 +42,7 @@ import { ask, notify } from '../lib/dialog'
 const TRIAL = guides.timeTrial()
 
 const RunMap = lazy(() => import('./RunMap'))
+const RouteHeatmap = lazy(() => import('./RouteHeatmap'))
 
 function Map(props: { route: Point[]; position?: Point | null; follow?: boolean; className?: string; interactive?: boolean }) {
   return (
@@ -213,6 +215,7 @@ export function Runs() {
           <Card title="8 สัปดาห์ล่าสุด">
             <WeeklyBars runs={runs} target={target} />
           </Card>
+          <HeatmapCard runs={runs} />
           <ShoesCard runs={runs} />
         </>
       )}
@@ -696,6 +699,20 @@ function ShoesCard({ runs }: { runs: Run[] }) {
           )
         })}
       </ul>
+    </Card>
+  )
+}
+
+/** แผนที่รวมทุกการวิ่ง — ทางที่วิ่งบ่อยเข้มขึ้น */
+function HeatmapCard({ runs }: { runs: Run[] }) {
+  const { routes, hidden } = useMemo(() => heatmapRoutes(runs), [runs])
+  if (routes.length < 2) return null
+  return (
+    <Card title={<span className="flex items-center gap-2"><MapIcon size={18} className="text-run" /> แผนที่การวิ่งทั้งหมด</span>}>
+      <Suspense fallback={<div className="h-72 w-full animate-pulse rounded-2xl bg-raised" />}>
+        <RouteHeatmap routes={routes} />
+      </Suspense>
+      <p className="mt-2 text-xs text-muted">{routes.length} เส้นทาง — ทางที่วิ่งบ่อยเส้นจะเข้มขึ้น{hidden ? ` (ไม่รวม ${hidden} ครั้งที่วิ่งที่อื่น)` : ''}</p>
     </Card>
   )
 }
