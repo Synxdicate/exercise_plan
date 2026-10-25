@@ -246,3 +246,16 @@ describe('PaceCoach', () => {
     for (let t = 0; t < 300_000; t += 10_000) expect(c.update(t, t % 20_000 ? 270 : 300, band, 20_000)).toBeNull()
   })
 })
+
+describe('matched routes', () => {
+  const loop = (id: string, km: number, sec: number, shift = 0, reverse = false) => {
+    const route: [number, number][] = []
+    for (let i = 0; i <= 200; i++) { const a = (i / 200) * Math.PI * 2; route.push([16.44 + 0.004 * Math.sin(a) + shift, 102.83 + 0.006 * Math.cos(a)]) }
+    return { id, date: '2026-10-' + String(10 + Number(id.slice(1))).padStart(2, '0'), km, seconds: sec, kind: 'easy' as const, source: 'gps' as const, route: reverse ? route.reverse() : route }
+  }
+  it('matches the same loop despite GPS noise, not a different place or direction', async () => {
+    const { matchedRuns } = await import('../matched')
+    const a = loop('r1', 4.0, 1500), b = loop('r2', 4.1, 1450, 0.0004), far = loop('r3', 4.0, 1500, 0.01), rev = loop('r4', 4.0, 1500, 0, true), short = loop('r5', 3.0, 1100)
+    expect(matchedRuns(a, [a, b, far, rev, short]).map(r => r.id)).toEqual(['r1', 'r2'])
+  })
+})

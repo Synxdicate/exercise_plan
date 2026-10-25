@@ -170,3 +170,18 @@ test('สลับท่าและเพิ่มท่า', async ({ page }) 
   await page.getByRole('button', { name: /Hammer Curl/ }).click()
   await expect(page.locator('main').getByText('Hammer Curl')).toBeVisible()
 })
+
+test('เส้นทางเดิม: เทียบกับครั้งก่อนบนเส้นทางเดียวกัน', async ({ page }) => {
+  const a = loopRoute(), b = loopRoute()
+  await seed(page, {
+    runs: [
+      { id: 'm1', date: ymd(9), km: 4.0, seconds: 1560, kind: 'easy', source: 'gps', ...a },
+      { id: 'm2', date: ymd(2), km: 4.0, seconds: 1480, kind: 'easy', source: 'gps', ...b },
+    ],
+  })
+  await nav(page, 'วิ่ง')
+  await page.getByRole('button', { name: 'ประวัติ' }).click()
+  await page.locator('main li button').first().click()
+  await expect(page.getByText('เส้นทางนี้วิ่งมาแล้ว 2 ครั้ง')).toBeVisible()
+  await expect(page.getByText(/เร็วกว่าครั้งก่อน 0:20 \/กม\./)).toBeVisible()
+})

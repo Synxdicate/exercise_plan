@@ -30,6 +30,7 @@ import { addDays, daysBetween, niceDate, shortDate, today, weekStart } from '../
 import { Badge, Button, Card, Collapse, Portal, Segmented, Stat } from './ui'
 import { RunHistory } from './RunHistory'
 import { JourneyCard } from './Journey'
+import { MatchedRuns } from './Matched'
 import { useRaceGoals } from '../lib/useGoals'
 import { parseDuration, raceKm, raceLabel, type RaceKey } from '../lib/goals'
 import { DateInput, NumberInput, SelectInput, TextInput } from './Form'
@@ -224,7 +225,7 @@ export function Runs() {
           onProceed={light => { if (light) setKind('easy'); setChecking(false); t.acquire() }} />
       )}
 
-      {open && <RunDetail run={open} fiveK={(est ?? estimate([open]))?.paces.interval} onClose={() => setDetail(null)} onUpdate={patch => setRuns(prev => prev.map(x => (x.id === open.id ? { ...x, ...patch } : x)).sort((a, b) => a.date.localeCompare(b.date)))} onDelete={() => { setRuns(prev => prev.filter(x => x.id !== open.id)); removePhotos(open.id); setDetail(null) }} />}
+      {open && <RunDetail run={open} runs={runs} fiveK={(est ?? estimate([open]))?.paces.interval} onClose={() => setDetail(null)} onUpdate={patch => setRuns(prev => prev.map(x => (x.id === open.id ? { ...x, ...patch } : x)).sort((a, b) => a.date.localeCompare(b.date)))} onDelete={() => { setRuns(prev => prev.filter(x => x.id !== open.id)); removePhotos(open.id); setDetail(null) }} />}
     </div>
   )
 }
@@ -355,7 +356,7 @@ function Splits({ splits, fiveK }: { splits: number[]; fiveK?: number }) {
   )
 }
 
-function RunDetail({ run, fiveK, onClose, onDelete, onUpdate }: { run: Run; fiveK?: number; onClose: () => void; onDelete: () => void; onUpdate: (patch: Partial<Run>) => void }) {
+function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { run: Run; runs: Run[]; fiveK?: number; onClose: () => void; onDelete: () => void; onUpdate: (patch: Partial<Run>) => void }) {
   const [editing, setEditing] = useState(false)
   const [sharing, setSharing] = useState(false)
   useBackClose(onClose)
@@ -407,6 +408,7 @@ function RunDetail({ run, fiveK, onClose, onDelete, onUpdate }: { run: Run; five
           </div>
         )}
         {run.splits && run.splits.length > 0 && <Splits splits={run.splits} fiveK={fiveK} />}
+        <MatchedRuns run={run} runs={runs} />
         <div className="mt-3 rounded-2xl bg-raised p-3"><RpePicker value={run.rpe} onPick={rpe => onUpdate({ rpe })} /></div>
         <div className="mt-3"><PhotoStrip kind="run" refId={run.id} date={run.date} label="รูปการวิ่ง" /></div>
         <Collapse open={editing}>
