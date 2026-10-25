@@ -158,3 +158,15 @@ describe('goals + badges', () => {
     expect(defaultMonthGoal(13)).toBe(55)
   })
 })
+
+describe('route compaction', () => {
+  it('rounds to 5 decimals (~1 m) and halves stored size', async () => {
+    const { roundPoint, isCompact, haversine } = await import('../geo')
+    const raw: [number, number][] = Array.from({ length: 200 }, (_, i) => [16.43 + i * 0.000123456789, 102.82 + i * 0.000098765432])
+    const c = raw.map(roundPoint)
+    expect(isCompact(raw)).toBe(false)
+    expect(isCompact(c)).toBe(true)
+    expect(Math.max(...raw.map((p, i) => haversine(p, c[i])))).toBeLessThan(1)
+    expect(JSON.stringify(c).length).toBeLessThan(JSON.stringify(raw).length * 0.6)
+  })
+})

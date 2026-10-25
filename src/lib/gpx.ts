@@ -1,4 +1,4 @@
-import { haversine, type Point } from './geo'
+import { haversine, type Point, roundPoint } from './geo'
 import { toDateStr } from './date'
 
 // อ่านไฟล์ GPX จาก Strava / Garmin / นาฬิกา → ระยะ เวลาเคลื่อนที่ เพซรายกิโล และเส้นทาง
@@ -37,7 +37,7 @@ export function parseGpx(xml: string) {
   // ลดจุดให้ไม่เกิน ~1,500 จุด พอสำหรับวาดแผนที่ และไม่หนักตอนซิงก์
   const step = Math.ceil(pts.length / 1500)
   const keep = (_: unknown, i: number) => i % step === 0 || i === pts.length - 1
-  const route = pts.filter(keep).map(x => x.p.map(v => +v.toFixed(6)) as Point)
+  const route = pts.filter(keep).map(x => roundPoint(x.p))
   const times = timed ? cum.filter(keep) : undefined
 
   return {

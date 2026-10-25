@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { BackgroundGeolocation, isNative } from './native'
 
-import { haversine, type Point } from './geo'
+import { haversine, roundPoint, type Point } from './geo'
 import { TrackFilter } from './track'
 import { ask } from './dialog'
 
@@ -146,7 +146,7 @@ export function useRunTracker(opts: Opts = {}) {
     const splitsBefore = liveRef.current.splits.length
     update(x => {
       const n = Date.now()
-      let next: Live = { ...x, meters: x.meters + d, route: [...x.route, p], times: [...x.times, Math.round(movingMs(x, n) / 1000)] }
+      let next: Live = { ...x, meters: x.meters + d, route: [...x.route, roundPoint(p)], times: [...x.times, Math.round(movingMs(x, n) / 1000)] }
       if (moving) {
         next.lastMoveAt = n
         if (x.status === 'autopaused') next = { ...next, status: 'running', segStart: n }
@@ -185,7 +185,7 @@ export function useRunTracker(opts: Opts = {}) {
     if (l.status !== 'running' && l.status !== 'autopaused') return
     if (r.kind === 'ignored') return
     if (r.kind === 'start') {
-      update(x => ({ ...x, route: [...x.route, r.p], times: [...x.times, Math.round(movingMs(x) / 1000)], lastMoveAt: Date.now() }))
+      update(x => ({ ...x, route: [...x.route, roundPoint(r.p)], times: [...x.times, Math.round(movingMs(x) / 1000)], lastMoveAt: Date.now() }))
       return
     }
     if (r.kind === 'hold') {

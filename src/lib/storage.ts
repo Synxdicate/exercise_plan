@@ -1,4 +1,5 @@
 import { useCallback, useSyncExternalStore } from 'react'
+import { notify } from './dialog'
 
 // เก็บค่าใน memory + localStorage และแจ้งทุก component ที่ใช้ key เดียวกัน
 // localStorage อาจใช้ไม่ได้ (private mode) — แอปต้องทำงานต่อได้เสมอ
@@ -19,12 +20,18 @@ function read<T>(key: string, initial: T): T {
   return value
 }
 
+let warnedFull = false
+
 function store(key: string, value: unknown) {
   cache.set(key, value)
   try {
     localStorage.setItem(key, JSON.stringify(value))
-  } catch {
-    /* ignore */
+  } catch (e) {
+    // พื้นที่เต็ม: ข้อมูลยังอยู่ในหน่วยความจำและซิงก์ขึ้น server ได้ แต่ปิดแอปตอนออฟไลน์จะหาย — ต้องบอกผู้ใช้
+    if (!warnedFull && e instanceof DOMException && /quota/i.test(e.name)) {
+      warnedFull = true
+      notify('พื้นที่เก็บข้อมูลในเครื่องเต็ม — ต่อเน็ตเพื่อให้ข้อมูลซิงก์ขึ้นระบบ และสำรองข้อมูลจากเมนูบัญชี', 'bad')
+    }
   }
   listeners.get(key)?.forEach(l => l())
 }

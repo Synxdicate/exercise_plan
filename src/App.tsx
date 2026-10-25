@@ -9,6 +9,7 @@ import { ProgramSheet } from './components/ProgramSheet'
 import { useTheme, type Theme } from './lib/theme'
 import { useReminderSchedule, useReminderSetting } from './lib/reminders'
 import { useBadgeWatcher } from './lib/useGoals'
+import { useCompactRuns } from './lib/log'
 import { isNative } from './lib/native'
 import { APP_VERSION, useUpdateAvailable } from './lib/update'
 import { useBackButton, useBackClose } from './lib/back'
@@ -53,6 +54,7 @@ function Main({ session }: { session: Session }) {
   const [onboarded, setOnboarded] = usePersisted('onboarded', false)
   useReminderSchedule()
   useBadgeWatcher()
+  useCompactRuns()
   const update = useUpdateAvailable()
   const [dismissed, setDismissed] = usePersisted('updateDismissed', '')
 

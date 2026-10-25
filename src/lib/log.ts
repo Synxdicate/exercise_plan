@@ -1,5 +1,7 @@
 import type { Point } from './gps'
+import { useEffect } from 'react'
 import { usePersisted } from './storage'
+import { isCompact, roundPoint } from './geo'
 
 export type Run = {
   id: string
@@ -31,6 +33,15 @@ export type Session = {
 }
 
 export const useRuns = () => usePersisted<Run[]>('runs', [])
+
+/** ย่อเส้นทางของการวิ่งเก่า (ก่อน v1.4) ที่เก็บพิกัดเต็มทศนิยม ให้เหลือ 5 ตำแหน่ง — เรียกครั้งเดียวที่ราก */
+export function useCompactRuns() {
+  const [runs, setRuns] = useRuns()
+  useEffect(() => {
+    if (!runs.some(r => r.route && !isCompact(r.route))) return
+    setRuns(prev => prev.map(r => (r.route && !isCompact(r.route) ? { ...r, route: r.route.map(roundPoint) } : r)))
+  }, [runs, setRuns])
+}
 export const useSessions = () => usePersisted<Session[]>('sessions', [])
 
 export const runKinds: Record<Run['kind'], string> = {

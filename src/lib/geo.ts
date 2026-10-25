@@ -1,6 +1,12 @@
 // ฟังก์ชันพิกัดล้วน ๆ (ไม่พึ่ง browser/Capacitor) — ใช้ได้ทั้งในแอปและในชุดทดสอบ
 export type Point = [lat: number, lon: number]
 
+// เก็บพิกัด 5 ตำแหน่ง (~1 ม.) — ละเอียดพอสำหรับ GPS มือถือ (±3–10 ม.) และเล็กกว่าเลขทศนิยมเต็มราวครึ่งหนึ่ง
+// สำคัญเพราะเส้นทางทุกการวิ่งอยู่ใน key 'runs' เดียว และ localStorage จุได้ ~5 MB
+const round5 = (v: number) => Math.round(v * 1e5) / 1e5
+export const roundPoint = ([lat, lon]: Point): Point => [round5(lat), round5(lon)]
+export const isCompact = (route: Point[]) => route.every(([lat, lon]) => lat === round5(lat) && lon === round5(lon))
+
 const R = 6371e3
 export function haversine([lat1, lon1]: Point, [lat2, lon2]: Point) {
   const rad = Math.PI / 180
