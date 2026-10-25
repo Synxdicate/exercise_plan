@@ -115,3 +115,21 @@ describe('projectRoute', () => {
     expect(pts[1][1]).toBeLessThan(pts[0][1])
   })
 })
+
+describe('goals + badges', () => {
+  const run = (date: string, km: number, seconds = km * 360) => ({ id: date + km, date, km, seconds, kind: 'easy' as const, source: 'manual' as const })
+  const ses = (date: string) => ({ id: date, date, mode: 'gym' as const, dayKey: 'a', title: 'A', entries: [] })
+  it('period stats, streak and badges', async () => {
+    const { periodStats, bestWeekStreak, earnedBadges, defaultMonthGoal } = await import('../goals')
+    const runs = [run('2026-10-01', 5), run('2026-10-03', 10.2, 3000), run('2026-09-30', 3)]
+    expect(periodStats(runs, [], '2026-10').km).toBeCloseTo(15.2)
+    // 4 สัปดาห์ติดกัน สัปดาห์ละ 3 ครั้ง (จ/พ/ศ)
+    const weeks = ['2026-09-07', '2026-09-14', '2026-09-21', '2026-09-28'].flatMap(m => [0, 2, 4].map(d => { const t = new Date(m); t.setDate(t.getDate() + d); return t.toISOString().slice(0, 10) }))
+    expect(bestWeekStreak([], weeks.map(ses))).toBe(4)
+    const ids = earnedBadges({ runs, sessions: weeks.map(ses), goalKm: 15 })
+    expect(ids).toEqual(expect.arrayContaining(['first-run', 'run-5k', 'run-10k', 'streak-4', 'month-goal', 'first-workout']))
+    expect(ids).not.toContain('run-half')
+    expect(earnedBadges({ runs, sessions: [], goalKm: 20 })).not.toContain('month-goal')
+    expect(defaultMonthGoal(13)).toBe(55)
+  })
+})

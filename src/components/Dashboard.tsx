@@ -15,6 +15,7 @@ import { formLabel, trainingLoad } from '../lib/analysis'
 import { WorkoutPlayer } from './WorkoutPlayer'
 import { Alerts } from './Alerts'
 import { HeatCard } from './Heat'
+import { MonthGoalCard } from './Goals'
 import { ReadinessSheet } from './Readiness'
 import { Button, Card } from './ui'
 import { cx } from '../lib/cx'
@@ -70,6 +71,8 @@ export function Dashboard() {
           <Ring value={kmThisWeek} max={kmTarget} label="วิ่ง (กม.)" text={`${kmThisWeek.toFixed(1)}/${kmTarget}`} />
         </div>
       </section>
+
+      <MonthGoalCard />
 
       {todayPlan && (
         <Card>

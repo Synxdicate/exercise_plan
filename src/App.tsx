@@ -8,6 +8,7 @@ import { Onboarding } from './components/Onboarding'
 import { ProgramSheet } from './components/ProgramSheet'
 import { useTheme, type Theme } from './lib/theme'
 import { useReminderSchedule, useReminderSetting } from './lib/reminders'
+import { useBadgeWatcher } from './lib/useGoals'
 import { isNative } from './lib/native'
 import { useUpdateAvailable } from './lib/update'
 import { supabase } from './lib/supabase'
@@ -50,6 +51,7 @@ function Main({ session }: { session: Session }) {
   const [profile, setProfile] = usePersisted<Profile>('profile', defaultProfile)
   const [onboarded, setOnboarded] = usePersisted('onboarded', false)
   useReminderSchedule()
+  useBadgeWatcher()
   const update = useUpdateAvailable()
   const [dismissed, setDismissed] = usePersisted('updateDismissed', '')
 
