@@ -2,41 +2,11 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { BackgroundGeolocation, isNative } from './native'
 
 import { haversine, type Point } from './geo'
+import { TrackFilter } from './track'
 
 export { haversine, type Point }
 
-// Kalman filter แบบง่ายสำหรับ lat/lon: ใช้ accuracy ของ GPS เป็น noise ของการวัด
-// ช่วยลดเส้นทางหยัก ๆ และระยะที่งอกจาก GPS สั่น (แนวเดียวกับที่แอปวิ่งทั่วไปใช้)
-class Kalman {
-  private variance = -1
-  private lat = 0
-  private lon = 0
-  private t = 0
-  private q = 3 // m/s ที่ยอมให้ตำแหน่งจริงเปลี่ยน
-
-  process(lat: number, lon: number, acc: number, t: number): Point {
-    acc = Math.max(acc, 1)
-    if (this.variance < 0) {
-      Object.assign(this, { lat, lon, t, variance: acc * acc })
-    } else {
-      const dt = (t - this.t) / 1000
-      if (dt > 0) this.variance += dt * this.q * this.q
-      this.t = t
-      const k = this.variance / (this.variance + acc * acc)
-      this.lat += k * (lat - this.lat)
-      this.lon += k * (lon - this.lon)
-      this.variance *= 1 - k
-    }
-    return [this.lat, this.lon]
-  }
-  reset() { this.variance = -1 }
-}
-
-const MAX_ACCURACY_M = 30 // ทิ้งจุดที่ GPS ไม่แม่น
 export const GOOD_ACCURACY_M = 15
-const MIN_STEP_M = 3 // กันระยะงอกตอนยืนนิ่ง
-const MAX_SPEED_MS = 10 // ~36 กม./ชม. เกินนี้ถือว่าจุดกระโดด
-const MOVING_SPEED_MS = 0.8 // ช้ากว่านี้ถือว่าหยุด
 const AUTOPAUSE_AFTER_MS = 8000
 const PACE_WINDOW_MS = 30000
 const STORAGE_KEY = 'activeRun'
@@ -92,8 +62,8 @@ export function useRunTracker(opts: { onSplit?: (km: number, splitSec: number, t
   const liveRef = useRef(live)
   const watchId = useRef<number | null>(null)
   const nativeWatch = useRef<Promise<string> | null>(null)
-  const kalman = useRef(new Kalman())
-  const last = useRef<{ p: Point; t: number } | null>(null)
+  // กรอง noise + นับระยะ (ดู track.ts และการจำลองใน track.test.ts)
+  const track = useRef(new TrackFilter())
   const recent = useRef<{ t: number; m: number }[]>([])
   const wakeLock = useRef<WakeLockSentinel | null>(null)
 
@@ -155,36 +125,10 @@ export function useRunTracker(opts: { onSplit?: (km: number, splitSec: number, t
     return () => document.removeEventListener('visibilitychange', onVis)
   }, [lockScreen, update])
 
-  type Fix = { coords: { latitude: number; longitude: number; accuracy: number }; timestamp: number }
-  const onPosition = useCallback((pos: Fix) => {
-    const acc = pos.coords.accuracy
-    setAccuracy(acc)
-    setError(null)
-    const t = pos.timestamp
-    const raw: Point = [pos.coords.latitude, pos.coords.longitude]
-    if (acc > MAX_ACCURACY_M) {
-      setPosition(prev => prev ?? raw)
-      return
-    }
-    const p = kalman.current.process(raw[0], raw[1], acc, t)
-    setPosition(p)
+  type Fix = { coords: { latitude: number; longitude: number; accuracy: number; speed?: number | null }; timestamp: number }
 
-    const l = liveRef.current
-    if (l.status !== 'running' && l.status !== 'autopaused') return
-
-    const prev = last.current
-    if (!prev) {
-      last.current = { p, t }
-      update(x => ({ ...x, route: [...x.route, p], times: [...x.times, Math.round(movingMs(x) / 1000)], lastMoveAt: Date.now() }))
-      return
-    }
-    const d = haversine(prev.p, p)
-    const dt = (t - prev.t) / 1000
-    if (d < MIN_STEP_M) return
-    if (dt > 0 && d / dt > MAX_SPEED_MS) return
-    last.current = { p, t }
-    const moving = dt <= 0 || d / dt >= MOVING_SPEED_MS
-
+  // เพิ่มระยะ d เมตร + จุดบนเส้นทาง แล้วคำนวณเพซรายกิโล/เพซปัจจุบัน
+  const addDistance = useCallback((d: number, p: Point, t: number, moving: boolean) => {
     const splitsBefore = liveRef.current.splits.length
     update(x => {
       const n = Date.now()
@@ -213,6 +157,34 @@ export function useRunTracker(opts: { onSplit?: (km: number, splitSec: number, t
     setCurrentPace(win.length > 1 && dm > 20 ? (win.at(-1)!.t - win[0].t) / 1000 / (dm / 1000) : null)
   }, [update])
 
+  const onPosition = useCallback((pos: Fix) => {
+    const acc = pos.coords.accuracy
+    setAccuracy(acc)
+    setError(null)
+    const t = pos.timestamp
+    const raw: Point = [pos.coords.latitude, pos.coords.longitude]
+    const r = track.current.process({ lat: raw[0], lon: raw[1], acc, t, speed: pos.coords.speed ?? null })
+    if (r.p) setPosition(r.p)
+    else setPosition(prev => prev ?? raw)
+
+    const l = liveRef.current
+    if (l.status !== 'running' && l.status !== 'autopaused') return
+    if (r.kind === 'ignored') return
+    if (r.kind === 'start') {
+      update(x => ({ ...x, route: [...x.route, r.p], times: [...x.times, Math.round(movingMs(x) / 1000)], lastMoveAt: Date.now() }))
+      return
+    }
+    if (r.kind === 'hold') {
+      // ยังไม่ถึงจุดยึดถัดไป แต่กำลังเคลื่อนที่ → นับว่าขยับ (ไม่ให้หยุดอัตโนมัติ / กลับมาจากหยุดอัตโนมัติ)
+      if (r.moving) {
+        const n = Date.now()
+        update(x => (x.status === 'autopaused' ? { ...x, status: 'running', segStart: n, lastMoveAt: n } : { ...x, lastMoveAt: n }))
+      }
+      return
+    }
+    addDistance(r.d, r.p, t, true)
+  }, [update, addDistance])
+
   const stopWatching = useCallback(() => {
     if (watchId.current !== null) navigator.geolocation.clearWatch(watchId.current)
     watchId.current = null
@@ -236,7 +208,7 @@ export function useRunTracker(opts: { onSplit?: (km: number, splitSec: number, t
             }
             return
           }
-          if (loc) onPosition({ coords: { latitude: loc.latitude, longitude: loc.longitude, accuracy: loc.accuracy }, timestamp: loc.time ?? Date.now() })
+          if (loc) onPosition({ coords: { latitude: loc.latitude, longitude: loc.longitude, accuracy: loc.accuracy, speed: loc.speed }, timestamp: loc.time ?? Date.now() })
         },
       )
       return true
@@ -257,9 +229,15 @@ export function useRunTracker(opts: { onSplit?: (km: number, splitSec: number, t
 
   useEffect(() => stopWatching, [stopWatching])
 
+  // เก็บเศษระยะที่ยังไม่ถึงจุดยึดถัดไป ก่อนพัก/จบ
+  const flushTail = () => {
+    const d = track.current.flush()
+    const p = liveRef.current.route.at(-1)
+    if (d > 1 && p) addDistance(d, p, Date.now(), false)
+  }
+
   const resetSegment = () => {
-    last.current = null
-    kalman.current.reset()
+    track.current.reset()
     recent.current = []
     setCurrentPace(null)
   }
@@ -288,6 +266,7 @@ export function useRunTracker(opts: { onSplit?: (km: number, splitSec: number, t
       update(x => ({ ...x, status: 'running', startedAt: n, segStart: n, lastMoveAt: n }))
     },
     pause() {
+      flushTail()
       const n = Date.now()
       update(x => ({ ...x, status: 'paused', activeMs: movingMs(x, n), segStart: null }))
     },
@@ -298,6 +277,7 @@ export function useRunTracker(opts: { onSplit?: (km: number, splitSec: number, t
       update(x => ({ ...x, status: 'running', segStart: n, lastMoveAt: n }))
     },
     finish(): FinishedRun {
+      if (liveRef.current.status === 'running' || liveRef.current.status === 'autopaused') flushTail()
       const l = liveRef.current
       const n = Date.now()
       const result = {

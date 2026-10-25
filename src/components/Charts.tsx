@@ -3,11 +3,12 @@ import type { LoadDay } from '../lib/analysis'
 import { formatPace } from '../lib/log'
 import { shortDate } from '../lib/date'
 import { cx } from '../lib/cx'
+import { distanceByZone, zoneInfo, zoneOf, ZONES, type ZoneId } from '../lib/zones'
 
 const W = 320
 
-/** เพซตามระยะทาง — แกนตั้งกลับด้าน (เร็ว = สูง) พร้อมเส้นเพซเฉลี่ย */
-export function PaceChart({ series, avg }: { series: { km: number; pace: number }[]; avg: number }) {
+/** เพซตามระยะทาง — แกนตั้งกลับด้าน (เร็ว = สูง) เส้นเป็นสีตามโซนเพซ พร้อมเส้นเพซเฉลี่ย */
+export function PaceChart({ series, avg, fiveK }: { series: { km: number; pace: number }[]; avg: number; fiveK?: number }) {
   const [hover, setHover] = useState<number | null>(null)
   if (series.length < 3) return null
   const H = 130, padL = 34, padB = 18, padT = 8
@@ -19,8 +20,17 @@ export function PaceChart({ series, avg }: { series: { km: number; pace: number 
   const hi = sorted[Math.ceil(sorted.length * 0.98) - 1] + 10
   const x = (km: number) => padL + (km / maxKm) * (W - padL - 4)
   const y = (p: number) => padT + ((Math.min(Math.max(p, lo), hi) - lo) / (hi - lo)) * (H - padT - padB)
-  const d = series.map((p, i) => `${i ? 'L' : 'M'}${x(p.km).toFixed(1)} ${y(p.pace).toFixed(1)}`).join(' ')
+  // แบ่งเส้นเป็นช่วงตามโซน (ช่วงถัดไปเริ่มจากจุดสุดท้ายของช่วงก่อน เส้นจะได้ต่อกัน)
+  const segments: { zone: ZoneId | null; d: string }[] = []
+  series.forEach((p, i) => {
+    const zone = fiveK ? zoneOf(p.pace, fiveK) : null
+    const pt = `${x(p.km).toFixed(1)} ${y(p.pace).toFixed(1)}`
+    const cur = segments.at(-1)
+    if (cur && cur.zone === zone) cur.d += ` L${pt}`
+    else segments.push({ zone, d: i ? `M${x(series[i - 1].km).toFixed(1)} ${y(series[i - 1].pace).toFixed(1)} L${pt}` : `M${pt}` })
+  })
   const h = hover !== null ? series[hover] : null
+  const hz = h && fiveK ? zoneInfo(zoneOf(h.pace, fiveK)) : null
 
   const onMove = (e: React.PointerEvent<SVGSVGElement>) => {
     const r = e.currentTarget.getBoundingClientRect()
@@ -34,7 +44,7 @@ export function PaceChart({ series, avg }: { series: { km: number; pace: number 
     <div>
       <div className="mb-1 flex h-5 items-center justify-between text-xs">
         <span className="text-muted">เพซตลอดเส้นทาง (นาที/กม.)</span>
-        <span className="tabular-nums">{h ? `กม. ${h.km.toFixed(2)} · ${formatPace(h.pace, 1)}` : `เฉลี่ย ${formatPace(avg, 1)}`}</span>
+        <span className="tabular-nums">{h ? `กม. ${h.km.toFixed(2)} · ${formatPace(h.pace, 1)}${hz ? ` · ${hz.id} ${hz.label}` : ''}` : `เฉลี่ย ${formatPace(avg, 1)}`}</span>
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="block w-full touch-none" role="img" aria-label="กราฟเพซตามระยะทาง"
         onPointerMove={onMove} onPointerDown={onMove} onPointerLeave={() => setHover(null)}>
@@ -45,14 +55,16 @@ export function PaceChart({ series, avg }: { series: { km: number; pace: number 
           </g>
         ))}
         <line x1={padL} x2={W} y1={y(avg)} y2={y(avg)} className="stroke-muted" strokeDasharray="4 4" />
-        <path d={d} fill="none" className="stroke-run" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+        {segments.map((s, i) => (
+          <path key={i} d={s.d} fill="none" stroke={s.zone ? zoneInfo(s.zone).color : 'var(--c-run)'} strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
+        ))}
         {Array.from({ length: Math.floor(maxKm) + 1 }, (_, k) => k).filter(k => k > 0).map(k => (
           <text key={k} x={x(k)} y={H - 4} textAnchor="middle" className="fill-muted text-[9px]">{k}</text>
         ))}
         {h && (
           <g>
             <line x1={x(h.km)} x2={x(h.km)} y1={padT} y2={H - padB} className="stroke-ink/40" />
-            <circle cx={x(h.km)} cy={y(h.pace)} r={4.5} className="fill-run stroke-card" strokeWidth={2} />
+            <circle cx={x(h.km)} cy={y(h.pace)} r={4.5} fill={hz ? hz.color : 'var(--c-run)'} className="stroke-card" strokeWidth={2} />
           </g>
         )}
       </svg>
@@ -116,5 +128,46 @@ function Legend({ swatch, label, value, signed }: { swatch: string; label: strin
       <span className={cx('size-2.5 rounded-full', swatch)} />
       {label} <b className="tabular-nums text-ink">{signed && value > 0 ? '+' : ''}{Math.round(value)}</b>
     </span>
+  )
+}
+
+/** แถบสัดส่วนระยะทางในแต่ละโซน + คำอธิบายสี (ระบุด้วยตัวอักษร ไม่พึ่งสีอย่างเดียว) */
+export function ZoneBar({ series, fiveK }: { series: { km: number; pace: number }[]; fiveK: number }) {
+  const zones = distanceByZone(series, fiveK)
+  return (
+    <div>
+      <div className="mb-1.5 text-xs text-muted">ระยะในแต่ละโซนเพซ</div>
+      <div className="flex h-3 gap-0.5 overflow-hidden rounded-full">
+        {zones.filter(z => z.pct > 0.005).map(z => (
+          <span key={z.id} title={`${z.id} ${z.label}: ${Math.round(z.pct * 100)}%`} style={{ width: `${z.pct * 100}%`, background: z.color }} />
+        ))}
+      </div>
+      <ul className="mt-2 grid grid-cols-5 gap-1 text-center text-[10px] leading-tight">
+        {zones.map(z => (
+          <li key={z.id} className={cx(z.pct < 0.005 && 'opacity-40')}>
+            <span className="mx-auto mb-0.5 grid size-5 place-items-center rounded-md text-[10px] font-bold text-white" style={{ background: z.color }}>{z.id}</span>
+            <span className="block font-semibold">{z.label}</span>
+            <span className="block tabular-nums text-muted">{Math.round(z.pct * 100)}%</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+export function ZoneLegend({ fiveK }: { fiveK: number }) {
+  const fmt = (s: number) => formatPace(s, 1)
+  const bounds = [fiveK * 1.2, fiveK * 1.1, fiveK * 1.04, fiveK * 0.97]
+  return (
+    <ul className="space-y-1 text-xs">
+      {ZONES.map((z, i) => (
+        <li key={z.id} className="flex items-center gap-2">
+          <span className="grid size-5 shrink-0 place-items-center rounded-md text-[10px] font-bold text-white" style={{ background: z.color }}>{z.id}</span>
+          <span className="w-16 font-semibold">{z.label}</span>
+          <span className="flex-1 text-muted">{z.desc}</span>
+          <span className="tabular-nums">{i === 0 ? `ช้ากว่า ${fmt(bounds[0])}` : i === 4 ? `เร็วกว่า ${fmt(bounds[3])}` : `${fmt(bounds[i])}–${fmt(bounds[i - 1])}`}</span>
+        </li>
+      ))}
+    </ul>
   )
 }
