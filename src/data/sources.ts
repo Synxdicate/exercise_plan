@@ -32,6 +32,7 @@ export const references: { cat: string; title: string; url: string; used: string
   { cat: 'เวทเทรนนิ่ง', level: 'trial', title: 'Bickel et al. 2011 — Exercise dosing to retain resistance training adaptations', url: pm('21131862'), used: 'เวท 2 วัน/สัปดาห์พอรักษากล้ามช่วงซ้อมมาราธอน' },
   { cat: 'เวทเทรนนิ่ง', level: 'trial', title: 'Ribeiro et al. 2014 — Warm-up procedures and resistance exercise performance', url: pm('25153744'), used: 'เซ็ตวอร์มอัพเฉพาะท่าก่อนยกหนัก' },
   { cat: 'เวทเทรนนิ่ง', level: 'trial', title: 'Ribeiro et al. 2020 — Specific warm-up during bench press and squat', url: pm('32971729'), used: 'ไล่น้ำหนักวอร์มอัพ ~40/60/80% ด้วยครั้งน้อยลง' },
+  { cat: 'เวทเทรนนิ่ง', level: 'meta', title: 'Schoenfeld et al. 2019 — Training frequency and muscle hypertrophy', url: pm('30558493'), used: 'ความถี่ไม่สำคัญเท่าปริมาณรวม (ขาฝึกวันเดียวได้)' },
   { cat: 'เวทเทรนนิ่ง', level: 'meta', title: 'Wilson et al. 2012 — Concurrent training: interference meta-analysis', url: pm('22002517'), used: 'เหตุผลที่ควรเน้นทีละเป้า (หุ่น vs มาราธอน)' },
   // วิ่ง
   { cat: 'วิ่ง', level: 'meta', title: 'Seiler 2010 — Training intensity distribution in endurance athletes', url: pm('20861519'), used: 'วิ่งเบาเป็นส่วนใหญ่ (~80%) วิ่งหนักส่วนน้อย' },

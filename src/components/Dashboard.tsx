@@ -60,7 +60,7 @@ export function Dashboard() {
           </div>
           <div className="flex flex-col items-end gap-1">
             <div className="flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm font-semibold">
-              <Flame size={16} /> {streak} สัปดาห์ติด
+              <Flame size={16} /> ต่อเนื่อง {streak} สัปดาห์
             </div>
             {form && <button onClick={() => nav('progress')} className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">ฟอร์ม: {form.label}</button>}
           </div>

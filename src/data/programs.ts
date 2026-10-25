@@ -73,8 +73,8 @@ const fullWeeks: RunWeek[] = [
   { easyA: 8, q: pace(13, '12 กม.', 'เพซมาราธอน'), easyB: 8, long: 26 },
   { easyA: 8, q: reps(12, '6 × 1 กม. / จ็อก 2 นาที'), easyB: 8, long: 32, note: 'สัปดาห์พีค — ซ้อมกินเจล/น้ำระหว่างวิ่งยาว' },
   { easyA: 6, q: strides(8), easyB: 6, long: 21, note: 'สัปดาห์ลดปริมาณ' },
-  { easyA: 7, q: pace(10, '8 กม.', 'เพซมาราธอน'), easyB: 7, long: 24, note: 'Taper เริ่ม: ลดปริมาณ ~25%' },
-  { easyA: 6, q: pace(8, '5 กม.', 'เพซมาราธอน'), easyB: 5, long: 16, note: 'Taper: ลดปริมาณ ~45%' },
+  { easyA: 7, q: pace(10, '8 กม.', 'เพซมาราธอน'), easyB: 7, long: 24, note: 'Taper เริ่ม: ลดปริมาณ ~20%' },
+  { easyA: 6, q: pace(8, '5 กม.', 'เพซมาราธอน'), easyB: 5, long: 16, note: 'Taper: ลดปริมาณ ~40%' },
   { easyA: 5, q: strides(5), easyB: 3, long: 42.2, note: 'สัปดาห์แข่ง! กินคาร์บ 8–10 ก./กก. 1–2 วันก่อนแข่ง' },
 ]
 
@@ -145,18 +145,18 @@ function raceWeek(program: RaceId, mode: Mode, week: number): Day[] {
   return [
     { key: 'strA', day: 'จันทร์', title: 'เวท A — ทั้งตัว', type: 'strength', duration: '45 นาที', note: taper ? `ช่วง taper: ลดเหลือ 2 เซ็ต น้ำหนักเท่าเดิม` : strengthNote, exercises: lighten(a) },
     // วิ่งหนักห่างจากเวทขาอย่างน้อย 48 ชม. — เวทขาทำให้วิ่งได้แย่ลงได้นาน 6–48 ชม. (Doma 2017)
-    runDay('easyA', 'อังคาร', 'Easy run', w.easyA, 'easy', 'วิ่งเบาระดับพูดคุยได้ (Zone 2)'),
+    runDay('easyA', 'อังคาร', 'Easy run', w.easyA, 'easy', 'วิ่งเบาระดับพูดคุยได้ (โซน E)'),
     runDay('quality', 'พุธ', w.q.title, w.q.km, w.q.kind, w.q.how),
     last
       ? { key: 'strB', day: 'พฤหัสบดี', title: 'พัก / เดินเบา ๆ', type: 'rest', duration: '-', note: 'สัปดาห์แข่ง งดเวท ยืดเหยียดเบา ๆ', exercises: [] }
       : { key: 'strB', day: 'พฤหัสบดี', title: 'เวท B — ทั้งตัว', type: 'strength', duration: '45 นาที', note: taper ? 'ช่วง taper: ลดเหลือ 2 เซ็ต' : strengthNote, exercises: lighten(b) },
-    { key: 'rest', day: 'ศุกร์', title: 'พัก', type: 'rest', duration: '-', note: 'พักเต็มวัน นอน 8 ชม. ก่อนวิ่งยาว', exercises: [] },
+    { key: 'rest', day: 'ศุกร์', title: 'พัก', type: 'rest', duration: '-', note: 'พักเต็มวัน ให้ขาสดสำหรับวิ่งเสาร์–อาทิตย์', exercises: [] },
     w.easyB > 0
       ? runDay('easyB', 'เสาร์', 'Easy run + Strides', w.easyB, 'easy', 'วิ่งเบา แล้ว Strides 4 × 20 วิ')
       : { key: 'easyB', day: 'เสาร์', title: 'พัก / เดินเบา ๆ', type: 'rest', duration: '-', note: 'เดิน 20–30 นาที หรือยืดเหยียด', exercises: [] },
     last
       ? runDay('long', 'อาทิตย์', `วันแข่ง ${programs[program].raceKm} กม.`, w.long, 'race', 'ออกตัวช้ากว่าเพซเป้าหมาย 5–10 วิ/กม. ช่วงแรก ดื่มน้ำทุกจุด', w.note)
-      : runDay('long', 'อาทิตย์', 'วิ่งยาว (Long run)', w.long, 'long', 'ช้า ๆ ระดับพูดคุยได้ — ความช้าคือหัวใจของวิ่งยาว'),
+      : runDay('long', 'อาทิตย์', 'วิ่งยาว (Long run)', w.long, 'long', 'ช้าระดับพูดคุยได้ (โซน E) — วิ่งยาวเน้นเวลาบนขา ไม่เน้นความเร็ว'),
   ]
 }
 

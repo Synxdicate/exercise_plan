@@ -31,7 +31,7 @@ const warmupNote = 'วอร์มอัพ 5–10 นาที: จ็อก�
 const easyRun: Day = {
   key: 'easy',
   day: 'อังคาร',
-  title: 'วิ่ง Easy (Zone 2)',
+  title: 'วิ่ง Easy',
   type: 'run',
   duration: '30–40 นาที',
   runKind: 'easy',
@@ -86,7 +86,7 @@ export const gymWeek: Day[] = [
   {
     key: 'upperA',
     day: 'จันทร์',
-    title: 'Upper A — แรง (ช่วงบน)',
+    title: 'Upper A — เน้นแรง (ช่วงบน)',
     type: 'strength',
     duration: '60 นาที',
     note: warmupNote,
@@ -121,7 +121,7 @@ export const gymWeek: Day[] = [
   {
     key: 'upperB',
     day: 'ศุกร์',
-    title: 'Upper B — สร้างกล้าม + ท่าบอดี้เวท',
+    title: 'Upper B — เน้นสร้างกล้าม (ช่วงบน)',
     type: 'strength',
     duration: '60 นาที',
     note: warmupNote,
@@ -150,9 +150,9 @@ export const parkWeek: Day[] = [
     exercises: [
       { name: 'Pull-up', th: 'ดึงข้อ', sets: '4', reps: '4–8', rest: '2 นาที', cue: 'ทำไม่ได้: กระโดดขึ้นแล้วลงช้า 3–5 วิ (Negative)', video: 'pull up progression for beginners calisthenics', easier: 'Negative pull-up', harder: 'Archer pull-up' },
       { name: 'Push-up', th: 'วิดพื้น', sets: '4', reps: '8–15', rest: '90 วิ', cue: 'ลำตัวตรง ศอกทำมุม ~45° กับลำตัว', video: 'FitnessFAQs push up progression', easier: 'Incline push-up', harder: 'Diamond / Decline / Archer push-up' },
-      { name: 'Dips', th: 'ดิปบาร์คู่', sets: '3', reps: '6–12', rest: '90 วิ', cue: 'ลงจนศอก ~90° ไหล่ไม่ยกหู', video: 'dips progression beginner calisthenics', easier: 'Bench dip' },
+      { name: 'Dips', th: 'ดิปบาร์คู่', sets: '3', reps: '6–12', rest: '90 วิ', cue: 'ลงจนศอกงอ ~90° ไหล่กดลง ไม่ห่อขึ้นหาหู', video: 'dips progression beginner calisthenics', easier: 'Bench dip' },
       { name: 'Australian Row', th: 'ดึงตัวบาร์ต่ำ', sets: '3', reps: '8–15', rest: '90 วิ', cue: 'ตัวตรง ดึงอกแตะบาร์', video: 'australian pull up inverted row form', harder: 'ยกเท้าสูง' },
-      { name: 'Pike Push-up', th: 'วิดพื้นสะโพกสูง (ไหล่)', sets: '3', reps: '6–12', rest: '90 วิ', cue: 'ศีรษะลงไปหน้ามือเป็นสามเหลี่ยม', video: 'pike push up tutorial', harder: 'ยกเท้าบนม้านั่ง' },
+      { name: 'Pike Push-up', th: 'วิดพื้นสะโพกสูง (ไหล่)', sets: '3', reps: '6–12', rest: '90 วิ', cue: 'ยกสะโพกสูง ก้มศีรษะลงไปข้างหน้ามือ ให้มือสองข้างกับศีรษะเป็นรูปสามเหลี่ยม', video: 'pike push up tutorial', harder: 'ยกเท้าบนม้านั่ง' },
       { name: 'Hanging Knee/Leg Raise', th: 'ห้อยตัวยกขา', sets: '3', reps: '8–15', rest: '60 วิ', cue: 'ม้วนสะโพก ไม่เหวี่ยง', video: 'hanging leg raise progression' },
     ],
   },
@@ -201,8 +201,8 @@ export const phases = [
 
 export const principles = [
   { title: 'Double progression', text: 'เมื่อทำได้ครบจำนวนครั้งสูงสุดทุกเซ็ต (เช่น 3×8) ให้เพิ่มน้ำหนักเล็กน้อยแล้วเริ่มนับใหม่ที่ช่วงล่าง (3×6) — นี่คือ progressive overload ซึ่งเป็นหลักสำคัญของการเพิ่มกล้าม' },
-  { title: 'ปริมาณที่พอ', text: 'งานวิจัยแบบ meta-analysis พบว่าราว 10+ เซ็ตหนัก/กลุ่มกล้ามเนื้อ/สัปดาห์ให้ผลดีกว่าปริมาณน้อย แผนนี้ให้ ~9–12 เซ็ตต่อกลุ่มใหญ่' },
-  { title: 'ฝึกแต่ละกล้าม 2 ครั้ง/สัปดาห์', text: 'Upper 2 วัน + Lower 1 วัน + ขาได้จากการวิ่งด้วย' },
-  { title: 'วิ่งไม่ขัดกล้าม ถ้าไม่มากไป', text: 'ส่วนใหญ่วิ่งแบบเบา (Zone 2) วิ่งหนักแค่ 1 ครั้ง/สัปดาห์ และไม่วิ่งหนักก่อนวันขา' },
+  { title: 'ปริมาณที่พอ', text: 'งานวิจัยแบบ meta-analysis พบว่าราว 10+ เซ็ตหนัก/กลุ่มกล้ามเนื้อ/สัปดาห์ให้ผลดีกว่าปริมาณน้อย แผนนี้ให้ ~9–14 เซ็ตต่อกลุ่มกล้ามใหญ่' },
+  { title: 'ช่วงบน 2 ครั้ง ขา 1 ครั้ง/สัปดาห์', text: 'ถ้าปริมาณเซ็ตรวมต่อสัปดาห์เท่ากัน ความถี่ไม่ได้มีผลต่อการโตของกล้ามมากนัก (Schoenfeld 2019) วันขาจึงรวมไว้วันเดียว และขายังได้ฝึกจากการวิ่ง' },
+  { title: 'วิ่งไม่ขัดกล้าม ถ้าไม่มากไป', text: 'วิ่งเบาเป็นหลัก (โซน E) วิ่งหนักแค่ 1 ครั้ง/สัปดาห์ และไม่วิ่งหนักในวันถัดจากวันเล่นขา' },
   { title: 'นอนและเดิน', text: 'นอน 7–9 ชม. ช่วยเรื่องการฟื้นตัวและความอยากอาหาร เดินวันละ 7,000+ ก้าวช่วยเผาผลาญโดยไม่กระทบการฟื้นตัว' },
 ]
