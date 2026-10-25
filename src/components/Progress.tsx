@@ -9,6 +9,7 @@ import { allExercises, exerciseHistory, prsIn } from '../lib/strength'
 import { Badge, Button, Card, Segmented, Stat } from './ui'
 import { DateInput, NumberInput } from './Form'
 import { cx } from '../lib/cx'
+import { PhotoStrip, ProgressPhotos } from './Photos'
 import { ask } from '../lib/dialog'
 
 type Entry = { date: string; weight: number; waist?: number }
@@ -66,6 +67,8 @@ function BodyLog() {
         </div>
         <p className="mt-2 text-xs text-muted">ชั่งตอนเช้าหลังเข้าห้องน้ำ วัดเอวระดับสะดือ — น้ำหนักนิ่งแต่เอวลดก็คือไปถูกทาง</p>
       </Card>
+
+      <Card title="รูปความคืบหน้า"><ProgressPhotos /></Card>
 
       {weeks.length > 1 && (
         <Card title="น้ำหนักเฉลี่ยรายสัปดาห์">
@@ -153,6 +156,7 @@ function WorkoutHistory() {
                     </li>
                   ))}
                 </ul>
+                <div className="mt-3"><PhotoStrip kind="workout" refId={s.id} date={s.date} label="รูปการฝึก" /></div>
                 <div className="mt-2 flex gap-2">
                   <Button variant="soft" size="sm" onClick={() => setEditing(s.id)}><Pencil size={14} /> แก้ไข</Button>
                   <Button variant="danger" size="sm" onClick={async () => (await ask('ลบบันทึกการฝึกนี้?', { ok: 'ลบ', danger: true })) && setSessions(prev => prev.filter(x => x.id !== s.id))}>

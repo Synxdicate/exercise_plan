@@ -18,6 +18,7 @@ import { usePersisted } from '../lib/storage'
 import { RunTypeCard } from './RunTypes'
 import { CooldownSheet } from './Cooldown'
 import { ShareRunSheet } from './ShareRun'
+import { PhotoStrip } from './Photos'
 import { HeatCard } from './Heat'
 import { ReadinessSheet } from './Readiness'
 import { addDays, shortDate, today, weekStart } from '../lib/date'
@@ -360,6 +361,7 @@ function RunDetail({ run, fiveK, onClose, onDelete, onUpdate }: { run: Run; five
         )}
         {run.splits && run.splits.length > 0 && <Splits splits={run.splits} fiveK={fiveK} />}
         <div className="mt-3 rounded-2xl bg-raised p-3"><RpePicker value={run.rpe} onPick={rpe => onUpdate({ rpe })} /></div>
+        <div className="mt-3"><PhotoStrip kind="run" refId={run.id} date={run.date} label="รูปการวิ่ง" /></div>
         <Collapse open={editing}>
           <EditRun run={run} onSave={patch => { onUpdate(patch); setEditing(false) }} />
         </Collapse>
