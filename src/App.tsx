@@ -10,7 +10,7 @@ import { useTheme, type Theme } from './lib/theme'
 import { useReminderSchedule, useReminderSetting } from './lib/reminders'
 import { useBadgeWatcher } from './lib/useGoals'
 import { isNative } from './lib/native'
-import { useUpdateAvailable } from './lib/update'
+import { APP_VERSION, useUpdateAvailable } from './lib/update'
 import { supabase } from './lib/supabase'
 import { exportData, getSyncStatus, importData, stopSync, subscribeSyncStatus } from './lib/sync'
 import { today } from './lib/date'
@@ -85,11 +85,11 @@ function Main({ session }: { session: Session }) {
         <UserMenu session={session} onSources={() => go('sources')} />
       </header>
 
-      {update && dismissed !== update && (
+      {update && dismissed !== update.build && (
         <div className="mx-4 mb-2 flex animate-fade-up items-center gap-2 rounded-2xl bg-run/10 px-3.5 py-2.5 text-sm text-run ring-1 ring-run/30">
           <Download size={16} className="shrink-0" />
-          <span className="flex-1">มีเวอร์ชันใหม่ ({update.slice(0, 10)}) — ต่อ USB แล้วรัน <code className="font-mono">npm run android:update</code></span>
-          <button onClick={() => setDismissed(update)} aria-label="ปิด" className="shrink-0 text-xs font-semibold">ปิด</button>
+          <span className="flex-1">มีเวอร์ชันใหม่ {update.version ? `v${update.version}` : `(${update.build.slice(0, 10)})`} — ต่อ USB แล้วรัน <code className="font-mono">npm run android:update</code></span>
+          <button onClick={() => setDismissed(update.build)} aria-label="ปิด" className="shrink-0 text-xs font-semibold">ปิด</button>
         </div>
       )}
 
@@ -224,6 +224,7 @@ function UserMenu({ session, onSources }: { session: Session; onSources: () => v
             <button onClick={logout} disabled={busy} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-bad hover:bg-raised">
               <LogOut size={16} /> ออกจากระบบ
             </button>
+            <div className="px-3 pb-1 pt-2 text-[11px] text-muted">Exercise-Plan v{APP_VERSION}</div>
           </div>
         </>
       )}

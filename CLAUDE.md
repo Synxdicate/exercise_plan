@@ -56,6 +56,10 @@ Run share image: `src/lib/shareImage.ts` draws a 1080×1350 canvas card (route v
 - Styling: Tailwind v4 via `@tailwindcss/vite` (no config file). Colors are semantic tokens (`bg-card`, `text-muted`, `bg-accent`, `ring-line`, `text-run`, …) defined as CSS vars in `src/index.css` and mapped with `@theme inline`; dark mode only redefines the vars — never use raw palette colors like `bg-gray-100`. Shared primitives (`Card`, `Button`, `Stat`, `Badge`, `Segmented`, `Meter`, `Field`) live in `src/components/ui.tsx`; `cx` in `src/lib/cx.ts`. Layout is a centered phone-width column (`max-w-lg`) with a fixed 5-tab bottom nav on all screen sizes; Sources is reached from the avatar menu.
 - Runs: `useRunTracker` in `src/lib/gps.ts` (Kalman-smoothed GPS, auto-pause, per-km splits, in-progress run persisted to localStorage key `activeRun` and restored as paused). `RunMap` (Leaflet) is lazy-loaded so the map library is a separate chunk.
 
+## Versioning
+
+Semver `x.y.z` in `package.json` (y = feature, z = fix). Vite injects it as `__APP_VERSION__` (`APP_VERSION` in `src/lib/update.ts`, shown at the bottom of the avatar menu) and writes it into `/version.json`; `android/app/build.gradle` reads it for `versionName` and `versionCode = x*10000 + y*100 + z`. With each commit-and-push of a feature/fix: bump the version, add a `CHANGELOG.md` entry (Thai, newest first), and push an annotated tag `vX.Y.Z`.
+
 ## Content rules
 
 - Keep training/nutrition claims evidence-based and realistic; cite new claims in `sources.ts`. Never invent specific YouTube video URLs/IDs — use channel URLs that are known to exist or `yt()` search links.
