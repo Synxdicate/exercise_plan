@@ -28,3 +28,9 @@ dist-ssr
 # Playwright
 test-results
 playwright-report
+
+# กุญแจเซ็นแอป Android (อยู่นอก repo)
+android/keystore.properties
+*.keystore
+*.jks
+release/

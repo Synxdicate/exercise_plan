@@ -277,3 +277,12 @@ describe('exercise demo images', () => {
     for (const n of ['Bench Press', 'Back Squat', 'Pull-up', 'Romanian Deadlift', 'Overhead Press', 'Push-up', 'Dips']) expect(demoImages(n), n).not.toBeNull()
   })
 })
+
+describe('newerVersion', () => {
+  it('compares semver numerically', async () => {
+    const { newerVersion } = await import('../semver')
+    expect(newerVersion('2.10.0', '2.9.3')).toBe(true)
+    expect(newerVersion('2.6.0', '2.6.0')).toBe(false)
+    expect(newerVersion('2.5.9', '2.6.0')).toBe(false)
+  })
+})

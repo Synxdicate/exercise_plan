@@ -1,6 +1,6 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import type { Session } from '@supabase/supabase-js'
-import { Bell, BookOpen, Cloud, CloudOff, Download, Dumbbell, Footprints, House, LogIn, LogOut, Monitor, Moon, RefreshCw, SlidersHorizontal, Smartphone, Sun, TrendingUp, Upload, Utensils } from 'lucide-react'
+import { Bell, BookOpen, Bug, Cloud, CloudOff, Download, Dumbbell, Footprints, House, LogIn, LogOut, Monitor, Moon, RefreshCw, SlidersHorizontal, Smartphone, Sun, TrendingUp, Upload, Utensils } from 'lucide-react'
 import { AuthGate } from './components/AuthGate'
 import { DialogHost } from './components/DialogHost'
 import { ask, notify } from './lib/dialog'
@@ -11,11 +11,13 @@ import { useReminderSchedule, useReminderSetting } from './lib/reminders'
 import { useBadgeWatcher } from './lib/useGoals'
 import { useCompactRuns, useRuns, useSessions } from './lib/log'
 import { isNative } from './lib/native'
-import { APP_VERSION, useUpdateAvailable } from './lib/update'
+import { APP_VERSION, downloadUpdate, useUpdateAvailable } from './lib/update'
 import { useBackButton, useBackClose } from './lib/back'
 import { supabase } from './lib/supabase'
 import { getSyncStatus, stopSync, subscribeSyncStatus } from './lib/sync'
 import { restoreBackup, saveBackup } from './lib/backup'
+import type { ErrorEntry } from './lib/errors'
+import { ErrorLogSheet } from './components/ErrorLogSheet'
 import * as idb from './lib/idb'
 import { isLocalPhoto, syncPhotos, type Photo } from './lib/photos'
 import { readStored, usePersisted } from './lib/storage'
@@ -98,11 +100,12 @@ function Main({ session }: { session: Session | null }) {
         <UserMenu session={session} onSources={() => go('sources')} />
       </header>
 
-      {update && dismissed !== update.build && (
+      {update && dismissed !== update && (
         <div className="mx-4 mb-2 flex animate-fade-up items-center gap-2 rounded-2xl bg-run/10 px-3.5 py-2.5 text-sm text-run ring-1 ring-run/30">
           <Download size={16} className="shrink-0" />
-          <span className="flex-1">มีเวอร์ชันใหม่ {update.version ? `v${update.version}` : `(${update.build.slice(0, 10)})`} — ต่อ USB แล้วรัน <code className="font-mono">npm run android:update</code></span>
-          <button onClick={() => setDismissed(update.build)} aria-label="ปิด" className="shrink-0 text-xs font-semibold">ปิด</button>
+          <span className="flex-1">มีแอปเวอร์ชันใหม่ v{update}</span>
+          <button onClick={() => void downloadUpdate()} className="shrink-0 rounded-full bg-run px-3 py-1 text-xs font-semibold text-white">ดาวน์โหลด</button>
+          <button onClick={() => setDismissed(update)} aria-label="ปิด" className="shrink-0 text-xs font-semibold">ปิด</button>
         </div>
       )}
 
@@ -144,6 +147,9 @@ function UserMenu({ session, onSources }: { session: Session | null; onSources: 
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [programOpen, setProgramOpen] = useState(false)
+  const [errorsOpen, setErrorsOpen] = useState(false)
+  const [errors] = usePersisted<ErrorEntry[]>('errorLog', [])
+  const errorCount = errors.length
   useBackClose(() => setOpen(false), open)
   const [theme, setTheme] = useTheme()
   const [reminder, setReminder] = useReminderSetting()
@@ -238,6 +244,9 @@ function UserMenu({ session, onSources }: { session: Session | null; onSources: 
             <button onClick={() => { setOpen(false); onSources() }} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left hover:bg-raised">
               <BookOpen size={16} /> แหล่งข้อมูลและช่อง YouTube
             </button>
+            <button onClick={() => { setOpen(false); setErrorsOpen(true) }} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left hover:bg-raised">
+              <Bug size={16} /> ปัญหาที่พบ{errorCount ? ` (${errorCount})` : ''}
+            </button>
             <button onClick={download} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left hover:bg-raised">
               <Download size={16} /> สำรองข้อมูล (ไฟล์ JSON)
             </button>
@@ -259,6 +268,7 @@ function UserMenu({ session, onSources }: { session: Session | null; onSources: 
         </>
       )}
       {programOpen && <ProgramSheet onClose={() => setProgramOpen(false)} />}
+      {errorsOpen && <ErrorLogSheet onClose={() => setErrorsOpen(false)} />}
     </div>
   )
 }

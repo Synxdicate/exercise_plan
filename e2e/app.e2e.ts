@@ -208,3 +208,14 @@ test('ระหว่างวิ่ง: สัญญาณ GPS หายเก�
   await context.setGeolocation({ latitude: 16.4420, longitude: 102.8360, accuracy: 8 })
   await expect(page.getByText(/สัญญาณ GPS หาย/)).toBeHidden({ timeout: 10_000 })
 })
+
+test('รายงาน error: เก็บในเครื่องและดูได้จากเมนูบัญชี', async ({ page }) => {
+  await seed(page)
+  await expect(page.getByText(/เป้าเดือน/)).toBeVisible() // รอแอปโหลดเสร็จ (ตัวดัก error ติดตั้งหลังโหลดที่เก็บข้อมูล)
+  // error จาก script ที่ inject เข้ามาถูกเบราว์เซอร์ปิดเป็น "Script error." — ใช้ promise ที่ไม่มีใคร catch แทน
+  await page.evaluate(() => { void Promise.reject(new Error('e2e boom')) })
+  await expect.poll(async () => ((await idb(page, 'errorLog')) as { message: string }[] | null)?.[0]?.message).toBe('e2e boom')
+  await page.getByRole('button', { name: 'เมนูบัญชี' }).click()
+  await page.getByRole('button', { name: /ปัญหาที่พบ \(1\)/ }).click()
+  await expect(page.getByText('e2e boom')).toBeVisible()
+})

@@ -2,6 +2,7 @@ import { supabase } from './supabase'
 import { clearKeys, hydrate, onWrite, readStored } from './storage'
 import { mergeValues } from './merge'
 import { syncPhotos } from './photos'
+import { sendErrors } from './errors'
 
 // key ที่เก็บขึ้น Supabase (ตาราง user_data: 1 แถวต่อ user ต่อ key)
 // 'tab', 'activeRun', 'activeWorkout' ไม่ sync — เป็นสถานะของเครื่องนั้น
@@ -118,6 +119,7 @@ export async function startSync(uid: string) {
   await pull(!owner)
   hydrate(OWNER_KEY, uid)
   void syncPhotos().catch(() => {})
+  void sendErrors()
 }
 
 export async function refresh() {
@@ -125,6 +127,7 @@ export async function refresh() {
   await flush()
   if (pending.size === 0) await pull(false)
   void syncPhotos().catch(() => {})
+  void sendErrors()
 }
 
 // คืน false ถ้ายังมีข้อมูลค้างที่ส่งขึ้น server ไม่ได้ (เช่น ออฟไลน์) และไม่ได้สั่ง force
