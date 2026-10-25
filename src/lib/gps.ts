@@ -47,9 +47,16 @@ export const movingMs = (l: Live, now = Date.now()) => l.activeMs + (l.segStart 
 
 export type FinishedRun = { km: number; seconds: number; elapsedSeconds: number; route: Point[]; times: number[]; splits: number[]; gapSeconds?: number }
 
-export function useRunTracker(opts: { onSplit?: (km: number, splitSec: number, totalSec: number) => void } = {}) {
+type Opts = {
+  onSplit?: (km: number, splitSec: number, totalSec: number) => void
+  /** ทุกวินาที + ทุกจุด GPS ระหว่างวิ่ง (ใช้กับเสียงนำ — callback ของ GPS ทำงานแม้ปิดจอ) */
+  onTick?: (meters: number, active: boolean) => void
+}
+
+export function useRunTracker(opts: Opts = {}) {
   const onSplitRef = useRef(opts.onSplit)
-  useEffect(() => { onSplitRef.current = opts.onSplit })
+  const onTickRef = useRef(opts.onTick)
+  useEffect(() => { onSplitRef.current = opts.onSplit; onTickRef.current = opts.onTick })
   const [live, setLive] = useState<Live>(loadSaved)
   const [now, setNow] = useState(() => Date.now())
   const [position, setPosition] = useState<Point | null>(null)
@@ -80,6 +87,11 @@ export function useRunTracker(opts: { onSplit?: (km: number, splitSec: number, t
     }
   }, [])
 
+  const tick = useCallback(() => {
+    const l = liveRef.current
+    onTickRef.current?.(l.meters, l.status === 'running' || l.status === 'autopaused')
+  }, [])
+
   const lockScreen = useCallback(async () => {
     try {
       wakeLock.current = await navigator.wakeLock?.request('screen')
@@ -98,9 +110,10 @@ export function useRunTracker(opts: { onSplit?: (km: number, splitSec: number, t
       if (autoPause && l.status === 'running' && l.segStart !== null && t - l.lastMoveAt > AUTOPAUSE_AFTER_MS) {
         update(x => ({ ...x, status: 'autopaused', activeMs: x.activeMs + Math.max(0, x.lastMoveAt - x.segStart!), segStart: null }))
       }
+      tick()
     }, 1000)
     return () => clearInterval(id)
-  }, [live.status, autoPause, update])
+  }, [live.status, autoPause, update, tick])
 
   // wake lock หลุดเมื่อสลับแอป — ขอใหม่เมื่อกลับมา
   useEffect(() => {
@@ -184,7 +197,8 @@ export function useRunTracker(opts: { onSplit?: (km: number, splitSec: number, t
       return
     }
     addDistance(r.d, r.p, t, true)
-  }, [update, addDistance])
+    tick()
+  }, [update, addDistance, tick])
 
   const stopWatching = useCallback(() => {
     if (watchId.current !== null) navigator.geolocation.clearWatch(watchId.current)

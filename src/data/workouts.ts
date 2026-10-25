@@ -1,6 +1,8 @@
 export const yt = (q: string) =>
   `https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`
 
+import { guides, type Step } from '../lib/guide'
+
 export type Exercise = {
   name: string
   th: string
@@ -24,6 +26,7 @@ export type Day = {
   targetKm?: number // วันวิ่ง: ระยะเป้าหมาย
   runKind?: 'easy' | 'tempo' | 'interval' | 'long' | 'race'
   location?: 'gym' | 'park' // วันเวท: ฝึกที่ไหน (ตั้งโดย weekPlan)
+  guide?: Step[] // วันวิ่งคุณภาพ: ขั้นของชุดซ้อมสำหรับเสียงนำ
 }
 
 const warmupNote = 'วอร์มอัพ 5–10 นาที: จ็อกเบา ๆ หรือกระโดดเชือก + หมุนข้อต่อ แล้วเล่นเซ็ตเบา 1–2 เซ็ตของท่าแรก'
@@ -58,6 +61,7 @@ const intervalRun: Day = {
   duration: '25–35 นาที',
   runKind: 'interval',
   targetKm: 5,
+  guide: guides.intervals(5),
   note: 'วอร์ม 10 นาที → วิ่งเร็ว 1 นาที / จ็อกเบา 2 นาที → คูลดาวน์ 5 นาที',
   exercises: [
     {

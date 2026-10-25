@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense, useState, type ReactNode } from 'react'
 import { CalendarCheck, Check, FileUp, Pencil, TriangleAlert, Trophy, Volume2, VolumeX, ChevronRight, Footprints, Gauge, Pause, Play, Plus, Satellite, Trash2, X } from 'lucide-react'
 import { GOOD_ACCURACY_M, useRunTracker, type Point } from '../lib/gps'
 import { formatDuration, formatPace, runKinds, uid, useRuns, type Run } from '../lib/log'
@@ -12,6 +12,8 @@ import { zoneInfo, zoneOf } from '../lib/zones'
 import { RpePicker } from './RpePicker'
 import { isNative } from '../lib/native'
 import { speak, splitAnnouncement } from '../lib/voice'
+import { useGuide } from '../lib/useGuide'
+import { GuideCard } from './Guide'
 import { usePersisted } from '../lib/storage'
 import { RunTypeCard } from './RunTypes'
 import { CooldownSheet } from './Cooldown'
@@ -45,13 +47,18 @@ export function Runs() {
   const [checking, setChecking] = useState(false)
   const [cooldown, setCooldown] = useState<Run | null>(null)
   const [voice, setVoice] = usePersisted('voiceCues', true)
-  const t = useRunTracker({ onSplit: (km, split, total) => { if (voice) void speak(splitAnnouncement(km, total, split)) } })
+  const [guideOn, setGuideOn] = usePersisted('guideOn', true)
+  // เสียงนำใช้กับชุดซ้อมของวันนี้ เมื่อเลือกชนิดการวิ่งตรงกับแผน
+  const steps = todayRun?.guide && kind === todayRun.runKind ? todayRun.guide : null
+  const guide = useGuide(guideOn ? steps : null, est?.paces, voice)
+  const t = useRunTracker({ onSplit: (km, split, total) => { if (voice) void speak(splitAnnouncement(km, total, split)) }, onTick: guide.onTick })
 
   const [shoes] = useShoes()
   // การวิ่งใหม่ผูกกับรองเท้าคู่หลักอัตโนมัติ (เปลี่ยนได้ในหน้ารายละเอียด)
   const save = (r: Run) => setRuns(prev => [...prev, { ...r, shoeId: r.shoeId ?? defaultShoe(shoes)?.id }].sort((a, b) => a.date.localeCompare(b.date)))
 
   const finish = () => {
+    guide.reset()
     const r = t.finish()
     if (r.km < 0.05) return
     const run: Run = { id: uid(), date: today(), kind, source: 'gps', ...r }
@@ -71,7 +78,14 @@ export function Runs() {
     }
   }
 
-  if (t.status !== 'idle') return <ActiveRun t={t} kind={kind} target={todayRun?.targetKm} fiveK={est?.paces.interval} voice={voice} setVoice={setVoice} onFinish={finish} />
+  if (t.status !== 'idle') return (
+    <ActiveRun t={t} kind={kind} target={todayRun?.targetKm} fiveK={est?.paces.interval} voice={voice} setVoice={setVoice} onFinish={finish}
+      onDiscard={() => { guide.reset(); t.discard() }}
+      guide={steps && (
+        <GuideCard steps={steps} runner={guide.runner} meters={t.meters} paces={est?.paces}
+          on={guideOn} setOn={setGuideOn} onSkip={() => guide.skip(t.meters)} />
+      )} />
+  )
 
   const thisWeek = weekStart(today())
   const kmThisWeek = runs.filter(r => weekStart(r.date) === thisWeek).reduce((s, r) => s + r.km, 0)
@@ -175,7 +189,7 @@ export function Runs() {
   )
 }
 
-function ActiveRun({ t, kind, target, fiveK, voice, setVoice, onFinish }: { t: ReturnType<typeof useRunTracker>; kind: Run['kind']; target?: number; fiveK?: number; voice: boolean; setVoice: (v: boolean) => void; onFinish: () => void }) {
+function ActiveRun({ t, kind, target, fiveK, voice, setVoice, onFinish, onDiscard, guide }: { t: ReturnType<typeof useRunTracker>; kind: Run['kind']; target?: number; fiveK?: number; voice: boolean; setVoice: (v: boolean) => void; onFinish: () => void; onDiscard: () => void; guide?: ReactNode }) {
   const km = t.meters / 1000
   const weak = t.accuracy === null || t.accuracy > GOOD_ACCURACY_M
   const banner =
@@ -220,6 +234,8 @@ function ActiveRun({ t, kind, target, fiveK, voice, setVoice, onFinish }: { t: R
           <Stat label="เพซตอนนี้" value={t.currentPace ? formatPace(t.currentPace, 1) : '--:--'} />
         </div>
 
+        {guide}
+
         {t.lastGap && (
           <div className="flex animate-fade-up items-start gap-2 rounded-2xl bg-warn/15 p-3 text-sm text-warn">
             <TriangleAlert size={18} className="mt-0.5 shrink-0" />
@@ -233,7 +249,7 @@ function ActiveRun({ t, kind, target, fiveK, voice, setVoice, onFinish }: { t: R
         <div className="mt-auto flex items-center justify-center gap-4 pt-2">
           {t.status === 'acquiring' && (
             <>
-              <Button variant="soft" size="lg" onClick={t.discard}><X size={20} /> ยกเลิก</Button>
+              <Button variant="soft" size="lg" onClick={onDiscard}><X size={20} /> ยกเลิก</Button>
               <Button size="lg" onClick={t.begin}><Play size={20} fill="currentColor" /> {weak ? 'เริ่มเลย' : 'เริ่มจับเวลา'}</Button>
             </>
           )}
@@ -258,7 +274,7 @@ function ActiveRun({ t, kind, target, fiveK, voice, setVoice, onFinish }: { t: R
             <label className="flex items-center gap-2 text-muted">
               <input type="checkbox" className="size-4 accent-accent" checked={t.autoPause} onChange={e => t.setAutoPause(e.target.checked)} /> หยุดอัตโนมัติ
             </label>
-            <button className="text-bad" onClick={async () => (await ask('ระยะและเวลาที่บันทึกไว้จะหายไป', { title: 'ทิ้งการวิ่งนี้?', ok: 'ทิ้ง', danger: true })) && t.discard()}>ทิ้งการวิ่งนี้</button>
+            <button className="text-bad" onClick={async () => (await ask('ระยะและเวลาที่บันทึกไว้จะหายไป', { title: 'ทิ้งการวิ่งนี้?', ok: 'ทิ้ง', danger: true })) && onDiscard()}>ทิ้งการวิ่งนี้</button>
           </div>
         )}
       </div>

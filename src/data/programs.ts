@@ -1,4 +1,5 @@
 import { gymWeek, parkWeek, type Day, type Exercise } from './workouts'
+import { guides, type Step } from '../lib/guide'
 
 export type ProgramId = 'physique' | 'ten' | 'half' | 'full'
 type RaceId = Exclude<ProgramId, 'physique'>
@@ -14,14 +15,14 @@ export const programs: Record<ProgramId, { name: string; short: string; weeks: n
 
 // ---------- วิ่ง ----------
 
-type Q = { km: number; kind: 'tempo' | 'interval' | 'easy'; title: string; how: string }
+type Q = { km: number; kind: 'tempo' | 'interval' | 'easy'; title: string; how: string; guide: Step[] }
 type RunWeek = { easyA: number; q: Q; easyB: number; long: number; note?: string }
 
-const fartlek = (km: number): Q => ({ km, kind: 'interval', title: 'Fartlek', how: 'วิ่งเบา สลับเร่ง 1 นาที × 6 ครั้ง (เร่งแบบเหนื่อย ~7/10 แล้วกลับมาเบา)' })
-const strides = (km: number): Q => ({ km, kind: 'easy', title: 'Easy + Strides', how: 'วิ่งเบา แล้วปิดท้าย Strides 6 × 20 วิ (เร่งลื่น ๆ ไม่สุดแรง เดินกลับ)' })
-const tempo = (km: number, min: string): Q => ({ km, kind: 'tempo', title: `Tempo ${min} นาที`, how: `วอร์ม 2 กม. → Tempo ${min} นาที (เหนื่อยแต่คุมได้ ~7/10 พูดได้เป็นคำ ๆ) → คูลดาวน์` })
-const reps = (km: number, set: string): Q => ({ km, kind: 'interval', title: `Interval ${set}`, how: `วอร์ม 2 กม. → ${set} → คูลดาวน์ (ช่วงเร็ว ~เพซ 5K, ช่วงพักจ็อกเบา)` })
-const pace = (km: number, set: string, label: string): Q => ({ km, kind: 'tempo', title: `${label} ${set}`, how: `วอร์ม 2 กม. → ${set} ที่${label} พักจ็อก 2 นาที → คูลดาวน์` })
+const fartlek = (km: number): Q => ({ km, kind: 'interval', title: 'Fartlek', how: 'วิ่งเบา สลับเร่ง 1 นาที × 6 ครั้ง (เร่งแบบเหนื่อย ~7/10 แล้วกลับมาเบา)', guide: guides.fartlek() })
+const strides = (km: number): Q => ({ km, kind: 'easy', title: 'Easy + Strides', how: 'วิ่งเบา แล้วปิดท้าย Strides 6 × 20 วิ (เร่งลื่น ๆ ไม่สุดแรง เดินกลับ)', guide: guides.strides(km) })
+const tempo = (km: number, min: string): Q => ({ km, kind: 'tempo', title: `Tempo ${min} นาที`, how: `วอร์ม 2 กม. → Tempo ${min} นาที (เหนื่อยแต่คุมได้ ~7/10 พูดได้เป็นคำ ๆ) → คูลดาวน์`, guide: guides.tempo(min) })
+const reps = (km: number, set: string): Q => ({ km, kind: 'interval', title: `Interval ${set}`, how: `วอร์ม 2 กม. → ${set} → คูลดาวน์ (ช่วงเร็ว ~เพซ 5K, ช่วงพักจ็อกเบา)`, guide: guides.reps(set) })
+const pace = (km: number, set: string, label: string): Q => ({ km, kind: 'tempo', title: `${label} ${set}`, how: `วอร์ม 2 กม. → ${set} ที่${label} พักจ็อก 2 นาที → คูลดาวน์`, guide: guides.pace(set, label) })
 
 // ปริมาณเพิ่มทีละน้อย มีสัปดาห์ลด (cutback) ทุก 3–4 สัปดาห์ และ taper ก่อนแข่ง
 // easyB = 0 → วันเสาร์เป็นวันพัก (ช่วงแรกของ 10K วิ่ง 3 วันเท่ากับที่วิ่งอยู่เดิม)
@@ -80,8 +81,8 @@ const fullWeeks: RunWeek[] = [
 
 // วิ่งนานเกิน ~75–90 นาที ควรเติมคาร์บระหว่างวิ่ง 30–60 ก./ชม. (ACSM 2016, Jeukendrup 2014)
 const fuelNote = 'วิ่งนานเกิน ~75 นาที: พกเจล/เครื่องดื่มเกลือแร่ เติมคาร์บ 30–60 ก./ชม. (เจล 1 ซองทุก 30–40 นาที) และซ้อมกินแบบนี้ก่อนวันแข่ง'
-const runDay = (key: string, day: string, title: string, km: number, runKind: Day['runKind'], how: string, note?: string): Day => ({
-  key, day, title, type: 'run', duration: `${km} กม.`, targetKm: km, runKind,
+const runDay = (key: string, day: string, title: string, km: number, runKind: Day['runKind'], how: string, note?: string, guide?: Step[]): Day => ({
+  key, day, title, type: 'run', duration: `${km} กม.`, targetKm: km, runKind, guide,
   note: km >= 14 && (runKind === 'long' || runKind === 'race') ? [note, fuelNote].filter(Boolean).join(' · ') : note,
   exercises: [{ name: title, th: how, sets: '1', reps: `${km} กม.`, rest: '-', cue: how, video: `${title} running workout how to` }],
 })
@@ -146,7 +147,7 @@ function raceWeek(program: RaceId, mode: Mode, week: number): Day[] {
     { key: 'strA', day: 'จันทร์', title: 'เวท A — ทั้งตัว', type: 'strength', duration: '45 นาที', note: taper ? `ช่วง taper: ลดเหลือ 2 เซ็ต น้ำหนักเท่าเดิม` : strengthNote, exercises: lighten(a) },
     // วิ่งหนักห่างจากเวทขาอย่างน้อย 48 ชม. — เวทขาทำให้วิ่งได้แย่ลงได้นาน 6–48 ชม. (Doma 2017)
     runDay('easyA', 'อังคาร', 'Easy run', w.easyA, 'easy', 'วิ่งเบาระดับพูดคุยได้ (โซน E)'),
-    runDay('quality', 'พุธ', w.q.title, w.q.km, w.q.kind, w.q.how),
+    runDay('quality', 'พุธ', w.q.title, w.q.km, w.q.kind, w.q.how, undefined, w.q.guide),
     last
       ? { key: 'strB', day: 'พฤหัสบดี', title: 'พัก / เดินเบา ๆ', type: 'rest', duration: '-', note: 'สัปดาห์แข่ง งดเวท ยืดเหยียดเบา ๆ', exercises: [] }
       : { key: 'strB', day: 'พฤหัสบดี', title: 'เวท B — ทั้งตัว', type: 'strength', duration: '45 นาที', note: taper ? 'ช่วง taper: ลดเหลือ 2 เซ็ต' : strengthNote, exercises: lighten(b) },

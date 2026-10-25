@@ -89,7 +89,7 @@ export function Meter({ value, max, tone = 'accent' }: { value: number; max: num
 // พับ/กางแบบนุ่ม ๆ ด้วย grid-rows (ไม่ต้องรู้ความสูงล่วงหน้า)
 export function Collapse({ open, children }: { open: boolean; children: ReactNode }) {
   return (
-    <div className={cx('grid transition-[grid-template-rows,opacity] duration-300 ease-out', open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0')} aria-hidden={!open}>
+    <div className={cx('grid transition-[grid-template-rows,opacity] duration-300 ease-out', open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0')} aria-hidden={!open} inert={!open}>
       <div className="min-h-0 overflow-hidden">{children}</div>
     </div>
   )
