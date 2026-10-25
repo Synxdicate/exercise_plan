@@ -5,6 +5,7 @@ import { formatDuration, formatPace, runKinds, uid, useRuns, type Run } from '..
 import { estimate, paceHint, type Estimate } from '../lib/pace'
 import { useProgram } from '../lib/program'
 import { parseGpx } from '../lib/gpx'
+import { DEFAULT_LIMIT_KM, defaultShoe, shoeKm, shoeStatus, useShoes, type Shoe } from '../lib/shoes'
 import { paceSeries, personalBests, splitAnalysis } from '../lib/analysis'
 import { PaceChart, ZoneBar, ZoneLegend } from './Charts'
 import { zoneInfo, zoneOf } from '../lib/zones'
@@ -18,7 +19,7 @@ import { HeatCard } from './Heat'
 import { ReadinessSheet } from './Readiness'
 import { addDays, shortDate, today, weekStart } from '../lib/date'
 import { Badge, Button, Card, Collapse, Portal, Stat } from './ui'
-import { DateInput, NumberInput, SelectInput } from './Form'
+import { DateInput, NumberInput, SelectInput, TextInput } from './Form'
 import { cx } from '../lib/cx'
 import { ask, notify } from '../lib/dialog'
 
@@ -46,7 +47,9 @@ export function Runs() {
   const [voice, setVoice] = usePersisted('voiceCues', true)
   const t = useRunTracker({ onSplit: (km, split, total) => { if (voice) void speak(splitAnnouncement(km, total, split)) } })
 
-  const save = (r: Run) => setRuns(prev => [...prev, r].sort((a, b) => a.date.localeCompare(b.date)))
+  const [shoes] = useShoes()
+  // การวิ่งใหม่ผูกกับรองเท้าคู่หลักอัตโนมัติ (เปลี่ยนได้ในหน้ารายละเอียด)
+  const save = (r: Run) => setRuns(prev => [...prev, { ...r, shoeId: r.shoeId ?? defaultShoe(shoes)?.id }].sort((a, b) => a.date.localeCompare(b.date)))
 
   const finish = () => {
     const r = t.finish()
@@ -117,6 +120,8 @@ export function Runs() {
       <PaceCard est={est} />
 
       <BestEfforts runs={runs} />
+
+      <ShoesCard runs={runs} />
 
       <Card title="8 สัปดาห์ล่าสุด">
         <WeeklyBars runs={runs} target={target} />
@@ -462,6 +467,8 @@ function EditRun({ run, onSave }: { run: Run; onSave: (patch: Partial<Run>) => v
   const [kind, setKind] = useState(run.kind)
   const [km, setKm] = useState(String(run.km))
   const [min, setMin] = useState(String(Math.round((run.seconds / 60) * 10) / 10))
+  const [shoes] = useShoes()
+  const [shoeId, setShoeId] = useState(run.shoeId ?? '')
   const manual = run.source === 'manual'
   return (
     <div className="mt-3 grid grid-cols-2 gap-2 rounded-2xl bg-raised p-3">
@@ -469,10 +476,69 @@ function EditRun({ run, onSave }: { run: Run; onSave: (patch: Partial<Run>) => v
       <SelectInput label="ประเภท" value={kind} onChange={setKind} options={Object.entries(runKinds).map(([k, v]) => ({ value: k as Run['kind'], label: v }))} />
       {manual && <NumberInput label="ระยะ" unit="กม." step={0.1} value={km} onChange={setKm} />}
       {manual && <NumberInput label="เวลา" unit="นาที" value={min} onChange={setMin} />}
+      {shoes.length > 0 && (
+        <SelectInput label="รองเท้า" className="col-span-2" value={shoeId} onChange={setShoeId}
+          options={[{ value: '', label: 'ไม่ระบุ' }, ...shoes.map(s => ({ value: s.id, label: s.name + (s.retired ? ' (เลิกใช้)' : '') }))]} />
+      )}
       <Button className="col-span-2" onClick={() => onSave({
-        date, kind,
+        date, kind, shoeId: shoeId || undefined,
         ...(manual && +km > 0 && +min > 0 ? { km: +km, seconds: Math.round(+min * 60) } : {}),
       })}>บันทึกการแก้ไข</Button>
     </div>
+  )
+}
+
+function ShoesCard({ runs }: { runs: Run[] }) {
+  const [shoes, setShoes] = useShoes()
+  const [adding, setAdding] = useState(false)
+  const [name, setName] = useState('')
+  const [start, setStart] = useState('0')
+  const [limit, setLimit] = useState(String(DEFAULT_LIMIT_KM))
+  const active = shoes.filter(s => !s.retired)
+  const def = defaultShoe(shoes)
+  const update = (id: string, patch: Partial<Shoe>) => setShoes(prev => prev.map(s => (s.id === id ? { ...s, ...patch } : s)))
+  const add = () => {
+    if (!name.trim()) return
+    const s: Shoe = { id: uid(), name: name.trim(), startKm: +start || 0, limitKm: +limit || DEFAULT_LIMIT_KM, isDefault: !def }
+    setShoes(prev => [...prev, s])
+    setName(''); setStart('0'); setAdding(false)
+  }
+  const tone = { good: 'bg-good', warn: 'bg-warn', bad: 'bg-bad' }
+  return (
+    <Card title={<span className="flex items-center gap-2"><Footprints size={18} className="text-run" /> รองเท้าวิ่ง</span>}
+      action={<Button variant="soft" size="sm" onClick={() => setAdding(!adding)}><Plus size={14} /> เพิ่ม</Button>}>
+      <Collapse open={adding}>
+        <div className="mb-3 grid grid-cols-2 gap-2 rounded-2xl bg-raised p-3">
+          <TextInput label="ชื่อรองเท้า" className="col-span-2" value={name} onChange={setName} placeholder="เช่น Nike Pegasus 41" />
+          <NumberInput label="วิ่งมาแล้ว" unit="กม." value={start} onChange={setStart} />
+          <NumberInput label="ควรเปลี่ยนที่" unit="กม." step={50} value={limit} onChange={setLimit} />
+          <Button className="col-span-2" onClick={add}>บันทึกรองเท้า</Button>
+        </div>
+      </Collapse>
+      {active.length === 0 && !adding && <p className="text-sm text-muted">เพิ่มรองเท้าที่ใช้วิ่ง แอปจะนับระยะให้เองและเตือนเมื่อถึงเวลาเปลี่ยน</p>}
+      <ul className="space-y-3">
+        {active.map(s => {
+          const km = shoeKm(s, runs)
+          const st = shoeStatus(km, s.limitKm)
+          return (
+            <li key={s.id}>
+              <div className="flex items-center justify-between gap-2 text-sm">
+                <span className="min-w-0 truncate font-semibold">{s.name}{s.id === def?.id && <Badge tone="run">คู่หลัก</Badge>}</span>
+                <span className="shrink-0 tabular-nums text-muted">{Math.round(km)} / {s.limitKm} กม.</span>
+              </div>
+              <div className="mt-1 h-2 overflow-hidden rounded-full bg-body">
+                <div className={cx('h-full rounded-full', tone[st])} style={{ width: `${Math.min(100, (km / s.limitKm) * 100)}%` }} />
+              </div>
+              {st !== 'good' && <p className={cx('mt-1 text-xs', st === 'bad' ? 'text-bad' : 'text-warn')}>{st === 'bad' ? 'ถึงระยะที่ควรเปลี่ยนแล้ว — ดูพื้นรองเท้าและความรู้สึกตอนวิ่งประกอบ' : 'ใกล้ถึงระยะเปลี่ยน เริ่มมองหาคู่ใหม่'}</p>}
+              <div className="mt-1 flex gap-3 text-xs">
+                {s.id !== def?.id && <button className="font-semibold text-run" onClick={() => setShoes(prev => prev.map(x => ({ ...x, isDefault: x.id === s.id })))}>ตั้งเป็นคู่หลัก</button>}
+                <button className="text-muted" onClick={() => update(s.id, { retired: true, isDefault: false })}>เลิกใช้</button>
+              </div>
+            </li>
+          )
+        })}
+      </ul>
+      {active.length > 0 && <p className="mt-3 text-[11px] text-muted">ระยะเปลี่ยน ~500–800 กม. เป็นแนวทางของผู้ผลิตและโค้ช ยังไม่มีงานวิจัยยืนยันตัวเลขที่แน่นอน</p>}
+    </Card>
   )
 }

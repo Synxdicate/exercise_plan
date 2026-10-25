@@ -14,6 +14,7 @@ export type Run = {
   splits?: number[] // วินาทีต่อกม.
   elapsedSeconds?: number // รวมเวลาพัก
   gapSeconds?: number // ช่วงที่จอปิด GPS ไม่ได้บันทึก
+  shoeId?: string
 }
 
 export type SetEntry = { kg: number; reps: number }
