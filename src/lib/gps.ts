@@ -50,7 +50,7 @@ export type FinishedRun = { km: number; seconds: number; elapsedSeconds: number;
 type Opts = {
   onSplit?: (km: number, splitSec: number, totalSec: number) => void
   /** ทุกวินาที + ทุกจุด GPS ระหว่างวิ่ง (ใช้กับเสียงนำ — callback ของ GPS ทำงานแม้ปิดจอ) */
-  onTick?: (meters: number, active: boolean) => void
+  onTick?: (meters: number, active: boolean, pace: number | null) => void
 }
 
 export function useRunTracker(opts: Opts = {}) {
@@ -66,6 +66,7 @@ export function useRunTracker(opts: Opts = {}) {
   const hiddenAt = useRef<number | null>(null)
   const [autoPause, setAutoPause] = useState(true)
   const [currentPace, setCurrentPace] = useState<number | null>(null)
+  const paceRef = useRef<number | null>(null) // ให้ onTick อ่านได้จาก callback ของ GPS (ทำงานแม้ปิดจอ)
 
   const liveRef = useRef(live)
   const watchId = useRef<number | null>(null)
@@ -89,7 +90,7 @@ export function useRunTracker(opts: Opts = {}) {
 
   const tick = useCallback(() => {
     const l = liveRef.current
-    onTickRef.current?.(l.meters, l.status === 'running' || l.status === 'autopaused')
+    onTickRef.current?.(l.meters, l.status === 'running' || l.status === 'autopaused', l.status === 'running' ? paceRef.current : null)
   }, [])
 
   const lockScreen = useCallback(async () => {
@@ -168,7 +169,8 @@ export function useRunTracker(opts: Opts = {}) {
     recent.current = win
     const dm = win.at(-1)!.m - win[0].m
     // เพซปัจจุบัน (วินาที/กม.) จาก 30 วินาทีล่าสุด
-    setCurrentPace(win.length > 1 && dm > 20 ? (win.at(-1)!.t - win[0].t) / 1000 / (dm / 1000) : null)
+    paceRef.current = win.length > 1 && dm > 20 ? (win.at(-1)!.t - win[0].t) / 1000 / (dm / 1000) : null
+    setCurrentPace(paceRef.current)
   }, [update])
 
   const onPosition = useCallback((pos: Fix) => {
@@ -254,6 +256,7 @@ export function useRunTracker(opts: Opts = {}) {
   const resetSegment = () => {
     track.current.reset()
     recent.current = []
+    paceRef.current = null
     setCurrentPace(null)
   }
 

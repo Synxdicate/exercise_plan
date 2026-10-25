@@ -57,7 +57,7 @@ const spokenTime = (sec: number) => {
 const spokenDist = (m: number) => (m >= 1000 ? `${+(m / 1000).toFixed(1)} กิโลเมตร` : `${m} เมตร`)
 export const stepAmount = (s: Step) => (s.sec ? spokenTime(s.sec) : spokenDist(s.m ?? 0))
 
-function paceSec(s: Step, p?: Paces) {
+export function paceSec(s: Step, p?: Paces) {
   if (!p || !s.pace || s.pace === 'stride') return null
   if (s.pace === 'easy') return p.easy?.[0] ?? null
   return p[s.pace] ?? null

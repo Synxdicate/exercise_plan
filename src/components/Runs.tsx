@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useState, type ReactNode } from 'react'
+import { lazy, Suspense, useMemo, useRef, useState, type ReactNode } from 'react'
 import { CalendarCheck, Check, FileUp, Pencil, TriangleAlert, Trophy, Volume2, VolumeX, Footprints, Gauge, History, Pause, Play, Plus, Satellite, Share2, Trash2, X } from 'lucide-react'
 import { GOOD_ACCURACY_M, useRunTracker, type Point } from '../lib/gps'
 import { formatDuration, formatPace, runKinds, uid, useRuns, type Run } from '../lib/log'
@@ -13,7 +13,8 @@ import { RpePicker } from './RpePicker'
 import { isNative } from '../lib/native'
 import { speak, splitAnnouncement } from '../lib/voice'
 import { useGuide } from '../lib/useGuide'
-import { guides } from '../lib/guide'
+import { guides, paceSec } from '../lib/guide'
+import { cueText, easyBand, PaceCoach, workBand } from '../lib/coach'
 import { useBackClose } from '../lib/back'
 import { App } from '@capacitor/app'
 import { GuideCard } from './Guide'
@@ -67,7 +68,31 @@ export function Runs() {
   // วันแข่งตามแผนไม่มีชุดซ้อม — เลือก "แข่ง" ในวันอื่นคือวิ่งทดสอบ 5K
   const steps = todayRun?.guide && kind === todayRun.runKind ? todayRun.guide : kind === 'race' && todayRun?.runKind !== 'race' ? TRIAL : null
   const guide = useGuide(guideOn ? steps : null, est?.paces, voice)
-  const t = useRunTracker({ onSplit: (km, split, total) => { if (voice) void speak(splitAnnouncement(km, total, split)) }, onTick: guide.onTick })
+  // โค้ชเสียงคุมเพซ — เรียกจาก onTick (callback ของ GPS) จึงเตือนได้แม้ปิดจอ
+  const [coachOn, setCoachOn] = usePersisted('paceCoach', true)
+  const coach = useRef(new PaceCoach())
+  const coachStep = useRef<{ index: number; at: number }>({ index: -1, at: 0 })
+  const onTick = (meters: number, active: boolean, pace: number | null) => {
+    guide.onTick(meters, active)
+    if (!voice || !coachOn || !est) return
+    const r = guide.runner
+    const step = r && r.state.started && !r.state.done ? r.steps[r.state.index] : null
+    const now = Date.now()
+    if (step && coachStep.current.index !== r!.state.index) {
+      // เปลี่ยนช่วง: เพซ 30 วิล่าสุดยังเป็นของช่วงก่อน — รอให้นิ่งก่อนค่อยประเมิน
+      coachStep.current = { index: r!.state.index, at: now }
+      coach.current.reset()
+    }
+    const target = step?.kind === 'work' ? paceSec(step, est.paces) : null
+    const settling = step && now - coachStep.current.at < 25_000
+    const band = settling ? null
+      : target ? workBand(target)
+      : (step ? step.pace === 'easy' : kind === 'easy' || kind === 'long') ? easyBand(est.paces.easy[0])
+      : null
+    const cue = coach.current.update(now, pace, band, target ? 20_000 : 45_000)
+    if (cue) void speak(cueText(cue, !!target))
+  }
+  const t = useRunTracker({ onSplit: (km, split, total) => { if (voice) void speak(splitAnnouncement(km, total, split)) }, onTick })
 
   const [shoes] = useShoes()
   const removePhotos = useRemovePhotosFor()
@@ -97,6 +122,7 @@ export function Runs() {
 
   if (t.status !== 'idle') return (
     <ActiveRun t={t} kind={kind} target={todayRun?.targetKm} fiveK={est?.paces.interval} voice={voice} setVoice={setVoice} onFinish={finish}
+      coachOn={coachOn && !!est} setCoachOn={est ? setCoachOn : undefined}
       onDiscard={() => { guide.reset(); t.discard() }}
       guide={steps && (
         <GuideCard steps={steps} runner={guide.runner} meters={t.meters} paces={est?.paces}
@@ -203,7 +229,7 @@ export function Runs() {
   )
 }
 
-function ActiveRun({ t, kind, target, fiveK, voice, setVoice, onFinish, onDiscard, guide }: { t: ReturnType<typeof useRunTracker>; kind: Run['kind']; target?: number; fiveK?: number; voice: boolean; setVoice: (v: boolean) => void; onFinish: () => void; onDiscard: () => void; guide?: ReactNode }) {
+function ActiveRun({ t, kind, target, fiveK, voice, setVoice, coachOn, setCoachOn, onFinish, onDiscard, guide }: { t: ReturnType<typeof useRunTracker>; kind: Run['kind']; target?: number; fiveK?: number; voice: boolean; setVoice: (v: boolean) => void; coachOn: boolean; setCoachOn?: (v: boolean) => void; onFinish: () => void; onDiscard: () => void; guide?: ReactNode }) {
   const km = t.meters / 1000
   // ระหว่างวิ่ง ปุ่มย้อนกลับแค่ย่อแอป (GPS บันทึกต่อ) ไม่ออกจากหน้าวิ่ง
   useBackClose(() => void App.minimizeApp())
@@ -224,6 +250,12 @@ function ActiveRun({ t, kind, target, fiveK, voice, setVoice, onFinish, onDiscar
               className={cx('grid size-8 place-items-center rounded-full ring-1 ring-line', voice ? 'bg-run/15 text-run' : 'text-muted')}>
               {voice ? <Volume2 size={15} /> : <VolumeX size={15} />}
             </button>
+            {setCoachOn && voice && (
+              <button onClick={() => { setCoachOn(!coachOn); if (!coachOn) void speak('เปิดโค้ชเพซ') }} aria-label={coachOn ? 'ปิดโค้ชเพซ' : 'เปิดโค้ชเพซ'}
+                className={cx('flex h-8 items-center gap-1 rounded-full px-2.5 text-xs font-semibold ring-1 ring-line', coachOn ? 'bg-run/15 text-run' : 'text-muted')}>
+                <Gauge size={14} /> โค้ชเพซ
+              </button>
+            )}
           </span>
           <span className={cx('inline-flex items-center gap-1 text-xs font-semibold', weak ? 'text-warn' : 'text-good')}>
             <Satellite size={14} /> GPS {t.accuracy !== null ? `±${Math.round(t.accuracy)} ม.` : '…'}

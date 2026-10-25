@@ -224,3 +224,25 @@ describe('recentPainDays', () => {
     expect(recentPainDays(log, '2026-10-25')).toEqual(['2026-10-20', '2026-10-24'])
   })
 })
+
+describe('PaceCoach', () => {
+  it('cues only after sustained drift, then waits for cooldown', async () => {
+    const { PaceCoach, easyBand } = await import('../coach')
+    const c = new PaceCoach(150_000)
+    const band = easyBand(400) // ห้ามเร็วกว่า ~388 วิ/กม.
+    expect(c.update(0, 360, band)).toBeNull() // เริ่มเร็วเกิน
+    expect(c.update(30_000, 360, band)).toBeNull() // ยังไม่ครบ 45 วิ
+    expect(c.update(46_000, 360, band)).toBe('fast')
+    expect(c.update(100_000, 360, band)).toBeNull() // cooldown
+    expect(c.update(110_000, 420, band)).toBeNull() // กลับเข้าช่วง
+    expect(c.update(200_000, 360, band)).toBeNull()
+    expect(c.update(250_000, 360, band)).toBe('fast') // พ้น cooldown แล้ว
+    expect(c.update(260_000, 500, band)).toBeNull() // ช้าไม่เตือนในวันวิ่งเบา
+  })
+  it('flicker in and out never cues', async () => {
+    const { PaceCoach, workBand } = await import('../coach')
+    const c = new PaceCoach()
+    const band = workBand(300)
+    for (let t = 0; t < 300_000; t += 10_000) expect(c.update(t, t % 20_000 ? 270 : 300, band, 20_000)).toBeNull()
+  })
+})
