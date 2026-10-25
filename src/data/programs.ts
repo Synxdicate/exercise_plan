@@ -191,4 +191,3 @@ export const locationInfo: Record<LocationPref, { label: string; text: string }>
 export const weekNote = (program: ProgramId, week: number) =>
   program !== 'physique' ? tables[program][week - 1]?.note : week === 9 ? 'สัปดาห์ Deload: ทำทุกท่าครึ่งหนึ่งของจำนวนเซ็ต น้ำหนักเท่าเดิม วิ่งเบาอย่างเดียว' : undefined
 
-export const thaiDays = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์']

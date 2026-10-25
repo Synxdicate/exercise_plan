@@ -70,8 +70,6 @@ export function Runs() {
   const thisWeek = weekStart(today())
   const kmThisWeek = runs.filter(r => weekStart(r.date) === thisWeek).reduce((s, r) => s + r.km, 0)
   const target = p.kmTarget()
-  const best = runs.filter(r => r.km >= 1).reduce<Run | null>((b, r) => (!b || r.seconds / r.km < b.seconds / b.km ? r : b), null)
-  const longest = runs.reduce((m, r) => Math.max(m, r.km), 0)
   const open = runs.find(r => r.id === detail)
 
   return (
@@ -112,11 +110,6 @@ export function Runs() {
 
       <RunTypeCard kind={kind} />
 
-      <div className="grid grid-cols-3 gap-2">
-        <Stat label="รวมทั้งหมด" value={runs.reduce((s, r) => s + r.km, 0).toFixed(1)} sub={`กม. · ${runs.length} ครั้ง`} />
-        <Stat label="เพซดีสุด" value={best ? formatPace(best.seconds, best.km) : '--:--'} sub="นาที/กม." />
-        <Stat label="ไกลสุด" value={longest.toFixed(1)} sub="กม." />
-      </div>
 
       <PaceCard est={est} />
 
@@ -432,10 +425,17 @@ function PaceCard({ est }: { est: Estimate | null }) {
 }
 
 function BestEfforts({ runs }: { runs: Run[] }) {
+  if (!runs.length) return null
   const pbs = personalBests(runs).filter(p => p.best)
-  if (!pbs.length) return null
+  const longest = runs.reduce((m, r) => Math.max(m, r.km), 0)
   return (
-    <Card title={<span className="flex items-center gap-2"><Trophy size={18} className="text-warn" /> สถิติเร็วสุด</span>}>
+    <Card title={<span className="flex items-center gap-2"><Trophy size={18} className="text-warn" /> สถิติของฉัน</span>}>
+      <div className="grid grid-cols-3 gap-2 text-center">
+        <Stat label="ระยะรวม" value={runs.reduce((s, r) => s + r.km, 0).toFixed(1)} sub="กม." />
+        <Stat label="จำนวนครั้ง" value={runs.length} sub="ครั้ง" />
+        <Stat label="ไกลสุด" value={longest.toFixed(1)} sub="กม." />
+      </div>
+      {pbs.length > 0 && <div className="mt-3 text-xs font-semibold text-muted">เวลาเร็วสุดแต่ละระยะ</div>}
       <ul className="divide-y divide-line text-sm">
         {pbs.map(p => (
           <li key={p.label} className="flex items-center justify-between gap-2 py-2">

@@ -1,5 +1,4 @@
 import { programs, variants, weekKm, weekPlan, type LocationPref, type Mode, type ProgramId } from '../data/programs'
-import type { Day } from '../data/workouts'
 import { addDays, daysBetween, today, weekStart } from './date'
 import { usePersisted } from './storage'
 
@@ -71,4 +70,3 @@ export function useProgram() {
   }
 }
 
-export type DayRef = { day: Day; i: number }

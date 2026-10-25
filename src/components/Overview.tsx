@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { ChevronDown, ShieldCheck, Target } from 'lucide-react'
+import { ChevronDown, ChevronRight, ShieldCheck, Target } from 'lucide-react'
+import { useNav } from '../lib/nav'
 import { activityLevels, bmi, bmr, goals, tdee, targets, type Profile } from '../lib/calc'
 import { phases, principles } from '../data/workouts'
 import { Dashboard } from './Dashboard'
@@ -21,6 +22,7 @@ const safety: [string, string][] = [
 export function Overview({ profile, setProfile }: Props) {
   const set = <K extends keyof Profile>(k: K, v: Profile[K]) => setProfile({ ...profile, [k]: v })
   const [editing, setEditing] = useState(false)
+  const nav = useNav()
   const { program, isRace } = useProgram()
   const t = targets(profile, isRace)
 
@@ -28,7 +30,7 @@ export function Overview({ profile, setProfile }: Props) {
     <>
       <Dashboard />
 
-      <Card title={<span className="flex items-center gap-2"><Target size={18} className="text-accent" /> เป้าหมายต่อวัน</span>}
+      <Card title={<span className="flex items-center gap-2"><Target size={18} className="text-accent" />  ข้อมูลร่างกาย</span>}
         action={<button onClick={() => setEditing(!editing)} className="flex items-center gap-1 text-sm font-semibold text-run">
           แก้ข้อมูล <ChevronDown size={16} className={cx('transition', editing && 'rotate-180')} />
         </button>}>
@@ -43,19 +45,16 @@ export function Overview({ profile, setProfile }: Props) {
               options={Object.entries(goals).map(([k, g]) => ({ value: k as Profile['goal'], label: g.label }))} />
           </div>
         )}
-        <div className="grid grid-cols-2 gap-2">
-          <Stat label="แคลอรี่" value={t.kcal} sub="kcal/วัน" accent />
-          <Stat label="โปรตีน" value={`${t.protein} ก.`} sub="ต่อวัน" accent />
-          <Stat label="ไขมัน" value={`${t.fat} ก.`} sub="ต่อวัน" />
-          <Stat label="คาร์บ" value={`${t.carbs} ก.`} sub="ต่อวัน" />
-        </div>
-        <div className="mt-2 grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           <Stat label="BMI" value={bmi(profile).toFixed(1)} sub="ปกติ 18.5–22.9" />
           <Stat label="BMR" value={Math.round(bmr(profile))} sub="kcal" />
           <Stat label="TDEE" value={Math.round(tdee(profile))} sub="kcal" />
         </div>
-        {t.raceAdjusted && <p className="mt-2 rounded-xl bg-run/10 p-2 text-xs text-run">อยู่ในโปรแกรมวิ่ง: ปรับเป็นกินเท่าที่ใช้ (ไม่กินขาด) และเพิ่มคาร์บ เพราะซ้อมวิ่งปริมาณมากขณะกินน้อยเสี่ยงบาดเจ็บและฟื้นตัวไม่ทัน</p>}
-        <p className="mt-2 text-xs text-muted">คำนวณด้วยสูตร Mifflin-St Jeor (คลาดเคลื่อนได้ ±10%) ใช้เป็นจุดเริ่มต้น แล้วปรับตามน้ำหนักจริงทุก 2–3 สัปดาห์</p>
+        <button onClick={() => nav('food')} className="mt-2 flex w-full items-center justify-between rounded-xl bg-raised px-3 py-2 text-left text-sm">
+          <span>เป้ากินวันนี้ <b className="text-accent">{t.kcal} kcal · โปรตีน {t.protein} ก.</b></span>
+          <ChevronRight size={16} className="text-muted" />
+        </button>
+        <p className="mt-2 text-xs text-muted">BMR/TDEE จากสูตร Mifflin-St Jeor (คลาดเคลื่อนได้ ±10%) — ปรับตามน้ำหนักจริงทุก 2–3 สัปดาห์</p>
       </Card>
 
       {program === 'physique' && <Disclosure title="แผน 12 สัปดาห์" summary="ฐาน → เพิ่มความหนัก → Deload → ทดสอบ">

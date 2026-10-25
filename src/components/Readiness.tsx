@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { BatteryLow, BatteryMedium, BatteryFull, Play, Moon } from 'lucide-react'
 import { usePersisted } from '../lib/storage'
 import { today } from '../lib/date'
@@ -30,6 +30,14 @@ export function ReadinessSheet({ kind, onClose, onProceed }: { kind: 'strength' 
   const [r, setR] = useState<Readiness>(() => log[today()] ?? { sleep: 0, sore: 0, pain: false })
   const level = readinessLevel(r)
   const Icon = level === 'green' ? BatteryFull : level === 'yellow' ? BatteryMedium : BatteryLow
+
+  // ถามวันละครั้งพอ — ถ้าวันนี้ตอบแล้วและไม่ใช่ระดับแดง เริ่มได้เลยไม่ต้องถามซ้ำ
+  const answered = log[today()]
+  useEffect(() => {
+    if (answered && answered.level !== 'red') onProceed(answered.level === 'yellow')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  if (answered && answered.level !== 'red') return null
 
   const go = (light: boolean) => {
     setLog(prev => ({ ...prev, [today()]: { ...r, level } }))
