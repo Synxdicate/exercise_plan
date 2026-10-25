@@ -262,7 +262,8 @@ describe('matched routes', () => {
 
 describe('exercise demo images', () => {
   it('every mapped image exists and the main program exercises have one', async () => {
-    const { existsSync } = await import('node:fs')
+    // ไฟล์ใน public/ (ใช้ import.meta.glob แทน node:fs — ไฟล์ทดสอบถูก type-check ด้วย tsconfig ของแอป)
+    const files = new Set(Object.keys(import.meta.glob('../../../public/exercises/*.jpg')).map(f => f.replace('../../../public', '')))
     const { demoImages } = await import('../../data/demos')
     const { allLibrary } = await import('../../data/library')
     let withImg = 0
@@ -270,7 +271,7 @@ describe('exercise demo images', () => {
       const imgs = demoImages(e.name)
       if (!imgs) continue
       withImg++
-      for (const src of imgs) expect(existsSync(`public${src}`), src).toBe(true)
+      for (const src of imgs) expect(files.has(src), src).toBe(true)
     }
     expect(withImg / allLibrary.length).toBeGreaterThan(0.8)
     for (const n of ['Bench Press', 'Back Squat', 'Pull-up', 'Romanian Deadlift', 'Overhead Press', 'Push-up', 'Dips']) expect(demoImages(n), n).not.toBeNull()
