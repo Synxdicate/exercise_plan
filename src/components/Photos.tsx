@@ -1,13 +1,13 @@
 import { useRef, useState } from 'react'
 import { ImageOff, ImagePlus, Loader2, Trash2 } from 'lucide-react'
-import { deletePhotoFile, uploadPhoto, usePhotos, usePhotoUrl, type Photo } from '../lib/photos'
+import { addPhoto, deletePhotoFile, syncPhotos, usePhotos, usePhotoUrl, type Photo } from '../lib/photos'
 import { ask, notify } from '../lib/dialog'
 import { shortDate } from '../lib/date'
 import { cx } from '../lib/cx'
 import { Sheet } from './ui'
 
 function Thumb({ p, onClick, className }: { p: Photo; onClick?: () => void; className?: string }) {
-  const { url, failed } = usePhotoUrl(p.path)
+  const { url, failed } = usePhotoUrl(p)
   return (
     <button onClick={onClick} className={cx('relative shrink-0 overflow-hidden rounded-xl bg-raised ring-1 ring-line', className)}>
       {url ? <img src={url} alt={`รูปวันที่ ${p.date}`} loading="lazy" className="size-full object-cover" />
@@ -18,7 +18,7 @@ function Thumb({ p, onClick, className }: { p: Photo; onClick?: () => void; clas
 
 function Viewer({ p, onClose }: { p: Photo; onClose: () => void }) {
   const [, setPhotos] = usePhotos()
-  const { url } = usePhotoUrl(p.path)
+  const { url } = usePhotoUrl(p)
   const remove = async () => {
     if (!(await ask('ลบรูปนี้ถาวร?', { title: 'ลบรูป', ok: 'ลบ', danger: true }))) return
     try {
@@ -50,9 +50,10 @@ export function PhotoStrip({ kind, refId, date, label = 'รูป' }: { kind: P
     setBusy(true)
     try {
       for (const f of [...files].slice(0, 6)) {
-        const p = await uploadPhoto(f, { kind, refId, date })
+        const p = await addPhoto(f, { kind, refId, date })
         setPhotos(prev => [...prev, p])
       }
+      void syncPhotos()
     } catch (e) {
       notify(e instanceof Error ? e.message : 'อัปโหลดไม่สำเร็จ', 'bad')
     } finally {

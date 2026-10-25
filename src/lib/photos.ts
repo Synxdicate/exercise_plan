@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react'
 import { supabase } from './supabase'
-import { usePersisted } from './storage'
+import { readStored, setStored, usePersisted } from './storage'
 import { uid } from './log'
 import { today } from './date'
+import * as idb from './idb'
 
-// รูปเก็บใน Supabase Storage (bucket ส่วนตัว 'photos', โฟลเดอร์ = user id) — ต้องต่อเน็ตตอนอัปโหลด/ดู
+// รูปเก็บในเครื่องก่อนเสมอ (IndexedDB 'blobs') — แนบได้แม้ไม่มีเน็ต/ไม่ล็อกอิน
+// ถ้าล็อกอินอยู่ ค่อยอัปโหลดขึ้น Supabase Storage (bucket ส่วนตัว 'photos', โฟลเดอร์ = user id) ทีหลัง
+// path: 'local:<id>' = ยังอยู่ในเครื่องอย่างเดียว, '<user>/<id>.jpg' = อยู่บน server แล้ว
 // รายการรูป (วันที่ แนบกับอะไร) อยู่ใน key 'photos' ที่ซิงก์เหมือนข้อมูลอื่น
 export type Photo = { id: string; date: string; path: string; kind: 'progress' | 'run' | 'workout'; refId?: string }
 
 export const usePhotos = () => usePersisted<Photo[]>('photos', [])
+export const isLocalPhoto = (p: Photo) => p.path.startsWith('local:')
 
 const MAX_SIDE = 1440
 
@@ -26,44 +30,81 @@ async function compress(file: File): Promise<Blob> {
   return blob
 }
 
-export async function uploadPhoto(file: File, meta: Omit<Photo, 'id' | 'path' | 'date'> & { date?: string }): Promise<Photo> {
-  const { data } = await supabase.auth.getSession()
-  const user = data.session?.user.id
-  if (!user) throw new Error('ยังไม่ได้เข้าสู่ระบบ')
+/** เก็บรูปลงเครื่อง แล้วลองอัปโหลด (ถ้าล็อกอินและมีเน็ต) */
+export async function addPhoto(file: File, meta: Omit<Photo, 'id' | 'path' | 'date'> & { date?: string }): Promise<Photo> {
   const id = uid()
-  const path = `${user}/${id}.jpg`
-  const { error } = await supabase.storage.from('photos').upload(path, await compress(file), { contentType: 'image/jpeg' })
-  if (error) throw new Error(navigator.onLine ? `อัปโหลดไม่สำเร็จ: ${error.message}` : 'ต้องต่อเน็ตเพื่ออัปโหลดรูป')
-  return { id, path, date: meta.date ?? today(), kind: meta.kind, refId: meta.refId }
+  await idb.put('blobs', id, await compress(file))
+  return { id, path: `local:${id}`, date: meta.date ?? today(), kind: meta.kind, refId: meta.refId }
+}
+
+let syncing: Promise<void> | null = null
+
+/** อัปโหลดรูปที่ยังอยู่แค่ในเครื่อง — เรียกหลังเพิ่มรูป, หลังล็อกอิน และตอนกลับมาออนไลน์ */
+export function syncPhotos(): Promise<void> {
+  syncing ??= (async () => {
+    const { data } = await supabase.auth.getSession()
+    const user = data.session?.user.id
+    if (!user) return
+    const pending = ((readStored('photos') as Photo[] | undefined) ?? []).filter(isLocalPhoto)
+    for (const p of pending) {
+      const blob = await idb.get<Blob>('blobs', p.id).catch(() => undefined)
+      if (!blob) continue
+      const path = `${user}/${p.id}.jpg`
+      const { error } = await supabase.storage.from('photos').upload(path, blob, { contentType: 'image/jpeg', upsert: true })
+      if (error) return // ออฟไลน์/เน็ตหลุด — ไว้รอบหน้า
+      const now = (readStored('photos') as Photo[] | undefined) ?? []
+      setStored('photos', now.map(x => (x.id === p.id ? { ...x, path } : x)))
+    }
+  })().finally(() => { syncing = null })
+  return syncing
 }
 
 export async function deletePhotoFile(p: Photo) {
+  await idb.del('blobs', p.id).catch(() => {})
+  if (isLocalPhoto(p)) return
   const { error } = await supabase.storage.from('photos').remove([p.path])
   if (error) throw new Error(error.message)
 }
 
 // URL ชั่วคราว (1 ชม.) — แคชไว้ในหน่วยความจำ ไม่ขอซ้ำทุกครั้งที่ render
-const cache = new Map<string, { url: string; exp: number }>()
+const signed = new Map<string, { url: string; exp: number }>()
 const TTL_S = 3600
 
-export async function signedUrl(path: string) {
-  const hit = cache.get(path)
+async function signedUrl(path: string) {
+  const hit = signed.get(path)
   if (hit && hit.exp > Date.now() + 60_000) return hit.url
   const { data, error } = await supabase.storage.from('photos').createSignedUrl(path, TTL_S)
   if (error || !data) throw new Error(error?.message ?? 'โหลดรูปไม่ได้')
-  cache.set(path, { url: data.signedUrl, exp: Date.now() + TTL_S * 1000 })
+  signed.set(path, { url: data.signedUrl, exp: Date.now() + TTL_S * 1000 })
   return data.signedUrl
 }
 
-export function usePhotoUrl(path: string) {
-  const [url, setUrl] = useState<string | null>(() => cache.get(path)?.url ?? null)
-  const [failed, setFailed] = useState(false)
+/** รูปจากเครื่องก่อน ถ้าไม่มี (เช่น ถ่ายจากอีกเครื่อง) ดึงจาก server แล้วเก็บไว้ดูตอนออฟไลน์ */
+async function photoBlob(p: Photo): Promise<Blob> {
+  const local = await idb.get<Blob>('blobs', p.id).catch(() => undefined)
+  if (local) return local
+  if (isLocalPhoto(p)) throw new Error('ไม่พบรูปในเครื่อง')
+  const res = await fetch(await signedUrl(p.path))
+  if (!res.ok) throw new Error('โหลดรูปไม่ได้')
+  const blob = await res.blob()
+  void idb.put('blobs', p.id, blob).catch(() => {})
+  return blob
+}
+
+export function usePhotoUrl(p: Photo) {
+  const [state, setState] = useState<{ id: string; url: string | null; failed: boolean }>({ id: p.id, url: null, failed: false })
   useEffect(() => {
     let alive = true
-    signedUrl(path).then(u => alive && setUrl(u), () => alive && setFailed(true))
-    return () => { alive = false }
-  }, [path])
-  return { url, failed }
+    let url: string | null = null
+    photoBlob(p).then(
+      b => { url = URL.createObjectURL(b); if (alive) setState({ id: p.id, url, failed: false }) },
+      () => alive && setState({ id: p.id, url: null, failed: true }),
+    )
+    return () => { alive = false; if (url) URL.revokeObjectURL(url) }
+    // path เปลี่ยน (อัปโหลดเสร็จ) ไม่ต้องโหลดใหม่ — ยังเป็นรูปเดิม
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [p.id])
+  return state.id === p.id ? state : { url: null, failed: false }
 }
 
 /** ลบรูปที่แนบกับการวิ่ง/การฝึกที่ถูกลบ — ลบไฟล์แบบพยายาม (ออฟไลน์ก็ลบรายการออกก่อน) */
@@ -72,7 +113,7 @@ export function useRemovePhotosFor() {
   return (refId: string) => {
     const gone = photos.filter(p => p.refId === refId)
     if (!gone.length) return
-    void supabase.storage.from('photos').remove(gone.map(p => p.path))
+    for (const p of gone) void deletePhotoFile(p).catch(() => {})
     setPhotos(prev => prev.filter(p => p.refId !== refId))
   }
 }

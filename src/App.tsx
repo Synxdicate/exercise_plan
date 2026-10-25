@@ -1,6 +1,6 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import type { Session } from '@supabase/supabase-js'
-import { Bell, BookOpen, Cloud, CloudOff, Download, Dumbbell, Footprints, House, LogOut, Monitor, Moon, RefreshCw, SlidersHorizontal, Sun, TrendingUp, Upload, Utensils } from 'lucide-react'
+import { Bell, BookOpen, Cloud, CloudOff, Download, Dumbbell, Footprints, House, LogIn, LogOut, Monitor, Moon, RefreshCw, SlidersHorizontal, Smartphone, Sun, TrendingUp, Upload, Utensils } from 'lucide-react'
 import { AuthGate } from './components/AuthGate'
 import { DialogHost } from './components/DialogHost'
 import { ask, notify } from './lib/dialog'
@@ -9,13 +9,18 @@ import { ProgramSheet } from './components/ProgramSheet'
 import { useTheme, type Theme } from './lib/theme'
 import { useReminderSchedule, useReminderSetting } from './lib/reminders'
 import { useBadgeWatcher } from './lib/useGoals'
-import { useCompactRuns } from './lib/log'
+import { useCompactRuns, useRuns, useSessions } from './lib/log'
 import { isNative } from './lib/native'
 import { APP_VERSION, useUpdateAvailable } from './lib/update'
 import { useBackButton, useBackClose } from './lib/back'
 import { supabase } from './lib/supabase'
-import { exportData, getSyncStatus, importData, stopSync, subscribeSyncStatus } from './lib/sync'
-import { today } from './lib/date'
+import { getSyncStatus, stopSync, subscribeSyncStatus } from './lib/sync'
+import { restoreBackup, saveBackup } from './lib/backup'
+import * as idb from './lib/idb'
+import { isLocalPhoto, syncPhotos, type Photo } from './lib/photos'
+import { readStored, usePersisted } from './lib/storage'
+import { lastBackup, setLocalMode } from './lib/localMode'
+import { daysBetween, today } from './lib/date'
 import { Overview } from './components/Overview'
 import { Plan } from './components/Plan'
 import { Nutrition } from './components/Nutrition'
@@ -24,7 +29,6 @@ import { Runs } from './components/Runs'
 import { Sources } from './components/Sources'
 import { cx } from './lib/cx'
 import { defaultProfile, type Profile } from './lib/calc'
-import { usePersisted } from './lib/storage'
 import { NavContext } from './lib/nav'
 
 // 5 แท็บล่างแบบแอปมือถือ — "แหล่งข้อมูล" อยู่ในเมนูโปรไฟล์
@@ -48,7 +52,7 @@ export default function App() {
   )
 }
 
-function Main({ session }: { session: Session }) {
+function Main({ session }: { session: Session | null }) {
   const [tab, setTab] = usePersisted<Tab>('tab', 'overview')
   const [profile, setProfile] = usePersisted<Profile>('profile', defaultProfile)
   const [onboarded, setOnboarded] = usePersisted('onboarded', false)
@@ -102,6 +106,8 @@ function Main({ session }: { session: Session }) {
         </div>
       )}
 
+      {!session && <BackupReminder />}
+
       <main key={tab} className="animate-fade-up space-y-3 px-4 pt-1 pb-[calc(var(--sab)+6rem)]">
         {tab === 'overview' && <Overview profile={profile} setProfile={setProfile} />}
         {tab === 'plan' && <Plan />}
@@ -133,7 +139,7 @@ function Main({ session }: { session: Session }) {
   )
 }
 
-function UserMenu({ session, onSources }: { session: Session; onSources: () => void }) {
+function UserMenu({ session, onSources }: { session: Session | null; onSources: () => void }) {
   const status = useSyncExternalStore(subscribeSyncStatus, getSyncStatus)
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -141,32 +147,38 @@ function UserMenu({ session, onSources }: { session: Session; onSources: () => v
   useBackClose(() => setOpen(false), open)
   const [theme, setTheme] = useTheme()
   const [reminder, setReminder] = useReminderSetting()
-  const meta = session.user.user_metadata as { full_name?: string; avatar_url?: string } | undefined
-  const name = meta?.full_name ?? session.user.email ?? ''
+  const meta = session?.user.user_metadata as { full_name?: string; avatar_url?: string } | undefined
+  const name = meta?.full_name ?? session?.user.email ?? 'ไม่ได้ล็อกอิน'
 
   const logout = async () => {
     setBusy(true)
+    await syncPhotos().catch(() => {})
+    const unsent = ((readStored('photos') as Photo[] | undefined) ?? []).filter(isLocalPhoto).length
+    if (unsent && !(await ask(`มีรูป ${unsent} รูปที่ยังไม่ได้อัปโหลด (อาจออฟไลน์อยู่) ถ้าออกจากระบบตอนนี้ รูปเหล่านั้นจะหาย`, { title: 'ออกจากระบบ?', ok: 'ออกต่อ', danger: true }))) return setBusy(false)
     let ok = await stopSync()
     if (!ok) ok = (await ask('ยังมีข้อมูลที่ส่งขึ้น server ไม่ได้ (อาจออฟไลน์อยู่) ถ้าออกจากระบบตอนนี้ ข้อมูลส่วนนั้นจะหาย', { title: 'ออกจากระบบ?', ok: 'ออกต่อ', danger: true })) && (await stopSync(true))
-    if (ok) await supabase.auth.signOut()
+    if (ok) {
+      // รูปในเครื่องเป็นของบัญชีนี้ — ลบออกด้วย (ฉบับบน server ยังอยู่)
+      await idb.clear('blobs').catch(() => {})
+      await supabase.auth.signOut()
+    }
     setBusy(false)
   }
 
-  const download = () => {
-    const blob = new Blob([JSON.stringify(exportData(), null, 2)], { type: 'application/json' })
-    const a = document.createElement('a')
-    a.href = URL.createObjectURL(blob)
-    a.download = `exercise-plan-backup-${today()}.json`
-    a.click()
-    URL.revokeObjectURL(a.href)
+  const download = async () => {
     setOpen(false)
+    try {
+      await saveBackup()
+    } catch (e) {
+      notify(e instanceof Error ? e.message : 'สำรองข้อมูลไม่สำเร็จ', 'bad')
+    }
   }
 
   const restore = async (file: File) => {
     try {
       const json = JSON.parse(await file.text())
       if (!(await ask('ข้อมูลปัจจุบันจะถูกแทนที่ด้วยข้อมูลในไฟล์สำรอง', { title: 'กู้คืนข้อมูล?', ok: 'กู้คืน', danger: true }))) return
-      importData(json)
+      await restoreBackup(json)
       setOpen(false)
       notify('กู้คืนข้อมูลเรียบร้อย', 'good')
     } catch (e) {
@@ -174,9 +186,9 @@ function UserMenu({ session, onSources }: { session: Session; onSources: () => v
     }
   }
 
-  const StatusIcon = status === 'offline' ? CloudOff : status === 'saving' ? RefreshCw : Cloud
-  const statusText = status === 'offline' ? 'ยังไม่ได้ซิงก์ (ออฟไลน์)' : status === 'saving' ? 'กำลังบันทึก…' : 'ซิงก์แล้ว'
-  const statusColor = status === 'offline' ? 'text-warn' : status === 'saving' ? 'text-muted' : 'text-good'
+  const StatusIcon = !session ? Smartphone : status === 'offline' ? CloudOff : status === 'saving' ? RefreshCw : Cloud
+  const statusText = !session ? 'เก็บในเครื่องนี้ (ไม่ซิงก์)' : status === 'offline' ? 'ยังไม่ได้ซิงก์ (ออฟไลน์)' : status === 'saving' ? 'กำลังบันทึก…' : 'ซิงก์แล้ว'
+  const statusColor = !session ? 'text-muted' : status === 'offline' ? 'text-warn' : status === 'saving' ? 'text-muted' : 'text-good'
 
   return (
     <div className="relative">
@@ -231,14 +243,47 @@ function UserMenu({ session, onSources }: { session: Session; onSources: () => v
               <Upload size={16} /> กู้คืนจากไฟล์สำรอง
               <input type="file" accept="application/json,.json" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) void restore(f); e.target.value = '' }} />
             </label>
-            <button onClick={logout} disabled={busy} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-bad hover:bg-raised">
-              <LogOut size={16} /> ออกจากระบบ
-            </button>
+            {session ? (
+              <button onClick={logout} disabled={busy} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-bad hover:bg-raised">
+                <LogOut size={16} /> ออกจากระบบ
+              </button>
+            ) : (
+              <button onClick={() => setLocalMode(false)} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-run hover:bg-raised">
+                <LogIn size={16} /> ล็อกอินเพื่อซิงก์และสำรองข้อมูล
+              </button>
+            )}
             <div className="px-3 pb-1 pt-2 text-[11px] text-muted">Exercise-Plan v{APP_VERSION}</div>
           </div>
         </>
       )}
       {programOpen && <ProgramSheet onClose={() => setProgramOpen(false)} />}
+    </div>
+  )
+}
+
+/** โหมดไม่ล็อกอินไม่มีสำเนาบน server — เตือนให้สำรองทุก 14 วันเมื่อมีข้อมูลแล้ว */
+function BackupReminder() {
+  const [runs] = useRuns()
+  const [sessions] = useSessions()
+  const [, force] = useState(0)
+  const last = lastBackup()
+  const days = last ? daysBetween(last, today()) : null
+  if (!runs.length && !sessions.length) return null
+  if (days !== null && days < 14) return null
+  const save = async () => {
+    try {
+      await saveBackup()
+      force(n => n + 1)
+      notify('สำรองข้อมูลแล้ว', 'good')
+    } catch (e) {
+      notify(e instanceof Error ? e.message : 'สำรองข้อมูลไม่สำเร็จ', 'bad')
+    }
+  }
+  return (
+    <div className="mx-4 mb-2 flex animate-fade-up items-center gap-2 rounded-2xl bg-warn/10 px-3.5 py-2.5 text-sm text-warn ring-1 ring-warn/30">
+      <Smartphone size={16} className="shrink-0" />
+      <span className="flex-1">{days === null ? 'ยังไม่เคยสำรองข้อมูล' : `สำรองข้อมูลล่าสุด ${days} วันก่อน`} — ข้อมูลอยู่ในเครื่องนี้อย่างเดียว</span>
+      <button onClick={save} className="shrink-0 text-xs font-semibold">สำรองเลย</button>
     </div>
   )
 }

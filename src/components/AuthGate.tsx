@@ -3,6 +3,7 @@ import type { Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import { startSync } from '../lib/sync'
 import { Login, NewPassword } from './Login'
+import { setLocalMode, useLocalMode } from '../lib/localMode'
 
 type State =
   | { kind: 'loading' }
@@ -12,8 +13,9 @@ type State =
   | { kind: 'ready'; session: Session }
   | { kind: 'error'; message: string; session: Session }
 
-export function AuthGate({ children }: { children: (session: Session) => ReactNode }) {
+export function AuthGate({ children }: { children: (session: Session | null) => ReactNode }) {
   const [state, setState] = useState<State>({ kind: 'loading' })
+  const local = useLocalMode()
 
   useEffect(() => {
     let syncedFor: string | null = null
@@ -38,6 +40,7 @@ export function AuthGate({ children }: { children: (session: Session) => ReactNo
         return setState({ kind: 'signedOut' })
       }
       // ห้าม await งาน supabase ใน callback นี้โดยตรง (จะ deadlock) — เลื่อนออกไป
+      setLocalMode(false)
       setTimeout(() => void enter(session), 0)
     })
     return () => data.subscription.unsubscribe()
@@ -48,7 +51,8 @@ export function AuthGate({ children }: { children: (session: Session) => ReactNo
     case 'syncing':
       return <div className="min-h-dvh flex flex-col items-center justify-center gap-3 p-4"><div className="size-8 animate-spin rounded-full border-4 border-line border-t-accent" aria-label="กำลังโหลด" /><p className="text-sm text-muted">{state.kind === 'syncing' ? 'กำลังซิงก์ข้อมูล…' : ''}</p></div>
     case 'signedOut':
-      return <Login />
+      // โหมดไม่ล็อกอิน: ใช้ข้อมูลในเครื่องได้เลย (ไม่ซิงก์)
+      return local ? <>{children(null)}</> : <Login />
     case 'recovery':
       return <NewPassword onDone={() => location.replace(location.origin)} />
     case 'error':

@@ -1,8 +1,9 @@
 import { useState, type FormEvent } from 'react'
-import { Dumbbell, Lock, LogIn, Mail, UserPlus } from 'lucide-react'
+import { Dumbbell, Lock, LogIn, Mail, UserPlus, Smartphone } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { isNative, SITE_URL } from '../lib/native'
 import { nativeGoogleSignIn } from '../lib/nativeAuth'
+import { setLocalMode } from '../lib/localMode'
 import { TextInput } from './Form'
 
 type Mode = 'signin' | 'signup' | 'reset'
@@ -89,6 +90,10 @@ export function Login() {
           )}
         </div>
       </div>
+      <button onClick={() => setLocalMode(true)} className="flex w-full max-w-sm flex-col items-center rounded-2xl px-4 py-3 text-center ring-1 ring-line">
+        <span className="flex items-center gap-2 font-semibold"><Smartphone size={16} /> ใช้แบบไม่ล็อกอิน</span>
+        <span className="text-xs text-muted">เก็บข้อมูลในเครื่องนี้อย่างเดียว ล็อกอินทีหลังได้ ข้อมูลจะถูกรวมขึ้นบัญชีให้</span>
+      </button>
     </div>
   )
 }
