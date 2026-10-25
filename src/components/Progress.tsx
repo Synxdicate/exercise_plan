@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { Activity, ChevronDown, Dumbbell, Pencil, Scale, Trash2, Trophy, TrendingUp } from 'lucide-react'
 import { usePersisted } from '../lib/storage'
-import { shortDate, today, weekStart } from '../lib/date'
+import { monthLabel, niceDate, shortDate, today, weekStart } from '../lib/date'
 import { useRuns, useSessions, type Session } from '../lib/log'
 import { formLabel, trainingLoad } from '../lib/analysis'
 import { FitnessChart } from './Charts'
@@ -123,24 +123,40 @@ function WorkoutHistory() {
   const [open, setOpen] = useState<string | null>(null)
   const [editing, setEditing] = useState<string | null>(null)
   const removePhotos = useRemovePhotosFor()
+  const [months, setMonths] = useState(3)
 
   if (sessions.length === 0)
-    return <Card><p className="py-6 text-center text-sm text-muted">ยังไม่มีบันทึก — ไปที่แท็บ "ฝึก" แล้วกด "บันทึกการฝึก" ในวันเวท</p></Card>
+    return <Card><p className="py-6 text-center text-sm text-muted">ยังไม่มีบันทึก — ไปที่แท็บ "ฝึก" แล้วกด "เริ่มฝึก" ในวันเวท</p></Card>
+
+  // แสดงทีละ 3 เดือน มีหัวเดือนพร้อมจำนวนครั้ง
+  const sorted = [...sessions].sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id))
+  const allMonths = [...new Set(sorted.map(s => s.date.slice(0, 7)))]
+  const shown = sorted.filter(s => allMonths.indexOf(s.date.slice(0, 7)) < months)
 
   return (
     <div className="space-y-3">
-      {[...sessions].reverse().map(s => {
+      {shown.map((s, i) => {
+        const ym = s.date.slice(0, 7)
+        const header = i === 0 || shown[i - 1].date.slice(0, 7) !== ym
+        const header_ = header && (
+          <div className="flex items-baseline justify-between px-1 pt-1">
+            <span className="text-sm font-bold">{monthLabel(ym)}</span>
+            <span className="text-xs text-muted">{sorted.filter(x => x.date.startsWith(ym)).length} ครั้ง</span>
+          </div>
+        )
         const totalSets = s.entries.reduce((n, e) => n + e.sets.length, 0)
         const volume = s.entries.reduce((n, e) => n + e.sets.reduce((v, x) => v + x.kg * x.reps, 0), 0)
         const isOpen = open === s.id
         const prs = prsIn(sessions, s)
         return (
-          <Card key={s.id}>
+          <Fragment key={s.id}>
+          {header_}
+          <Card>
             <button className="flex w-full items-center gap-3 text-left" onClick={() => setOpen(isOpen ? null : s.id)}>
               <div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-accent-soft text-accent"><Dumbbell size={22} /></div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2"><b className="truncate">{s.title}</b><Badge tone="muted">{s.mode === 'gym' ? 'ยิม' : 'สวน'}</Badge>{prs.length > 0 && <Badge tone="good"><Trophy size={11} /> PR {prs.length}</Badge>}</div>
-                <div className="text-xs text-muted">{s.date} · {totalSets} เซ็ต{volume ? ` · ${Math.round(volume).toLocaleString()} กก.` : ''}</div>
+                <div className="text-xs text-muted">{niceDate(s.date)} · {totalSets} เซ็ต{volume ? ` · ${Math.round(volume).toLocaleString()} กก.` : ''}</div>
               </div>
               <ChevronDown size={18} className={cx('shrink-0 text-muted transition', isOpen && 'rotate-180')} />
             </button>
@@ -168,8 +184,12 @@ function WorkoutHistory() {
               </>
             )}
           </Card>
+          </Fragment>
         )
       })}
+      {allMonths.length > months && (
+        <button onClick={() => setMonths(m => m + 3)} className="w-full rounded-full py-2 text-sm font-semibold text-run ring-1 ring-line">ดูเดือนก่อนหน้า ({allMonths.length - months} เดือน)</button>
+      )}
     </div>
   )
 }

@@ -170,3 +170,14 @@ describe('route compaction', () => {
     expect(JSON.stringify(c).length).toBeLessThan(JSON.stringify(raw).length * 0.6)
   })
 })
+
+describe('niceDate', () => {
+  it('relative and Thai formats', async () => {
+    const { niceDate, monthLabel } = await import('../date')
+    expect(niceDate('2026-10-25', '2026-10-25')).toBe('วันนี้')
+    expect(niceDate('2026-10-24', '2026-10-25')).toBe('เมื่อวาน')
+    expect(niceDate('2026-10-19', '2026-10-25')).toBe('จ. 19 ต.ค.')
+    expect(niceDate('2025-12-31', '2026-10-25')).toBe('พ. 31 ธ.ค. 2568')
+    expect(monthLabel('2026-10')).toBe('ตุลาคม 2569')
+  })
+})

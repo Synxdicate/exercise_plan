@@ -1,5 +1,5 @@
 import { lazy, Suspense, useMemo, useState, type ReactNode } from 'react'
-import { CalendarCheck, Check, FileUp, Pencil, TriangleAlert, Trophy, Volume2, VolumeX, ChevronRight, Footprints, Gauge, Pause, Play, Plus, Satellite, Share2, Trash2, X } from 'lucide-react'
+import { CalendarCheck, Check, FileUp, Pencil, TriangleAlert, Trophy, Volume2, VolumeX, Footprints, Gauge, History, Pause, Play, Plus, Satellite, Share2, Trash2, X } from 'lucide-react'
 import { GOOD_ACCURACY_M, useRunTracker, type Point } from '../lib/gps'
 import { formatDuration, formatPace, runKinds, uid, useRuns, type Run } from '../lib/log'
 import { estimate, paceHint, predictionTrend, type Estimate } from '../lib/pace'
@@ -24,8 +24,9 @@ import { PhotoStrip } from './Photos'
 import { useRemovePhotosFor } from '../lib/photos'
 import { HeatCard } from './Heat'
 import { ReadinessSheet } from './Readiness'
-import { addDays, shortDate, today, weekStart } from '../lib/date'
-import { Badge, Button, Card, Collapse, Portal, Stat } from './ui'
+import { addDays, niceDate, shortDate, today, weekStart } from '../lib/date'
+import { Badge, Button, Card, Collapse, Portal, Segmented, Stat } from './ui'
+import { RunHistory } from './RunHistory'
 import { DateInput, NumberInput, SelectInput, TextInput } from './Form'
 import { cx } from '../lib/cx'
 import { ask, notify } from '../lib/dialog'
@@ -52,6 +53,8 @@ export function Runs() {
   const [checking, setChecking] = useState(false)
   const [cooldown, setCooldown] = useState<Run | null>(null)
   const [voice, setVoice] = usePersisted('voiceCues', true)
+  // แท็บย่อยของหน้าวิ่ง (ค่าของเครื่อง) — แยกเริ่มวิ่ง/ประวัติ/สถิติ ไม่ให้หน้าเดียวยาวเกินไป
+  const [view, setView] = usePersisted<'start' | 'history' | 'stats'>('runsView', 'start')
   const [guideOn, setGuideOn] = usePersisted('guideOn', true)
   // เสียงนำใช้กับชุดซ้อมของวันนี้ เมื่อเลือกชนิดการวิ่งตรงกับแผน
   const steps = todayRun?.guide && kind === todayRun.runKind ? todayRun.guide : null
@@ -100,6 +103,13 @@ export function Runs() {
 
   return (
     <div className="space-y-4">
+      <Segmented value={view} onChange={setView} options={[
+        { value: 'start', label: <><Play size={14} /> วิ่ง</> },
+        { value: 'history', label: <><History size={14} /> ประวัติ</> },
+        { value: 'stats', label: <><Gauge size={14} /> สถิติ</> },
+      ]} />
+
+      {view === 'start' && (
       <section className="space-y-3 rounded-2xl bg-gradient-to-br from-run to-accent p-4 text-white shadow-sm">
         <div>
           <div className="text-sm opacity-80">สัปดาห์นี้</div>
@@ -131,51 +141,40 @@ export function Runs() {
         </button>
         {t.error && <p className="rounded-xl bg-black/20 p-2 text-sm">{t.error}</p>}
       </section>
+      )}
 
-      <HeatCard />
+      {view === 'start' && (
+        <>
+          <HeatCard />
+          <RunTypeCard kind={kind} />
+        </>
+      )}
 
-      <RunTypeCard kind={kind} />
+      {view === 'history' && (
+        <Card title="ประวัติการวิ่ง" action={
+          <div className="flex gap-1.5">
+            <label className="inline-flex cursor-pointer items-center gap-1 rounded-full bg-raised px-3 py-1.5 text-sm font-semibold ring-1 ring-line">
+              <FileUp size={14} /> GPX
+              <input type="file" accept=".gpx,application/gpx+xml" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) void importGpx(f); e.target.value = '' }} />
+            </label>
+            <Button variant="soft" size="sm" onClick={() => setManual(!manual)}><Plus size={14} /> กรอกเอง</Button>
+          </div>
+        }>
+          <Collapse open={manual}><ManualEntry onSave={r => { save(r); setManual(false) }} /></Collapse>
+          <RunHistory runs={runs} onOpen={setDetail} />
+        </Card>
+      )}
 
-
-      <PaceCard est={est} runs={runs} />
-
-      <BestEfforts runs={runs} />
-
-      <ShoesCard runs={runs} />
-
-      <Card title="8 สัปดาห์ล่าสุด">
-        <WeeklyBars runs={runs} target={target} />
-      </Card>
-
-      <Card title="ประวัติการวิ่ง" action={
-        <div className="flex gap-1.5">
-          <label className="inline-flex cursor-pointer items-center gap-1 rounded-full bg-raised px-3 py-1.5 text-sm font-semibold ring-1 ring-line">
-            <FileUp size={14} /> GPX
-            <input type="file" accept=".gpx,application/gpx+xml" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) void importGpx(f); e.target.value = '' }} />
-          </label>
-          <Button variant="soft" size="sm" onClick={() => setManual(!manual)}><Plus size={14} /> กรอกเอง</Button>
-        </div>
-      }>
-        <Collapse open={manual}><ManualEntry onSave={r => { save(r); setManual(false) }} /></Collapse>
-        {runs.length === 0 ? (
-          <p className="py-6 text-center text-sm text-muted">ยังไม่มีการวิ่ง — กด "เริ่มวิ่ง" ด้านบน</p>
-        ) : (
-          <ul className="divide-y divide-line">
-            {[...runs].reverse().map(r => (
-              <li key={r.id}>
-                <button onClick={() => setDetail(r.id)} className="flex w-full items-center gap-3 py-3 text-left">
-                  <div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-run/15 text-run"><Footprints size={22} /></div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2"><b className="tabular-nums">{r.km.toFixed(2)} กม.</b><Badge tone="run">{runKinds[r.kind]}</Badge></div>
-                    <div className="text-xs text-muted">{r.date} · {formatDuration(r.seconds)} · {formatPace(r.seconds, r.km)} /กม.</div>
-                  </div>
-                  <ChevronRight size={18} className="text-muted" />
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Card>
+      {view === 'stats' && (
+        <>
+          <PaceCard est={est} runs={runs} />
+          <BestEfforts runs={runs} />
+          <Card title="8 สัปดาห์ล่าสุด">
+            <WeeklyBars runs={runs} target={target} />
+          </Card>
+          <ShoesCard runs={runs} />
+        </>
+      )}
 
       <p className="px-2 text-xs text-muted">
         {isNative
@@ -332,7 +331,7 @@ function RunDetail({ run, fiveK, onClose, onDelete, onUpdate }: { run: Run; five
       <div className="max-h-[92dvh] w-full max-w-lg animate-sheet-up overflow-y-auto rounded-t-3xl bg-card p-4 pb-[calc(var(--sab)+1rem)] sm:animate-fade-up sm:rounded-3xl" onClick={e => e.stopPropagation()}>
         <div className="mb-3 flex items-center justify-between">
           <div>
-            <div className="font-bold">{runKinds[run.kind]} · {run.date}</div>
+            <div className="font-bold">{runKinds[run.kind]} · {niceDate(run.date)}</div>
             <div className="text-xs text-muted">{run.source === 'gps' ? 'บันทึกด้วย GPS' : run.source === 'gpx' ? 'นำเข้าจากไฟล์ GPX' : 'กรอกเอง'}</div>
           </div>
           <span className="flex gap-2">

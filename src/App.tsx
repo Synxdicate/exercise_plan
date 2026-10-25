@@ -195,7 +195,9 @@ function UserMenu({ session, onSources }: { session: Session | null; onSources: 
       <button onClick={() => setOpen(!open)} aria-label="เมนูบัญชี" className="relative">
         {meta?.avatar_url
           ? <img src={meta.avatar_url} alt="" className="size-9 rounded-full ring-2 ring-line" referrerPolicy="no-referrer" />
-          : <span className="grid size-9 place-items-center rounded-full bg-raised font-bold uppercase ring-2 ring-line">{name.charAt(0)}</span>}
+          : session
+            ? <span className="grid size-9 place-items-center rounded-full bg-raised font-bold uppercase ring-2 ring-line">{name.charAt(0)}</span>
+            : <span className="grid size-9 place-items-center rounded-full bg-raised text-muted ring-2 ring-line"><Smartphone size={17} /></span>}
         <span className={cx('absolute -bottom-0.5 -right-0.5 grid size-4 place-items-center rounded-full bg-card', statusColor)}>
           <StatusIcon size={11} className={status === 'saving' ? 'animate-spin' : ''} />
         </span>
