@@ -10,9 +10,9 @@ export type LocationPref = Mode | 'mix'
 export const programs: Record<ProgramId, { name: string; short: string; weeks: number; raceKm?: number; ongoing?: boolean; summary: string }> = {
   physique: { name: 'หุ่นลีนแบบ Tom Holland', short: 'หุ่น', weeks: 12, summary: 'เวท 3 วัน + วิ่ง 2 วัน เน้นเพิ่มกล้าม ลดไขมัน' },
   base: { name: 'วิ่งต่อเนื่อง (ไม่มีเป้าแข่ง)', short: 'วิ่ง', weeks: 4, ongoing: true, summary: 'ไม่มีวันจบ วนรอบละ 4 สัปดาห์: วิ่ง 3 วัน (หนัก 1 วัน) + เวท 2 วัน ~12–16 กม./สัปดาห์ รักษาความฟิต อยากเพิ่มระยะค่อยเปลี่ยนเป็น 10K' },
-  ten: { name: '10K', short: '10K', weeks: 10, raceKm: 10, summary: 'ขั้นต่อจากฐานตอนนี้: วิ่ง 3 วัน (สัปดาห์ 1–3) → 4 วัน + เวท 2 วัน ระยะรวม ~10 → ~22 กม./สัปดาห์' },
-  half: { name: 'ฮาล์ฟมาราธอน 21.1 กม.', short: 'ฮาล์ฟ', weeks: 16, raceKm: 21.1, summary: 'วิ่ง 4 วัน + เวท 2 วัน (รักษากล้าม) ระยะรวมค่อย ๆ เพิ่มจาก ~14 เป็น ~37 กม./สัปดาห์' },
-  full: { name: 'ฟูลมาราธอน 42.2 กม.', short: 'ฟูล', weeks: 18, raceKm: 42.2, summary: 'ต่อจากฮาล์ฟ: วิ่ง 4 วัน + เวท 2 วัน ระยะรวม ~36 → ~60 กม./สัปดาห์' },
+  ten: { name: '10K', short: '10K', weeks: 12, raceKm: 10, summary: 'ขั้นต่อจากฐานตอนนี้ (วิ่งยาวได้ ~5 กม.): วิ่ง 3 วัน (สัปดาห์ 1–3) → 4 วัน + เวท 2 วัน ระยะรวม ~11 → ~22 กม./สัปดาห์' },
+  half: { name: 'ฮาล์ฟมาราธอน 21.1 กม.', short: 'ฮาล์ฟ', weeks: 16, raceKm: 21.1, summary: 'เริ่มเมื่อวิ่งยาวได้ ~7 กม.: วิ่ง 4 วัน + เวท 2 วัน (รักษากล้าม) ระยะรวมค่อย ๆ เพิ่มจาก ~16 เป็น ~34 กม./สัปดาห์' },
+  full: { name: 'ฟูลมาราธอน 42.2 กม.', short: 'ฟูล', weeks: 18, raceKm: 42.2, summary: 'ต่อจากฮาล์ฟ (วิ่งยาวได้ ~18 กม.): วิ่ง 4 วัน + เวท 2 วัน ระยะรวม ~36 → ~60 กม./สัปดาห์' },
 }
 
 // ---------- วิ่ง ----------
@@ -27,63 +27,67 @@ const reps = (km: number, set: string): Q => ({ km, kind: 'interval', title: `In
 const pace = (km: number, set: string, label: string): Q => ({ km, kind: 'tempo', title: `${label} ${set}`, how: `วอร์ม 2 กม. → ${set} ที่${label} พักจ็อก 2 นาที → คูลดาวน์`, guide: guides.pace(set, label) })
 
 // ปริมาณเพิ่มทีละน้อย มีสัปดาห์ลด (cutback) ทุก 3–4 สัปดาห์ และ taper ก่อนแข่ง
+// วิ่งยาวแต่ละครั้งยาวกว่าครั้งที่ยาวที่สุดใน 30 วันก่อนหน้าไม่เกิน 10% (Frandsen 2025: เกิน 10% เสี่ยงบาดเจ็บ ~1.6 เท่า)
+// — ยกเว้นวันแข่ง ทดสอบใน programs.test.ts
 // easyB = 0 → วันเสาร์เป็นวันพัก (ช่วงแรกของ 10K วิ่ง 3 วันเท่ากับที่วิ่งอยู่เดิม)
 // วิ่งต่อเนื่อง: ระดับใกล้กับที่วิ่งอยู่ (2.5–5 กม. × 3) ขยับเล็กน้อย 3 สัปดาห์ แล้วลด 1 สัปดาห์ วนไปเรื่อย ๆ
 const baseWeeks: RunWeek[] = [
-  { easyA: 4, q: fartlek(4), easyB: 0, long: 6 },
-  { easyA: 4, q: tempo(5, '2×5'), easyB: 0, long: 7 },
-  { easyA: 4, q: reps(5, '5 × 800 ม. / จ็อก 2 นาที'), easyB: 0, long: 7 },
+  { easyA: 4, q: fartlek(4), easyB: 0, long: 5.5 },
+  { easyA: 4, q: tempo(5, '2×5'), easyB: 0, long: 6 },
+  { easyA: 4, q: reps(5, '5 × 800 ม. / จ็อก 2 นาที'), easyB: 0, long: 6.5 },
   { easyA: 3, q: strides(4), easyB: 0, long: 5, note: 'สัปดาห์ลดปริมาณ ให้ร่างกายปรับตัว ก่อนเริ่มรอบใหม่' },
 ]
 
 const tenWeeks: RunWeek[] = [
-  { easyA: 3, q: fartlek(3), easyB: 0, long: 4 },
-  { easyA: 3, q: tempo(4, '2×5'), easyB: 0, long: 5 },
-  { easyA: 3, q: strides(3), easyB: 0, long: 4, note: 'สัปดาห์ลดปริมาณ ให้ร่างกายปรับตัว' },
-  { easyA: 3, q: reps(4, '6 × 1 นาที / จ็อก 2 นาที'), easyB: 2, long: 5, note: 'เริ่มวิ่ง 4 วัน — วันเสาร์วิ่งสั้น ๆ เบามาก' },
-  { easyA: 3, q: tempo(4, '15'), easyB: 3, long: 6 },
+  { easyA: 3, q: fartlek(3), easyB: 0, long: 5 },
+  { easyA: 3, q: tempo(4, '2×5'), easyB: 0, long: 5.5 },
+  { easyA: 3, q: strides(3), easyB: 0, long: 5, note: 'สัปดาห์ลดปริมาณ ให้ร่างกายปรับตัว' },
+  { easyA: 3, q: reps(4, '6 × 1 นาที / จ็อก 2 นาที'), easyB: 2, long: 6, note: 'เริ่มวิ่ง 4 วัน — วันเสาร์วิ่งสั้น ๆ เบามาก' },
+  { easyA: 3, q: tempo(4, '15'), easyB: 3, long: 6.5 },
   { easyA: 4, q: reps(5, '5 × 800 ม. / จ็อก 2 นาที'), easyB: 3, long: 7 },
-  { easyA: 3, q: strides(4), easyB: 3, long: 5, note: 'สัปดาห์ลดปริมาณ' },
-  { easyA: 4, q: pace(6, '3 × 2 กม.', 'เพซ 10K'), easyB: 4, long: 8, note: 'สัปดาห์พีค' },
+  { easyA: 3, q: strides(4), easyB: 3, long: 6, note: 'สัปดาห์ลดปริมาณ' },
+  { easyA: 4, q: tempo(5, '20'), easyB: 3, long: 7.5 },
+  { easyA: 4, q: pace(6, '3 × 2 กม.', 'เพซ 10K'), easyB: 4, long: 8 },
+  { easyA: 4, q: reps(6, '5 × 1 กม. / จ็อก 2 นาที'), easyB: 4, long: 8.5, note: 'สัปดาห์พีค' },
   { easyA: 3, q: pace(4, '2 × 1 กม.', 'เพซ 10K'), easyB: 3, long: 6, note: 'Taper: ลดระยะ คงความเร็วไว้' },
   { easyA: 3, q: strides(3), easyB: 0, long: 10, note: 'สัปดาห์แข่ง! วิ่งเบาให้ขาสด นอนให้พอ' },
 ]
 
 const halfWeeks: RunWeek[] = [
-  { easyA: 3, q: fartlek(3), easyB: 3, long: 5 },
-  { easyA: 3, q: fartlek(4), easyB: 3, long: 6 },
-  { easyA: 4, q: tempo(4, '2×5'), easyB: 3, long: 7 },
-  { easyA: 3, q: strides(3), easyB: 3, long: 5, note: 'สัปดาห์ลดปริมาณ ให้ร่างกายปรับตัว' },
-  { easyA: 4, q: tempo(5, '2×8'), easyB: 4, long: 8 },
-  { easyA: 4, q: reps(5, '6 × 1 นาที / จ็อก 2 นาที'), easyB: 4, long: 9 },
+  { easyA: 3, q: fartlek(3), easyB: 3, long: 7.5 },
+  { easyA: 3, q: fartlek(4), easyB: 3, long: 8 },
+  { easyA: 4, q: tempo(4, '2×5'), easyB: 3, long: 8.5 },
+  { easyA: 3, q: strides(3), easyB: 3, long: 7, note: 'สัปดาห์ลดปริมาณ ให้ร่างกายปรับตัว' },
+  { easyA: 4, q: tempo(5, '2×8'), easyB: 4, long: 9 },
+  { easyA: 4, q: reps(5, '6 × 1 นาที / จ็อก 2 นาที'), easyB: 4, long: 9.5 },
   { easyA: 5, q: tempo(6, '20'), easyB: 4, long: 10 },
-  { easyA: 4, q: strides(4), easyB: 3, long: 7, note: 'สัปดาห์ลดปริมาณ' },
-  { easyA: 5, q: reps(6, '5 × 800 ม. / จ็อก 2 นาที'), easyB: 5, long: 12 },
-  { easyA: 5, q: tempo(7, '25'), easyB: 5, long: 13 },
-  { easyA: 5, q: pace(7, '2 × 3 กม.', 'เพซฮาล์ฟ'), easyB: 5, long: 14 },
-  { easyA: 4, q: strides(5), easyB: 4, long: 10, note: 'สัปดาห์ลดปริมาณ' },
-  { easyA: 6, q: tempo(8, '30'), easyB: 5, long: 16 },
-  { easyA: 6, q: pace(8, '3 × 3 กม.', 'เพซฮาล์ฟ'), easyB: 5, long: 18, note: 'สัปดาห์พีค — ระยะยาวที่สุดของโปรแกรม' },
-  { easyA: 5, q: pace(6, '2 × 2 กม.', 'เพซฮาล์ฟ'), easyB: 4, long: 12, note: 'Taper: ลดระยะ คงความเร็วไว้' },
+  { easyA: 4, q: strides(4), easyB: 3, long: 8, note: 'สัปดาห์ลดปริมาณ' },
+  { easyA: 5, q: reps(6, '5 × 800 ม. / จ็อก 2 นาที'), easyB: 5, long: 11 },
+  { easyA: 5, q: tempo(7, '25'), easyB: 5, long: 12 },
+  { easyA: 5, q: pace(7, '2 × 3 กม.', 'เพซฮาล์ฟ'), easyB: 5, long: 13 },
+  { easyA: 4, q: strides(5), easyB: 4, long: 10.5, note: 'สัปดาห์ลดปริมาณ' },
+  { easyA: 6, q: tempo(8, '30'), easyB: 5, long: 14 },
+  { easyA: 6, q: pace(8, '3 × 3 กม.', 'เพซฮาล์ฟ'), easyB: 5, long: 15, note: 'สัปดาห์พีค — ระยะยาวที่สุดของโปรแกรม' },
+  { easyA: 5, q: pace(6, '2 × 2 กม.', 'เพซฮาล์ฟ'), easyB: 4, long: 11, note: 'Taper: ลดระยะ คงความเร็วไว้' },
   { easyA: 4, q: strides(4), easyB: 3, long: 21.1, note: 'สัปดาห์แข่ง! นอนให้พอ กินคาร์บเพิ่ม 1–2 วันก่อนแข่ง' },
 ]
 
 const fullWeeks: RunWeek[] = [
   { easyA: 6, q: tempo(8, '20'), easyB: 6, long: 16 },
-  { easyA: 6, q: reps(8, '6 × 800 ม. / จ็อก 2 นาที'), easyB: 6, long: 18 },
+  { easyA: 6, q: reps(8, '6 × 800 ม. / จ็อก 2 นาที'), easyB: 6, long: 17.5 },
   { easyA: 7, q: pace(9, '6 กม.', 'เพซมาราธอน'), easyB: 6, long: 19 },
-  { easyA: 5, q: strides(6), easyB: 5, long: 14, note: 'สัปดาห์ลดปริมาณ' },
-  { easyA: 7, q: tempo(10, '25'), easyB: 7, long: 21 },
-  { easyA: 7, q: reps(10, '5 × 1 กม. / จ็อก 2 นาที'), easyB: 7, long: 23 },
-  { easyA: 8, q: pace(11, '8 กม.', 'เพซมาราธอน'), easyB: 7, long: 25 },
-  { easyA: 6, q: strides(6), easyB: 6, long: 18, note: 'สัปดาห์ลดปริมาณ' },
-  { easyA: 8, q: tempo(11, '30'), easyB: 8, long: 27 },
+  { easyA: 5, q: strides(6), easyB: 5, long: 15, note: 'สัปดาห์ลดปริมาณ' },
+  { easyA: 7, q: tempo(10, '25'), easyB: 7, long: 20.5 },
+  { easyA: 7, q: reps(10, '5 × 1 กม. / จ็อก 2 นาที'), easyB: 7, long: 22.5 },
+  { easyA: 8, q: pace(11, '8 กม.', 'เพซมาราธอน'), easyB: 7, long: 24.5 },
+  { easyA: 6, q: strides(6), easyB: 6, long: 19, note: 'สัปดาห์ลดปริมาณ' },
+  { easyA: 8, q: tempo(11, '30'), easyB: 8, long: 26.5 },
   { easyA: 8, q: pace(12, '10 กม.', 'เพซมาราธอน'), easyB: 8, long: 29 },
-  { easyA: 6, q: strides(8), easyB: 6, long: 20, note: 'สัปดาห์ลดปริมาณ' },
-  { easyA: 8, q: tempo(12, '35'), easyB: 8, long: 30 },
+  { easyA: 6, q: strides(8), easyB: 6, long: 23, note: 'สัปดาห์ลดปริมาณ' },
+  { easyA: 8, q: tempo(12, '35'), easyB: 8, long: 31.5 },
   { easyA: 8, q: pace(13, '12 กม.', 'เพซมาราธอน'), easyB: 8, long: 26 },
   { easyA: 8, q: reps(12, '6 × 1 กม. / จ็อก 2 นาที'), easyB: 8, long: 32, note: 'สัปดาห์พีค — ซ้อมกินเจล/น้ำระหว่างวิ่งยาว' },
-  { easyA: 6, q: strides(8), easyB: 6, long: 21, note: 'สัปดาห์ลดปริมาณ' },
+  { easyA: 6, q: strides(8), easyB: 6, long: 22, note: 'สัปดาห์ลดปริมาณ' },
   { easyA: 7, q: pace(10, '8 กม.', 'เพซมาราธอน'), easyB: 7, long: 24, note: 'Taper เริ่ม: ลดปริมาณ ~20%' },
   { easyA: 6, q: pace(8, '5 กม.', 'เพซมาราธอน'), easyB: 5, long: 16, note: 'Taper: ลดปริมาณ ~40%' },
   { easyA: 5, q: strides(5), easyB: 3, long: 42.2, note: 'สัปดาห์แข่ง! กินคาร์บ 8–10 ก./กก. 1–2 วันก่อนแข่ง' },

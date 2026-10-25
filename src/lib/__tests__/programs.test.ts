@@ -51,6 +51,22 @@ describe('โปรแกรมวิ่ง', () => {
     for (let w = 1; w <= n; w++) expect(variants('base', w).gym.some(d => d.runKind === 'race')).toBe(false)
   })
 
+  it('วิ่งแต่ละครั้งไม่ยาวเกิน 110% ของครั้งที่ยาวที่สุดใน 30 วันก่อนหน้า ยกเว้นวันแข่ง (Frandsen 2025)', () => {
+    // ระยะวิ่งยาวที่ควรทำได้ก่อนเริ่มแต่ละโปรแกรม (ตามที่เขียนใน summary)
+    const base = { base: 5, ten: 5, half: 7, full: 18 } as const
+    for (const p of running) {
+      const cycles = programs[p].ongoing ? 2 : 1 // โปรแกรมวนรอบ ตรวจรอยต่อรอบด้วย
+      const sessions: { day: number; km: number; race: boolean }[] = [{ day: -1, km: base[p], race: false }]
+      for (let c = 0; c < cycles; c++) for (let w = 1; w <= programs[p].weeks; w++)
+        variants(p, w).gym.forEach((d, i) => { if (d.type === 'run' && d.targetKm) sessions.push({ day: (c * programs[p].weeks + w - 1) * 7 + i, km: d.targetKm, race: d.runKind === 'race' }) })
+      for (const s of sessions.slice(1)) {
+        if (s.race) continue
+        const prev = Math.max(...sessions.filter(x => x.day < s.day && x.day >= s.day - 30).map(x => x.km))
+        expect(s.km, `${p} day ${s.day}: ${s.km} vs ${prev}`).toBeLessThanOrEqual(prev * 1.1 + 1e-9)
+      }
+    }
+  })
+
   it('ไม่วิ่งหนัก/วิ่งยาวในวันถัดจากเวทขา — ผลกระทบอยู่ราว 6–48 ชม. (Doma 2017)', () => {
     const legs = /squat|deadlift|rdl|split|lunge|leg curl|pistol|bridge/i
     for (const p of ['physique', ...running] as const) {
@@ -67,9 +83,15 @@ describe('โปรแกรมวิ่ง', () => {
     }
   })
 
-  it('โปรแกรมหุ่นในยิม: กล้ามหลักได้ ≥ 8 เซ็ต/สัปดาห์ (Schoenfeld 2017: ~10+ ดีกว่า)', () => {
+  it('โปรแกรมหุ่นในยิม: กล้ามหลักได้ ~10 เซ็ต/สัปดาห์ (Schoenfeld 2017: ≥10 ดีกว่า)', () => {
     const sets = weeklySets(variants('physique', 1).gym)
-    for (const m of ['chest', 'lats', 'upperBack', 'quads', 'hamstrings', 'glutes', 'sideDelts'] as const) expect(sets[m] ?? 0, m).toBeGreaterThanOrEqual(8)
+    for (const m of ['chest', 'lats', 'upperBack', 'quads', 'glutes'] as const) expect(sets[m] ?? 0, m).toBeGreaterThanOrEqual(10)
+    for (const m of ['hamstrings', 'sideDelts'] as const) expect(sets[m] ?? 0, m).toBeGreaterThanOrEqual(9)
+  })
+
+  it('โปรแกรมหุ่นในสวน: กล้ามใหญ่ได้ ≥ 8 เซ็ต/สัปดาห์', () => {
+    const sets = weeklySets(variants('physique', 1).park)
+    for (const m of ['chest', 'lats', 'upperBack', 'quads', 'glutes', 'hamstrings'] as const) expect(sets[m] ?? 0, m).toBeGreaterThanOrEqual(8)
   })
 
   it('ยิมกับสวนต่างกันแค่วันเวท', () => {

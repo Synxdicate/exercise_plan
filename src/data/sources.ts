@@ -35,6 +35,7 @@ export const references: { cat: string; title: string; url: string; used: string
   { cat: 'เวทเทรนนิ่ง', level: 'meta', title: 'Schoenfeld et al. 2019 — Training frequency and muscle hypertrophy', url: pm('30558493'), used: 'ความถี่ไม่สำคัญเท่าปริมาณรวม (ขาฝึกวันเดียวได้)' },
   { cat: 'เวทเทรนนิ่ง', level: 'meta', title: 'Wilson et al. 2012 — Concurrent training: interference meta-analysis', url: pm('22002517'), used: 'เหตุผลที่ควรเน้นทีละเป้า (หุ่น vs มาราธอน)' },
   // วิ่ง
+  { cat: 'วิ่ง', level: 'cohort', title: 'Frandsen et al. 2025 — How much running is too much? (5,200 runners, BJSM)', url: pm('40623829'), used: 'วิ่งยาวแต่ละครั้งไม่เกิน 110% ของครั้งที่ยาวที่สุดใน 30 วันก่อน (เกินแล้วเสี่ยงบาดเจ็บ ~1.6 เท่า)' },
   { cat: 'วิ่ง', level: 'meta', title: 'Seiler 2010 — Training intensity distribution in endurance athletes', url: pm('20861519'), used: 'วิ่งเบาเป็นส่วนใหญ่ (~80%) วิ่งหนักส่วนน้อย' },
   { cat: 'วิ่ง', level: 'meta', title: 'Bosquet et al. 2007 — Effects of tapering on performance', url: pm('17762369'), used: 'ลดปริมาณ 2–3 สัปดาห์ก่อนแข่ง โดยคงความเร็วไว้' },
   { cat: 'วิ่ง', level: 'meta', title: 'Blagrove et al. 2018 — Strength training for distance runners', url: pm('29249083'), used: 'เวท 2 วัน/สัปดาห์ในโปรแกรมวิ่ง' },
