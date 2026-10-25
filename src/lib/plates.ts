@@ -3,7 +3,7 @@
 export const BAR_KG = 20
 export const PLATES_KG = [25, 20, 15, 10, 5, 2.5, 1.25]
 
-const BARBELL = /^(Back Squat|Bench Press|Overhead Press|Romanian Deadlift|Deadlift)$/
+const BARBELL = /^(Back Squat|Front Squat|Bench Press|Overhead Press|Romanian Deadlift|Deadlift|Hip Thrust)$/
 export const isBarbell = (name: string) => BARBELL.test(name)
 
 /** แผ่นต่อข้าง (มากไปน้อย) ให้ได้น้ำหนักรวมที่ใกล้เป้าที่สุดโดยไม่เกิน */

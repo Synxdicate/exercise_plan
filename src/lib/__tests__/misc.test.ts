@@ -72,3 +72,32 @@ describe('searchFoods', () => {
     expect(new Set(logFoods.map(f => f.name)).size).toBe(logFoods.length)
   })
 })
+
+describe('exercise library + swaps', () => {
+  it('every program exercise with a pattern has muscles; library names are unique', async () => {
+    const { allLibrary, patternOf } = await import('../../data/library')
+    const { musclesOf } = await import('../../data/muscles')
+    const { weekPlan } = await import('../../data/programs')
+    expect(new Set(allLibrary.map(e => e.name)).size).toBe(allLibrary.length)
+    for (const e of allLibrary) expect(musclesOf({ ...e, sets: '3', rest: '-' }).primary.length, e.name).toBeGreaterThan(0)
+    // ทุกท่าเวทในโปรแกรม (ยกเว้น Cindy) อยู่ในคลัง → สลับได้
+    for (const p of ['physique', 'ten'] as const) for (const m of ['gym', 'park'] as const)
+      for (const d of weekPlan(p, 1, () => m)) if (d.type === 'strength')
+        for (const e of d.exercises) if (!/Cindy/.test(e.name)) expect(patternOf(e.name), e.name).toBeTruthy()
+  })
+  it('applyCustom swaps everywhere and appends extras', async () => {
+    const { applyCustom, extrasKey } = await import('../program')
+    const { weekPlan } = await import('../../data/programs')
+    const days = weekPlan('physique', 1, () => 'gym')
+    const d0 = days.find(d => d.type === 'strength')!
+    const out = applyCustom(days, 'physique', { 'Bench Press': 'DB Bench Press', Plank: 'Ab Wheel Rollout' },
+      { [extrasKey('physique', d0)]: [{ name: 'Hammer Curl', th: '', sets: '3', reps: '10–12', rest: '90 วิ', cue: '', video: '' }] })
+    const names = out.flatMap(d => d.exercises.map(e => e.name))
+    expect(names).not.toContain('Bench Press')
+    const sw = out.flatMap(d => d.exercises).find(e => e.name === 'DB Bench Press')!
+    expect(sw.swappedFrom).toBe('Bench Press')
+    const orig = days.flatMap(d => d.exercises).find(e => e.name === 'Bench Press')!
+    expect(sw.sets).toBe(orig.sets)
+    expect(out.find(d => d.key === d0.key)!.exercises.at(-1)).toMatchObject({ name: 'Hammer Curl', added: true })
+  })
+})

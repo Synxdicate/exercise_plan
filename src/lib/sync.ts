@@ -6,7 +6,7 @@ import { mergeValues } from './merge'
 // 'tab', 'activeRun', 'activeWorkout' ไม่ sync — เป็นสถานะของเครื่องนั้น
 export const SYNCED_KEYS = [
   'profile', 'mode', 'week', 'done', 'sessions', 'runs', 'log', 'program', 'raceDate', 'dayLocation',
-  'onboarded', 'readiness', 'foodLog', 'screening', 'shoes',
+  'onboarded', 'readiness', 'foodLog', 'screening', 'shoes', 'exerciseSwaps', 'extraExercises',
 ] as const
 
 // เจ้าของข้อมูลใน localStorage — กันข้อมูลคนหนึ่งไหลไปบัญชีอื่นบนเครื่องเดียวกัน

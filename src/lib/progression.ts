@@ -2,7 +2,7 @@ import type { Exercise } from '../data/workouts'
 import type { SetEntry } from './log'
 
 // Double progression: ทำได้ถึงจำนวนครั้งสูงสุดของช่วงครบทุกเซ็ต → เพิ่มน้ำหนัก แล้วกลับไปเริ่มที่ช่วงล่าง
-const LOWER = /squat|deadlift|rdl|split|lunge|hip thrust/i
+const LOWER = /squat|deadlift|rdl|split|lunge|hip thrust|leg press/i
 
 export type Suggestion = { kg: number | null; text: string; up: boolean }
 

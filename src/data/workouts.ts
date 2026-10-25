@@ -13,6 +13,8 @@ export type Exercise = {
   video: string // คำค้นใน YouTube
   easier?: string
   harder?: string
+  swappedFrom?: string // ผู้ใช้สลับมาจากท่านี้ (ดู useProgram)
+  added?: boolean // ผู้ใช้เพิ่มเอง
 }
 
 export type Day = {

@@ -1,4 +1,5 @@
 import type { Day, Exercise } from './workouts'
+import { libEx } from './library'
 
 export type Muscle =
   | 'chest' | 'frontDelts' | 'sideDelts' | 'rearDelts' | 'traps' | 'biceps' | 'triceps' | 'forearms'
@@ -69,7 +70,7 @@ const byExercise: Record<string, Target> = {
   'Intervals 1:2': t([], ['quads', 'hamstrings', 'glutes', 'calves']),
 }
 
-export const musclesOf = (e: Exercise): Target => byExercise[e.name] ?? t([])
+export const musclesOf = (e: Exercise): Target => byExercise[e.name] ?? libEx(e.name)?.muscles ?? t([])
 
 const setCount = (e: Exercise) => parseInt(e.sets, 10) || 1
 

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowDown, ArrowUp, Check, ChevronRight, Dumbbell, Flag, Footprints, Moon, Play, RefreshCw, Trees } from 'lucide-react'
+import { ArrowDown, ArrowLeftRight, ArrowUp, Check, ChevronRight, Dumbbell, Flag, Footprints, Moon, Play, Plus, RefreshCw, Trash2, Trees } from 'lucide-react'
 import { yt, type Day, type Exercise } from '../data/workouts'
 import { locationInfo, weekNote } from '../data/programs'
 import { dayIntensity, musclesOf, muscleNames } from '../data/muscles'
@@ -16,6 +16,7 @@ import { Alerts } from './Alerts'
 import { RunTypeCard } from './RunTypes'
 import { ReadinessSheet } from './Readiness'
 import { Badge, Button, Collapse, Meter, Segmented } from './ui'
+import { AddSheet, SwapSheet } from './ExercisePicker'
 
 const short = ['จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส', 'อา']
 const todayIdx = () => (new Date().getDay() + 6) % 7 // 0 = จันทร์
@@ -168,7 +169,11 @@ function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation }: {
   setDone: (v: boolean) => void; onStart: () => void; onLocation: (m: 'gym' | 'park') => void
 }) {
   const nav = useNav()
+  const p = useProgram()
   const st = styleOf(day)
+  const [swapping, setSwapping] = useState<Exercise | null>(null)
+  const [adding, setAdding] = useState(false)
+  const where = day.location ?? 'gym'
 
   return (
     <article className="animate-fade-up rounded-3xl bg-card p-4 shadow-sm ring-1 ring-line">
@@ -202,8 +207,21 @@ function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation }: {
         <>
           <div className="mt-3"><BodyMap intensity={dayIntensity(day)} size="sm" /></div>
           <ul className="mt-2 divide-y divide-line">
-            {day.exercises.map((e, i) => <ExerciseRow key={e.name} e={e} n={i + 1} />)}
+            {day.exercises.map((e, i) => (
+              <ExerciseRow key={e.name} e={e} n={i + 1} onSwap={() => setSwapping(e)} onRemove={() => p.removeExercise(day, e.name)} />
+            ))}
           </ul>
+          <button onClick={() => setAdding(true)} className="mt-1 flex items-center gap-1.5 py-1.5 text-sm font-semibold text-run">
+            <Plus size={15} /> เพิ่มท่า
+          </button>
+          {swapping && (
+            <SwapSheet e={swapping} where={where} exclude={day.exercises.map(e => e.name)} onClose={() => setSwapping(null)}
+              onPick={to => { p.swap(swapping.swappedFrom ?? swapping.name, to); setSwapping(null) }} />
+          )}
+          {adding && (
+            <AddSheet where={where} existing={day.exercises.map(e => e.name)} onClose={() => setAdding(false)}
+              onPick={x => { p.addExercise(day, { name: x.name, th: x.th, sets: '3', reps: x.reps, rest: '90 วิ', cue: x.cue, video: x.video }); setAdding(false) }} />
+          )}
           <Button size="lg" className="mt-3 w-full" onClick={onStart}>
             <Play size={18} fill="currentColor" /> {done ? 'ฝึกอีกครั้ง' : 'เริ่มฝึก'}
           </Button>
@@ -230,14 +248,14 @@ function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation }: {
   )
 }
 
-function ExerciseRow({ e, n }: { e: Exercise; n: number }) {
+function ExerciseRow({ e, n, onSwap, onRemove }: { e: Exercise; n: number; onSwap: () => void; onRemove: () => void }) {
   const [open, setOpen] = useState(false)
   return (
     <li>
       <button onClick={() => setOpen(!open)} className="flex w-full items-center gap-3 py-2.5 text-left active:scale-100">
         <span className="grid size-7 shrink-0 place-items-center rounded-full bg-raised text-xs font-bold text-muted">{n}</span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate font-semibold">{e.name}</span>
+          <span className="block truncate font-semibold">{e.name}{(e.swappedFrom || e.added) && <span className="ml-1.5 text-[10px] font-normal text-run">{e.added ? 'เพิ่มเอง' : 'สลับแล้ว'}</span>}</span>
           <span className="block truncate text-xs text-muted">{e.th}</span>
         </span>
         <span className="shrink-0 text-sm font-semibold tabular-nums">{e.sets}×{e.reps}</span>
@@ -259,6 +277,11 @@ function ExerciseRow({ e, n }: { e: Exercise; n: number }) {
           <a href={yt(e.video)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 font-semibold text-accent!">
             <Play size={14} fill="currentColor" /> ดูวิธีทำบน YouTube
           </a>
+          <div className="flex gap-4 border-t border-line pt-2 text-xs font-semibold">
+            {e.added
+              ? <button onClick={onRemove} className="inline-flex items-center gap-1 text-bad"><Trash2 size={13} /> ลบท่านี้</button>
+              : <button onClick={onSwap} className="inline-flex items-center gap-1 text-run"><ArrowLeftRight size={13} /> {e.swappedFrom ? `สลับแล้ว (เดิม ${e.swappedFrom})` : 'สลับท่า'}</button>}
+          </div>
         </div>
       </Collapse>
     </li>
