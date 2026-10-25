@@ -13,12 +13,14 @@ import { isNative } from '../lib/native'
 import { speak, splitAnnouncement } from '../lib/voice'
 import { usePersisted } from '../lib/storage'
 import { RunTypeCard } from './RunTypes'
+import { CooldownSheet } from './Cooldown'
 import { HeatCard } from './Heat'
 import { ReadinessSheet } from './Readiness'
 import { addDays, shortDate, today, weekStart } from '../lib/date'
 import { Badge, Button, Card, Collapse, Portal, Stat } from './ui'
 import { DateInput, NumberInput, SelectInput } from './Form'
 import { cx } from '../lib/cx'
+import { ask, notify } from '../lib/dialog'
 
 const RunMap = lazy(() => import('./RunMap'))
 
@@ -40,6 +42,7 @@ export function Runs() {
   const [detail, setDetail] = useState<string | null>(null)
   const [manual, setManual] = useState(false)
   const [checking, setChecking] = useState(false)
+  const [cooldown, setCooldown] = useState<Run | null>(null)
   const [voice, setVoice] = usePersisted('voiceCues', true)
   const t = useRunTracker({ onSplit: (km, split, total) => { if (voice) void speak(splitAnnouncement(km, total, split)) } })
 
@@ -50,18 +53,18 @@ export function Runs() {
     if (r.km < 0.05) return
     const run: Run = { id: uid(), date: today(), kind, source: 'gps', ...r }
     save(run)
-    setDetail(run.id)
+    setCooldown(run)
   }
 
   const importGpx = async (file: File) => {
     try {
       const g = parseGpx(await file.text())
-      if (!g.seconds && !confirm('ไฟล์นี้ไม่มีเวลา จะบันทึกแค่ระยะและเส้นทาง ต้องการต่อไหม?')) return
+      if (!g.seconds && !(await ask('ไฟล์นี้ไม่มีข้อมูลเวลา จะบันทึกแค่ระยะและเส้นทาง', { title: 'นำเข้าต่อไหม?', ok: 'นำเข้า' }))) return
       const run: Run = { id: uid(), date: g.date ?? today(), km: g.km, seconds: g.seconds, elapsedSeconds: g.elapsedSeconds, splits: g.splits, route: g.route, times: g.times, kind, source: 'gpx' }
       save(run)
       setDetail(run.id)
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'อ่านไฟล์ไม่ได้')
+      notify(e instanceof Error ? e.message : 'อ่านไฟล์ไม่ได้', 'bad')
     }
   }
 
@@ -154,6 +157,8 @@ export function Runs() {
           ? 'แอป Android บันทึก GPS ต่อได้แม้ปิดจอ (มีแจ้งเตือนค้างไว้ระหว่างวิ่ง) — ถ้าบันทึกหยุดเอง ให้ตั้งค่าแบตเตอรี่ของแอปเป็น "ไม่จำกัด"'
           : 'เว็บอ่าน GPS ได้เฉพาะตอนเปิดหน้านี้ค้างไว้ (แอปกันจอดับให้แล้ว) ถ้าปิดจอหรือสลับแอป ช่วงนั้นจะไม่ถูกบันทึก — ใช้แอป Android หรือนำเข้า GPX จาก Strava แทนได้'}
       </p>
+
+      {cooldown && <CooldownSheet km={cooldown.km} onDone={() => { setDetail(cooldown.id); setCooldown(null) }} />}
 
       {checking && (
         <ReadinessSheet kind="run" onClose={() => setChecking(false)}
@@ -248,7 +253,7 @@ function ActiveRun({ t, kind, target, fiveK, voice, setVoice, onFinish }: { t: R
             <label className="flex items-center gap-2 text-muted">
               <input type="checkbox" className="size-4 accent-accent" checked={t.autoPause} onChange={e => t.setAutoPause(e.target.checked)} /> หยุดอัตโนมัติ
             </label>
-            <button className="text-bad" onClick={() => confirm('ทิ้งการวิ่งนี้?') && t.discard()}>ทิ้งการวิ่งนี้</button>
+            <button className="text-bad" onClick={async () => (await ask('ระยะและเวลาที่บันทึกไว้จะหายไป', { title: 'ทิ้งการวิ่งนี้?', ok: 'ทิ้ง', danger: true })) && t.discard()}>ทิ้งการวิ่งนี้</button>
           </div>
         )}
       </div>
@@ -333,7 +338,7 @@ function RunDetail({ run, fiveK, onClose, onDelete, onUpdate }: { run: Run; five
         </Collapse>
         <div className="mt-3 flex gap-2">
           <Button variant="soft" size="sm" onClick={() => setEditing(!editing)}><Pencil size={14} /> {editing ? 'ยกเลิกแก้ไข' : 'แก้ไข'}</Button>
-          <Button variant="danger" size="sm" onClick={() => confirm('ลบการวิ่งนี้?') && onDelete()}><Trash2 size={14} /> ลบ</Button>
+          <Button variant="danger" size="sm" onClick={async () => (await ask('ลบการวิ่งนี้ออกจากประวัติ?', { ok: 'ลบ', danger: true })) && onDelete()}><Trash2 size={14} /> ลบ</Button>
         </div>
       </div>
     </div>

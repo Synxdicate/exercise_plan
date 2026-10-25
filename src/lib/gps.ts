@@ -3,6 +3,7 @@ import { BackgroundGeolocation, isNative } from './native'
 
 import { haversine, type Point } from './geo'
 import { TrackFilter } from './track'
+import { ask } from './dialog'
 
 export { haversine, type Point }
 
@@ -204,7 +205,7 @@ export function useRunTracker(opts: { onSplit?: (km: number, splitSec: number, t
           if (err) {
             if (err.code === 'NOT_AUTHORIZED') {
               setError('ไม่ได้อนุญาตให้ใช้ตำแหน่ง — แตะเพื่อเปิดการตั้งค่า แล้วเลือก "อนุญาตตลอดเวลา"')
-              if (confirm('แอปต้องใช้ตำแหน่งเพื่อบันทึกการวิ่ง เปิดการตั้งค่าเลยไหม?')) void BackgroundGeolocation.openSettings()
+              void ask('แอปต้องใช้ตำแหน่งเพื่อบันทึกการวิ่ง เลือก "อนุญาตตลอดเวลา" ในการตั้งค่า', { title: 'ต้องการสิทธิ์ตำแหน่ง', ok: 'เปิดการตั้งค่า' }).then(ok => { if (ok) void BackgroundGeolocation.openSettings() })
             }
             return
           }

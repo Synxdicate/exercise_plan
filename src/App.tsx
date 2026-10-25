@@ -2,6 +2,8 @@ import { useEffect, useState, useSyncExternalStore } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { Bell, BookOpen, Cloud, CloudOff, Download, Dumbbell, Footprints, House, LogOut, Monitor, Moon, RefreshCw, SlidersHorizontal, Sun, TrendingUp, Upload, Utensils } from 'lucide-react'
 import { AuthGate } from './components/AuthGate'
+import { DialogHost } from './components/DialogHost'
+import { ask, notify } from './lib/dialog'
 import { Onboarding } from './components/Onboarding'
 import { ProgramSheet } from './components/ProgramSheet'
 import { useTheme, type Theme } from './lib/theme'
@@ -35,7 +37,12 @@ type Tab = (typeof tabs)[number]['id'] | 'sources'
 
 export default function App() {
   useTheme()
-  return <AuthGate>{session => <Main session={session} />}</AuthGate>
+  return (
+    <>
+      <AuthGate>{session => <Main session={session} />}</AuthGate>
+      <DialogHost />
+    </>
+  )
 }
 
 function Main({ session }: { session: Session }) {
@@ -128,7 +135,7 @@ function UserMenu({ session, onSources }: { session: Session; onSources: () => v
   const logout = async () => {
     setBusy(true)
     let ok = await stopSync()
-    if (!ok) ok = confirm('ยังมีข้อมูลที่ส่งขึ้น server ไม่ได้ (อาจออฟไลน์อยู่) ถ้าออกจากระบบตอนนี้ ข้อมูลส่วนนั้นจะหาย ต้องการออกต่อไหม?') && (await stopSync(true))
+    if (!ok) ok = (await ask('ยังมีข้อมูลที่ส่งขึ้น server ไม่ได้ (อาจออฟไลน์อยู่) ถ้าออกจากระบบตอนนี้ ข้อมูลส่วนนั้นจะหาย', { title: 'ออกจากระบบ?', ok: 'ออกต่อ', danger: true })) && (await stopSync(true))
     if (ok) await supabase.auth.signOut()
     setBusy(false)
   }
@@ -146,12 +153,12 @@ function UserMenu({ session, onSources }: { session: Session; onSources: () => v
   const restore = async (file: File) => {
     try {
       const json = JSON.parse(await file.text())
-      if (!confirm('กู้คืนจะแทนที่ข้อมูลปัจจุบันด้วยข้อมูลในไฟล์ ต้องการทำต่อไหม?')) return
+      if (!(await ask('ข้อมูลปัจจุบันจะถูกแทนที่ด้วยข้อมูลในไฟล์สำรอง', { title: 'กู้คืนข้อมูล?', ok: 'กู้คืน', danger: true }))) return
       importData(json)
       setOpen(false)
-      alert('กู้คืนข้อมูลเรียบร้อย')
+      notify('กู้คืนข้อมูลเรียบร้อย', 'good')
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'อ่านไฟล์ไม่ได้')
+      notify(e instanceof Error ? e.message : 'อ่านไฟล์ไม่ได้', 'bad')
     }
   }
 

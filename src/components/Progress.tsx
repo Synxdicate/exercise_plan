@@ -9,6 +9,7 @@ import { allExercises, exerciseHistory, prsIn } from '../lib/strength'
 import { Badge, Button, Card, Segmented, Stat } from './ui'
 import { DateInput, NumberInput } from './Form'
 import { cx } from '../lib/cx'
+import { ask } from '../lib/dialog'
 
 type Entry = { date: string; weight: number; waist?: number }
 
@@ -155,7 +156,7 @@ function WorkoutHistory() {
                 </ul>
                 <div className="mt-2 flex gap-2">
                   <Button variant="soft" size="sm" onClick={() => setEditing(s.id)}><Pencil size={14} /> แก้ไข</Button>
-                  <Button variant="danger" size="sm" onClick={() => confirm('ลบบันทึกนี้?') && setSessions(prev => prev.filter(x => x.id !== s.id))}>
+                  <Button variant="danger" size="sm" onClick={async () => (await ask('ลบบันทึกการฝึกนี้?', { ok: 'ลบ', danger: true })) && setSessions(prev => prev.filter(x => x.id !== s.id))}>
                     <Trash2 size={14} /> ลบ
                   </Button>
                 </div>

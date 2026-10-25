@@ -2,6 +2,7 @@ import { App } from '@capacitor/app'
 import { Browser } from '@capacitor/browser'
 import { supabase } from './supabase'
 import { isNative } from './native'
+import { notify } from './dialog'
 
 // Google ไม่อนุญาตให้ login ใน WebView — ในแอปจึงเปิดหน้า login ใน Chrome Custom Tab
 // แล้วให้ Supabase เด้งกลับเข้าแอปทาง deep link นี้ (ต้องใส่ไว้ใน Redirect URLs ของ Supabase)
@@ -27,9 +28,9 @@ export function listenForAuthRedirect() {
     const code = params.get('code')
     if (code) {
       const { error } = await supabase.auth.exchangeCodeForSession(code)
-      if (error) alert(`เข้าสู่ระบบไม่สำเร็จ: ${error.message}`)
+      if (error) notify(`เข้าสู่ระบบไม่สำเร็จ: ${error.message}`, 'bad')
     } else if (params.get('error_description')) {
-      alert(`เข้าสู่ระบบไม่สำเร็จ: ${params.get('error_description')}`)
+      notify(`เข้าสู่ระบบไม่สำเร็จ: ${params.get('error_description')}`, 'bad')
     }
   })
 }

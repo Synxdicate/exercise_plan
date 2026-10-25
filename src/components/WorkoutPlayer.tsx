@@ -10,6 +10,7 @@ import { cancelRestEnd, scheduleRestEnd } from '../lib/notify'
 import { Badge, Button, Collapse, Portal } from './ui'
 import { RpePicker } from './RpePicker'
 import { cx } from '../lib/cx'
+import { ask } from '../lib/dialog'
 
 type SetRow = { kg: string; reps: string; done: boolean }
 type Active = { key: string; startedAt: number; idx: number; rows: Record<string, SetRow[]> }
@@ -99,9 +100,9 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
       .map(e => ({ name: e.name, sets: state.rows[e.name].filter(r => r.done).map<SetEntry>(r => ({ kg: parseFloat(r.kg) || 0, reps: parseInt(r.reps, 10) || 0 })) }))
       .filter(e => e.sets.length)
 
-  const finish = () => {
+  const finish = async () => {
     if (!doneEntries().length) {
-      if (confirm('ยังไม่ได้ทำเซ็ตไหนเลย ออกโดยไม่บันทึก?')) { setActive(null); onClose() }
+      if (await ask('ยังไม่ได้ทำเซ็ตไหนเลย', { title: 'ออกโดยไม่บันทึก?', ok: 'ออก', danger: true })) { setActive(null); onClose() }
       return
     }
     setRating(true)
@@ -115,8 +116,8 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
     onSaved()
   }
 
-  const quit = () => {
-    if (doneCount === 0 || confirm('ออกตอนนี้? ความคืบหน้าจะถูกเก็บไว้ กลับมาทำต่อได้')) onClose()
+  const quit = async () => {
+    if (doneCount === 0 || (await ask('ความคืบหน้าจะถูกเก็บไว้ กลับมาทำต่อได้', { title: 'ออกจากการฝึก?', ok: 'ออก' }))) onClose()
   }
 
   return (
