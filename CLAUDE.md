@@ -16,6 +16,8 @@ The owner: male, 20 y/o, 165 cm, 64.5 kg, currently jogs 2.5–5 km 2–3×/week
 - `npm run build` — `tsc -b` type-check then `vite build`
 - `npm test` — vitest (`src/lib/__tests__/`); single file: `npx vitest run src/lib/__tests__/programs.test.ts`. Tests cover pure logic only (calc, programs safety properties like ≤20% weekly volume jumps and taper, progression, pace, GPX parsing, merge, dates).
 - `npm run lint` — oxlint
+- `npm run e2e` — Playwright E2E (`e2e/*.e2e.ts`; named `.e2e.ts` so vitest doesn't pick them up). It builds with `--mode e2e`, serves `vite preview` on 4173 and drives the app in local (no-login) mode, seeding data via `seed()` in `e2e/helpers.ts` (localStorage → migrated to IndexedDB on load) and reading it back with `idb()`. Uses the installed Google Chrome locally, Playwright's Chromium in CI. Single test: `npx playwright test -g "<name>"`.
+- CI: `.github/workflows/ci.yml` runs lint, unit tests, build and E2E on every push/PR to main (dummy Supabase env).
 
 ## Android app (Capacitor)
 
