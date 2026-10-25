@@ -244,3 +244,16 @@ test('แผนที่รวมทุกการวิ่ง (heatmap)', asyn
   await expect(page.getByText(/2 เส้นทาง/)).toBeVisible()
   await expect(page.locator('.leaflet-container canvas, .leaflet-container svg').first()).toBeAttached()
 })
+
+test('ท่าที่ไม่มีรูปถ่ายแสดงภาพลายเส้น', async ({ page }) => {
+  await seed(page, { mode: 'park' })
+  await nav(page, 'ฝึก')
+  // หาวันในสัปดาห์ที่มีท่านี้ (วันขาในสวน)
+  const target = page.locator('main li button', { hasText: 'Hollow Body Hold' })
+  for (const d of ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์', 'อาทิตย์']) {
+    await page.locator(`button[aria-label^="${d}"]`).click()
+    if (await target.count()) break
+  }
+  await target.first().click()
+  await expect(page.getByRole('img', { name: /Hollow Body Hold ภาพลายเส้น/ })).toBeVisible()
+})
