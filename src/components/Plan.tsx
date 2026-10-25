@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { ArrowDown, ArrowLeftRight, ArrowUp, Check, ChevronRight, Dumbbell, Flag, Footprints, Moon, Play, Plus, RefreshCw, Trash2, Trees } from 'lucide-react'
 import { yt, type Day, type Exercise } from '../data/workouts'
 import { locationInfo, weekNote } from '../data/programs'
@@ -43,7 +43,7 @@ function PlanBody() {
   const [playing, setPlaying] = useState<{ i: number; light: boolean } | null>(null)
   const [checking, setChecking] = useState<number | null>(null)
   const [runs] = useRuns()
-  const est = estimate(runs)
+  const est = useMemo(() => estimate(runs), [runs])
 
   const week = p.autoWeek ? viewWeek : p.currentWeek
   const isThisWeek = week === p.currentWeek

@@ -1,8 +1,8 @@
-import { lazy, Suspense, useState, type ReactNode } from 'react'
+import { lazy, Suspense, useMemo, useState, type ReactNode } from 'react'
 import { CalendarCheck, Check, FileUp, Pencil, TriangleAlert, Trophy, Volume2, VolumeX, ChevronRight, Footprints, Gauge, Pause, Play, Plus, Satellite, Share2, Trash2, X } from 'lucide-react'
 import { GOOD_ACCURACY_M, useRunTracker, type Point } from '../lib/gps'
 import { formatDuration, formatPace, runKinds, uid, useRuns, type Run } from '../lib/log'
-import { estimate, paceHint, type Estimate } from '../lib/pace'
+import { estimate, paceHint, predictionTrend, type Estimate } from '../lib/pace'
 import { useProgram } from '../lib/program'
 import { parseGpx } from '../lib/gpx'
 import { DEFAULT_LIMIT_KM, defaultShoe, shoeKm, shoeStatus, useShoes, type Shoe } from '../lib/shoes'
@@ -46,7 +46,7 @@ export function Runs() {
   const [todayIdx] = useState(() => (new Date().getDay() + 6) % 7) // 0 = จันทร์
   const todayRun = p.plan().filter((d, i) => i === todayIdx && d.type === 'run')[0]
   const [kind, setKind] = useState<Run['kind']>(todayRun?.runKind ?? 'easy')
-  const est = estimate(runs)
+  const est = useMemo(() => estimate(runs), [runs])
   const [detail, setDetail] = useState<string | null>(null)
   const [manual, setManual] = useState(false)
   const [checking, setChecking] = useState(false)
@@ -137,7 +137,7 @@ export function Runs() {
       <RunTypeCard kind={kind} />
 
 
-      <PaceCard est={est} />
+      <PaceCard est={est} runs={runs} />
 
       <BestEfforts runs={runs} />
 
@@ -443,25 +443,70 @@ const roundedTop = (x: number, y: number, w: number, h: number) => {
   return `M${x} ${y + h} V${y + r} Q${x} ${y} ${x + r} ${y} H${x + w - r} Q${x + w} ${y} ${x + w} ${y + r} V${y + h} Z`
 }
 
-function PaceCard({ est }: { est: Estimate | null }) {
+function PaceCard({ est, runs }: { est: Estimate | null; runs: Run[] }) {
+  const trend = useMemo(() => predictionTrend(runs, 12), [runs])
+  const [pick, setPick] = useState<'fiveK' | 'tenK' | 'half' | 'full'>('tenK')
   if (!est)
     return (
       <Card title={<span className="flex items-center gap-2"><Gauge size={18} className="text-run" /> เพซแนะนำ</span>}>
         <p className="text-sm text-muted">วิ่งให้ได้อย่างน้อย 3 กม. สักครั้ง (เต็มที่แบบคุมได้) แล้วแอปจะคำนวณเพซซ้อมและเวลาคาดการณ์ให้</p>
       </Card>
     )
+  // เทียบกับ 4 สัปดาห์ก่อน: ติดลบ = เร็วขึ้น
+  const before = trend.at(-5)
+  const items = [['fiveK', '5K'], ['tenK', '10K'], ['half', 'ฮาล์ฟ'], ['full', 'ฟูล']] as const
   return (
     <Card title={<span className="flex items-center gap-2"><Gauge size={18} className="text-run" /> เวลาคาดการณ์ & โซนเพซ</span>}>
-      <div className="grid grid-cols-2 gap-2 text-center">
-        <Stat label="5K" value={formatDuration(est.fiveK)} />
-        <Stat label="10K" value={formatDuration(est.tenK)} />
-        <Stat label="ฮาล์ฟ" value={formatDuration(est.half)} />
-        <Stat label="ฟูล" value={formatDuration(est.full)} />
+      <div className="grid grid-cols-2 gap-2">
+        {items.map(([k, label]) => {
+          const prev = before?.[k]
+          const diff = prev ? est[k] - prev : 0
+          return (
+            <button key={k} onClick={() => setPick(k)}
+              className={cx('rounded-xl px-3 py-2 text-left ring-1 transition-colors', pick === k ? 'bg-run/10 ring-run/40' : 'bg-raised ring-transparent')}>
+              <div className="text-xs text-muted">{label}{k === 'full' && !est.fullReliable && ' (ค่าคร่าว ๆ)'}</div>
+              <div className="text-lg font-bold tabular-nums">{formatDuration(est[k])}</div>
+              {Math.abs(diff) >= 1 && (
+                <div className={cx('text-[11px] font-semibold tabular-nums', diff < 0 ? 'text-good' : 'text-warn')}>
+                  {diff < 0 ? 'เร็วขึ้น' : 'ช้าลง'} {formatDuration(Math.abs(diff))} ใน 4 สัปดาห์
+                </div>
+              )}
+            </button>
+          )
+        })}
       </div>
+      <TrendLine points={trend.map(t => ({ date: t.date, v: t[pick] }))} />
       <div className="mt-3 text-xs font-semibold text-muted">โซนเพซของคุณ (นาที/กม.)</div>
       <div className="mt-1.5"><ZoneLegend fiveK={est.paces.interval} /></div>
-      <p className="mt-2 text-xs text-muted">จากการวิ่ง {est.from.km} กม. ({est.from.date}) สูตร Riegel — ฮาล์ฟ/ฟูลมักเร็วเกินจริงจนกว่าจะซ้อมระยะยาวพอ</p>
+      <p className="mt-2 text-xs text-muted">
+        จาก{est.from.segment ? `ช่วง ${est.from.km} กม. ที่เร็วที่สุดในการวิ่ง` : `การวิ่ง ${est.from.km} กม.`} วันที่ {shortDate(est.from.date)}
+        {est.stale && ' (เกิน 2 เดือนแล้ว — วิ่งเต็มที่สักครั้งเพื่ออัปเดต)'} · ฟูลคิดจากระยะซ้อม ~{Math.round(est.weeklyKm)} กม./สัปดาห์ด้วย
+      </p>
     </Card>
+  )
+}
+
+/** เส้นแนวโน้มเวลาคาดการณ์ 12 สัปดาห์ (ต่ำลง = เร็วขึ้น จึงกลับแกนให้ดีขึ้นอยู่ด้านบน) */
+function TrendLine({ points }: { points: { date: string; v: number | null }[] }) {
+  const pts = points.filter((p): p is { date: string; v: number } => p.v !== null)
+  if (pts.length < 2) return null
+  const W = 320, H = 70, pad = 6
+  const vs = pts.map(p => p.v)
+  const lo = Math.min(...vs), hi = Math.max(...vs)
+  const x = (i: number) => pad + (i / (points.length - 1)) * (W - pad * 2)
+  const y = (v: number) => (hi === lo ? H / 2 : pad + ((v - lo) / (hi - lo)) * (H - pad * 2))
+  const idx = (d: string) => points.findIndex(p => p.date === d)
+  const path = pts.map((p, i) => `${i ? 'L' : 'M'}${x(idx(p.date)).toFixed(1)} ${y(p.v).toFixed(1)}`).join(' ')
+  const last = pts.at(-1)!
+  return (
+    <div className="mt-3">
+      <div className="mb-1 flex justify-between text-[11px] text-muted"><span>12 สัปดาห์ก่อน</span><span>วันนี้</span></div>
+      <svg viewBox={`0 0 ${W} ${H}`} className="block w-full" role="img" aria-label="แนวโน้มเวลาคาดการณ์">
+        <line x1={0} x2={W} y1={H / 2} y2={H / 2} className="stroke-line" strokeDasharray="3 4" />
+        <path d={path} fill="none" className="stroke-run" strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
+        <circle cx={x(idx(last.date))} cy={y(last.v)} r={4.5} className="fill-run stroke-card" strokeWidth={2} />
+      </svg>
+    </div>
   )
 }
 

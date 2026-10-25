@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Check, Dumbbell, Flag, Flame, Footprints, Moon, Play } from 'lucide-react'
 import { locationInfo } from '../data/programs'
 import type { Day } from '../data/workouts'
@@ -49,7 +49,8 @@ export function Dashboard() {
   const intensity = Object.fromEntries(Object.entries(sets).map(([m, n]) => [m, Math.min(1, n! / TARGET_SETS)]))
   const TodayIcon = todayPlan?.runKind === 'race' ? Flag : todayPlan?.type === 'run' ? Footprints : todayPlan?.type === 'strength' ? Dumbbell : Moon
   const todayDone = p.isDone(done, week, todayIdx)
-  const hint = todayPlan?.type === 'run' ? paceHint(estimate(runs), todayPlan.runKind, todayPlan.title) : null
+  const est = useMemo(() => estimate(runs), [runs])
+  const hint = todayPlan?.type === 'run' ? paceHint(est, todayPlan.runKind, todayPlan.title) : null
 
   return (
     <>

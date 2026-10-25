@@ -8,6 +8,29 @@ import type { Run, Session } from '../log'
 
 const run = (km: number, seconds: number): Run => ({ id: String(km), date: '2026-10-01', km, seconds, kind: 'easy', source: 'manual' })
 
+describe('race prediction', () => {
+  it('Vickers model 1: marathon slower than Riegel, faster with more mileage', async () => {
+    const { vickersMarathon } = await import('../pace')
+    const riegel = 1800 * (42.195 / 5) ** 1.07
+    const low = vickersMarathon(1800, 5, 10)
+    expect(low).toBeGreaterThan(riegel + 600) // ช้ากว่า Riegel ≥10 นาที (ตามงานวิจัย)
+    expect(low).toBeGreaterThan(18900); expect(low).toBeLessThan(19300)
+    expect(vickersMarathon(1800, 5, 30)).toBeLessThan(low)
+  })
+  it('uses recent runs first and best segments inside runs', () => {
+    const old = { ...run(5, 1500), id: 'old', date: '2026-01-01' }
+    const recent = { ...run(5, 1700), id: 'new', date: '2026-10-01' }
+    expect(estimate([old, recent], '2026-10-10')!.from.id).toBe('new')
+    expect(estimate([old], '2026-10-10')!.stale).toBe(true)
+    // วิ่ง 6 กม. แต่ 5 กม. แรกเร็ว → ใช้ช่วง 5K
+    const route: [number, number][] = [], times: number[] = []
+    for (let i = 0; i <= 60; i++) { route.push([16.43 + (i * 0.1) / 111.32, 102.82]); times.push(i <= 50 ? i * 30 : 1500 + (i - 50) * 60) }
+    const seg = estimate([{ ...run(6, 2100), id: 'g', date: '2026-10-05', route, times }], '2026-10-10')!
+    expect(seg.from.segment).toBe(true)
+    expect(seg.fiveK).toBeLessThan(1560)
+  })
+})
+
 describe('pace (Riegel)', () => {
   it('ต้องมีการวิ่งอย่างน้อย 3 กม.', () => {
     expect(estimate([run(2, 600)])).toBeNull()
