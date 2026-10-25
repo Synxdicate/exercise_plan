@@ -14,42 +14,51 @@ const thaiDate = (s: string) => {
   return `${d} ${thMonths[m - 1]} ${y + 543}`
 }
 
-export async function renderRunCard(run: Run): Promise<HTMLCanvasElement> {
+export type CardStyle = 'card' | 'white' | 'black'
+
+/** วาดเส้นทางพร้อมจุดเริ่ม/จบ */
+function drawRoute(g: CanvasRenderingContext2D, run: Run, box: { x: number; y: number; w: number; h: number }, color: string, width: number) {
+  const pts = projectRoute(run.route!, box)
+  g.lineJoin = 'round'
+  g.lineCap = 'round'
+  g.strokeStyle = color
+  g.lineWidth = width
+  g.beginPath()
+  pts.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y)))
+  g.stroke()
+  for (const [[x, y], dot] of [[pts[0], '#22C55E'], [pts.at(-1)!, color]] as const) {
+    g.fillStyle = dot
+    g.beginPath()
+    g.arc(x, y, width * 1.4, 0, Math.PI * 2)
+    g.fill()
+  }
+}
+
+/**
+ * card = การ์ดพื้นไล่สี, white/black = สติกเกอร์ PNG พื้นหลังโปร่ง (ไว้วางบนรูปอื่นในโซเชียล)
+ * สติกเกอร์มีเงาจาง ๆ รอบตัวอักษร/เส้นทาง ให้อ่านออกทั้งบนรูปสว่างและมืด
+ */
+export async function renderRunCard(run: Run, style: CardStyle = 'card'): Promise<HTMLCanvasElement> {
   await document.fonts?.load(`700 40px ${FONT}`).catch(() => {})
   const c = document.createElement('canvas')
   c.width = W
   c.height = H
   const g = c.getContext('2d')!
+  const hasRoute = (run.route?.length ?? 0) > 1
+  if (style !== 'card') return drawSticker(g, c, run, style, hasRoute)
+
   const bg = g.createLinearGradient(0, 0, W, H)
   bg.addColorStop(0, '#E11D48')
   bg.addColorStop(1, '#6D28D9')
   g.fillStyle = bg
   g.fillRect(0, 0, W, H)
 
-  const hasRoute = (run.route?.length ?? 0) > 1
   if (hasRoute) {
-    const pts = projectRoute(run.route!, { x: 120, y: 330, w: W - 240, h: 520 })
-    g.lineJoin = 'round'
-    g.lineCap = 'round'
-    g.strokeStyle = 'rgba(0,0,0,0.25)'
-    g.lineWidth = 22
-    g.beginPath()
-    pts.forEach(([x, y], i) => (i ? g.lineTo(x, y + 6) : g.moveTo(x, y + 6)))
-    g.stroke()
-    g.strokeStyle = '#ffffff'
-    g.lineWidth = 12
-    g.beginPath()
-    pts.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y)))
-    g.stroke()
-    for (const [[x, y], col] of [[pts[0], '#22C55E'], [pts.at(-1)!, '#111827']] as const) {
-      g.fillStyle = col
-      g.beginPath()
-      g.arc(x, y, 18, 0, Math.PI * 2)
-      g.fill()
-      g.strokeStyle = '#fff'
-      g.lineWidth = 6
-      g.stroke()
-    }
+    g.save()
+    g.translate(0, 6)
+    drawRoute(g, run, { x: 120, y: 330, w: W - 240, h: 520 }, 'rgba(0,0,0,0.25)', 22)
+    g.restore()
+    drawRoute(g, run, { x: 120, y: 330, w: W - 240, h: 520 }, '#ffffff', 12)
   }
 
   g.fillStyle = '#fff'
@@ -89,30 +98,63 @@ export async function renderRunCard(run: Run): Promise<HTMLCanvasElement> {
   return c
 }
 
-const fileName = (run: Run) => `run-${run.date}-${run.id.slice(0, 6)}.png`
+// สติกเกอร์: ตัวเลขเรียงกลางแบบโซเชียล + เส้นทางด้านล่าง
+function drawSticker(g: CanvasRenderingContext2D, c: HTMLCanvasElement, run: Run, style: 'white' | 'black', hasRoute: boolean) {
+  const ink = style === 'white' ? '#ffffff' : '#111111'
+  g.shadowColor = style === 'white' ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.55)'
+  g.shadowBlur = 14
+  g.fillStyle = ink
+  g.textAlign = 'center'
+  g.textBaseline = 'alphabetic'
+  const stats: [string, string][] = [
+    ['ระยะทาง', `${run.km.toFixed(2)} กม.`],
+    ['เพซ', `${formatPace(run.seconds, run.km)} /กม.`],
+    ['เวลา', formatDuration(run.seconds)],
+  ]
+  let y = hasRoute ? 150 : 330
+  for (const [label, value] of stats) {
+    g.globalAlpha = 0.85
+    g.font = `500 38px ${FONT}`
+    g.fillText(label, W / 2, y)
+    g.globalAlpha = 1
+    g.font = `800 96px ${FONT}`
+    g.fillText(value, W / 2, y + 100)
+    y += 205
+  }
+  if (hasRoute) drawRoute(g, run, { x: 200, y: y - 20, w: W - 400, h: H - y - 100 }, ink, 11)
+  g.globalAlpha = 0.8
+  g.font = `600 32px ${FONT}`
+  g.fillText(`Exercise-Plan · ${thaiDate(run.date)}`, W / 2, H - 40)
+  g.globalAlpha = 1
+  g.shadowBlur = 0
+  g.textAlign = 'left'
+  return c
+}
+
+const fileName = (run: Run, style: CardStyle = 'card') => `run-${run.date}-${run.id.slice(0, 6)}${style === 'card' ? '' : '-sticker'}.png`
 
 /** แชร์รูป: แอปใช้หน้าต่างแชร์ของ Android, เว็บใช้ Web Share ถ้ารองรับ ไม่งั้นดาวน์โหลด */
-export async function shareRunImage(run: Run, canvas: HTMLCanvasElement) {
+export async function shareRunImage(run: Run, canvas: HTMLCanvasElement, style: CardStyle = 'card') {
   const text = `วิ่ง ${run.km.toFixed(2)} กม. · ${formatDuration(run.seconds)} · เพซ ${formatPace(run.seconds, run.km)} /กม.`
   if (isNative) {
     const data = canvas.toDataURL('image/png').split(',')[1]
-    const { uri } = await Filesystem.writeFile({ path: fileName(run), data, directory: Directory.Cache })
+    const { uri } = await Filesystem.writeFile({ path: fileName(run, style), data, directory: Directory.Cache })
     await Share.share({ files: [uri], text, dialogTitle: 'แชร์การวิ่ง' })
     return
   }
   const blob = await new Promise<Blob | null>(r => canvas.toBlob(r, 'image/png'))
   if (!blob) throw new Error('สร้างรูปไม่สำเร็จ')
-  const file = new File([blob], fileName(run), { type: 'image/png' })
+  const file = new File([blob], fileName(run, style), { type: 'image/png' })
   if (navigator.canShare?.({ files: [file] })) {
     await navigator.share({ files: [file], text }).catch(e => { if ((e as Error).name !== 'AbortError') throw e })
     return
   }
-  downloadImage(run, canvas)
+  downloadImage(run, canvas, style)
 }
 
-export function downloadImage(run: Run, canvas: HTMLCanvasElement) {
+export function downloadImage(run: Run, canvas: HTMLCanvasElement, style: CardStyle = 'card') {
   const a = document.createElement('a')
   a.href = canvas.toDataURL('image/png')
-  a.download = fileName(run)
+  a.download = fileName(run, style)
   a.click()
 }
