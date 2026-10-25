@@ -1,10 +1,12 @@
 import { useState } from 'react'
-import { carbFoods, nutritionRules, proteinFoods, sampleDays, streetDishes, type Food } from '../data/nutrition'
+import { Search } from 'lucide-react'
+import { carbFoods, extraFoods, nutritionRules, proteinFoods, sampleDays, searchFoods, streetDishes, type Food } from '../data/nutrition'
 import { targets, type Profile } from '../lib/calc'
 import { useProgram } from '../lib/program'
 import { Badge, Card, Segmented } from './ui'
 import { cx } from '../lib/cx'
 import { FoodLog } from './FoodLog'
+import { TextInput } from './Form'
 
 const verdict = {
   good: { label: 'แนะนำ', cls: 'bg-good/15 text-good' },
@@ -18,6 +20,8 @@ export function Nutrition({ profile }: { profile: Profile }) {
   const { isRace } = useProgram()
   const t = targets(profile, isRace)
   const [view, setView] = useState<View>('menu')
+  const [q, setQ] = useState('')
+  const dishes = searchFoods(streetDishes, q)
 
   return (
     <>
@@ -40,6 +44,8 @@ export function Nutrition({ profile }: { profile: Profile }) {
         { value: 'street', label: 'ร้านตามสั่ง' },
         { value: 'foods', label: 'วัตถุดิบ' },
       ]} />
+
+      {view !== 'menu' && <TextInput value={q} onChange={setQ} placeholder={view === 'street' ? 'ค้นหาเมนู' : 'ค้นหาวัตถุดิบ'} icon={<Search size={16} />} />}
 
       {view === 'menu' && (
         <>
@@ -72,12 +78,13 @@ export function Nutrition({ profile }: { profile: Profile }) {
 
       {view === 'street' && (
         <Card title="อาหารตามสั่ง / ร้านข้างทาง">
+          {!dishes.length && <p className="py-4 text-center text-sm text-muted">ไม่พบเมนูนี้</p>}
           <ul className="divide-y divide-line">
-            {streetDishes.map(d => (
+            {dishes.map(d => (
               <li key={d.name} className="py-3">
                 <div className="flex items-start justify-between gap-2">
                   <span className="font-semibold">{d.name}</span>
-                  <span className="shrink-0 text-sm tabular-nums text-muted">~{d.kcal} kcal</span>
+                  <span className="shrink-0 text-right text-sm tabular-nums text-muted"><b className="text-accent">{d.protein} ก.</b> · ~{d.kcal} kcal</span>
                 </div>
                 <div className="mt-1 flex items-center gap-2">
                   <span className={cx('rounded-full px-2 py-0.5 text-xs font-semibold', verdict[d.verdict].cls)}>{verdict[d.verdict].label}</span>
@@ -91,8 +98,9 @@ export function Nutrition({ profile }: { profile: Profile }) {
 
       {view === 'foods' && (
         <>
-          <FoodList title="แหล่งโปรตีน" foods={proteinFoods} />
-          <FoodList title="แหล่งคาร์บ" foods={carbFoods} />
+          <FoodList title="แหล่งโปรตีน" foods={searchFoods(proteinFoods, q)} />
+          <FoodList title="แหล่งคาร์บ" foods={searchFoods(carbFoods, q)} />
+          <FoodList title="ของกินเล่น / เครื่องดื่ม" foods={searchFoods(extraFoods, q)} />
         </>
       )}
 
@@ -102,6 +110,7 @@ export function Nutrition({ profile }: { profile: Profile }) {
 }
 
 function FoodList({ title, foods }: { title: string; foods: Food[] }) {
+  if (!foods.length) return null
   return (
     <Card title={title}>
       <ul className="divide-y divide-line">

@@ -62,3 +62,13 @@ describe('date', () => {
   it('บวกวันข้ามเดือน', () => expect(addDays('2026-10-30', 3)).toBe('2026-11-02'))
   it('daysBetween', () => expect(daysBetween('2026-10-25', '2027-01-17')).toBe(84))
 })
+
+describe('searchFoods', () => {
+  it('matches every word ignoring spaces', async () => {
+    const { searchFoods, logFoods } = await import('../../data/nutrition')
+    expect(searchFoods(logFoods, 'กะเพรา').map(f => f.name)).toContain('ข้าวกะเพราไก่ + ไข่ต้ม')
+    expect(searchFoods(logFoods, 'ข้าว ไก่').every(f => f.name.includes('ข้าว') && f.name.includes('ไก่'))).toBe(true)
+    expect(searchFoods(logFoods, '')).toHaveLength(logFoods.length)
+    expect(new Set(logFoods.map(f => f.name)).size).toBe(logFoods.length)
+  })
+})
