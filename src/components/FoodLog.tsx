@@ -1,13 +1,14 @@
 import { useMemo, useState } from 'react'
-import { Plus, Search, X } from 'lucide-react'
+import { Copy, Layers, Plus, Save, Search, X } from 'lucide-react'
 import { logFoods, searchFoods, type LogFood } from '../data/nutrition'
 import { usePersisted } from '../lib/storage'
 import { uid } from '../lib/log'
-import { today } from '../lib/date'
+import { addDays, today } from '../lib/date'
 import { Card } from './ui'
 import { NumberInput, TextInput } from './Form'
 
 type Item = { id: string; name: string; protein: number; kcal: number }
+type MealSet = { id: string; name: string; items: Omit<Item, 'id'>[] }
 
 /** บันทึกโปรตีน/แคลอรี่วันนี้ — ค้นหาเมนู หรือแตะจากรายการที่กินล่าสุด */
 export function FoodLog({ proteinTarget, kcalTarget }: { proteinTarget: number; kcalTarget: number }) {
@@ -17,8 +18,12 @@ export function FoodLog({ proteinTarget, kcalTarget }: { proteinTarget: number; 
   const [name, setName] = useState('')
   const [protein, setProtein] = useState('')
   const [kcal, setKcal] = useState('')
+  const [sets, setSets] = usePersisted<MealSet[]>('mealSets', [])
+  const [naming, setNaming] = useState(false)
+  const [setName_, setSetName] = useState('')
   const day = today()
   const items = log[day] ?? []
+  const yesterday = log[addDays(day, -1)] ?? []
   const p = items.reduce((s, i) => s + i.protein, 0)
   const k = items.reduce((s, i) => s + i.kcal, 0)
 
@@ -33,13 +38,20 @@ export function FoodLog({ proteinTarget, kcalTarget }: { proteinTarget: number; 
   const results = q.trim() ? searchFoods(pool, q).slice(0, 8) : []
   const chips = (recent.length ? recent : logFoods).slice(0, 10)
 
-  const add = (i: Omit<Item, 'id'>) => {
+  const addMany = (list: Omit<Item, 'id'>[]) => {
     setLog(prev => {
       // เก็บแค่ 60 วันล่าสุด
       const keep = Object.fromEntries(Object.entries(prev).sort(([a], [b]) => b.localeCompare(a)).slice(0, 60))
-      return { ...keep, [day]: [...(keep[day] ?? []), { ...i, id: uid() }] }
+      return { ...keep, [day]: [...(keep[day] ?? []), ...list.map(({ name, protein, kcal }) => ({ name, protein, kcal, id: uid() }))] }
     })
     setQ('')
+  }
+  const add = (i: Omit<Item, 'id'>) => addMany([i])
+  const saveSet = () => {
+    if (!items.length) return
+    setSets(prev => [...prev, { id: uid(), name: setName_.trim() || `ชุดที่ ${prev.length + 1}`, items: items.map(({ name, protein, kcal }) => ({ name, protein, kcal })) }])
+    setSetName('')
+    setNaming(false)
   }
   const remove = (id: string) => setLog(prev => ({ ...prev, [day]: (prev[day] ?? []).filter(i => i.id !== id) }))
   const openCustom = () => { setName(q.trim()); setCustom(true); setQ('') }
@@ -91,6 +103,24 @@ export function FoodLog({ proteinTarget, kcalTarget }: { proteinTarget: number; 
         </>
       )}
 
+      {(sets.length > 0 || (!items.length && yesterday.length > 0)) && (
+        <div className="mt-2 flex flex-wrap gap-2">
+          {!items.length && yesterday.length > 0 && (
+            <button onClick={() => addMany(yesterday)} className="flex items-center gap-1.5 rounded-full bg-raised px-3 py-1.5 text-xs font-semibold ring-1 ring-line">
+              <Copy size={13} /> เหมือนเมื่อวาน ({yesterday.length})
+            </button>
+          )}
+          {sets.map(st => (
+            <span key={st.id} className="flex items-center rounded-full bg-accent-soft/60 text-xs font-semibold ring-1 ring-accent/30">
+              <button onClick={() => addMany(st.items)} className="flex items-center gap-1.5 py-1.5 pl-3 pr-1">
+                <Layers size={13} className="text-accent" /> {st.name} <span className="font-normal text-muted">{st.items.reduce((a, i) => a + i.protein, 0)} ก.</span>
+              </button>
+              <button aria-label={`ลบชุด ${st.name}`} onClick={() => setSets(prev => prev.filter(x => x.id !== st.id))} className="grid size-7 place-items-center text-muted"><X size={12} /></button>
+            </span>
+          ))}
+        </div>
+      )}
+
       {custom && (
         <div className="mt-3 grid animate-fade-up grid-cols-2 gap-2 rounded-2xl bg-raised p-3">
           <TextInput className="col-span-2" label="ชื่ออาหาร" value={name} onChange={setName} placeholder="เช่น สเต๊กอกไก่" />
@@ -113,6 +143,16 @@ export function FoodLog({ proteinTarget, kcalTarget }: { proteinTarget: number; 
             </li>
           ))}
         </ul>
+      )}
+      {items.length > 1 && (
+        naming ? (
+          <div className="mt-2 flex animate-fade-up items-end gap-2">
+            <TextInput className="flex-1" value={setName_} onChange={setSetName} placeholder="ชื่อชุด เช่น มื้อเช้าปกติ" />
+            <button onClick={saveSet} className="h-12 rounded-full bg-accent px-4 font-semibold text-white">บันทึก</button>
+          </div>
+        ) : (
+          <button onClick={() => setNaming(true)} className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-run"><Save size={13} /> บันทึกรายการวันนี้เป็นชุด</button>
+        )
       )}
     </Card>
   )

@@ -69,6 +69,8 @@ describe('searchFoods', () => {
     expect(searchFoods(logFoods, 'กะเพรา').map(f => f.name)).toContain('ข้าวกะเพราไก่ + ไข่ต้ม')
     expect(searchFoods(logFoods, 'ข้าว ไก่').every(f => f.name.includes('ข้าว') && f.name.includes('ไก่'))).toBe(true)
     expect(searchFoods(logFoods, '')).toHaveLength(logFoods.length)
+    expect(searchFoods(logFoods, 'ไข่ต้ม').map(f => f.name)).toContain('ไข่ไก่ต้ม')
+    expect(searchFoods(logFoods, 'ไข่ต้ม')[0].name).toContain('ไข่ต้ม') // ตรงทั้งคำขึ้นก่อน
     expect(new Set(logFoods.map(f => f.name)).size).toBe(logFoods.length)
   })
 })

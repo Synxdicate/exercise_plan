@@ -84,12 +84,22 @@ export const logFoods: LogFood[] = [
   ...[...proteinFoods, ...carbFoods, ...extraFoods].map(f => ({ name: f.name, protein: f.protein, kcal: f.kcal, detail: f.portion })),
 ]
 
-/** ค้นหาแบบไม่สนช่องว่าง/ตัวพิมพ์ ทุกคำต้องเจอ (เช่น "ไก่ ข้าว") */
+/**
+ * ค้นหาแบบไม่สนช่องว่าง/ตัวพิมพ์ — ภาษาไทยไม่เว้นวรรคระหว่างคำ จึงรับทั้ง
+ * ตรงทุกคำ (เช่น "ข้าว ไก่") และตัวอักษรเรียงตามลำดับ (เช่น "ไข่ต้ม" → "ไข่ไก่ต้ม") โดยแบบแรกขึ้นก่อน
+ */
 export function searchFoods<T extends { name: string }>(foods: T[], q: string): T[] {
   const norm = (s: string) => s.toLowerCase().replace(/\s+/g, '')
   const words = q.trim().toLowerCase().split(/\s+/).filter(Boolean)
   if (!words.length) return foods
-  return foods.filter(f => words.every(w => norm(f.name).includes(w)))
+  const query = words.join('')
+  const inOrder = (name: string) => {
+    let i = 0
+    for (const ch of name) if (ch === query[i]) i++
+    return i === query.length
+  }
+  const score = (f: T) => (words.every(w => norm(f.name).includes(w)) ? 2 : inOrder(norm(f.name)) ? 1 : 0)
+  return foods.map(f => [f, score(f)] as const).filter(([, sc]) => sc > 0).sort((a, b) => b[1] - a[1]).map(([f]) => f)
 }
 
 export type MealPlan = {
