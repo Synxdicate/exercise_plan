@@ -219,3 +219,14 @@ test('รายงาน error: เก็บในเครื่องและ
   await page.getByRole('button', { name: /ปัญหาที่พบ \(1\)/ }).click()
   await expect(page.getByText('e2e boom')).toBeVisible()
 })
+
+test('ปฏิทินการฝึก: วันที่วิ่ง/เวท และแตะดูรายละเอียด', async ({ page }) => {
+  await seed(page, {
+    runs: [{ id: 'c1', date: ymd(0), km: 5.3, seconds: 1900, kind: 'easy', source: 'manual' }],
+    sessions: [{ id: 's1', date: ymd(0), mode: 'gym', dayKey: 'upperA', title: 'Upper A', entries: [{ name: 'Bench Press', sets: [{ kg: 40, reps: 8 }] }] }],
+  })
+  await nav(page, 'บันทึก')
+  await expect(page.getByText(/ออกกำลังกาย 1 วัน · วิ่ง 5\.3 กม\. · เวท 1 ครั้ง/)).toBeVisible()
+  await page.getByRole('button', { name: 'วันนี้', exact: true }).click()
+  await expect(page.getByText('Easy 5.30 กม. · 31:40')).toBeVisible()
+})

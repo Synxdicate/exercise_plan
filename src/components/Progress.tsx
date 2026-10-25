@@ -1,5 +1,5 @@
 import { Fragment, useState } from 'react'
-import { Activity, ChevronDown, Dumbbell, Pencil, Scale, Trash2, Trophy, TrendingUp } from 'lucide-react'
+import { Activity, CalendarDays, ChevronDown, Dumbbell, Pencil, Scale, Trash2, Trophy, TrendingUp } from 'lucide-react'
 import { usePersisted } from '../lib/storage'
 import { monthLabel, niceDate, shortDate, today, weekStart } from '../lib/date'
 import { useRuns, useSessions, type Session } from '../lib/log'
@@ -10,6 +10,7 @@ import { Badge, Button, Card, Segmented, Stat } from './ui'
 import { DateInput, NumberInput } from './Form'
 import { cx } from '../lib/cx'
 import { PhotoStrip, ProgressPhotos } from './Photos'
+import { TrainingCalendar } from './TrainingCalendar'
 import { useRemovePhotosFor } from '../lib/photos'
 import { ask } from '../lib/dialog'
 
@@ -20,12 +21,12 @@ export function Progress() {
   return (
     <>
       <Segmented value={view} onChange={setView} options={[
-        { value: 'workouts', label: <><Dumbbell size={16} /> การฝึก</> },
+        { value: 'workouts', label: <><CalendarDays size={16} /> ประวัติ</> },
         { value: 'stats', label: <><TrendingUp size={16} /> สถิติ</> },
         { value: 'fitness', label: <><Activity size={16} /> ฟิตเนส</> },
         { value: 'body', label: <><Scale size={16} /> น้ำหนัก</> },
       ]} />
-      {view === 'workouts' ? <WorkoutHistory /> : view === 'stats' ? <StrengthStats /> : view === 'fitness' ? <Fitness /> : <BodyLog />}
+      {view === 'workouts' ? <><TrainingCalendar /><WorkoutHistory /></> : view === 'stats' ? <StrengthStats /> : view === 'fitness' ? <Fitness /> : <BodyLog />}
     </>
   )
 }

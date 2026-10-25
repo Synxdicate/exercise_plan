@@ -286,3 +286,15 @@ describe('newerVersion', () => {
     expect(newerVersion('2.5.9', '2.6.0')).toBe(false)
   })
 })
+
+describe('monthGrid', () => {
+  it('Monday-first grid covering the whole month', async () => {
+    const { monthGrid, shiftMonth } = await import('../calendar')
+    const g = monthGrid('2026-10') // 1 ต.ค. 2026 = วันพฤหัส
+    expect(g[0]).toEqual([null, null, null, '2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04'])
+    expect(g.flat().filter(Boolean)).toHaveLength(31)
+    expect(g.at(-1)!.includes('2026-10-31')).toBe(true)
+    expect(shiftMonth('2026-01', -1)).toBe('2025-12')
+    expect(shiftMonth('2026-12', 1)).toBe('2027-01')
+  })
+})
