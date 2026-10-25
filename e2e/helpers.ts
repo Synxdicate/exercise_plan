@@ -1,10 +1,7 @@
 import type { Page } from '@playwright/test'
 
-export const ymd = (daysAgo = 0) => {
-  const t = new Date()
-  t.setDate(t.getDate() - daysAgo)
-  return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`
-}
+// วันที่ตามเวลาไทย (ตรงกับ timezoneId ของเบราว์เซอร์ใน playwright.config) — เครื่อง CI ใช้ UTC ถ้าใช้เวลาเครื่องจะผิดวันหลังเที่ยงคืนไทย
+export const ymd = (daysAgo = 0) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(new Date(Date.now() - daysAgo * 864e5))
 
 /** เริ่มแอปในโหมดไม่ล็อกอิน พร้อมข้อมูลตั้งต้น (เขียนลง localStorage แล้วให้แอปย้ายเข้า IndexedDB เอง) */
 export async function seed(page: Page, data: Record<string, unknown> = {}) {
