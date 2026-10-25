@@ -5,8 +5,9 @@ import { lastSetsFor, formatDuration, uid, useSessions, type SetEntry } from '..
 import { usePersisted } from '../lib/storage'
 import { today } from '../lib/date'
 import { restSeconds, suggest } from '../lib/progression'
+import { isBarbell, platesPerSide, warmupSets } from '../lib/plates'
 import { cancelRestEnd, scheduleRestEnd } from '../lib/notify'
-import { Badge, Button, Portal } from './ui'
+import { Badge, Button, Collapse, Portal } from './ui'
 import { RpePicker } from './RpePicker'
 import { cx } from '../lib/cx'
 
@@ -172,6 +173,8 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
             )
           })()}
 
+          {mode === 'gym' && isBarbell(ex.name) && <WarmupPlates workKg={parseFloat(rows[0]?.kg) || 0} />}
+
           <div className="mt-4 space-y-2">
             <div className="grid grid-cols-[2rem_1fr_1fr_3rem] gap-2 px-1 text-xs text-muted">
               <span>เซ็ต</span><span className="text-center">{mode === 'park' ? '+กก.' : 'กก.'}</span><span className="text-center">ครั้ง</span><span />
@@ -255,6 +258,37 @@ function RestOverlay({ left, total, next, onAdd, onSkip }: { left: number; total
         <Button variant="soft" size="lg" onClick={onAdd}><Plus size={18} /> 15 วิ</Button>
         <Button size="lg" onClick={onSkip}><SkipForward size={18} /> ข้ามการพัก</Button>
       </div>
+    </div>
+  )
+}
+
+const plateText = (kg: number) => {
+  const { plates } = platesPerSide(kg)
+  return plates.length ? `${plates.join(' + ')} ต่อข้าง` : 'บาร์เปล่า'
+}
+
+/** เซ็ตวอร์มอัพไล่น้ำหนัก + แผ่นที่ต้องใส่ต่อข้าง (บาร์ 20 กก.) */
+function WarmupPlates({ workKg }: { workKg: number }) {
+  const [open, setOpen] = useState(false)
+  if (workKg <= 0) return null
+  const warm = warmupSets(workKg)
+  return (
+    <div className="mt-3 rounded-2xl bg-raised p-3 text-sm">
+      <button onClick={() => setOpen(!open)} className="flex w-full items-center justify-between text-left active:scale-100">
+        <span><b>เซ็ตจริง {workKg} กก.</b> <span className="text-muted">· {plateText(workKg)}</span></span>
+        <span className="text-xs font-semibold text-run">{open ? 'ซ่อน' : `วอร์มอัพ ${warm.length} เซ็ต`}</span>
+      </button>
+      <Collapse open={open}>
+        <ul className="mt-2 space-y-1">
+          {warm.map((w, i) => (
+            <li key={i} className="flex justify-between gap-2 text-xs">
+              <span className="tabular-nums"><b>{w.kg} กก. × {w.reps}</b></span>
+              <span className="text-muted">{plateText(w.kg)}</span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-2 text-[11px] text-muted">วอร์มอัพเฉพาะท่าก่อนยกหนักช่วยให้ทำครั้งได้ดีขึ้น (Ribeiro 2014, 2020) — พักสั้น ๆ ระหว่างเซ็ตวอร์มอัพ ไม่ต้องติ๊กบันทึก</p>
+      </Collapse>
     </div>
   )
 }
