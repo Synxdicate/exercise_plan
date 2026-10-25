@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { programs, variants, weekKm, weekPlan } from '../../data/programs'
 import { weeklySets } from '../../data/muscles'
 
-const race = ['ten', 'half', 'full'] as const
+const race = ['five', 'ten', 'half', 'full'] as const
 const running = ['base', ...race] as const
 
 describe('โปรแกรมวิ่ง', () => {
@@ -53,7 +53,7 @@ describe('โปรแกรมวิ่ง', () => {
 
   it('วิ่งแต่ละครั้งไม่ยาวเกิน 110% ของครั้งที่ยาวที่สุดใน 30 วันก่อนหน้า ยกเว้นวันแข่ง (Frandsen 2025)', () => {
     // ระยะวิ่งยาวที่ควรทำได้ก่อนเริ่มแต่ละโปรแกรม (ตามที่เขียนใน summary)
-    const base = { base: 5, ten: 5, half: 7, full: 18 } as const
+    const base = { base: 5, five: 5, ten: 5, half: 7, full: 18 } as const
     for (const p of running) {
       const cycles = programs[p].ongoing ? 2 : 1 // โปรแกรมวนรอบ ตรวจรอยต่อรอบด้วย
       const sessions: { day: number; km: number; race: boolean }[] = [{ day: -1, km: base[p], race: false }]
@@ -109,5 +109,19 @@ describe('โปรแกรมวิ่ง', () => {
     expect(days[0].location).toBe('gym')
     expect(days[4].location).toBe('park')
     expect(days[1].location).toBeUndefined()
+  })
+
+  it('เวทอย่างเดียว: 4 วัน ไม่มีวิ่ง กล้ามหลัก ≥10 เซ็ต/สัปดาห์ และสัปดาห์ 4 เป็น deload', () => {
+    for (const m of ['gym', 'park'] as const) {
+      const days = variants('strength', 1)[m]
+      expect(days).toHaveLength(7)
+      expect(days.filter(d => d.type === 'strength')).toHaveLength(4)
+      expect(days.some(d => d.type === 'run')).toBe(false)
+    }
+    const sets = weeklySets(variants('strength', 1).gym)
+    for (const mu of ['chest', 'lats', 'upperBack', 'quads', 'glutes', 'hamstrings'] as const) expect(sets[mu] ?? 0, mu).toBeGreaterThanOrEqual(10)
+    const total = (w: number) => variants('strength', w).gym.flatMap(d => d.exercises).reduce((a, e) => a + (parseInt(e.sets, 10) || 0), 0)
+    expect(total(4)).toBeLessThanOrEqual(total(1) * 0.7) // ครึ่งหนึ่งปัดขึ้น (3 เซ็ต → 2)
+    expect(weekKm('strength', 1)).toBe(0)
   })
 })

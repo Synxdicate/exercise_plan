@@ -36,7 +36,7 @@ export const guides = {
   pace: (set: string, label: string): Step[] => {
     const m = set.match(/(?:(\d+)\s*×\s*)?([\d.]+)\s*กม\./)
     if (!m) return []
-    const pace: PaceKey = /10K/.test(label) ? 'tenK' : /ฮาล์ฟ/.test(label) ? 'half' : 'marathon'
+    const pace: PaceKey = /10K/.test(label) ? 'tenK' : /5K/.test(label) ? 'interval' : /ฮาล์ฟ/.test(label) ? 'half' : 'marathon'
     return [warm(), ...repeat(Number(m[1] ?? 1), { kind: 'work', m: Number(m[2]) * 1000, pace }, { kind: 'recover', sec: 120, pace: 'easy' }), cool()]
   },
   /** ทดสอบ 5K (แทนการตรวจ VO2max ในแล็บ): วอร์ม 10 นาที → 5 กม. เต็มที่แบบคุมได้ → คูลดาวน์ — ผลใช้อัปเดตโซนเพซ */

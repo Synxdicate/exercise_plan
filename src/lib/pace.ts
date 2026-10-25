@@ -90,6 +90,7 @@ const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).p
 export function paceHint(e: Estimate | null, kind?: string, title = '') {
   if (!e) return null
   if (/10K/.test(title)) return `เพซ 10K ~${fmt(e.paces.tenK)} /กม.`
+  if (/5K/.test(title)) return `เพซ 5K ~${fmt(e.paces.interval)} /กม.`
   if (/ฮาล์ฟ/.test(title)) return `เพซฮาล์ฟ ~${fmt(e.paces.half)} /กม.`
   if (/มาราธอน/.test(title)) return `เพซมาราธอน ~${fmt(e.paces.marathon)} /กม.`
   switch (kind) {
