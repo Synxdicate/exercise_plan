@@ -25,6 +25,7 @@ export const levelLabel: Record<Level, string> = {
 const pm = (id: string) => `https://pubmed.ncbi.nlm.nih.gov/${id}/`
 
 export const references: { cat: string; title: string; url: string; used: string; level: Level }[] = [
+  { cat: 'รูปท่า', level: 'database', title: 'free-exercise-db — ชุดข้อมูลท่าออกกำลังกายแบบสาธารณสมบัติ (Unlicense)', url: 'https://github.com/yuhonas/free-exercise-db', used: 'รูปสาธิตท่าเริ่ม/ท่าจบในหน้าฝึกและหน้าพาฝึก' },
   // เวท
   { cat: 'เวทเทรนนิ่ง', level: 'guideline', title: 'ACSM Position Stand: Progression Models in Resistance Training (2009)', url: pm('19204579'), used: 'ช่วงจำนวนครั้ง เวลาพัก และ progressive overload' },
   { cat: 'เวทเทรนนิ่ง', level: 'meta', title: 'Schoenfeld et al. 2017 — Dose-response of weekly training volume', url: pm('27433992'), used: 'จำนวนเซ็ตต่อกล้ามเนื้อต่อสัปดาห์ (~10+ เซ็ต)' },

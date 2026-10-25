@@ -259,3 +259,20 @@ describe('matched routes', () => {
     expect(matchedRuns(a, [a, b, far, rev, short]).map(r => r.id)).toEqual(['r1', 'r2'])
   })
 })
+
+describe('exercise demo images', () => {
+  it('every mapped image exists and the main program exercises have one', async () => {
+    const { existsSync } = await import('node:fs')
+    const { demoImages } = await import('../../data/demos')
+    const { allLibrary } = await import('../../data/library')
+    let withImg = 0
+    for (const e of allLibrary) {
+      const imgs = demoImages(e.name)
+      if (!imgs) continue
+      withImg++
+      for (const src of imgs) expect(existsSync(`public${src}`), src).toBe(true)
+    }
+    expect(withImg / allLibrary.length).toBeGreaterThan(0.8)
+    for (const n of ['Bench Press', 'Back Squat', 'Pull-up', 'Romanian Deadlift', 'Overhead Press', 'Push-up', 'Dips']) expect(demoImages(n), n).not.toBeNull()
+  })
+})

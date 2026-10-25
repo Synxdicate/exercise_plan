@@ -31,7 +31,8 @@ self.addEventListener('fetch', e => {
     return
   }
 
-  if (url.pathname.startsWith('/assets/')) {
+  // /assets/ ชื่อไฟล์มี hash, /exercises/ รูปสาธิตท่าไม่เปลี่ยน — cache-first ทั้งคู่ (ดูได้ตอนออฟไลน์)
+  if (url.pathname.startsWith('/assets/') || url.pathname.startsWith('/exercises/')) {
     e.respondWith(
       caches.match(req).then(hit => hit ?? fetch(req).then(res => {
         const copy = res.clone()

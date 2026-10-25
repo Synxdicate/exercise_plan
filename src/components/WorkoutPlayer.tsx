@@ -11,6 +11,7 @@ import { Badge, Button, Collapse, Portal } from './ui'
 import { RpePicker } from './RpePicker'
 import { cx } from '../lib/cx'
 import { useBackClose } from '../lib/back'
+import { ExerciseDemo } from './ExerciseDemo'
 import { ask } from '../lib/dialog'
 
 type SetRow = { kg: string; reps: string; done: boolean }
@@ -165,6 +166,7 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
             <Badge tone="muted"><b className="text-ink">{ex.sets} × {ex.reps}</b></Badge>
             <Badge tone="muted">พัก {ex.rest}</Badge>
           </div>
+          <ExerciseDemo key={ex.name} name={ex.name} className="mt-3" />
           <p className="mt-2 text-sm text-muted">{ex.cue}</p>
           {prev && <p className="mt-1 text-xs text-muted">ครั้งก่อน ({prev.date}): {prev.sets.map(s => (s.kg ? `${s.kg}×${s.reps}` : `${s.reps}`)).join(' · ')}</p>}
           {(() => {

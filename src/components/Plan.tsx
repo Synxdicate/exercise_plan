@@ -18,6 +18,7 @@ import { ReadinessSheet } from './Readiness'
 import { Badge, Button, Collapse, Meter, Segmented } from './ui'
 import { AddSheet, SwapSheet } from './ExercisePicker'
 import { RacePlan } from './RacePlan'
+import { ExerciseDemo } from './ExerciseDemo'
 
 const short = ['จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส', 'อา']
 const todayIdx = () => (new Date().getDay() + 6) % 7 // 0 = จันทร์
@@ -269,6 +270,7 @@ function ExerciseRow({ e, n, onSwap, onRemove }: { e: Exercise; n: number; onSwa
             {e.rest !== '-' && <Badge tone="muted">พัก {e.rest}</Badge>}
             {musclesOf(e).primary.map(m => <Badge key={m}>{muscleNames[m]}</Badge>)}
           </div>
+          <ExerciseDemo name={e.name} />
           <p className="text-muted">{e.cue}</p>
           {(e.easier || e.harder) && (
             <div className="flex flex-wrap gap-3 text-xs text-run">

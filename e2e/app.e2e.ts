@@ -185,3 +185,13 @@ test('เส้นทางเดิม: เทียบกับครั้ง
   await expect(page.getByText('เส้นทางนี้วิ่งมาแล้ว 2 ครั้ง')).toBeVisible()
   await expect(page.getByText(/เร็วกว่าครั้งก่อน 0:20 \/กม\./)).toBeVisible()
 })
+
+test('รูปสาธิตท่าในตารางฝึก', async ({ page }) => {
+  await seed(page)
+  await nav(page, 'ฝึก')
+  await page.locator('button[aria-label^="จันทร์"]').click()
+  await page.locator('main li button', { hasText: 'Bench Press' }).click()
+  const img = page.getByAltText('Bench Press ท่าเริ่ม')
+  await expect(img).toBeVisible()
+  expect(await img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth)).toBe(360)
+})
