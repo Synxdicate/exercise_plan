@@ -106,17 +106,15 @@ export async function startSync(uid: string) {
     savePending()
   }
   userId = uid
-  try {
-    await flush()
-    await pull(!owner)
-  } catch (e) {
-    // ออฟไลน์: ถ้าข้อมูลในเครื่องเป็นของคนนี้อยู่แล้ว ใช้ต่อได้เลย แล้วซิงก์เมื่อกลับมาออนไลน์
-    if (owner === uid) {
-      setStatus('offline')
-      return
-    }
-    throw e
+  // เครื่องนี้มีข้อมูลของคนนี้อยู่แล้ว → เปิดแอปทันทีจากข้อมูลในเครื่อง แล้วซิงก์เบื้องหลัง
+  // (ไม่มีเน็ต/เน็ตช้าก็ใช้งานได้ ข้อมูลที่ยังส่งไม่ได้อยู่ใน pendingKeys และส่งเมื่อกลับมาออนไลน์)
+  // pull ข้าม key ที่ค้างส่ง จึงไม่ทับสิ่งที่ผู้ใช้แก้ระหว่างรอ
+  if (owner === uid) {
+    void refresh().catch(() => setStatus('offline'))
+    return
   }
+  await flush()
+  await pull(!owner)
   hydrate(OWNER_KEY, uid)
 }
 
