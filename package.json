@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "android:apk": "vite build && cap sync android && cd android && ./gradlew assembleDebug",
-    "android:install": "adb install -r android/app/build/outputs/apk/debug/app-debug.apk",
+    "android:install": "\"${ANDROID_HOME:-$HOME/Android/Sdk}/platform-tools/adb\" install -r android/app/build/outputs/apk/debug/app-debug.apk",
     "android:update": "npm run android:apk && npm run android:install"
   },
   "dependencies": {
