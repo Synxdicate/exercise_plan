@@ -70,13 +70,9 @@ export function Dashboard() {
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">
           <Ring value={sessionsThisWeek} max={strengthTarget} label="เวท" text={`${sessionsThisWeek}/${strengthTarget}`} />
-          <Ring value={kmThisWeek} max={kmTarget} label="วิ่ง (กม.)" text={`${kmThisWeek.toFixed(1)}/${kmTarget}`} />
+          <Ring value={kmThisWeek} max={kmTarget} label="วิ่ง (กม.)" text={kmTarget ? `${kmThisWeek.toFixed(1)}/${kmTarget}` : kmThisWeek.toFixed(1)} />
         </div>
       </section>
-
-      <MonthGoalCard />
-
-      <WeekSummary />
 
       {todayPlan && (
         <Card>
@@ -113,6 +109,11 @@ export function Dashboard() {
       )}
 
       {todayPlan?.type === 'run' && <HeatCard />}
+
+      {/* สิ่งที่ต้องทำวันนี้อยู่บนสุด — เป้าเดือน/สรุปสัปดาห์ที่แล้วเป็นข้อมูลประกอบ */}
+      <MonthGoalCard />
+
+      <WeekSummary />
 
       <Card title="กิจกรรม 12 สัปดาห์">
         <ActivityCalendar dates={[...sessions.map(s => s.date), ...runs.map(r => r.date)]} />

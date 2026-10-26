@@ -33,7 +33,8 @@ export function WeekSummary() {
   const longest = r.reduce((a, x) => Math.max(a, x.km), 0)
 
   const rows = [
-    { label: 'วิ่ง', value: `${km.toFixed(1)} / ${kmGoal} กม.`, ok: km >= kmGoal * 0.9 },
+    // โปรแกรมไม่มีแผนวิ่ง: แสดงระยะเฉย ๆ ไม่นับเป็นเป้า
+    ...(kmGoal ? [{ label: 'วิ่ง', value: `${km.toFixed(1)} / ${kmGoal} กม.`, ok: km >= kmGoal * 0.9 }] : []),
     { label: 'เวท', value: `${s.length} / ${strGoal} ครั้ง`, ok: s.length >= strGoal },
     ...(protein !== null ? [{ label: `โปรตีนเฉลี่ย (${foodDays.length} วันที่บันทึก)`, value: `${Math.round(protein)} / ${proteinGoal} ก.`, ok: protein >= proteinGoal * 0.9 }] : []),
   ]
@@ -56,7 +57,7 @@ export function WeekSummary() {
       </ul>
       <div className="mt-3 rounded-xl bg-raised px-3 py-2 text-sm">
         <div className="text-xs text-muted">สัปดาห์นี้</div>
-        <div>วิ่งรวม {p.kmTarget()} กม. · เวท {thisPlan.filter(d => d.type === 'strength').length} วัน</div>
+        <div>{p.kmTarget() ? `วิ่งรวม ${p.kmTarget()} กม. · ` : ''}เวท {thisPlan.filter(d => d.type === 'strength').length} วัน</div>
         {(quality || long) && <div className="text-xs text-muted">{[quality && `${quality.day}: ${quality.title}`, long && `${long.day}: ${long.title} ${long.targetKm} กม.`].filter(Boolean).join(' · ')}</div>}
       </div>
     </Disclosure>

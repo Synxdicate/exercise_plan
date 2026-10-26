@@ -99,7 +99,7 @@ function PlanBody() {
       <div className="rounded-3xl bg-card p-3 shadow-sm ring-1 ring-line">
         <div className="mb-2 flex items-center justify-between px-1 text-xs">
           <span className="font-semibold">สัปดาห์ {week}{isThisWeek && ' · สัปดาห์นี้'}</span>
-          <span className="tabular-nums text-muted">{doneCount}/{trainingIdx.length} วัน · วิ่ง {p.kmTarget(week)} กม.</span>
+          <span className="tabular-nums text-muted">{doneCount}/{trainingIdx.length} วัน{p.kmTarget(week) ? ` · วิ่ง ${p.kmTarget(week)} กม.` : ''}</span>
         </div>
         <div className="grid grid-cols-7 gap-1">
           {days.map((d, i) => {

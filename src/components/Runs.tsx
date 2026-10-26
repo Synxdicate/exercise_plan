@@ -155,10 +155,10 @@ export function Runs() {
       <section className="space-y-3 rounded-2xl bg-gradient-to-br from-run to-accent p-4 text-white shadow-sm">
         <div>
           <div className="text-sm opacity-80">สัปดาห์นี้</div>
-          <div className="text-4xl font-extrabold tabular-nums">{kmThisWeek.toFixed(1)}<span className="ml-1 text-xl font-semibold opacity-80">/ {target} กม.</span></div>
+          <div className="text-4xl font-extrabold tabular-nums">{kmThisWeek.toFixed(1)}<span className="ml-1 text-xl font-semibold opacity-80">{target ? `/ ${target} กม.` : 'กม.'}</span></div>
         </div>
         <div className="h-2 overflow-hidden rounded-full bg-white/25">
-          <div className="h-full rounded-full bg-white" style={{ width: `${Math.min(100, (kmThisWeek / target) * 100)}%` }} />
+          <div className="h-full rounded-full bg-white" style={{ width: `${target ? Math.min(100, (kmThisWeek / target) * 100) : 0}%` }} />
         </div>
         {todayRun && (
           <div className="flex items-start gap-2 rounded-2xl bg-white/15 p-3 text-sm">
@@ -463,7 +463,7 @@ function WeeklyBars({ runs, target }: { runs: Run[]; target: number }) {
   const current = weekStart(today())
   const weeks = Array.from({ length: 8 }, (_, i) => addDays(current, (i - 7) * 7))
   const totals = weeks.map(w => runs.filter(r => weekStart(r.date) === w).reduce((s, r) => s + r.km, 0))
-  const max = Math.max(target, ...totals) * 1.15
+  const max = Math.max(target, 1, ...totals) * 1.15
   const W = 320, H = 140, pad = 22, bw = (W - pad) / weeks.length
   const y = (v: number) => H - pad - (v / max) * (H - pad - 8)
 
@@ -471,8 +471,12 @@ function WeeklyBars({ runs, target }: { runs: Run[]; target: number }) {
     <div>
       <div className="mb-1 h-5 text-right text-sm tabular-nums">{hover !== null ? `สัปดาห์ ${shortDate(weeks[hover])}: ${totals[hover].toFixed(1)} กม.` : ''}</div>
       <svg viewBox={`0 0 ${W} ${H}`} className="block w-full" role="img" aria-label="กราฟระยะวิ่งรายสัปดาห์">
-        <line x1={pad} x2={W} y1={y(target)} y2={y(target)} className="stroke-muted" strokeDasharray="4 4" />
-        <text x={W - 2} y={y(target) - 4} textAnchor="end" className="fill-muted text-[9px]">เป้า {target}</text>
+        {target > 0 && (
+          <g>
+            <line x1={pad} x2={W} y1={y(target)} y2={y(target)} className="stroke-muted" strokeDasharray="4 4" />
+            <text x={W - 2} y={y(target) - 4} textAnchor="end" className="fill-muted text-[9px]">เป้า {target}</text>
+          </g>
+        )}
         <line x1={pad} x2={W} y1={H - pad} y2={H - pad} className="stroke-line" />
         {weeks.map((w, i) => {
           const x = pad + i * bw + 4
