@@ -20,6 +20,8 @@ test('โหมดไม่ล็อกอิน: onboarding, บันทึก
   await nums.nth(-2).fill('5')
   await nums.nth(-1).fill('30')
   await history.getByRole('button', { name: 'บันทึก', exact: true }).click()
+  // รอให้เขียนลง IndexedDB เสร็จก่อนรีโหลด (การเขียนเป็นแบบ async)
+  await expect.poll(() => idb(page, 'runs').then(r => (r as unknown[] | null)?.length)).toBe(1)
   await page.reload()
   await expect.poll(() => idb(page, 'runs').then(r => (r as unknown[] | null)?.length)).toBe(1)
   expect(await page.evaluate(() => localStorage.getItem('runs'))).toBeNull()
