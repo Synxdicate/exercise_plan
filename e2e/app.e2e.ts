@@ -112,9 +112,15 @@ test('แชร์การวิ่ง: การ์ดทึบ และส�
     g.drawImage(img, 0, 0)
     return { w: c.width, a: g.getImageData(5, 5, 1, 1).data[3] }
   })
-  await expect.poll(alpha).toEqual({ w: 1080, a: 255 })
-  await page.getByRole('button', { name: 'โปร่ง · ขาว' }).click()
+  // ค่าเริ่มต้นคือสติกเกอร์โปร่งใส
   await expect.poll(alpha).toEqual({ w: 1080, a: 0 })
+  await page.getByRole('button', { name: 'การ์ดสี' }).click()
+  await expect.poll(alpha).toEqual({ w: 1080, a: 255 })
+  await page.getByRole('button', { name: 'โปร่งใส · ขาว' }).click()
+  await expect.poll(alpha).toEqual({ w: 1080, a: 0 })
+  const download = page.waitForEvent('download')
+  await page.getByRole('button', { name: 'บันทึกรูป' }).click()
+  expect((await download).suggestedFilename()).toMatch(/-sticker\.png$/)
 })
 
 test('เป้าเวลา + เส้นทางสู่มาราธอน + แผนวันแข่ง + เตือนเจ็บซ้ำ', async ({ page }) => {

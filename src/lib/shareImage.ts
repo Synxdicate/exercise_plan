@@ -1,5 +1,6 @@
 import { Directory, Filesystem } from '@capacitor/filesystem'
 import { Share } from '@capacitor/share'
+import { Media } from '@capacitor-community/media'
 import { formatDuration, formatPace, runKinds, type Run } from './log'
 import { isNative } from './native'
 import { projectRoute } from './geo'
@@ -150,6 +151,23 @@ export async function shareRunImage(run: Run, canvas: HTMLCanvasElement, style: 
     return
   }
   downloadImage(run, canvas, style)
+}
+
+const ALBUM = 'Exercise-Plan'
+
+/** อัลบั้มของแอปในแกลเลอรี (สร้างครั้งแรก) — Android ต้องระบุอัลบั้มตอนบันทึก */
+async function albumId() {
+  const find = async () => (await Media.getAlbums()).albums.find(a => a.name === ALBUM)?.identifier
+  const id = await find()
+  if (id) return id
+  await Media.createAlbum({ name: ALBUM })
+  return find()
+}
+
+/** บันทึกรูป: แอปบันทึกลงแกลเลอรี (อัลบั้ม Exercise-Plan) เป็น PNG คงความโปร่งใส, เว็บดาวน์โหลดไฟล์ */
+export async function saveImage(run: Run, canvas: HTMLCanvasElement, style: CardStyle = 'card') {
+  if (!isNative) return downloadImage(run, canvas, style)
+  await Media.savePhoto({ path: canvas.toDataURL('image/png'), albumIdentifier: await albumId(), fileName: fileName(run, style).replace(/\.png$/, '') })
 }
 
 export function downloadImage(run: Run, canvas: HTMLCanvasElement, style: CardStyle = 'card') {
