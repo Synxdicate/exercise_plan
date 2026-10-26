@@ -242,6 +242,7 @@ test('แผนที่รวมทุกการวิ่ง (heatmap)', asyn
   await page.getByRole('button', { name: 'สถิติ' }).click()
   await expect(page.getByText('แผนที่การวิ่งทั้งหมด')).toBeVisible()
   await expect(page.getByText(/2 เส้นทาง/)).toBeVisible()
+  await expect(page.getByText('ความเร็ววิกฤต (Critical Speed)')).toBeVisible()
   await expect(page.locator('.leaflet-container canvas, .leaflet-container svg').first()).toBeAttached()
 })
 

@@ -2,7 +2,7 @@ import { lazy, Suspense, useMemo, useRef, useState, type ReactNode } from 'react
 import { CalendarCheck, Check, FileUp, Pencil, TriangleAlert, Trophy, Volume2, VolumeX, Footprints, Gauge, History, Map as MapIcon, Pause, Play, Plus, Satellite, Share2, Trash2, X } from 'lucide-react'
 import { GOOD_ACCURACY_M, useRunTracker, type Point } from '../lib/gps'
 import { formatDuration, formatPace, runKinds, uid, useRuns, type Run } from '../lib/log'
-import { estimate, paceHint, predictionTrend, type Estimate } from '../lib/pace'
+import { criticalSpeed, estimate, paceHint, predictionTrend, type Estimate } from '../lib/pace'
 import { useProgram } from '../lib/program'
 import { parseGpx } from '../lib/gpx'
 import { DEFAULT_LIMIT_KM, defaultShoe, shoeKm, shoeStatus, useShoes, type Shoe } from '../lib/shoes'
@@ -501,6 +501,7 @@ const roundedTop = (x: number, y: number, w: number, h: number) => {
 
 function PaceCard({ est, runs, onTrial }: { est: Estimate | null; runs: Run[]; onTrial: () => void }) {
   const trend = useMemo(() => predictionTrend(runs, 12), [runs])
+  const cs = useMemo(() => criticalSpeed(runs), [runs])
   const [pick, setPick] = useState<RaceKey>('tenK')
   const [goals, setGoal] = useRaceGoals()
   const [draft, setDraft] = useState('')
@@ -560,6 +561,18 @@ function PaceCard({ est, runs, onTrial }: { est: Estimate | null; runs: Run[]; o
           </div>
         )}
       </div>
+      {cs && (
+        <div className="mt-3 rounded-xl bg-raised p-3 text-sm">
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="font-semibold">ความเร็ววิกฤต (Critical Speed)</span>
+            <b className="tabular-nums">{formatPace(cs.pace, 1)} /กม.</b>
+          </div>
+          <p className="mt-1 text-xs text-muted">
+            เพดานที่ร่างกายยังวิ่งแบบ "คงที่" ได้ (≈ ขอบบนของโซนแอโรบิก) คำนวณจากช่วงที่เร็วที่สุด {cs.points} ระยะใน 90 วัน ·
+            มาราธอน: ครึ่งแรกอย่าเร็วกว่า ~{formatPace(cs.marathonFirstHalfPace, 1)} /กม. (94% ของ CS)
+          </p>
+        </div>
+      )}
       <div className="mt-3 text-xs font-semibold text-muted">โซนเพซของคุณ (นาที/กม.)</div>
       <div className="mt-1.5"><ZoneLegend fiveK={est.paces.interval} /></div>
       <p className="mt-2 text-xs text-muted">

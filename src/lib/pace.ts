@@ -100,3 +100,33 @@ export function paceHint(e: Estimate | null, kind?: string, title = '') {
     default: return `เบา ${fmt(e.paces.easy[0])}–${fmt(e.paces.easy[1])} /กม.`
   }
 }
+
+// ---- Critical speed (CS) ----
+// Smyth & Muniz-Pumares 2020: ระยะ–เวลาของช่วงที่เร็วที่สุด (400 ม.–5 กม.) ในข้อมูลซ้อมเป็นเส้นตรง
+// ความชัน = CS (ความเร็วสูงสุดที่ร่างกายยังคงที่ได้ ≈ เพดานแอโรบิก) ใช้คาดการณ์มาราธอนและคุมเพซ
+// นักวิ่งที่วิ่งครึ่งแรกของมาราธอนเร็วกว่า ~94% CS มีแนวโน้มช้าลงมากในครึ่งหลัง
+const CS_DISTANCES = [0.4, 0.8, 1, 1.5, 3, 5]
+const CS_WINDOW_DAYS = 90
+
+export function criticalSpeed(runs: Run[], asOf = today()) {
+  const recent = runs.filter(r => r.date <= asOf && r.date > addDays(asOf, -CS_WINDOW_DAYS) && r.route && r.times && r.times.length === r.route.length)
+  const pts: { m: number; s: number }[] = []
+  for (const km of CS_DISTANCES) {
+    let best = Infinity
+    for (const r of recent) {
+      if (r.km < km) continue
+      const t = bestEffort(r.route!, r.times!, km)
+      if (t && t < best) best = t
+    }
+    if (best < Infinity) pts.push({ m: km * 1000, s: best })
+  }
+  // ต้องมีอย่างน้อย 3 ระยะ และมีระยะยาว ≥3 กม. (ไม่งั้นความชันเพี้ยนจากช่วงสั้น ๆ)
+  if (pts.length < 3 || !pts.some(p => p.m >= 3000)) return null
+  const n = pts.length
+  const mt = pts.reduce((a, p) => a + p.s, 0) / n
+  const md = pts.reduce((a, p) => a + p.m, 0) / n
+  const slope = pts.reduce((a, p) => a + (p.s - mt) * (p.m - md), 0) / pts.reduce((a, p) => a + (p.s - mt) ** 2, 0)
+  const dPrime = md - slope * mt // ระยะ "สำรอง" เหนือ CS (เมตร)
+  if (!(slope > 1.5 && slope < 7)) return null // นอกช่วงที่เป็นไปได้ของคน (กันข้อมูลเพี้ยน)
+  return { cs: slope, pace: 1000 / slope, dPrime, points: pts.length, marathonFirstHalfPace: 1000 / (slope * 0.94) }
+}

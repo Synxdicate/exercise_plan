@@ -308,3 +308,21 @@ describe('heatmapRoutes', () => {
     expect(r.hidden).toBe(1)
   })
 })
+
+describe('criticalSpeed', () => {
+  it('recovers CS and D′ from synthetic best efforts (distance = D′ + CS·t)', async () => {
+    const { criticalSpeed } = await import('../pace')
+    // นักวิ่ง CS 3.5 ม./วิ, D′ 200 ม.: วิ่งเร็วสุดได้ที่เวลา t = (d − 200) / 3.5 ทุกระยะ
+    const cs = 3.5, dp = 200
+    const route: [number, number][] = [], times: number[] = []
+    // เส้นตรงทุก 50 ม. ความเร็วลดลงตามระยะให้ตรงโมเดล: เวลาสะสม T(d) = (d − 200)/3.5 สำหรับ d ≥ 400
+    for (let d = 0; d <= 5000; d += 50) {
+      route.push([16.4 + d / 111320, 102.8])
+      times.push(d < 400 ? (d / 400) * ((400 - dp) / cs) : (d - dp) / cs)
+    }
+    const r = criticalSpeed([{ id: 'x', date: '2026-10-20', km: 5, seconds: times.at(-1)!, kind: 'race', source: 'gps', route, times }], '2026-10-25')!
+    expect(r.cs).toBeCloseTo(3.5, 1)
+    expect(r.pace).toBeGreaterThan(280); expect(r.pace).toBeLessThan(292)
+    expect(criticalSpeed([], '2026-10-25')).toBeNull()
+  })
+})
