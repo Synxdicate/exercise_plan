@@ -258,3 +258,15 @@ test('ท่าที่ไม่มีรูปถ่ายแสดงภา�
   await target.first().click()
   await expect(page.getByRole('img', { name: /Hollow Body Hold ภาพลายเส้น/ })).toBeVisible()
 })
+
+test('คาร์ดิโออื่น: บันทึกปั่นจักรยานแล้วแสดงในปฏิทิน', async ({ page }) => {
+  await seed(page)
+  await nav(page, 'วิ่ง')
+  await page.getByRole('button', { name: 'ประวัติ' }).click()
+  await page.locator('main').getByRole('button', { name: 'บันทึก', exact: true }).first().click()
+  await page.locator('main').getByRole('button', { name: 'บันทึก', exact: true }).last().click()
+  await expect(page.getByText('ปั่นจักรยาน · 40 นาที')).toBeVisible()
+  expect(((await idb(page, 'cross')) as unknown[]).length).toBe(1)
+  await nav(page, 'บันทึก')
+  await expect(page.getByText(/ออกกำลังกาย 1 วัน/)).toBeVisible()
+})

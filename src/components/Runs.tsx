@@ -31,6 +31,7 @@ import { Badge, Button, Card, Collapse, Portal, Segmented, Stat } from './ui'
 import { RunHistory } from './RunHistory'
 import { JourneyCard } from './Journey'
 import { MatchedRuns } from './Matched'
+import { CrossTrainingCard } from './CrossTraining'
 import { heatmapRoutes } from '../lib/matched'
 import { useRaceGoals } from '../lib/useGoals'
 import { parseDuration, raceKm, raceLabel, type RaceKey } from '../lib/goals'
@@ -194,6 +195,7 @@ export function Runs() {
       )}
 
       {view === 'history' && (
+        <>
         <Card title="ประวัติการวิ่ง" action={
           <div className="flex gap-1.5">
             <label className="inline-flex cursor-pointer items-center gap-1 rounded-full bg-raised px-3 py-1.5 text-sm font-semibold ring-1 ring-line">
@@ -206,6 +208,8 @@ export function Runs() {
           <Collapse open={manual}><ManualEntry onSave={r => { save(r); setManual(false) }} /></Collapse>
           <RunHistory runs={runs} onOpen={setDetail} />
         </Card>
+        <CrossTrainingCard />
+        </>
       )}
 
       {view === 'stats' && (

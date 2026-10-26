@@ -3,7 +3,7 @@ import { Check, Dumbbell, Flag, Flame, Footprints, Moon, Play } from 'lucide-rea
 import { locationInfo } from '../data/programs'
 import type { Day } from '../data/workouts'
 import { muscleNames, weeklySets, type Muscle } from '../data/muscles'
-import { useRuns, useSessions } from '../lib/log'
+import { crossAsSession, useCross, useRuns, useSessions } from '../lib/log'
 import { estimate, paceHint } from '../lib/pace'
 import { useProgram } from '../lib/program'
 import { usePersisted } from '../lib/storage'
@@ -26,6 +26,7 @@ const TARGET_SETS = 10
 export function Dashboard() {
   const [runs] = useRuns()
   const [sessions] = useSessions()
+  const [cross] = useCross()
   const p = useProgram()
   const [done, setDone] = usePersisted<Record<string, boolean>>('done', {})
   const [playing, setPlaying] = useState<{ day: Day; light: boolean } | null>(null)
@@ -34,7 +35,7 @@ export function Dashboard() {
   const { currentWeek: week } = p
 
   const plan = p.plan()
-  const loadDays = trainingLoad(runs, sessions, today())
+  const loadDays = trainingLoad(runs, [...sessions, ...cross.map(crossAsSession)], today())
   const form = loadDays.length >= 7 ? formLabel(loadDays.at(-1)!.form, loadDays.at(-1)!.fitness, loadDays.at(-1)!.day) : null
   const strengthTarget = plan.filter(d => d.type === 'strength').length
   const thisWeek = weekStart(today())

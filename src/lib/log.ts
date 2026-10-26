@@ -44,6 +44,15 @@ export function useCompactRuns() {
 }
 export const useSessions = () => usePersisted<Session[]>('sessions', [])
 
+// คาร์ดิโอทดแทนการวิ่ง (แรงกระแทกน้อย): ได้ระบบหายใจ-หัวใจโดยไม่กระแทกข้อ — ใช้เพิ่มปริมาณแอโรบิกหรือช่วงบาดเจ็บ
+// (Eyestone 1993: วิ่งในน้ำ/ปั่นจักรยาน 6 สัปดาห์รักษา VO2max และเวลาวิ่ง 2 ไมล์ได้เท่าการวิ่ง)
+export type CrossKind = 'bike' | 'aquajog' | 'swim' | 'elliptical' | 'other'
+export type CrossSession = { id: string; date: string; kind: CrossKind; minutes: number; rpe?: number }
+export const crossKinds: Record<CrossKind, string> = { bike: 'ปั่นจักรยาน', aquajog: 'วิ่งในน้ำ', swim: 'ว่ายน้ำ', elliptical: 'เครื่องเดินวงรี', other: 'คาร์ดิโออื่น ๆ' }
+export const useCross = () => usePersisted<CrossSession[]>('cross', [])
+/** ให้ภาระการฝึก (ความฟิต/ความล้า) นับคาร์ดิโอทดแทนเหมือนเซสชันหนึ่ง: RPE × นาที */
+export const crossAsSession = (c: CrossSession): Session => ({ id: c.id, date: c.date, mode: 'gym', dayKey: 'cross', title: crossKinds[c.kind], entries: [], rpe: c.rpe ?? 5, minutes: c.minutes })
+
 export const runKinds: Record<Run['kind'], string> = {
   easy: 'Easy',
   tempo: 'Tempo',

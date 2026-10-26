@@ -8,7 +8,7 @@ import { sendErrors } from './errors'
 // 'tab', 'activeRun', 'activeWorkout' ไม่ sync — เป็นสถานะของเครื่องนั้น
 export const SYNCED_KEYS = [
   'profile', 'mode', 'week', 'done', 'sessions', 'runs', 'log', 'program', 'raceDate', 'dayLocation',
-  'onboarded', 'readiness', 'foodLog', 'screening', 'shoes', 'exerciseSwaps', 'extraExercises', 'goals', 'badgesSeen', 'photos', 'mealSets', 'raceChecklist',
+  'onboarded', 'readiness', 'foodLog', 'screening', 'shoes', 'exerciseSwaps', 'extraExercises', 'goals', 'badgesSeen', 'photos', 'mealSets', 'raceChecklist', 'cross',
 ] as const
 
 // เจ้าของข้อมูลใน localStorage — กันข้อมูลคนหนึ่งไหลไปบัญชีอื่นบนเครื่องเดียวกัน

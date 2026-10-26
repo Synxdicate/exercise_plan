@@ -2,7 +2,7 @@ import { Fragment, useState } from 'react'
 import { Activity, CalendarDays, ChevronDown, Dumbbell, Pencil, Scale, Trash2, Trophy, TrendingUp } from 'lucide-react'
 import { usePersisted } from '../lib/storage'
 import { monthLabel, niceDate, shortDate, today, weekStart } from '../lib/date'
-import { useRuns, useSessions, type Session } from '../lib/log'
+import { crossAsSession, useCross, useRuns, useSessions, type Session } from '../lib/log'
 import { formLabel, trainingLoad } from '../lib/analysis'
 import { FitnessChart } from './Charts'
 import { allExercises, exerciseHistory, prsIn } from '../lib/strength'
@@ -246,8 +246,9 @@ function StrengthStats() {
 
 function Fitness() {
   const [sessions] = useSessions()
+  const [cross] = useCross()
   const [runs] = useRuns()
-  const days = trainingLoad(runs, sessions, today())
+  const days = trainingLoad(runs, [...sessions, ...cross.map(crossAsSession)], today())
   if (days.length < 7)
     return <Card><p className="py-6 text-center text-sm text-muted">บันทึกการฝึก/วิ่งอย่างน้อย 1 สัปดาห์ แล้วกราฟความฟิตจะขึ้นที่นี่</p></Card>
   const cur = days.at(-1)!
