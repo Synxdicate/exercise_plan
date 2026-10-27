@@ -44,6 +44,7 @@ export function Dashboard() {
   const kmThisWeek = runs.filter(r => weekStart(r.date) === thisWeek).reduce((s, r) => s + r.km, 0)
   const kmTarget = p.kmTarget()
   const streak = weekStreak(sessions.map(s => s.date), runs.map(r => r.date))
+  const activeThisWeek = [...sessions, ...runs].filter(x => weekStart(x.date) === thisWeek).length
   const [todayIdx] = useState(() => (new Date().getDay() + 6) % 7) // 0 = จันทร์
   const todayPlan = plan[todayIdx]
 
@@ -66,7 +67,8 @@ export function Dashboard() {
           </div>
           <div className="flex flex-col items-end gap-1">
             <div className="flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm font-semibold">
-              <Flame size={16} /> ต่อเนื่อง {streak} สัปดาห์
+              {/* streak นับสัปดาห์ที่ฝึก ≥3 ครั้ง — ยังเป็น 0 ให้บอกว่าสัปดาห์นี้ได้กี่ครั้งแล้ว แทนการขึ้น "0 สัปดาห์" */}
+              <Flame size={16} /> {streak ? `ต่อเนื่อง ${streak} สัปดาห์` : `สัปดาห์นี้ ${Math.min(activeThisWeek, 3)}/3 ครั้ง`}
             </div>
             {form && <button onClick={() => nav('progress')} className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">ฟอร์ม: {form.label}</button>}
           </div>
