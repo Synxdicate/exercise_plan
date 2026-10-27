@@ -7,6 +7,7 @@ import { Badge, Card, Segmented } from './ui'
 import { cx } from '../lib/cx'
 import { FoodLog } from './FoodLog'
 import { TextInput } from './Form'
+import { ProfileCard } from './ProfileCard'
 
 const verdict = {
   good: { label: 'แนะนำ', cls: 'bg-good/15 text-good' },
@@ -16,7 +17,7 @@ const verdict = {
 
 type View = 'menu' | 'street' | 'foods'
 
-export function Nutrition({ profile }: { profile: Profile }) {
+export function Nutrition({ profile, setProfile }: { profile: Profile; setProfile: (p: Profile) => void }) {
   const { isRace } = useProgram()
   const t = targets(profile, isRace)
   const [view, setView] = useState<View>('menu')
@@ -38,6 +39,8 @@ export function Nutrition({ profile }: { profile: Profile }) {
       {t.raceAdjusted && <p className="rounded-xl bg-run/10 px-3 py-2 text-xs text-run">อยู่ในโปรแกรมวิ่ง: กินเท่าที่ใช้ (ไม่กินขาด) และเพิ่มคาร์บ เพื่อฟื้นตัวทัน</p>}
 
       <FoodLog proteinTarget={t.protein} kcalTarget={t.kcal} />
+
+      <ProfileCard profile={profile} setProfile={setProfile} />
 
       <Segmented value={view} onChange={setView} options={[
         { value: 'menu', label: 'เมนูตัวอย่าง' },

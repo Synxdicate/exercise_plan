@@ -392,3 +392,28 @@ describe('repeated pain areas', () => {
     expect(repeatedPainAreas(log as never, '2026-10-27')).toEqual(['shin'])
   })
 })
+
+describe('program fit', () => {
+  const run = (date: string, km: number, min: number) => ({ id: date + km, date, km, seconds: min * 60, kind: 'easy' as const, source: 'manual' as const })
+  it('walk-jogs do not count; recommends the furthest ready step', async () => {
+    const { capacity, isReady, recommended } = await import('../programFit')
+    const walk = capacity([run('2026-10-25', 3.3, 47)], '2026-10-27')
+    expect(walk.longestKm).toBe(0)
+    expect(recommended(walk)).toBe('start')
+    const c = capacity([run('2026-10-20', 5, 32)], '2026-10-27')
+    expect(isReady('ten', c)).toBe(true)
+    expect(isReady('half', c)).toBe(false)
+    expect(recommended(c)).toBe('ten')
+    expect(capacity([run('2026-07-01', 10, 60)], '2026-10-27').longestKm).toBe(0) // older than 60 days
+  })
+  it('suggests the next program at the right moment', async () => {
+    const { nextStep } = await import('../programFit')
+    const ready30 = { longestKm: 4, longestMin: 31 }
+    expect(nextStep('start', ready30, 5, 9, false)?.to).toBe('ten')
+    expect(nextStep('start', { longestKm: 2, longestMin: 15 }, 9, 9, false)).toBeNull()
+    expect(nextStep('ten', ready30, 6, 12, false)).toBeNull()
+    expect(nextStep('ten', ready30, 12, 12, false)?.to).toBe('base')
+    expect(nextStep('ten', { longestKm: 8, longestMin: 50 }, 12, 12, false)?.to).toBe('half')
+    expect(nextStep('base', { longestKm: 20, longestMin: 120 }, 4, 4, true)).toBeNull()
+  })
+})

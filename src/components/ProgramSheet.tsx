@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { Check } from 'lucide-react'
-import { locationInfo, programLength, programs, type LocationPref, type ProgramId } from '../data/programs'
+import { locationInfo, programs, type LocationPref, type ProgramId } from '../data/programs'
 import { useProgram } from '../lib/program'
 import { daysBetween, today } from '../lib/date'
 import { cx } from '../lib/cx'
 import { Button, Collapse, Sheet } from './ui'
 import { DateInput } from './Form'
+import { ProgramPicker } from './ProgramPicker'
 import { clearance, useScreening } from '../lib/screening'
 
 /** ตั้งค่าเป้าหมาย/วันแข่ง/สถานที่ฝึก — เปิดได้จากเมนูโปรไฟล์และการ์ดโปรแกรมในหน้าฝึก */
@@ -32,20 +33,7 @@ export function ProgramSheet({ onClose }: { onClose: () => void }) {
 
   return (
     <Sheet onClose={onClose} title="ตั้งค่าโปรแกรม">
-      <div className="mb-2 text-sm font-semibold text-muted">เป้าหมาย</div>
-      <div className="space-y-2">
-        {(Object.keys(programs) as ProgramId[]).map(id => (
-          <button key={id} onClick={() => setChoice(id)}
-            className={cx('flex w-full items-start gap-3 rounded-2xl p-3 text-left ring-2 transition-colors active:scale-[.99]',
-              choice === id ? 'bg-accent-soft/50 ring-accent' : 'bg-raised ring-transparent')}>
-            <Radio on={choice === id} />
-            <span className="min-w-0">
-              <span className="block font-bold">{programs[id].name} <span className="font-normal text-muted">· {programLength(id)}</span></span>
-              <span className="block text-sm text-muted">{programs[id].summary}</span>
-            </span>
-          </button>
-        ))}
-      </div>
+      <ProgramPicker value={choice} onChange={setChoice} />
 
       <Collapse open={!!programs[choice].raceKm}>
         <div className="pt-3">
@@ -61,7 +49,7 @@ export function ProgramSheet({ onClose }: { onClose: () => void }) {
         </div>
       </Collapse>
 
-      <div className="mb-2 mt-4 text-sm font-semibold text-muted">ฝึกเวทที่ไหน</div>
+      <div className="mb-2 mt-5 text-sm font-semibold text-muted">ฝึกเวทที่ไหน</div>
       <div className="space-y-2">
         {(['mix', 'gym', 'park'] as LocationPref[]).map(id => (
           <button key={id} onClick={() => setWhere(id)}
@@ -76,18 +64,6 @@ export function ProgramSheet({ onClose }: { onClose: () => void }) {
         ))}
       </div>
       <p className="mt-2 text-xs text-muted">สลับที่เฉพาะวันได้ในหน้าฝึก</p>
-
-      <div className="mt-4 rounded-2xl bg-raised p-3 text-sm">
-        <div className="mb-1 font-bold">หุ่นกับมาราธอน ทำตามลำดับดีที่สุด</div>
-        <ol className="list-decimal space-y-1 pl-5 text-muted">
-          <li><b className="text-ink">มือใหม่:</b> เริ่มวิ่ง 9 สัปดาห์ (วิ่งสลับเดิน) จนวิ่งต่อเนื่อง 30 นาทีได้</li>
-          <li><b className="text-ink">หุ่น 8–12 สัปดาห์</b> (ถ้าเน้นกล้าม) สร้างกล้ามและฐานวิ่ง</li>
-          <li><b className="text-ink">10K 12 สัปดาห์:</b> ขยับจากวิ่ง 3 เป็น 4 วัน สร้างฐานให้พร้อมฮาล์ฟ</li>
-          <li><b className="text-ink">ฮาล์ฟ 16 สัปดาห์:</b> วิ่งเป็นหลัก เวท 2 วันพอรักษากล้าม</li>
-          <li><b className="text-ink">พัก 2–4 สัปดาห์</b> แล้วเข้า <b className="text-ink">ฟูล 18 สัปดาห์</b></li>
-          <li>หลังแข่ง กลับมาโปรแกรมหุ่นเพื่อเพิ่มกล้ามต่อ</li>
-        </ol>
-      </div>
 
       <div className="mt-4 flex gap-2">
         <Button variant="soft" className="flex-1" onClick={onClose}>ยกเลิก</Button>

@@ -112,10 +112,10 @@ function Main({ session }: { session: Session | null }) {
       {!session && <BackupReminder />}
 
       <main key={tab} className="animate-fade-up space-y-3 px-4 pt-1 pb-[calc(var(--sab)+6rem)]">
-        {tab === 'overview' && <Overview profile={profile} setProfile={setProfile} />}
+        {tab === 'overview' && <Overview />}
         {tab === 'plan' && <Plan />}
         {tab === 'runs' && <Runs />}
-        {tab === 'food' && <Nutrition profile={profile} />}
+        {tab === 'food' && <Nutrition profile={profile} setProfile={setProfile} />}
         {tab === 'progress' && <Progress />}
         {tab === 'sources' && <Sources />}
         <p className="pt-2 text-center text-xs text-muted">ข้อมูลเพื่อการศึกษา ไม่ใช่คำแนะนำทางการแพทย์</p>

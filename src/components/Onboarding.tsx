@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ArrowLeft, ArrowRight, Check, Footprints } from 'lucide-react'
-import { locationInfo, programLength, programs, type LocationPref, type ProgramId } from '../data/programs'
+import { locationInfo, programs, type LocationPref, type ProgramId } from '../data/programs'
 import { activityLevels, defaultProfile, goals, targets, type Profile } from '../lib/calc'
 import { useProgram } from '../lib/program'
 import { usePersisted } from '../lib/storage'
@@ -10,6 +10,7 @@ import { ScreeningForm } from './Screening'
 import { clearance, clearanceText, emptyScreening, useScreening, type Screening } from '../lib/screening'
 import { today } from '../lib/date'
 import { DateInput, NumberInput, SelectInput } from './Form'
+import { ProgramPicker } from './ProgramPicker'
 
 const STEPS = ['เช็กสุขภาพ', 'ข้อมูลร่างกาย', 'เป้าหมาย', 'สถานที่ฝึก', 'พร้อมแล้ว']
 
@@ -88,10 +89,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
 
         {step === 2 && (
           <>
-            <p className="text-sm text-muted">ยังวิ่งต่อเนื่อง 30 นาทีไม่ได้ เริ่มที่ "เริ่มวิ่ง" · ไม่มีงานแข่งเลือก "วิ่งต่อเนื่อง" · ฮาล์ฟ/ฟูลต่อจาก 10K</p>
-            {(Object.keys(programs) as ProgramId[]).map(id => (
-              <Option key={id} on={program === id} onClick={() => setProgram(id)} title={`${programs[id].name} · ${programLength(id)}`} text={programs[id].summary} />
-            ))}
+            <ProgramPicker value={program} onChange={setProgram} />
             {!!programs[program].raceKm && (
               <DateInput label="วันแข่ง (ไม่บังคับ)" value={raceDate} onChange={setRaceDate} />
             )}

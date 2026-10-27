@@ -92,7 +92,8 @@ const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).p
 
 // ข้อความเพซแนะนำของวันวิ่งตามชนิด
 export function paceHint(e: Estimate | null, kind?: string, title = '') {
-  if (!e) return null
+  // โปรแกรมเริ่มวิ่ง (วิ่งสลับเดิน/วิ่งต่อเนื่อง N นาที) ไม่มีเป้าเพซ — แค่ให้พูดเป็นประโยคได้
+  if (!e || /วิ่งสลับเดิน|วิ่งต่อเนื่อง \d+ นาที/.test(title)) return null
   if (/10K/.test(title)) return `เพซ 10K ~${fmt(e.paces.tenK)} /กม.`
   if (/5K/.test(title)) return `เพซ 5K ~${fmt(e.paces.interval)} /กม.`
   if (/ฮาล์ฟ/.test(title)) return `เพซฮาล์ฟ ~${fmt(e.paces.half)} /กม.`
