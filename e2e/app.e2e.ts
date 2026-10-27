@@ -246,6 +246,13 @@ test('ทดสอบขา: กระโดดขาเดียวต่าง
   expect(((await idb(page, 'legTests')) as unknown[]).length).toBe(1)
 })
 
+test('โปรแกรมเริ่มวิ่ง: วิ่งสลับเดินในตารางฝึก', async ({ page }) => {
+  await seed(page, { program: 'start', week: 1 })
+  await nav(page, 'ฝึก')
+  await expect(page.getByText('เริ่มวิ่ง (วิ่งสลับเดิน)')).toBeVisible()
+  await expect(page.getByText('วิ่งสลับเดิน (วิ่งรวม 8 นาที)').first()).toBeVisible()
+})
+
 test('รายงาน error: เก็บในเครื่องและดูได้จากเมนูบัญชี', async ({ page }) => {
   await seed(page)
   await expect(page.getByText(/เป้าเดือน/)).toBeVisible() // รอแอปโหลดเสร็จ (ตัวดัก error ติดตั้งหลังโหลดที่เก็บข้อมูล)

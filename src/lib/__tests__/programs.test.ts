@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { programs, variants, weekKm, weekPlan } from '../../data/programs'
+import { programs, startSessions, variants, weekKm, weekPlan } from '../../data/programs'
 import { weeklySets } from '../../data/muscles'
 
 const race = ['five', 'ten', 'half', 'full'] as const
@@ -148,5 +148,39 @@ describe('เวทของนักวิ่ง (จาก อ.เอกวิ
       expect(names(5)).toContain('Pogo Jumps')
       expect(names(programs.half.weeks)).not.toContain('Pogo Jumps')
     }
+  })
+})
+
+describe('เริ่มวิ่ง (วิ่งสลับเดิน)', () => {
+  it('9 สัปดาห์: วิ่ง 3 วัน + เวท 2 วัน มีวันพัก และไม่มีวันหนัก/วิ่งยาว', () => {
+    for (let w = 1; w <= 9; w++) {
+      const days = variants('start', w).gym
+      expect(days).toHaveLength(7)
+      expect(days.filter(d => d.type === 'run')).toHaveLength(3)
+      expect(days.filter(d => d.type === 'strength')).toHaveLength(2)
+      expect(days.some(d => d.type === 'rest')).toBe(true)
+      expect(days.every(d => d.type !== 'run' || d.runKind === 'easy')).toBe(true)
+      expect(days.flatMap(d => d.exercises).some(e => e.name === 'Pogo Jumps')).toBe(false)
+    }
+  })
+  it('ช่วงวิ่งค่อย ๆ ยาวขึ้น: เวลาวิ่งต่อ session เพิ่มไม่เกิน 6 นาทีต่อสัปดาห์ จบที่วิ่งต่อเนื่อง 30 นาที', () => {
+    let prevMax = 0
+    for (let w = 1; w <= 9; w++) {
+      const s = startSessions(w)
+      if (w > 1) for (const x of s) expect(x.runMin - prevMax, `w${w}`).toBeLessThanOrEqual(6)
+      for (const x of s) expect(x.longest).toBeGreaterThanOrEqual(1)
+      prevMax = Math.max(prevMax, ...s.map(x => x.runMin))
+    }
+    expect(startSessions(9)[2]).toMatchObject({ runMin: 30, longest: 30 })
+    // ช่วงวิ่งต่อเนื่องยาวสุดเพิ่มทีละไม่เกิน 10 นาที (สัปดาห์สุดท้าย 20 → 25 → 30)
+    const longest = Array.from({ length: 9 }, (_, i) => startSessions(i + 1).map(x => x.longest)).flat()
+    longest.forEach((v, i) => i && expect(v - Math.max(...longest.slice(0, i))).toBeLessThanOrEqual(10))
+  })
+  it('มีเสียงนำ: เดินวอร์ม → วิ่ง/เดินสลับ → เดินคูลดาวน์ และไม่คุมเพซ', () => {
+    const d = variants('start', 1).gym.find(x => x.key === 'rw1')!
+    expect(d.guide?.[0]).toMatchObject({ kind: 'warm', sec: 300 })
+    expect(d.guide?.filter(s => s.kind === 'work')).toHaveLength(8)
+    expect(d.guide?.every(s => !s.pace)).toBe(true)
+    expect(weekKm('start', 1)).toBe(0)
   })
 })

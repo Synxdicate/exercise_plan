@@ -88,7 +88,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
 
         {step === 2 && (
           <>
-            <p className="text-sm text-muted">ไม่มีงานแข่งเลือก "วิ่งต่อเนื่อง" ได้ — ถ้าวิ่งยังไม่ถึง 15 กม./สัปดาห์ เริ่มจากหุ่นหรือ 10K ก่อนฮาล์ฟ/ฟูล</p>
+            <p className="text-sm text-muted">ยังวิ่งต่อเนื่อง 30 นาทีไม่ได้ เริ่มที่ "เริ่มวิ่ง" · ไม่มีงานแข่งเลือก "วิ่งต่อเนื่อง" · ฮาล์ฟ/ฟูลต่อจาก 10K</p>
             {(Object.keys(programs) as ProgramId[]).map(id => (
               <Option key={id} on={program === id} onClick={() => setProgram(id)} title={`${programs[id].name} · ${programLength(id)}`} text={programs[id].summary} />
             ))}

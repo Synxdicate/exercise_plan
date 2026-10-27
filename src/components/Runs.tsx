@@ -214,7 +214,7 @@ export function Runs() {
           <div className="flex items-start gap-2 rounded-2xl bg-white/15 p-3 text-sm">
             <CalendarCheck size={18} className="mt-0.5 shrink-0" />
             <div>
-              <div className="font-bold">แผนวันนี้: {todayRun.title} · {todayRun.targetKm} กม.</div>
+              <div className="font-bold">แผนวันนี้: {todayRun.title} · {todayRun.targetKm ? `${todayRun.targetKm} กม.` : todayRun.duration}</div>
               <div className="opacity-85">{todayRun.exercises[0]?.cue}</div>
               {paceHint(est, todayRun.runKind, todayRun.title) && <div className="font-semibold">{paceHint(est, todayRun.runKind, todayRun.title)}</div>}
             </div>

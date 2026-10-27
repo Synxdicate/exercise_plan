@@ -80,8 +80,9 @@ export function ProgramSheet({ onClose }: { onClose: () => void }) {
       <div className="mt-4 rounded-2xl bg-raised p-3 text-sm">
         <div className="mb-1 font-bold">หุ่นกับมาราธอน ทำตามลำดับดีที่สุด</div>
         <ol className="list-decimal space-y-1 pl-5 text-muted">
-          <li><b className="text-ink">ตอนนี้:</b> โปรแกรมหุ่น 8–12 สัปดาห์ สร้างกล้ามและฐานวิ่ง (10–15 กม./สัปดาห์)</li>
-          <li><b className="text-ink">10K 10 สัปดาห์:</b> ขยับจากวิ่ง 3 เป็น 4 วัน สร้างฐานให้พร้อมฮาล์ฟ</li>
+          <li><b className="text-ink">มือใหม่:</b> เริ่มวิ่ง 9 สัปดาห์ (วิ่งสลับเดิน) จนวิ่งต่อเนื่อง 30 นาทีได้</li>
+          <li><b className="text-ink">หุ่น 8–12 สัปดาห์</b> (ถ้าเน้นกล้าม) สร้างกล้ามและฐานวิ่ง</li>
+          <li><b className="text-ink">10K 12 สัปดาห์:</b> ขยับจากวิ่ง 3 เป็น 4 วัน สร้างฐานให้พร้อมฮาล์ฟ</li>
           <li><b className="text-ink">ฮาล์ฟ 16 สัปดาห์:</b> วิ่งเป็นหลัก เวท 2 วันพอรักษากล้าม</li>
           <li><b className="text-ink">พัก 2–4 สัปดาห์</b> แล้วเข้า <b className="text-ink">ฟูล 18 สัปดาห์</b></li>
           <li>หลังแข่ง กลับมาโปรแกรมหุ่นเพื่อเพิ่มกล้ามต่อ</li>

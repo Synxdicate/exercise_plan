@@ -1,14 +1,15 @@
 import { gymWeek, parkWeek, type Day, type Exercise } from './workouts'
 import { guides, type Step } from '../lib/guide'
 
-export type ProgramId = 'physique' | 'strength' | 'base' | 'five' | 'ten' | 'half' | 'full'
-type RunProgram = Exclude<ProgramId, 'physique' | 'strength'>
+export type ProgramId = 'physique' | 'strength' | 'start' | 'base' | 'five' | 'ten' | 'half' | 'full'
+type RunProgram = Exclude<ProgramId, 'physique' | 'strength' | 'start'>
 export type Mode = 'gym' | 'park'
 export type LocationPref = Mode | 'mix'
 
 // ongoing = ไม่มีวันจบ วนรอบตามสัปดาห์ในปฏิทิน (weeks = ความยาวรอบ)
 export const programs: Record<ProgramId, { name: string; short: string; weeks: number; raceKm?: number; ongoing?: boolean; summary: string }> = {
   physique: { name: 'หุ่นลีนแบบ Tom Holland', short: 'หุ่น', weeks: 12, summary: 'เวท 3 วัน + วิ่ง 2 วัน เน้นเพิ่มกล้าม ลดไขมัน' },
+  start: { name: 'เริ่มวิ่ง (วิ่งสลับเดิน)', short: 'เริ่มวิ่ง', weeks: 9, summary: 'สำหรับมือใหม่ที่ยังวิ่งต่อเนื่อง 30 นาทีไม่ได้: วิ่งสลับเดิน 3 วัน (~35 นาทีรวมเดิน) + เวทเบา 2 วัน ช่วงวิ่งยาวขึ้นทุกสัปดาห์ จบด้วยวิ่งต่อเนื่อง 30 นาที แล้วต่อ 10K' },
   base: { name: 'วิ่งต่อเนื่อง (ไม่มีเป้าแข่ง)', short: 'วิ่ง', weeks: 4, ongoing: true, summary: 'ไม่มีวันจบ วนรอบละ 4 สัปดาห์: วิ่ง 3 วัน (หนัก 1 วัน) + เวท 2 วัน ~12–16 กม./สัปดาห์ รักษาความฟิต อยากเพิ่มระยะค่อยเปลี่ยนเป็น 10K' },
   strength: { name: 'เวทอย่างเดียว', short: 'เวท', weeks: 4, ongoing: true, summary: 'ไม่มีวันจบ วนรอบละ 4 สัปดาห์: เวท 4 วัน (บน/ล่าง สลับกัน ~10+ เซ็ต/กล้าม/สัปดาห์) สัปดาห์ที่ 4 เป็น Deload ไม่มีแผนวิ่ง' },
   five: { name: '5K เน้นความเร็ว', short: '5K', weeks: 8, raceKm: 5, summary: 'สำหรับคนที่วิ่ง 5 กม. ได้แล้ว อยากเร็วขึ้น: วิ่ง 3–4 วัน (interval/tempo 1 วัน) + เวท 2 วัน ~12 → ~18 กม./สัปดาห์ จบด้วยวิ่ง 5K เต็มที่' },
@@ -201,6 +202,74 @@ function raceWeek(program: RunProgram, mode: Mode, week: number): Day[] {
   ]
 }
 
+// ---------- เริ่มวิ่ง: วิ่งสลับเดิน ----------
+// แบบเดียวกับ Couch to 5K (9 สัปดาห์): เวลาบนขาคงที่ ~25–30 นาที ช่วงวิ่งค่อย ๆ ยาวขึ้น ช่วงเดินคือการพัก
+// มือใหม่บาดเจ็บง่ายแม้ในโปรแกรมที่ค่อย ๆ เพิ่ม (Buist 2008) — เอ็นและกระดูกปรับตัวช้ากว่าหัวใจ จึงไม่เร่งเพซเลย
+// แต่ละ session: [นาทีวิ่ง, นาทีเดิน, จำนวนรอบ] หรือรายการช่วงวิ่งต่อเนื่อง
+type RunWalk = { run: number; walk: number; reps: number } | { runs: number[]; walk: number }
+const startWeeks: { s: RunWalk[]; note?: string }[] = [
+  { s: [{ run: 1, walk: 2, reps: 8 }], note: 'วิ่งช้าแค่ไหนก็ได้ ขอให้พูดเป็นประโยคได้ — เหนื่อยเกินให้เดินนานขึ้น' },
+  { s: [{ run: 2, walk: 2, reps: 6 }] },
+  { s: [{ run: 3, walk: 2, reps: 5 }] },
+  { s: [{ run: 4, walk: 2, reps: 4 }] },
+  { s: [{ run: 5, walk: 2, reps: 4 }] },
+  { s: [{ run: 8, walk: 2, reps: 3 }] },
+  { s: [{ run: 10, walk: 1.5, reps: 3 }] },
+  { s: [{ run: 15, walk: 1.5, reps: 2 }], note: 'ถ้าสัปดาห์ไหนยังหนักไป ทำสัปดาห์เดิมซ้ำได้ ไม่ต้องรีบ' },
+  { s: [{ runs: [20, 8], walk: 1.5 }, { runs: [25], walk: 0 }, { runs: [30], walk: 0 }], note: 'สัปดาห์สุดท้าย! วิ่งต่อเนื่อง 30 นาทีได้แล้ว → ไปต่อโปรแกรม 10K' },
+]
+
+const runWalkSteps = (rw: RunWalk): { steps: Step[]; runMin: number; longest: number; text: string } => {
+  const runs = 'runs' in rw ? rw.runs : Array.from({ length: rw.reps }, () => rw.run)
+  const body = runs.flatMap((m, i) => [
+    { kind: 'work' as const, sec: m * 60, label: 'วิ่งเบา' },
+    ...(i < runs.length - 1 ? [{ kind: 'recover' as const, sec: rw.walk * 60, label: 'เดิน' }] : []),
+  ])
+  const walk = rw.walk >= 1 ? `${rw.walk} นาที` : `${rw.walk * 60} วิ`
+  const text = 'runs' in rw
+    ? runs.length > 1 ? `วิ่ง ${runs.join(' นาที / เดิน ' + walk + ' / วิ่ง ')} นาที` : `วิ่งต่อเนื่อง ${runs[0]} นาที`
+    : `วิ่ง ${rw.run} นาที / เดิน ${walk} × ${rw.reps}`
+  return {
+    steps: [{ kind: 'warm', sec: 300, label: 'เดินเร็ววอร์มอัพ' }, ...body, { kind: 'cool', sec: 300, label: 'เดินคูลดาวน์' }],
+    runMin: runs.reduce((a, b) => a + b, 0),
+    longest: Math.max(...runs),
+    text,
+  }
+}
+
+/** เวลาวิ่ง (ไม่รวมเดิน) และช่วงวิ่งต่อเนื่องที่ยาวที่สุดของแต่ละวันวิ่งในสัปดาห์ — ใช้ในเทสต์ */
+export const startSessions = (week: number) => {
+  const w = startWeeks[Math.min(Math.max(week, 1), startWeeks.length) - 1]
+  return [0, 1, 2].map(i => runWalkSteps(w.s[i] ?? w.s[0]))
+}
+
+function startWeek(mode: Mode, week: number): Day[] {
+  const w = startWeeks[Math.min(Math.max(week, 1), startWeeks.length) - 1]
+  const [a, b] = runnerStrength[mode]
+  // มือใหม่: เวท 2 เซ็ต ไม่มีกระโดด — สร้างความแข็งแรงให้เอ็น/กล้ามรับแรงกระแทกก่อน
+  const light = (list: Exercise[]) => list.map(e => ({ ...e, sets: '2' }))
+  const note = 'มือใหม่: เลือกน้ำหนักที่เหลือแรง 3–4 ครั้ง ฝึกท่าให้ถูกก่อนเพิ่มน้ำหนัก'
+  const rw = (key: string, day: string, i: number): Day => {
+    const { steps, runMin, text } = runWalkSteps(w.s[i] ?? w.s[0])
+    const total = Math.round(steps.reduce((t, st) => t + (st.sec ?? 0), 0) / 60)
+    const how = `เดินเร็ว 5 นาที → ${text} → เดิน 5 นาที (วิ่งช้าระดับพูดเป็นประโยคได้)`
+    return {
+      key, day, type: 'run', runKind: 'easy', guide: steps, duration: `${total} นาที`, note: w.note,
+      title: text.startsWith('วิ่งต่อเนื่อง') ? text : `วิ่งสลับเดิน (วิ่งรวม ${runMin} นาที)`,
+      exercises: [{ name: 'Run-walk', th: 'วิ่งสลับเดิน', sets: '1', reps: text, rest: '-', cue: how, video: 'couch to 5k run walk beginner' }],
+    }
+  }
+  return [
+    { key: 'strA', day: 'จันทร์', title: 'เวท A — ทั้งตัว', type: 'strength', duration: '35 นาที', note, exercises: light(a) },
+    rw('rw1', 'อังคาร', 0),
+    restDay('rest1', 'พุธ'),
+    rw('rw2', 'พฤหัสบดี', 1),
+    { key: 'strB', day: 'ศุกร์', title: 'เวท B — ทั้งตัว', type: 'strength', duration: '35 นาที', note, exercises: light(b) },
+    restDay('rest2', 'เสาร์'),
+    rw('rw3', 'อาทิตย์', 2),
+  ]
+}
+
 // ---------- เวทอย่างเดียว ----------
 // ใช้วันเวทของโปรแกรมหุ่น 3 วัน (บน/ล่าง/บน) + วันขาที่ 2 = 4 วัน/สัปดาห์ (บน 2 ล่าง 2 — แต่ละกล้ามได้ฝึก 2 ครั้ง/สัปดาห์)
 // สัปดาห์ที่ 4 ของรอบเป็น Deload ลดเซ็ตครึ่งหนึ่ง น้ำหนักเท่าเดิม
@@ -244,6 +313,7 @@ function strengthWeek(mode: Mode, week: number): Day[] {
 export function variants(program: ProgramId, week: number): Record<Mode, Day[]> {
   if (program === 'physique') return { gym: gymWeek, park: parkWeek }
   if (program === 'strength') return { gym: strengthWeek('gym', week), park: strengthWeek('park', week) }
+  if (program === 'start') return { gym: startWeek('gym', week), park: startWeek('park', week) }
   return { gym: raceWeek(program, 'gym', week), park: raceWeek(program, 'park', week) }
 }
 
@@ -274,6 +344,7 @@ export const locationInfo: Record<LocationPref, { label: string; text: string }>
 
 export const weekNote = (program: ProgramId, week: number) =>
   program === 'strength' ? (week === 4 ? STRENGTH_DELOAD : undefined)
+    : program === 'start' ? startWeeks[week - 1]?.note
     : program !== 'physique' ? tables[program][(week - 1) % tables[program].length]?.note
       : week === 9 ? 'สัปดาห์ Deload: ทำทุกท่าครึ่งหนึ่งของจำนวนเซ็ต น้ำหนักเท่าเดิม วิ่งเบาอย่างเดียว' : undefined
 
