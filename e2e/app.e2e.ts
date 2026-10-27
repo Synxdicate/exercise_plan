@@ -291,3 +291,14 @@ test('เซอร์กิตแกนกลาง: เริ่ม ข้า�
   await page.getByRole('button', { name: 'บันทึก', exact: true }).last().click() // ไม่ใช่แท็บ "บันทึก" ด้านล่าง
   await expect.poll(async () => ((await idb(page, 'sessions')) as { dayKey: string }[] | null)?.[0]?.dayKey).toBe('circuit')
 })
+
+test('ฝึกคนเดียว: สลับ Bench Press/Back Squat เป็นท่าที่ไม่ต้องมีคนช่วย', async ({ page }) => {
+  await seed(page)
+  await nav(page, 'ฝึก')
+  await page.locator('button[aria-label^="จันทร์"]').click()
+  await expect(page.locator('main li button', { hasText: 'Bench Press' }).first()).toBeVisible()
+  await page.getByText('ไปคนเดียว (ไม่มีคนช่วยจับบาร์)').click()
+  await expect(page.locator('main li button', { hasText: 'DB Bench Press' })).toBeVisible()
+  await expect(page.getByText('ฝึกคนเดียว').first()).toBeVisible()
+  expect(await idb(page, 'soloMode')).toBe(true)
+})

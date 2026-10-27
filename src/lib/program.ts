@@ -1,7 +1,7 @@
 import { programs, variants, weekKm, weekPlan, type LocationPref, type Mode, type ProgramId } from '../data/programs'
 import { addDays, daysBetween, today, weekStart } from './date'
 import { usePersisted } from './storage'
-import { libEx } from '../data/library'
+import { libEx, needsSpotter } from '../data/library'
 import type { Day, Exercise } from '../data/workouts'
 
 // สลับท่า: ใช้ช่วงครั้ง/เซ็ต/พักของท่าเดิม (โปรแกรมยังสมดุล) ยกเว้นหน่วยต่างกัน (ครั้ง ↔ วินาที) ใช้ค่าของท่าใหม่
@@ -16,10 +16,12 @@ export function swapExercise(e: Exercise, to: string): Exercise {
 export const extrasKey = (program: string, d: Day) => `${program}:${d.key}:${d.location ?? 'gym'}`
 
 /** ใส่ท่าที่ผู้ใช้สลับ (ทุกวันที่มีท่านั้น) และท่าที่เพิ่มเอง (ต่อวัน+สถานที่) ลงในแผน */
-export function applyCustom(days: Day[], program: string, swaps: Record<string, string>, extras: Record<string, Exercise[]>): Day[] {
+export function applyCustom(days: Day[], program: string, swaps: Record<string, string>, extras: Record<string, Exercise[]>, solo = false): Day[] {
   return days.map(d => {
     if (d.type !== 'strength') return d
-    const list = d.exercises.map(e => (swaps[e.name] ? swapExercise(e, swaps[e.name]) : e))
+    // ผู้ใช้สลับเองมาก่อน ไม่งั้นถ้าฝึกคนเดียวและท่าต้องมีคนช่วย → ท่าทดแทนที่ปลอดภัย
+    const list = d.exercises.map(e => (swaps[e.name] ? swapExercise(e, swaps[e.name])
+      : solo && needsSpotter[e.name] ? { ...swapExercise(e, needsSpotter[e.name].alt), solo: true } : e))
     return { ...d, exercises: [...list, ...(extras[extrasKey(program, d)] ?? []).map(e => ({ ...e, added: true }))] }
   })
 }
@@ -35,6 +37,7 @@ export function useProgram() {
   const [raceDate, setRaceDate] = usePersisted('raceDate', '')
   const [swaps, setSwaps] = usePersisted<Record<string, string>>('exerciseSwaps', {})
   const [extras, setExtras] = usePersisted<Record<string, Exercise[]>>('extraExercises', {})
+  const [solo, setSolo] = usePersisted('soloMode', false)
 
   const meta = programs[program]
   const isRace = !!meta.raceKm
@@ -85,7 +88,9 @@ export function useProgram() {
       setProgramRaw(p)
       setManualWeek(1)
     },
-    plan: (week = currentWeek) => applyCustom(weekPlan(program, week, i => locationFor(week, i)), program, swaps, extras),
+    plan: (week = currentWeek) => applyCustom(weekPlan(program, week, i => locationFor(week, i)), program, swaps, extras, solo),
+    solo,
+    setSolo,
     /** สลับท่า from → to ทุกวันที่มีท่านี้ (to = undefined คือกลับเป็นท่าเดิม) */
     swap: (from: string, to?: string) => setSwaps(prev => {
       const next = { ...prev }

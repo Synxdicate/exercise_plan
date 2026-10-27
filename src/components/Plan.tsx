@@ -17,6 +17,7 @@ import { RunTypeCard } from './RunTypes'
 import { ReadinessSheet } from './Readiness'
 import { Badge, Button, Collapse, Meter, Segmented } from './ui'
 import { AddSheet, SwapSheet } from './ExercisePicker'
+import { needsSpotter } from '../data/library'
 import { RacePlan } from './RacePlan'
 import { ExerciseDemo } from './ExerciseDemo'
 import { CircuitCard } from './CircuitPlayer'
@@ -203,6 +204,13 @@ function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slo
             { value: 'gym', label: <><Dumbbell size={15} /> ยิม</> },
             { value: 'park', label: <><Trees size={15} /> สวน</> },
           ]} />
+          {day.location === 'gym' && (
+            <label className="mt-2 flex items-center gap-2 rounded-xl bg-raised px-3 py-2 text-sm">
+              <input type="checkbox" className="size-4 accent-accent" checked={p.solo} onChange={e => p.setSolo(e.target.checked)} />
+              <span className="flex-1">ไปคนเดียว (ไม่มีคนช่วยจับบาร์)</span>
+              {p.solo && <span className="text-xs text-run">สลับท่าที่ต้องมีคนช่วยให้แล้ว</span>}
+            </label>
+          )}
         </div>
       )}
 
@@ -261,7 +269,7 @@ function ExerciseRow({ e, n, onSwap, onRemove }: { e: Exercise; n: number; onSwa
       <button onClick={() => setOpen(!open)} className="flex w-full items-center gap-3 py-2.5 text-left active:scale-100">
         <span className="grid size-7 shrink-0 place-items-center rounded-full bg-raised text-xs font-bold text-muted">{n}</span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate font-semibold">{e.name}{(e.swappedFrom || e.added) && <span className="ml-1.5 text-[10px] font-normal text-run">{e.added ? 'เพิ่มเอง' : 'สลับแล้ว'}</span>}</span>
+          <span className="block truncate font-semibold">{e.name}{(e.swappedFrom || e.added) && <span className="ml-1.5 text-[10px] font-normal text-run">{e.added ? 'เพิ่มเอง' : e.solo ? 'ฝึกคนเดียว' : 'สลับแล้ว'}</span>}{!e.swappedFrom && needsSpotter[e.name] && <span className="ml-1.5 text-[10px] font-normal text-warn">ควรมีคนช่วย</span>}</span>
           <span className="block truncate text-xs text-muted">{e.th}</span>
         </span>
         <span className="shrink-0 text-sm font-semibold tabular-nums">{e.sets}×{e.reps}</span>
@@ -274,6 +282,8 @@ function ExerciseRow({ e, n, onSwap, onRemove }: { e: Exercise; n: number; onSwa
             {musclesOf(e).primary.map(m => <Badge key={m}>{muscleNames[m]}</Badge>)}
           </div>
           <ExerciseDemo name={e.name} />
+          {e.solo && e.swappedFrom && needsSpotter[e.swappedFrom] && <p className="text-xs text-run">ไปคนเดียว: ใช้ท่านี้แทน {e.swappedFrom} — {needsSpotter[e.swappedFrom].note}</p>}
+          {!e.swappedFrom && needsSpotter[e.name] && <p className="text-xs text-warn">ท่านี้ควรมีคนช่วยจับบาร์ ({needsSpotter[e.name].note}) — ไปคนเดียวติ๊ก "ไปคนเดียว" ด้านบนได้</p>}
           <p className="text-muted">{e.cue}</p>
           {(e.easier || e.harder) && (
             <div className="flex flex-wrap gap-3 text-xs text-run">

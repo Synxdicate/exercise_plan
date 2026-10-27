@@ -29,6 +29,7 @@ export const references: { cat: string; title: string; url: string; used: string
   { cat: 'รูปท่า', level: 'database', title: 'free-exercise-db — ชุดข้อมูลท่าออกกำลังกายแบบสาธารณสมบัติ (Unlicense)', url: 'https://github.com/yuhonas/free-exercise-db', used: 'รูปสาธิตท่าเริ่ม/ท่าจบในหน้าฝึกและหน้าพาฝึก' },
   // เวท
   { cat: 'เวทเทรนนิ่ง', level: 'guideline', title: 'ACSM Position Stand: Progression Models in Resistance Training (2009)', url: pm('19204579'), used: 'ช่วงจำนวนครั้ง เวลาพัก และ progressive overload' },
+  { cat: 'เวทเทรนนิ่ง', level: 'meta', title: 'Haugen et al. 2023 — Free-weight vs machine-based strength training (meta-analysis)', url: pm('37582807'), used: 'โหมดฝึกคนเดียว: สลับบาร์เบลเป็นดัมเบล/เครื่องได้โดยกล้ามโตและแรงไม่ต่างกัน' },
   { cat: 'เวทเทรนนิ่ง', level: 'meta', title: 'Schoenfeld et al. 2017 — Dose-response of weekly training volume', url: pm('27433992'), used: 'จำนวนเซ็ตต่อกล้ามเนื้อต่อสัปดาห์ (~10+ เซ็ต)' },
   { cat: 'เวทเทรนนิ่ง', level: 'meta', title: 'Doma et al. 2017 — Impaired endurance performance after resistance training', url: pm('28702901'), used: 'วิ่งหนักห่างจากเวทขาอย่างน้อย 48 ชม.' },
   { cat: 'เวทเทรนนิ่ง', level: 'trial', title: 'Bickel et al. 2011 — Exercise dosing to retain resistance training adaptations', url: pm('21131862'), used: 'เวท 2 วัน/สัปดาห์พอรักษากล้ามช่วงซ้อมมาราธอน' },

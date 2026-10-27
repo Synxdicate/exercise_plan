@@ -136,6 +136,14 @@ export const libEx = (name: string) => byName.get(alias[name] ?? name)
 export const patternOf = (name: string) => libEx(name)?.pattern
 export const allLibrary = all
 
+// ท่าที่บาร์อยู่เหนือหน้า/บนหลัง — ถ้าหมดแรงกลางเซ็ตแล้วไม่มีคนช่วย (spotter) อาจโดนบาร์ทับ
+// โหมด "ฝึกคนเดียว" จะสลับเป็นท่าที่ปล่อยน้ำหนักได้ปลอดภัย (ดัมเบล/เครื่อง) — กล้ามโตไม่ต่างกัน (Haugen 2023)
+export const needsSpotter: Record<string, { alt: string; note: string }> = {
+  'Bench Press': { alt: 'DB Bench Press', note: 'ดัมเบลวางลงข้างตัวได้ถ้าหมดแรง' },
+  'Back Squat': { alt: 'Leg Press', note: 'เครื่องมีตัวล็อก หรือใช้ squat rack ที่ตั้งเหล็กกันตก (safety bar) ต่ำกว่าจุดลึกสุดเล็กน้อย' },
+  'Front Squat': { alt: 'Goblet Squat', note: 'ถือดัมเบลที่อก ปล่อยลงพื้นได้' },
+}
+
 /** ท่าที่สลับแทนได้ (กลุ่มเดียวกัน ไม่รวมตัวเอง) — ท่าที่ทำได้ในที่นั้นขึ้นก่อน */
 export function alternatives(name: string, where: 'gym' | 'park') {
   const p = patternOf(name)

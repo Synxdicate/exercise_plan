@@ -340,3 +340,20 @@ describe('core circuit', () => {
     expect(circuitAt(steps, 10_000).done).toBe(true)
   })
 })
+
+describe('solo mode', () => {
+  it('swaps spotter lifts to safe alternatives unless the user swapped them', async () => {
+    const { applyCustom } = await import('../program')
+    const { weekPlan } = await import('../../data/programs')
+    const days = weekPlan('physique', 1, () => 'gym')
+    const names = (d: typeof days) => d.flatMap(x => x.exercises.map(e => e.name))
+    const solo = applyCustom(days, 'physique', {}, {}, true)
+    expect(names(solo)).not.toContain('Bench Press')
+    expect(names(solo)).not.toContain('Back Squat')
+    expect(names(solo)).toContain('Leg Press')
+    expect(solo.flatMap(d => d.exercises).find(e => e.name === 'Leg Press')).toMatchObject({ solo: true, swappedFrom: 'Back Squat' })
+    // ผู้ใช้เลือกเองชนะ
+    expect(names(applyCustom(days, 'physique', { 'Back Squat': 'Goblet Squat' }, {}, true))).toContain('Goblet Squat')
+    expect(names(applyCustom(days, 'physique', {}, {}, false))).toContain('Back Squat')
+  })
+})

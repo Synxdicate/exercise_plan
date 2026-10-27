@@ -14,6 +14,7 @@ export type Exercise = {
   easier?: string
   harder?: string
   swappedFrom?: string // ผู้ใช้สลับมาจากท่านี้ (ดู useProgram)
+  solo?: boolean // สลับอัตโนมัติเพราะโหมดฝึกคนเดียว (ท่าเดิมต้องมีคนช่วย)
   added?: boolean // ผู้ใช้เพิ่มเอง
 }
 
