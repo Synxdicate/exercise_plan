@@ -49,7 +49,7 @@ export function HeatCard() {
       {place && (
         <div className="mt-2 flex items-center gap-1 text-[11px] text-muted">
           <MapPin size={12} className="shrink-0" />
-          <span className="truncate">{place.name}{!place.precise && ' (ค่าเริ่มต้น — อนุญาตตำแหน่งเพื่อดูอากาศตรงที่คุณอยู่)'}</span>
+          <span className="truncate">{place.name}{!place.precise && ' (ค่าเริ่มต้น)'}</span>
         </div>
       )}
       <Collapse open={open}>

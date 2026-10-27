@@ -129,10 +129,6 @@ export function Dashboard() {
 
       <WeekSummary />
 
-      <Card title="กิจกรรม 12 สัปดาห์">
-        <ActivityCalendar dates={[...sessions.map(s => s.date), ...runs.map(r => r.date)]} />
-      </Card>
-
       <Card title={`กล้ามเนื้อที่ฝึกต่อสัปดาห์ (${locationInfo[p.location].label.replace(/ \(.*\)/, '')})`}>
         <p className="-mt-2 mb-2 text-xs text-muted">สีเข้ม = ใกล้ {TARGET_SETS} เซ็ต/สัปดาห์ (กล้ามรองนับครึ่งเซ็ต)</p>
         <BodyMap intensity={intensity} label={m => `${muscleNames[m]}: ${fmt(sets[m] ?? 0)} เซ็ต/สัปดาห์`} />
@@ -170,37 +166,6 @@ function Ring({ value, max, label, text }: { value: number; max: number; label: 
       <div>
         <div className="text-xl font-extrabold tabular-nums">{text}</div>
         <div className="text-xs opacity-80">{label}</div>
-      </div>
-    </div>
-  )
-}
-
-function ActivityCalendar({ dates }: { dates: string[] }) {
-  const [hover, setHover] = useState<string | null>(null)
-  const counts = new Map<string, number>()
-  for (const d of dates) counts.set(d, (counts.get(d) ?? 0) + 1)
-  const start = addDays(weekStart(today()), -7 * 11)
-  const t = today()
-  const days = ['จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส', 'อา']
-
-  return (
-    <div>
-      <div className="mb-2 h-5 text-right text-sm">{hover ? `${hover}: ${counts.get(hover) ?? 0} กิจกรรม` : ''}</div>
-      <div className="grid grid-cols-[1.5rem_repeat(12,minmax(0,1fr))] gap-1">
-        {days.map((d, i) => <span key={d} className="self-center text-[10px] leading-none text-muted" style={{ gridColumn: 1, gridRow: i + 1 }}>{d}</span>)}
-        {Array.from({ length: 12 }, (_, w) =>
-          Array.from({ length: 7 }, (_, d) => {
-            const date = addDays(start, w * 7 + d)
-            const n = counts.get(date) ?? 0
-            return (
-              <span key={date} style={{ gridColumn: w + 2, gridRow: d + 1 }}
-                onMouseEnter={() => setHover(date)} onMouseLeave={() => setHover(null)} onClick={() => setHover(date)}
-                className={cx('aspect-square rounded-[4px]',
-                  n === 0 ? 'bg-body' : n === 1 ? 'bg-good/60' : 'bg-good',
-                  date === t && 'ring-2 ring-accent', date > t && 'opacity-35')} />
-            )
-          }),
-        )}
       </div>
     </div>
   )

@@ -18,7 +18,7 @@ export function CircuitCard() {
   const [open, setOpen] = useState(false)
   return (
     <Card title={<span className="flex items-center gap-2"><Timer size={18} className="text-accent" /> เซอร์กิตแกนกลาง/สะโพก</span>}>
-      <p className="text-sm text-muted">8 ท่า × 2 รอบ ท่าละ 30 วิ พัก 15 วิ (~{Math.round(TOTAL / 60)} นาที) ใช้ร่างกายอย่างเดียว — แกนกลางและสะโพกเป็นจุดอ่อนที่พบบ่อยของนักวิ่ง ทำหลังวิ่งเบาหรือวันพักได้</p>
+      <p className="text-sm text-muted">8 ท่า × 2 รอบ ท่าละ 30 วิ พัก 15 วิ (~{Math.round(TOTAL / 60)} นาที) ไม่ใช้อุปกรณ์ ทำหลังวิ่งเบาหรือวันพักได้</p>
       <Button className="mt-3 w-full" onClick={() => setOpen(true)}><Play size={16} fill="currentColor" /> เริ่มเซอร์กิต</Button>
       {open && <CircuitPlayer onClose={() => setOpen(false)} />}
     </Card>
