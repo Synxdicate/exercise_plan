@@ -1,5 +1,5 @@
 import { lazy, Suspense, useMemo, useRef, useState, type ReactNode } from 'react'
-import { CalendarCheck, Check, FileUp, Pencil, TriangleAlert, Trophy, Volume2, VolumeX, Footprints, Gauge, History, Map as MapIcon, Pause, Play, Plus, Satellite, Share2, Trash2, X } from 'lucide-react'
+import { CalendarCheck, Check, CircleCheck, FileUp, Footprints, Gauge, History, Map as MapIcon, Pause, Pencil, Play, Plus, Satellite, Share2, Trash2, TriangleAlert, Trophy, Volume2, VolumeX, X } from 'lucide-react'
 import { GOOD_ACCURACY_M, useRunTracker, type Point } from '../lib/gps'
 import { formatDuration, formatPace, runKinds, uid, useRuns, type Run } from '../lib/log'
 import { criticalSpeed, estimate, paceHint, predictionTrend, type Estimate } from '../lib/pace'
@@ -58,6 +58,7 @@ export function Runs() {
   const p = useProgram()
   const [todayIdx] = useState(() => (new Date().getDay() + 6) % 7) // 0 = จันทร์
   const todayRun = p.plan().filter((d, i) => i === todayIdx && d.type === 'run')[0]
+  const kmToday = runs.filter(r => r.date === today()).reduce((s, r) => s + r.km, 0)
   const [kind, setKind] = useState<Run['kind']>(todayRun?.runKind ?? 'easy')
   const est = useMemo(() => estimate(runs), [runs])
   const [detail, setDetail] = useState<string | null>(null)
@@ -111,7 +112,7 @@ export function Runs() {
   const finish = () => {
     guide.reset()
     const r = t.finish()
-    if (r.km < 0.05) return
+    if (r.km < 0.05) return notify('ระยะสั้นเกินไป ไม่ได้บันทึก', 'bad')
     const run: Run = { id: uid(), date: today(), kind, source: 'gps', ...r }
     save(run)
     setCooldown(run)
@@ -161,7 +162,12 @@ export function Runs() {
         <div className="h-2 overflow-hidden rounded-full bg-white/25">
           <div className="h-full rounded-full bg-white" style={{ width: `${target ? Math.min(100, (kmThisWeek / target) * 100) : 0}%` }} />
         </div>
-        {todayRun && (
+        {todayRun && kmToday > 0 && (
+          <div className="flex items-center gap-2 rounded-2xl bg-white/15 p-3 text-sm font-bold">
+            <CircleCheck size={18} className="shrink-0" /> วันนี้วิ่งแล้ว {kmToday.toFixed(2)} กม. · {todayRun.title}
+          </div>
+        )}
+        {todayRun && !kmToday && (
           <div className="flex items-start gap-2 rounded-2xl bg-white/15 p-3 text-sm">
             <CalendarCheck size={18} className="mt-0.5 shrink-0" />
             <div>
@@ -180,7 +186,7 @@ export function Runs() {
           ))}
         </div>
         <button onClick={() => setChecking(true)} className="flex w-full items-center justify-center gap-2 rounded-full bg-white py-3 text-base font-bold text-accent shadow-lg active:scale-[.98]">
-          <Play size={22} fill="currentColor" /> เริ่มวิ่ง
+          <Play size={22} fill="currentColor" /> {kmToday ? 'วิ่งอีกรอบ' : 'เริ่มวิ่ง'}
         </button>
         {t.error && <p className="rounded-xl bg-black/20 p-2 text-sm">{t.error}</p>}
       </section>

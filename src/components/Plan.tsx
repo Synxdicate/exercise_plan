@@ -252,7 +252,7 @@ function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slo
           {day.runKind === 'race' && <RacePlan day={day} date={slotId} />}
           {day.runKind && <RunTypeCard kind={day.runKind} />}
           {day.runKind !== 'race' && (
-            <Button size="lg" variant="run" className="w-full" onClick={() => nav('runs')}><Footprints size={18} /> ไปเริ่มวิ่ง</Button>
+            <Button size="lg" variant={done ? 'soft' : 'run'} className="w-full" onClick={() => nav('runs')}><Footprints size={18} /> {done ? 'ดูการวิ่ง' : 'ไปเริ่มวิ่ง'}</Button>
           )}
         </div>
       )}
