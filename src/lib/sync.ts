@@ -44,19 +44,25 @@ function flush(): Promise<void> {
 
 async function doFlush() {
   if (!userId || pending.size === 0) return
-  // key ที่ไม่มีค่าแล้วไม่ต้องส่ง (คอลัมน์ value เป็น NOT NULL — ส่ง null จะทำให้ทั้งรอบล้มเหลว)
+  // key ที่ไม่มีค่าแล้วไม่ต้องส่ง; ค่า null (เช่น ลบวันแข่ง) = ลบแถวบน server
+  // เพราะคอลัมน์ value เป็น NOT NULL — ส่ง null ไปจะทำให้ทั้งรอบล้มเหลวและค้าง "ยังไม่ได้ซิงก์"
   for (const k of [...pending]) if (readStored(k) === undefined) pending.delete(k)
   const keys = [...pending]
   if (!keys.length) return savePending()
-  const rows = keys.map(key => ({ user_id: userId!, key, value: readStored(key), updated_at: new Date().toISOString() }))
+  const cleared = keys.filter(k => readStored(k) === null)
+  const rows = keys.filter(k => readStored(k) !== null).map(key => ({ user_id: userId!, key, value: readStored(key), updated_at: new Date().toISOString() }))
   setStatus('saving')
-  const { error } = await supabase.from('user_data').upsert(rows)
-  if (error) {
+  const [up, del] = await Promise.all([
+    rows.length ? supabase.from('user_data').upsert(rows) : { error: null },
+    cleared.length ? supabase.from('user_data').delete().eq('user_id', userId).in('key', cleared) : { error: null },
+  ])
+  if (up.error || del.error) {
     setStatus('offline')
     return
   }
   // ลบเฉพาะ key ที่ค่าไม่ได้เปลี่ยนระหว่างส่ง
-  keys.forEach((k, i) => readStored(k) === rows[i].value && pending.delete(k))
+  rows.forEach(r => readStored(r.key) === r.value && pending.delete(r.key))
+  cleared.forEach(k => readStored(k) === null && pending.delete(k))
   savePending()
   setStatus(pending.size ? 'saving' : 'idle')
 }
@@ -93,7 +99,7 @@ async function pull(migrate: boolean) {
       markDirty(key)
     } else if (server !== undefined && server !== null) {
       hydrate(key, server)
-    } else if (local !== undefined) {
+    } else if (local !== undefined && local !== null) {
       markDirty(key)
     }
   }
