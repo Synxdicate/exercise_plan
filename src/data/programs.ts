@@ -170,6 +170,8 @@ function raceWeek(program: RunProgram, mode: Mode, week: number): Day[] {
   const taper = last || (w.note?.startsWith('Taper') ?? false)
   const [a, b] = runnerStrength[mode]
   const lighten = (list: Exercise[]) => (taper ? list.map(e => ({ ...e, sets: '2' })) : list)
+  // ขึ้นเนินสั้น ๆ สัปดาห์เว้นสัปดาห์ (ไม่ใส่ในสัปดาห์ลดปริมาณ/taper) — วิ่งเร็วขึ้นเนินช่วยความประหยัดแรง (Barnes & Kilding 2015)
+  const hillWeek = week % 2 === 0 && !taper && !w.note?.startsWith('สัปดาห์ลด')
 
   return [
     { key: 'strA', day: 'จันทร์', title: 'เวท A — ทั้งตัว', type: 'strength', duration: '45 นาที', note: taper ? `ช่วง taper: ลดเหลือ 2 เซ็ต น้ำหนักเท่าเดิม` : strengthNote, exercises: lighten(a) },
@@ -181,7 +183,9 @@ function raceWeek(program: RunProgram, mode: Mode, week: number): Day[] {
       : { key: 'strB', day: 'พฤหัสบดี', title: 'เวท B — ทั้งตัว', type: 'strength', duration: '45 นาที', note: taper ? 'ช่วง taper: ลดเหลือ 2 เซ็ต' : strengthNote, exercises: lighten(b) },
     { key: 'rest', day: 'ศุกร์', title: 'พัก', type: 'rest', duration: '-', note: 'พักเต็มวัน ให้ขาสดสำหรับวิ่งเสาร์–อาทิตย์', exercises: [] },
     w.easyB > 0
-      ? runDay('easyB', 'เสาร์', 'Easy run + Strides', w.easyB, 'easy', 'วิ่งเบา แล้ว Strides 4 × 20 วิ')
+      ? (hillWeek
+        ? runDay('easyB', 'เสาร์', 'Easy run + เนินสั้น', w.easyB, 'easy', 'วิ่งเบา แล้ววิ่งขึ้นเนินสั้น ๆ 6 × 10 วิ (แรงแต่ฟอร์มดี) เดินลงพัก — ไม่มีเนินใช้สะพาน/ทางลาด', undefined, guides.hills(w.easyB))
+        : runDay('easyB', 'เสาร์', 'Easy run + Strides', w.easyB, 'easy', 'วิ่งเบา แล้ว Strides 4 × 20 วิ'))
       : { key: 'easyB', day: 'เสาร์', title: 'พัก / เดินเบา ๆ', type: 'rest', duration: '-', note: 'เดิน 20–30 นาที หรือยืดเหยียด', exercises: [] },
     last
       ? runDay('long', 'อาทิตย์', `วันแข่ง ${programs[program].raceKm} กม.`, w.long, 'race', 'ออกตัวช้ากว่าเพซเป้าหมาย 5–10 วิ/กม. ช่วงแรก ดื่มน้ำทุกจุด', w.note)

@@ -39,6 +39,11 @@ export const guides = {
     const pace: PaceKey = /10K/.test(label) ? 'tenK' : /5K/.test(label) ? 'interval' : /ฮาล์ฟ/.test(label) ? 'half' : 'marathon'
     return [warm(), ...repeat(Number(m[1] ?? 1), { kind: 'work', m: Number(m[2]) * 1000, pace }, { kind: 'recover', sec: 120, pace: 'easy' }), cool()]
   },
+  /** วิ่งเบา แล้วขึ้นเนินสั้น ๆ 6 × 10 วิ (แรงแต่ฟอร์มดี) เดินลงพัก — ฝึกแรงขาและความประหยัดแรง ไม่นับเป็นวันหนัก */
+  hills: (km: number): Step[] => [
+    { kind: 'easy', m: Math.max(1000, km * 1000 - 400), pace: 'easy' },
+    ...repeat(6, { kind: 'work', sec: 10, pace: 'stride', label: 'ขึ้นเนิน' }, { kind: 'recover', sec: 75 }),
+  ],
   /** ทดสอบ 5K (แทนการตรวจ VO2max ในแล็บ): วอร์ม 10 นาที → 5 กม. เต็มที่แบบคุมได้ → คูลดาวน์ — ผลใช้อัปเดตโซนเพซ */
   timeTrial: (): Step[] => [{ kind: 'warm', sec: 600, pace: 'easy' }, { kind: 'work', m: 5000, pace: 'interval', label: 'ทดสอบ 5K' }, cool(600)],
   /** โปรแกรมหุ่น: วอร์ม 10 นาที → เร็ว 1 / จ็อก 2 × n → คูลดาวน์ 5 นาที */

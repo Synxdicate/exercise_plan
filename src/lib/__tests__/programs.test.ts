@@ -125,3 +125,15 @@ describe('โปรแกรมวิ่ง', () => {
     expect(weekKm('strength', 1)).toBe(0)
   })
 })
+
+describe('เนินสั้น', () => {
+  it('มีทุกสัปดาห์คู่ที่ไม่ใช่สัปดาห์ลด/taper และไม่นับเป็นวันหนัก', () => {
+    let hills = 0
+    for (let w = 1; w <= programs.half.weeks; w++) {
+      const days = variants('half', w).gym
+      const h = days.find(d => d.title.includes('เนินสั้น'))
+      if (h) { hills++; expect(w % 2).toBe(0); expect(h.runKind).toBe('easy'); expect(h.guide?.some(s => s.label === 'ขึ้นเนิน')).toBe(true) }
+    }
+    expect(hills).toBeGreaterThanOrEqual(4)
+  })
+})
