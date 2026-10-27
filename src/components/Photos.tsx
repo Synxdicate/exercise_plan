@@ -97,7 +97,7 @@ export function ProgressPhotos() {
           ))}
         </div>
       )}
-      <PhotoStrip kind="progress" label="ถ่ายมุมเดิม แสงเดิม ทุก 2–4 สัปดาห์ จะเห็นความเปลี่ยนแปลงชัดกว่าดูตาชั่ง" />
+      <PhotoStrip kind="progress" label="ถ่ายมุมเดิม แสงเดิม ทุก 2–4 สัปดาห์" />
       {open && <Viewer p={open} onClose={() => setOpen(null)} />}
     </div>
   )

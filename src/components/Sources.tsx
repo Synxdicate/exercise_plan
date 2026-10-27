@@ -6,7 +6,7 @@ export function Sources() {
   return (
     <>
       <Card title="ช่อง YouTube ที่แนะนำ">
-        <p className="-mt-1 mb-3 text-xs text-muted">ช่องที่อิงงานวิจัยหรือโค้ชที่มีใบรับรอง — ปุ่มเล่นในตารางฝึกเปิดคลิปท่านั้นบน YouTube</p>
+        <p className="-mt-1 mb-3 text-xs text-muted">ช่องที่อิงงานวิจัยหรือโค้ชที่มีใบรับรอง</p>
         <ul className="divide-y divide-line">
           {channels.map(c => (
             <li key={c.name}>

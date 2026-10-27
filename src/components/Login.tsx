@@ -92,7 +92,7 @@ export function Login() {
       </div>
       <button onClick={() => setLocalMode(true)} className="flex w-full max-w-sm flex-col items-center rounded-2xl px-4 py-3 text-center ring-1 ring-line">
         <span className="flex items-center gap-2 font-semibold"><Smartphone size={16} /> ใช้แบบไม่ล็อกอิน</span>
-        <span className="text-xs text-muted">เก็บข้อมูลในเครื่องนี้อย่างเดียว ล็อกอินทีหลังได้ ข้อมูลจะถูกรวมขึ้นบัญชีให้</span>
+        <span className="text-xs text-muted">เก็บข้อมูลในเครื่อง ล็อกอินทีหลังได้</span>
       </button>
     </div>
   )

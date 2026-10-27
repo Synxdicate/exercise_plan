@@ -29,7 +29,7 @@ export function SwapSheet({ e, where, exclude, onPick, onClose }: { e: Exercise;
   const list = alternatives(original, where).filter(x => !exclude.includes(x.name))
   return (
     <Sheet onClose={onClose} title={`สลับ ${e.name}`}>
-      <p className="-mt-2 mb-2 text-xs text-muted">{p ? `ท่ากลุ่ม${patternNames[p]} ใช้กล้ามหลักชุดเดียวกัน — เซ็ต/ครั้ง/พักเท่าเดิม ใช้กับทุกวันที่มีท่านี้` : 'ท่านี้ยังไม่มีท่าทดแทนในคลัง'}</p>
+      <p className="-mt-2 mb-2 text-xs text-muted">{p ? `ท่ากลุ่ม${patternNames[p]} ใช้กล้ามหลักชุดเดียวกัน · เปลี่ยนทุกวันที่มีท่านี้` : 'ท่านี้ยังไม่มีท่าทดแทนในคลัง'}</p>
       <ul className="divide-y divide-line">
         {e.swappedFrom && (
           <li>

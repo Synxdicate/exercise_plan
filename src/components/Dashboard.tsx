@@ -39,7 +39,10 @@ export function Dashboard() {
   const form = loadDays.length >= 7 ? formLabel(loadDays.at(-1)!.form, loadDays.at(-1)!.fitness, loadDays.at(-1)!.day) : null
   const strengthTarget = plan.filter(d => d.type === 'strength').length
   const thisWeek = weekStart(today())
-  const sessionsThisWeek = sessions.filter(s => weekStart(s.date) === thisWeek).length
+  // เซสชันที่บันทึกในสัปดาห์นี้ + วันเวทที่ติ๊กทำแล้วโดยไม่ได้บันทึกเซ็ต
+  const logged = sessions.filter(s => weekStart(s.date) === thisWeek)
+  const tickedOnly = plan.filter((d, i) => d.type === 'strength' && p.isDone(done, week, i) && !logged.some(s => s.date === addDays(thisWeek, i))).length
+  const sessionsThisWeek = logged.length + tickedOnly
   const kmThisWeek = runs.filter(r => weekStart(r.date) === thisWeek).reduce((s, r) => s + r.km, 0)
   const kmTarget = p.kmTarget()
   const streak = weekStreak(sessions.map(s => s.date), runs.map(r => r.date))

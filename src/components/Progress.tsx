@@ -250,7 +250,7 @@ function Fitness() {
   const [runs] = useRuns()
   const days = trainingLoad(runs, [...sessions, ...cross.map(crossAsSession)], today())
   if (days.length < 7)
-    return <Card><p className="py-6 text-center text-sm text-muted">บันทึกการฝึก/วิ่งอย่างน้อย 1 สัปดาห์ แล้วกราฟความฟิตจะขึ้นที่นี่</p></Card>
+    return <Card><p className="py-6 text-center text-sm text-muted">บันทึกการฝึกครบ 1 สัปดาห์ กราฟจะขึ้นที่นี่</p></Card>
   const cur = days.at(-1)!
   const f = formLabel(cur.form, cur.fitness, cur.day)
   const tones = { good: 'bg-good/15 text-good', run: 'bg-run/15 text-run', warn: 'bg-warn/15 text-warn', bad: 'bg-bad/15 text-bad', muted: 'bg-raised text-muted' }

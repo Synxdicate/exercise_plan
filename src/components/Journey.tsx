@@ -58,7 +58,7 @@ export function JourneyCard({ runs, est }: { runs: Run[]; est: Estimate | null }
           )}
         </div>
       ) : (
-        <p className="mt-3 rounded-xl bg-good/10 p-3 text-sm font-semibold text-good">ผ่านครบทุกด่านแล้ว — นักวิ่งมาราธอนเต็มตัว ตั้งเป้าเวลาใหม่ได้ในแท็บสถิติ</p>
+        <p className="mt-3 rounded-xl bg-good/10 p-3 text-sm font-semibold text-good">ผ่านครบทุกด่านแล้ว</p>
       )}
       {picking && <ProgramSheet onClose={() => setPicking(false)} />}
     </Card>

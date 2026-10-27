@@ -241,6 +241,15 @@ test('ปฏิทินการฝึก: วันที่วิ่ง/เ�
   await expect(page.getByText('Easy 5.30 กม. · 31:40')).toBeVisible()
 })
 
+test('ปฏิทินการฝึก: วันที่ติ๊กทำแล้วในตารางฝึก (ไม่ได้บันทึก) นับเป็นวันที่ออกกำลังกาย', async ({ page }) => {
+  const i = (new Date(ymd(0)).getUTCDay() + 6) % 7 // 0 = จันทร์
+  await seed(page, { program: 'physique', week: 1, done: { [`physique-w1-d${i}`]: true } })
+  await nav(page, 'บันทึก')
+  await expect(page.getByText(/ออกกำลังกาย 1 วัน/)).toBeVisible()
+  await page.getByRole('button', { name: 'วันนี้', exact: true }).click()
+  await expect(page.getByText('ทำแล้ว', { exact: true })).toBeVisible()
+})
+
 test('แผนที่รวมทุกการวิ่ง (heatmap)', async ({ page }) => {
   await seed(page, {
     runs: [

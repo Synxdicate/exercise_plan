@@ -512,7 +512,7 @@ function PaceCard({ est, runs, onTrial }: { est: Estimate | null; runs: Run[]; o
   if (!est)
     return (
       <Card title={<span className="flex items-center gap-2"><Gauge size={18} className="text-run" /> เพซแนะนำ</span>}>
-        <p className="text-sm text-muted">วิ่งให้ได้อย่างน้อย 3 กม. สักครั้ง (เต็มที่แบบคุมได้) แล้วแอปจะคำนวณเพซซ้อมและเวลาคาดการณ์ให้</p>
+        <p className="text-sm text-muted">วิ่งให้ได้ ≥3 กม. สักครั้ง แล้วแอปจะคำนวณเพซซ้อมและเวลาคาดการณ์ให้</p>
       </Card>
     )
   // เทียบกับ 4 สัปดาห์ก่อน: ติดลบ = เร็วขึ้น
@@ -697,7 +697,7 @@ function ShoesCard({ runs }: { runs: Run[] }) {
           <Button className="col-span-2" onClick={add}>บันทึกรองเท้า</Button>
         </div>
       </Collapse>
-      {active.length === 0 && !adding && <p className="text-sm text-muted">เพิ่มรองเท้าที่ใช้วิ่ง แอปจะนับระยะให้เองและเตือนเมื่อถึงเวลาเปลี่ยน</p>}
+      {active.length === 0 && !adding && <p className="text-sm text-muted">เพิ่มรองเท้า แอปจะนับระยะและเตือนเมื่อควรเปลี่ยน</p>}
       <ul className="space-y-3">
         {active.map(s => {
           const km = shoeKm(s, runs)

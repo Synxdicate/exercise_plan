@@ -35,7 +35,7 @@ export function Nutrition({ profile }: { profile: Profile }) {
         ))}
       </section>
 
-      {t.raceAdjusted && <p className="rounded-xl bg-run/10 px-3 py-2 text-xs text-run">อยู่ในโปรแกรมวิ่ง: เป้าเป็นกินเท่าที่ใช้ (ไม่กินขาด) และคาร์บสูงขึ้น — ซ้อมวิ่งปริมาณมากขณะกินน้อยเสี่ยงบาดเจ็บและฟื้นตัวไม่ทัน</p>}
+      {t.raceAdjusted && <p className="rounded-xl bg-run/10 px-3 py-2 text-xs text-run">อยู่ในโปรแกรมวิ่ง: กินเท่าที่ใช้ (ไม่กินขาด) และเพิ่มคาร์บ เพื่อฟื้นตัวทัน</p>}
 
       <FoodLog proteinTarget={t.protein} kcalTarget={t.kcal} />
 

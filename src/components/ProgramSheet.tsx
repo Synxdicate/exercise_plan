@@ -75,7 +75,7 @@ export function ProgramSheet({ onClose }: { onClose: () => void }) {
           </button>
         ))}
       </div>
-      <p className="mt-2 text-xs text-muted">วันไหนอยากเปลี่ยนที่ (เช่น ยิมปิด) สลับเฉพาะวันนั้นได้ในหน้าฝึก</p>
+      <p className="mt-2 text-xs text-muted">สลับที่เฉพาะวันได้ในหน้าฝึก</p>
 
       <div className="mt-4 rounded-2xl bg-raised p-3 text-sm">
         <div className="mb-1 font-bold">หุ่นกับมาราธอน ทำตามลำดับดีที่สุด</div>

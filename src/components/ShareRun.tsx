@@ -60,7 +60,7 @@ export function ShareRunSheet({ run, onClose }: { run: Run; onClose: () => void 
         style={style === 'card' ? undefined : checker}>
         {ready && <img src={ready.url} alt="รูปสรุปการวิ่ง" className="size-full animate-fade-in" />}
       </div>
-      {style !== 'card' && <p className="mt-2 text-center text-xs text-muted">PNG พื้นหลังโปร่งใส — กด "บันทึกรูป" แล้วเพิ่มเป็นสติกเกอร์ใน IG Story / แอปแต่งรูป (แชร์ตรงเข้า LINE/Facebook แอปพวกนั้นจะเติมพื้นหลังเอง)</p>}
+      {style !== 'card' && <p className="mt-2 text-center text-xs text-muted">PNG พื้นหลังโปร่งใส ใช้เป็นสติกเกอร์ใน IG Story ได้</p>}
       <div className="mt-4 flex gap-2">
         <Button variant="soft" className="flex-1" disabled={!ready || busy} onClick={save}><Download size={16} /> บันทึกรูป</Button>
         <Button className="flex-1" disabled={!ready || busy} onClick={share}><Share2 size={16} /> แชร์</Button>

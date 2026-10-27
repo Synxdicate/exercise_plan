@@ -256,7 +256,7 @@ function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slo
       )}
 
       {day.type === 'rest' && (
-        <p className="mt-3 rounded-2xl bg-raised p-3 text-sm text-muted">วันพักคือวันที่กล้ามโตและร่างกายซ่อมแซม เดินเบา ๆ ยืดเหยียด และนอนให้พอ</p>
+        <p className="mt-3 rounded-2xl bg-raised p-3 text-sm text-muted">เดินเบา ๆ ยืดเหยียด และนอนให้พอ</p>
       )}
     </article>
   )

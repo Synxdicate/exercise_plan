@@ -66,7 +66,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
 
         {step === 0 && (
           <>
-            <p className="text-sm text-muted">4 คำถามสั้น ๆ ตามแนวทางคัดกรองของ ACSM — ใช้เวลาไม่ถึง 30 วินาที</p>
+            <p className="text-sm text-muted">4 คำถามสั้น ๆ ตามแนวทางคัดกรองของ ACSM</p>
             <ScreeningForm value={screen} onChange={setScreen} />
           </>
         )}

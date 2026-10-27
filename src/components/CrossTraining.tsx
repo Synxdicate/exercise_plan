@@ -24,7 +24,7 @@ export function CrossTrainingCard() {
     <Card title={<span className="flex items-center gap-2"><Bike size={18} className="text-run" /> คาร์ดิโออื่น (แรงกระแทกน้อย)</span>}
       action={<Button variant="soft" size="sm" onClick={() => setOpen(!open)}><Plus size={14} /> เพิ่ม</Button>}>
       <p className="-mt-1 text-xs text-muted">
-        ปั่นจักรยาน วิ่งในน้ำ ว่ายน้ำ ได้ระบบหัวใจ-ปอดโดยไม่กระแทกข้อ — เพิ่มปริมาณแอโรบิกได้โดยไม่ต้องวิ่งเพิ่ม และใช้แทนการวิ่งช่วงบาดเจ็บ{weekMin ? ` · สัปดาห์นี้ ${weekMin} นาที` : ''}
+        ปั่นจักรยาน ว่ายน้ำ วิ่งในน้ำ — แอโรบิกที่ไม่กระแทกข้อ ใช้แทนวิ่งช่วงเจ็บได้{weekMin ? ` · สัปดาห์นี้ ${weekMin} นาที` : ''}
       </p>
       <Collapse open={open}>
         <div className="mt-3 grid grid-cols-2 gap-2 rounded-2xl bg-raised p-3">

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Bike, ChevronLeft, ChevronRight, Dumbbell, Footprints } from 'lucide-react'
+import { Bike, Check, ChevronLeft, ChevronRight, Dumbbell, Footprints } from 'lucide-react'
 import { monthGrid, shiftMonth } from '../lib/calendar'
 import { crossKinds, useCross, useRuns, useSessions, formatDuration, runKinds } from '../lib/log'
 import { useProgram } from '../lib/program'
@@ -7,6 +7,7 @@ import { programs } from '../data/programs'
 import { daysBetween, monthLabel, niceDate, today, weekStart } from '../lib/date'
 import type { Day } from '../data/workouts'
 import { cx } from '../lib/cx'
+import { usePersisted } from '../lib/storage'
 import { Card } from './ui'
 
 const DAYS = ['จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส', 'อา']
@@ -16,6 +17,7 @@ export function TrainingCalendar() {
   const [runs] = useRuns()
   const [sessions] = useSessions()
   const [cross] = useCross()
+  const [done] = usePersisted<Record<string, boolean>>('done', {})
   const p = useProgram()
   const now = today()
   const [ym, setYm] = useState(now.slice(0, 7))
@@ -36,6 +38,7 @@ export function TrainingCalendar() {
   const plans = useMemo(() => {
     const weeks = new Map<number, Day[]>()
     const out = new Map<string, Day | null>()
+    const ticked = new Set<string>()
     const thisMonday = weekStart(now)
     const n = p.meta.weeks
     for (const date of monthGrid(ym).flat()) {
@@ -44,14 +47,19 @@ export function TrainingCalendar() {
       const week = p.ongoing ? ((((p.currentWeek - 1 + offset) % n) + n) % n) + 1 : p.currentWeek + offset
       if (week < 1 || week > n) { out.set(date, null); continue }
       if (!weeks.has(week)) weeks.set(week, p.plan(week))
-      out.set(date, weeks.get(week)![daysBetween(weekStart(date), date)] ?? null)
+      const i = daysBetween(weekStart(date), date)
+      out.set(date, weeks.get(week)![i] ?? null)
+      if (p.isDone(done, week, i)) ticked.add(date)
     }
-    return out
-  }, [p, now, ym])
-  const planFor = (date: string) => plans.get(date) ?? null
+    return { out, ticked }
+  }, [p, now, ym, done])
+  const planFor = (date: string) => plans.out.get(date) ?? null
+  // ติ๊ก "ทำแล้ว" ในตารางฝึก (โดยไม่ได้บันทึกระยะ/เซ็ต) ก็นับว่าได้ออกกำลังกายวันนั้น
+  const tickedOn = (date: string) => plans.ticked.has(date)
   const totals = monthDays.reduce((a, d) => {
     const x = byDate.get(d)
-    if (x) { a.km += x.km; a.runs += x.runs.length; a.sessions += x.sessions.length; a.active += x.runs.length || x.sessions.length || x.cross.length ? 1 : 0 }
+    if (x) { a.km += x.km; a.runs += x.runs.length; a.sessions += x.sessions.length }
+    if (x?.runs.length || x?.sessions.length || x?.cross.length || tickedOn(d)) a.active++
     return a
   }, { km: 0, runs: 0, sessions: 0, active: 0 })
   const sel = picked ? byDate.get(picked) : null
@@ -77,17 +85,19 @@ export function TrainingCalendar() {
               const x = byDate.get(d)
               const plan = planFor(d)
               const ran = !!x?.runs.length, lifted = !!x?.sessions.length, carded = !!x?.cross.length
-              const missed = d < now && !ran && !lifted && !carded && (plan?.type === 'run' || plan?.type === 'strength')
+              const ticked = !ran && !lifted && !carded && tickedOn(d)
+              const missed = d < now && !ran && !lifted && !carded && !ticked && (plan?.type === 'run' || plan?.type === 'strength')
               const future = d > now && (plan?.type === 'run' || plan?.type === 'strength')
               return (
                 <button key={d} onClick={() => setPicked(picked === d ? null : d)} aria-label={niceDate(d)}
                   className={cx('relative flex aspect-square flex-col items-center justify-center rounded-xl text-xs transition-colors',
-                    ran && lifted ? 'bg-gradient-to-br from-run/25 to-accent/25' : ran ? 'bg-run/20' : lifted ? 'bg-accent-soft' : 'bg-raised',
-                    missed && 'ring-1 ring-muted/40 ring-dashed', d === now && 'ring-2 ring-ink', picked === d && 'ring-2 ring-run')}>
+                    ran && lifted ? 'bg-gradient-to-br from-run/25 to-accent/25' : ran ? 'bg-run/20' : lifted ? 'bg-accent-soft' : ticked ? 'bg-good/15' : 'bg-raised',
+                    missed && 'border border-dashed border-muted/60', d === now && 'ring-2 ring-ink', picked === d && 'ring-2 ring-run')}>
                   <span className={cx('font-semibold tabular-nums', !ran && !lifted && 'text-muted')}>{+d.slice(8)}</span>
                   {ran && <span className="text-[9px] font-bold tabular-nums text-run">{x!.km.toFixed(1)}</span>}
                   {!ran && lifted && <Dumbbell size={10} className="text-accent" />}
                   {!ran && !lifted && carded && <Bike size={10} className="text-run" />}
+                  {ticked && <Check size={11} strokeWidth={3} className="text-good" />}
                   {future && <span className={cx('absolute bottom-1 size-1 rounded-full', plan!.type === 'run' ? 'bg-run' : 'bg-accent')} />}
                 </button>
               )
@@ -98,14 +108,16 @@ export function TrainingCalendar() {
       <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted">
         <span className="flex items-center gap-1"><span className="size-2.5 rounded bg-run/30" /> วิ่ง (กม.)</span>
         <span className="flex items-center gap-1"><span className="size-2.5 rounded bg-accent-soft" /> เวท</span>
-        <span className="flex items-center gap-1"><span className="size-2.5 rounded ring-1 ring-muted/50" /> ตามแผนแต่ไม่ได้ทำ</span>
+        <span className="flex items-center gap-1"><Check size={10} strokeWidth={3} className="text-good" /> ติ๊กทำแล้ว</span>
+        <span className="flex items-center gap-1"><span className="size-2.5 rounded border border-dashed border-muted/60" /> ตามแผนแต่ไม่ได้ทำ</span>
         <span className="flex items-center gap-1"><span className="size-1.5 rounded-full bg-run" /> แผนวันข้างหน้า</span>
       </div>
       {picked && (
         <div className="mt-3 animate-fade-up rounded-xl bg-raised p-3 text-sm">
           <div className="font-bold">{niceDate(picked)}</div>
           {selPlan && selPlan.type !== 'rest' && <div className="text-xs text-muted">แผน ({programs[p.program].short}): {selPlan.title}{selPlan.targetKm ? ` · ${selPlan.targetKm} กม.` : ''}</div>}
-          {!sel?.runs.length && !sel?.sessions.length && !sel?.cross.length && <div className="mt-1 text-xs text-muted">ไม่มีบันทึก</div>}
+          {picked && tickedOn(picked) && !sel?.runs.length && !sel?.sessions.length && <div className="mt-1 flex items-center gap-1.5 text-xs text-good"><Check size={13} /> ทำแล้ว</div>}
+          {!sel?.runs.length && !sel?.sessions.length && !sel?.cross.length && !(picked && tickedOn(picked)) && <div className="mt-1 text-xs text-muted">ไม่มีบันทึก</div>}
           {sel?.cross.map(c => <div key={c.id} className="mt-1 flex items-center gap-1.5"><Bike size={13} className="text-run" /> {crossKinds[c.kind]} · {c.minutes} นาที</div>)}
           {sel?.runs.map(r => <div key={r.id} className="mt-1 flex items-center gap-1.5"><Footprints size={13} className="text-run" /> {runKinds[r.kind]} {r.km.toFixed(2)} กม. · {formatDuration(r.seconds)}</div>)}
           {sel?.sessions.map(s => <div key={s.id} className="mt-1 flex items-center gap-1.5"><Dumbbell size={13} className="text-accent" /> {s.title} · {s.entries.reduce((n, e) => n + e.sets.length, 0)} เซ็ต</div>)}
