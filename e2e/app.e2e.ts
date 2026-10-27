@@ -267,6 +267,16 @@ test('ตารางฝึก: กดดูสัปดาห์อื่นไ
   expect(await idb(page, 'programStart')).toBeTruthy()
 })
 
+test('การวิ่งเก่าที่ระยะขาด: แก้เป็นระยะตามเส้นทางได้', async ({ page }) => {
+  await seed(page, { runs: [{ id: 'g', date: ymd(1), km: 2, seconds: 1800, kind: 'easy', source: 'gps', ...loopRoute() }] })
+  await nav(page, 'วิ่ง')
+  await page.getByRole('button', { name: 'ประวัติ' }).click()
+  await page.locator('main li button', { hasText: '2.00' }).click()
+  await page.getByRole('button', { name: 'ใช้ระยะตามเส้นทาง' }).click()
+  await expect.poll(async () => ((await idb(page, 'runs')) as { km: number }[])[0].km).toBeGreaterThan(3)
+  await expect(page.getByRole('button', { name: 'ใช้ระยะตามเส้นทาง' })).toHaveCount(0)
+})
+
 test('รายงาน error: เก็บในเครื่องและดูได้จากเมนูบัญชี', async ({ page }) => {
   await seed(page)
   await expect(page.getByText(/เป้าเดือน/)).toBeVisible() // รอแอปโหลดเสร็จ (ตัวดัก error ติดตั้งหลังโหลดที่เก็บข้อมูล)

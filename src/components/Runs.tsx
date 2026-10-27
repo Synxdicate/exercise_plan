@@ -6,7 +6,7 @@ import { criticalSpeed, estimate, paceHint, predictionTrend, type Estimate } fro
 import { useProgram } from '../lib/program'
 import { parseGpx } from '../lib/gpx'
 import { DEFAULT_LIMIT_KM, defaultShoe, shoeKm, shoeStatus, useShoes, type Shoe } from '../lib/shoes'
-import { paceSeries, personalBests, splitAnalysis } from '../lib/analysis'
+import { paceSeries, personalBests, remeasure, splitAnalysis } from '../lib/analysis'
 import { PaceChart, ZoneBar, ZoneLegend } from './Charts'
 import { zoneInfo, zoneOf } from '../lib/zones'
 import { RpePicker } from './RpePicker'
@@ -422,6 +422,7 @@ function Splits({ splits, fiveK }: { splits: number[]; fiveK?: number }) {
 
 function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { run: Run; runs: Run[]; fiveK?: number; onClose: () => void; onDelete: () => void; onUpdate: (patch: Partial<Run>) => void }) {
   const kmUp = useCountUp(run.km)
+  const fix = remeasure(run)
   const secUp = useCountUp(run.seconds)
   const [editing, setEditing] = useState(false)
   const [sharing, setSharing] = useState(false)
@@ -457,6 +458,12 @@ function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { run: Run
           <Stat label="เวลาเคลื่อนที่" value={formatDuration(secUp)} sub={run.elapsedSeconds ? `รวม ${formatDuration(run.elapsedSeconds)}` : undefined} />
           <Stat label="เพซเฉลี่ย" value={formatPace(run.seconds, run.km)} sub="นาที/กม." />
         </div>
+        {fix && (
+          <div className="mb-3 rounded-xl bg-warn/15 p-3 text-sm text-warn">
+            <p>ระยะตามเส้นทางคือ <b>{fix.km.toFixed(2)} กม.</b> แต่บันทึกไว้ {run.km.toFixed(2)} กม. — แอปก่อน v2.26 นับช่วงเดินขาด</p>
+            <Button size="sm" className="mt-2" onClick={() => onUpdate({ km: fix.km, splits: fix.splits })}>ใช้ระยะตามเส้นทาง</Button>
+          </div>
+        )}
         {run.gapSeconds ? <p className="mb-3 rounded-xl bg-warn/15 p-2 text-xs text-warn">ปิดจอรวม {formatDuration(run.gapSeconds)} — ระยะช่วงนั้นเป็นค่าประมาณ</p> : null}
         {series.length > 2 && (
           <div className="mb-3 space-y-3 rounded-2xl bg-raised p-3">

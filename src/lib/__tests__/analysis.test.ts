@@ -89,3 +89,17 @@ describe('training load (session-RPE + EWMA)', () => {
     expect(formLabel(-40, 100).label).toBe('ล้าสะสมมาก')
   })
 })
+
+describe('remeasure from stored route', () => {
+  it('uses the route length when the recorded distance is clearly short, with splits from point times', async () => {
+    const { remeasure } = await import('../analysis')
+    // เส้นตรงไปทางเหนือ 2.5 กม. จุดทุก 25 ม. เพซคงที่ 6:00/กม. (0.15 วิ/ม.)
+    const route = Array.from({ length: 101 }, (_, i) => [16.4 + (i * 25) / 111320, 102.8] as [number, number])
+    const times = route.map((_, i) => i * 25 * 0.36)
+    const r = remeasure({ km: 1.7, route, times })!
+    expect(r.km).toBeCloseTo(2.5, 1)
+    expect(r.splits).toHaveLength(2)
+    r.splits.forEach(s => expect(Math.abs(s - 360)).toBeLessThanOrEqual(2))
+    expect(remeasure({ km: 2.45, route, times })).toBeNull()
+  })
+})

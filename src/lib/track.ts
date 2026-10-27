@@ -5,13 +5,17 @@ import type { Point } from './geo'
 // วิธี (ปรับค่าด้วยการจำลอง noise ดู track.test.ts):
 // 1) Kalman แบบความเร็วคงที่ (ตำแหน่ง+ความเร็ว ต่อแกน) ในหน่วยเมตร — ลด noise โดยไม่ตามหลังตอนวิ่ง
 // 2) นับระยะเฉพาะตอนเคลื่อนที่จริง (ความเร็วจาก Doppler ถ้ามี ไม่งั้นใช้ความเร็วจากตัวกรอง)
-// 3) นับระยะจาก "จุดยึด" ทุก ~15 ม. แทนการรวมทีละวินาที — กันการส่ายของ noise สะสมเป็นระยะเกินจริง
-//    (บนโค้งลู่วิ่ง คอร์ด 15 ม. ต่างจากความยาวโค้งไม่ถึง 1%)
+// 3) นับระยะจาก "จุดยึด" ทุก ~26 ม. แทนการรวมทีละวินาที — กันการส่ายของ noise สะสมเป็นระยะเกินจริง
+//    (บนโค้งลู่วิ่ง คอร์ด 26 ม. สั้นกว่าความยาวโค้ง ~2% เฉพาะช่วงโค้ง)
 
 export const MAX_ACCURACY_M = 30 // ทิ้งจุดที่ GPS ไม่แม่น
 export const FIRST_FIX_ACCURACY_M = 20 // จุดแรกต้องแม่นพอ ไม่งั้นระยะช่วงแรกกระโดด
-const ANCHOR_M = 18
-const MOVING_SPEED_MS = 1.0
+const ANCHOR_M = 26
+// เดินช้าได้ ~0.8 ม./วิ — เกณฑ์เดิม 1.0 ทำให้ช่วงเดินในวิ่งสลับเดินถูกนับเป็น "หยุด" ระยะหาย ~30%
+const MOVING_SPEED_MS = 0.6
+// ถือว่าหยุดจริงเมื่อช้ากว่าเกณฑ์ต่อเนื่องเท่านี้ (ความเร็วตอนเดินแกว่งข้ามเกณฑ์ไปมา — ห้ามทิ้งระยะทันที)
+const STILL_MS = 5000
+const SPEED_SMOOTH = 0.4 // EMA ของความเร็ว
 const MAX_SPEED_MS = 10 // ~36 กม./ชม. เกินนี้ถือว่าจุดกระโดด
 const ACCEL_NOISE = 1.0 // m/s² — ความเร่งที่ยอมให้ (เปลี่ยนเพซ/เลี้ยว)
 const MAX_GAP_S = 30 // ขาดสัญญาณนานกว่านี้ เริ่มตัวกรองใหม่จากจุดถัดไป
@@ -59,11 +63,15 @@ export class TrackFilter {
   private lastT = 0
   private anchor: { x: number; y: number } | null = null
   private wasMoving = false
+  private speed = 0
+  private stillSince: number | null = null
 
   reset() {
     this.origin = null
     this.anchor = null
     this.wasMoving = false
+    this.speed = 0
+    this.stillSince = null
   }
 
   /** เศษระยะที่ยังไม่ถึงจุดยึดถัดไป — เรียกตอนจบการวิ่ง/กดพัก ไม่ให้ระยะท้ายหาย */
@@ -107,15 +115,20 @@ export class TrackFilter {
     this.lastT = f.t
     const p = this.toLatLon(this.ax.x, this.ay.x)
 
-    const speed = f.speed != null && f.speed >= 0 ? f.speed : Math.hypot(this.ax.v, this.ay.v)
-    const moving = speed >= MOVING_SPEED_MS
+    const raw = f.speed != null && f.speed >= 0 ? f.speed : Math.hypot(this.ax.v, this.ay.v)
+    this.speed += SPEED_SMOOTH * (raw - this.speed)
+    const moving = this.speed >= MOVING_SPEED_MS
     if (!moving) {
-      // หยุดอยู่ → ย้ายจุดยึดตาม (การสั่นตอนยืนไม่ถูกนับเป็นระยะ)
-      // ไม่เก็บเศษระยะตรงนี้: ความเร็วตอนยืนแกว่งข้ามเกณฑ์ไปมา จะนับเศษซ้ำ (ทดสอบแล้วระยะงอก)
-      this.wasMoving = false
-      this.anchor = { x: this.ax.x, y: this.ay.x }
+      // ช้ากว่าเกณฑ์ต่อเนื่อง STILL_MS = หยุดจริง → ย้ายจุดยึดตาม (การสั่นตอนยืนไม่ถูกนับเป็นระยะ)
+      // ช่วงสั้น ๆ คงจุดยึดไว้ ระยะที่เดินมาจะถูกนับเมื่อถึงจุดยึดถัดไป
+      this.stillSince ??= f.t
+      if (f.t - this.stillSince >= STILL_MS) {
+        this.wasMoving = false
+        this.anchor = { x: this.ax.x, y: this.ay.x }
+      }
       return { kind: 'hold', p, moving }
     }
+    this.stillSince = null
     this.wasMoving = true
     const d = Math.hypot(this.ax.x - this.anchor!.x, this.ay.x - this.anchor!.y)
     if (d < ANCHOR_M) return { kind: 'hold', p, moving }

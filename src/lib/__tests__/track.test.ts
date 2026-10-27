@@ -89,4 +89,18 @@ describe('GPS distance filter (simulated noise)', () => {
     expect(f.process({ lat: 16.4, lon: 102.8, acc: 25, t: 0 }).kind).toBe('ignored')
     expect(f.process({ lat: 16.4, lon: 102.8, acc: 8, t: 1000 }).kind).toBe('start')
   })
+
+  it('เดิน 1.2 ม./วิ (ไม่มี Doppler) 10 นาที → ระยะคลาดไม่เกิน 5% (เดิมนับได้แค่ ~40%)', () => {
+    for (const seed of [1, 2, 3]) {
+      const pts = Array.from({ length: 600 }, (_, i) => ({ x: 0, y: i * 1.2 }))
+      expect(Math.abs(run(pts, 4, 8, seed) - 599 * 1.2) / (599 * 1.2)).toBeLessThan(0.05)
+    }
+  })
+
+  it('วิ่งสลับเดิน (จ็อก 2.2 ม./วิ 1 นาที / เดิน 1.3 ม./วิ 2 นาที × 6) → ระยะคลาดไม่เกิน 5%', () => {
+    let y = 0
+    const pts = Array.from({ length: 1080 }, (_, i) => ({ x: 0, y: (y += i % 180 < 60 ? 2.2 : 1.3) }))
+    const total = pts.at(-1)!.y - pts[0].y
+    for (const seed of [4, 5]) expect(Math.abs(run(pts, 4, 8, seed) - total) / total).toBeLessThan(0.05)
+  })
 })

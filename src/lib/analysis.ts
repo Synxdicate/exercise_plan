@@ -11,6 +11,31 @@ export function cumulative(route: Point[]) {
   return d
 }
 
+/**
+ * ระยะใหม่จากเส้นทางที่เก็บไว้ (+ เพซรายกิโลจากเวลาของแต่ละจุด) — ใช้แก้การวิ่งที่บันทึกก่อน v2.26
+ * ซึ่งตัวกรอง GPS ทิ้งระยะช่วงเดิน คืน null ถ้าระยะตามเส้นทางไม่ได้มากกว่าที่บันทึกอย่างชัดเจน (>10% และ >200 ม.)
+ */
+export function remeasure(run: Pick<Run, 'km' | 'route' | 'times'>) {
+  const { route, times } = run
+  if (!route || !times || route.length < 2 || times.length !== route.length) return null
+  const d = cumulative(route)
+  const km = d.at(-1)! / 1000
+  if (km < run.km * 1.1 || km - run.km < 0.2) return null
+  const splits: number[] = []
+  let prev = 0
+  for (let i = 1, k = 1; i < d.length && k <= Math.floor(km); i++) {
+    while (k <= Math.floor(km) && d[i] >= k * 1000) {
+      // เวลาที่ผ่านหลัก k กม. (เทียบสัดส่วนระหว่างสองจุด)
+      const f = (k * 1000 - d[i - 1]) / (d[i] - d[i - 1] || 1)
+      const t = times[i - 1] + f * (times[i] - times[i - 1])
+      splits.push(Math.round(t - prev))
+      prev = t
+      k++
+    }
+  }
+  return { km: +km.toFixed(2), splits }
+}
+
 const FASTEST_PLAUSIBLE = 150 // วินาที/กม. (2:30) — เร็วกว่านี้ถือว่า GPS กระโดด
 
 // เพซตามระยะทาง เฉลี่ยแบบเลื่อนหน้าต่าง ~250 ม. ให้เส้นไม่หยักจาก GPS
