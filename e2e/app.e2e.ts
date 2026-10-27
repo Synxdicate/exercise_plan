@@ -250,6 +250,17 @@ test('ปฏิทินการฝึก: วันที่ติ๊กทำ
   await expect(page.getByText('ทำแล้ว', { exact: true })).toBeVisible()
 })
 
+test('หน้าหลัก: วิ่ง/ฝึกเสร็จแล้ววันนี้ ไม่ขึ้นปุ่มเริ่มอีก', async ({ page }) => {
+  await seed(page, {
+    program: 'physique', week: 1,
+    runs: [{ id: 'r1', date: ymd(0), km: 4.2, seconds: 1500, kind: 'easy', source: 'manual' }],
+    sessions: [{ id: 's1', date: ymd(0), mode: 'gym', dayKey: 'upperA', title: 'Upper A', entries: [{ name: 'Bench Press', sets: [{ kg: 40, reps: 8 }] }] }],
+  })
+  await expect(page.getByText(/เป้าเดือน/)).toBeVisible()
+  await expect(page.getByRole('button', { name: 'เริ่มวิ่ง' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: /เริ่มฝึกเลย/ })).toHaveCount(0)
+})
+
 test('แผนที่รวมทุกการวิ่ง (heatmap)', async ({ page }) => {
   await seed(page, {
     runs: [

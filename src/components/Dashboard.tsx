@@ -7,6 +7,7 @@ import { crossAsSession, useCross, useRuns, useSessions } from '../lib/log'
 import { estimate, paceHint } from '../lib/pace'
 import { useProgram } from '../lib/program'
 import { usePersisted } from '../lib/storage'
+import { useDayDone } from '../lib/dayDone'
 import { useNav } from '../lib/nav'
 import { addDays, today, weekStart } from '../lib/date'
 import { BodyMap } from './BodyMap'
@@ -29,6 +30,7 @@ export function Dashboard() {
   const [cross] = useCross()
   const p = useProgram()
   const [done, setDone] = usePersisted<Record<string, boolean>>('done', {})
+  const dayDone = useDayDone()
   const [playing, setPlaying] = useState<{ day: Day; light: boolean } | null>(null)
   const [checking, setChecking] = useState(false)
   const nav = useNav()
@@ -52,7 +54,9 @@ export function Dashboard() {
   const sets = weeklySets(plan)
   const intensity = Object.fromEntries(Object.entries(sets).map(([m, n]) => [m, Math.min(1, n! / TARGET_SETS)]))
   const TodayIcon = todayPlan?.runKind === 'race' ? Flag : todayPlan?.type === 'run' ? Footprints : todayPlan?.type === 'strength' ? Dumbbell : Moon
-  const todayDone = p.isDone(done, week, todayIdx)
+  const todayDone = dayDone(week, todayIdx, todayPlan)
+  const tomorrow = todayIdx < 6 ? plan[todayIdx + 1] : null
+  const kmToday = runs.filter(r => r.date === today()).reduce((s, r) => s + r.km, 0)
   const est = useMemo(() => estimate(runs), [runs])
   const hint = todayPlan?.type === 'run' ? paceHint(est, todayPlan.runKind, todayPlan.title) : null
 
@@ -93,6 +97,12 @@ export function Dashboard() {
             </div>
             {todayDone && <span className="grid size-9 shrink-0 animate-pop place-items-center rounded-full bg-good text-white"><Check size={18} strokeWidth={3} /></span>}
           </div>
+          {todayDone && (
+            <div className="mt-3 flex items-center justify-between gap-2 border-t border-line pt-2.5 text-xs">
+              <span className="font-semibold text-good">{todayPlan.type === 'run' && kmToday ? `วิ่งแล้ว ${kmToday.toFixed(2)} กม.` : 'ทำแล้ววันนี้'}</span>
+              {tomorrow && <span className="min-w-0 truncate text-muted">พรุ่งนี้: {tomorrow.title}</span>}
+            </div>
+          )}
           {!todayDone && todayPlan.type === 'strength' && (
             <Button className="mt-3 w-full" onClick={() => setChecking(true)}><Play size={16} fill="currentColor" /> เริ่มฝึกเลย ({todayPlan.location === 'park' ? 'สวน' : 'ยิม'})</Button>
           )}

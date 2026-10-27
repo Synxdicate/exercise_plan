@@ -7,6 +7,7 @@ import { useRuns } from '../lib/log'
 import { estimate, paceHint } from '../lib/pace'
 import { useProgram } from '../lib/program'
 import { usePersisted } from '../lib/storage'
+import { useDayDone } from '../lib/dayDone'
 import { useNav } from '../lib/nav'
 import { cx } from '../lib/cx'
 import { BodyMap } from './BodyMap'
@@ -40,7 +41,7 @@ const styleOf = (d: Day) => (d.runKind === 'race' ? { icon: Flag, tone: 'bg-acce
 
 function PlanBody() {
   const p = useProgram()
-  const [done, setDone] = usePersisted<Record<string, boolean>>('done', {})
+  const [, setDone] = usePersisted<Record<string, boolean>>('done', {})
   const [viewWeek, setViewWeek] = useState(p.currentWeek)
   const [selected, setSelected] = useState(todayIdx)
   const [picking, setPicking] = useState(false)
@@ -53,7 +54,8 @@ function PlanBody() {
   const isThisWeek = week === p.currentWeek
   const selectWeek = (w: number) => (p.autoWeek ? setViewWeek(w) : p.setWeek(w))
   const days = p.plan(week)
-  const isDone = (i: number) => p.isDone(done, week, i)
+  const dayDone = useDayDone()
+  const isDone = (i: number) => dayDone(week, i, days[i])
   const setDayDone = (i: number, v: boolean) => setDone(prev => ({ ...prev, [p.doneId(week, i)]: v }))
   const trainingIdx = days.flatMap((d, i) => (d.type !== 'rest' ? [i] : []))
   const doneCount = trainingIdx.filter(isDone).length

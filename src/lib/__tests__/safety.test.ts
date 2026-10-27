@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { clearance } from '../screening'
-import { heatLevel, wbgtApprox, wetBulb, bestHour, type Hour } from '../weather'
+import { airLevel, heatLevel, wbgtApprox, wetBulb, bestHour, type Hour } from '../weather'
 import { comeback } from '../detraining'
 
 const s = (o: Partial<Parameters<typeof clearance>[0]>) => ({ exercising: true, disease: false, symptoms: false, joint: false, ...o })
@@ -28,6 +28,12 @@ describe('ความร้อน', () => {
     const hours = [h('2026-10-25T03:00', 20), h('2026-10-25T06:00', 26), h('2026-10-25T12:00', 31), h('2026-10-25T19:00', 27)]
     expect(bestHour(hours, '2026-10-25T05:00')?.hour).toBe(6)
     expect(bestHour(hours, '2026-10-25T10:00')?.hour).toBe(19)
+  })
+  it.each([[12, 'good'], [30, 'moderate'], [50, 'sensitive'], [90, 'bad']] as const)('PM2.5 %d → %s (เกณฑ์ คพ. 2566)', (pm, l) => expect(airLevel(pm)).toBe(l))
+  it('เลี่ยงชั่วโมงที่ฝุ่นแย่ แม้จะเย็นกว่า', () => {
+    const h = (time: string, wbgt: number, pm25: number): Hour => ({ time, hour: +time.slice(11, 13), temp: 0, rh: 0, wbgt, pm25 })
+    const hours = [h('2026-10-25T06:00', 25, 80), h('2026-10-25T19:00', 28, 30)]
+    expect(bestHour(hours, '2026-10-25T05:00')?.hour).toBe(19)
   })
 })
 
