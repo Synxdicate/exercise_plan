@@ -14,7 +14,7 @@ import { isNative } from './lib/native'
 import { APP_VERSION, downloadUpdate, useUpdateAvailable } from './lib/update'
 import { useBackButton, useBackClose } from './lib/back'
 import { supabase } from './lib/supabase'
-import { getSyncStatus, stopSync, subscribeSyncStatus } from './lib/sync'
+import { clearSyncedData, getSyncStatus, stopSync, subscribeSyncStatus } from './lib/sync'
 import { restoreBackup, saveBackup } from './lib/backup'
 import type { ErrorEntry } from './lib/errors'
 import { ErrorLogSheet } from './components/ErrorLogSheet'
@@ -166,7 +166,11 @@ function UserMenu({ session, onSources }: { session: Session | null; onSources: 
     if (ok) {
       // รูปในเครื่องเป็นของบัญชีนี้ — ลบออกด้วย (ฉบับบน server ยังอยู่)
       await idb.clear('blobs').catch(() => {})
-      await supabase.auth.signOut()
+      // ออกจากระบบก่อน (หน้าจอเปลี่ยนเป็นหน้าล็อกอิน) แล้วค่อยล้างข้อมูลในเครื่องหลังหน้าจอเปลี่ยนแล้ว
+      // ออฟไลน์: signOut ปกติล้มเหลวและไม่ลบ session ในเครื่อง → ใช้ scope local แทน
+      const { error } = await supabase.auth.signOut()
+      if (error) await supabase.auth.signOut({ scope: 'local' })
+      setTimeout(clearSyncedData, 0)
     }
     setBusy(false)
   }

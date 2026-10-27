@@ -137,13 +137,18 @@ export async function refresh() {
 }
 
 // คืน false ถ้ายังมีข้อมูลค้างที่ส่งขึ้น server ไม่ได้ (เช่น ออฟไลน์) และไม่ได้สั่ง force
+// หยุดซิงก์เท่านั้น — ล้างข้อมูลในเครื่องด้วย clearSyncedData() หลังออกจากระบบแล้ว
+// (ถ้าล้างก่อน หน้าแอปที่ยังเปิดอยู่จะเห็น onboarded หายแล้วขึ้นแบบสอบถามตอนเริ่มระหว่างรอออกจากระบบ)
 export async function stopSync(force = false) {
   await flush()
   if (pending.size && !force) return false
   userId = null
   pending.clear()
-  clearKeys([...SYNCED_KEYS, OWNER_KEY, PENDING_KEY])
   return true
+}
+
+export function clearSyncedData() {
+  clearKeys([...SYNCED_KEYS, OWNER_KEY, PENDING_KEY])
 }
 
 // ---------- backup ----------
