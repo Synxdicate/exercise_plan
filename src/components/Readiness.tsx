@@ -3,7 +3,7 @@ import { BatteryLow, BatteryMedium, BatteryFull, Play, Moon } from 'lucide-react
 import { usePersisted } from '../lib/storage'
 import { today } from '../lib/date'
 import { cx } from '../lib/cx'
-import { readinessLevel, type Level, type Readiness } from '../lib/readiness'
+import { PAIN_AREAS, readinessLevel, type Level, type PainArea, type Readiness } from '../lib/readiness'
 import { Button, Sheet } from './ui'
 
 const advice: Record<'strength' | 'run', Record<Level, string>> = {
@@ -66,15 +66,32 @@ export function ReadinessSheet({ kind, onClose, onProceed }: { kind: 'strength' 
         <div>
           <div className="mb-1.5 text-sm text-muted">มีจุดที่เจ็บแปลบ หรือเจ็บข้อต่อไหม</div>
           <div className="flex gap-2">
-            <Choice value={false} on={!r.pain} onPick={v => setR({ ...r, pain: v })} label="ไม่มี" />
+            <Choice value={false} on={!r.pain} onPick={v => setR({ ...r, pain: v, areas: undefined })} label="ไม่มี" />
             <Choice value={true} on={r.pain} onPick={v => setR({ ...r, pain: v })} label="มี" />
           </div>
+          {r.pain && (
+            <div className="mt-2 flex animate-fade-up flex-wrap gap-1.5">
+              <span className="w-full text-xs text-muted">ตรงไหน (เลือกได้หลายจุด)</span>
+              {(Object.keys(PAIN_AREAS) as PainArea[]).map(a => {
+                const on = r.areas?.includes(a)
+                return (
+                  <button key={a} aria-pressed={on} onClick={() => setR({ ...r, areas: on ? r.areas!.filter(x => x !== a) : [...(r.areas ?? []), a] })}
+                    className={cx('rounded-full px-3 py-1 text-xs font-semibold ring-1', on ? 'bg-bad/15 text-bad ring-bad/40' : 'bg-raised ring-line')}>
+                    {PAIN_AREAS[a].label}
+                  </button>
+                )
+              })}
+            </div>
+          )}
         </div>
 
         <div key={level} className={cx('flex animate-fade-up gap-3 rounded-2xl p-3 text-sm',
           level === 'green' ? 'bg-good/15 text-good' : level === 'yellow' ? 'bg-warn/15 text-warn' : 'bg-bad/15 text-bad')}>
           <Icon size={22} className="shrink-0" />
-          <span>{r.pain ? 'หลีกเลี่ยงท่าหรือการวิ่งที่ทำให้จุดนั้นเจ็บ ถ้าเจ็บเกิน 3 วันหรือบวม ควรพบแพทย์/นักกายภาพ — ' : ''}{advice[kind][level]}</span>
+          <span>
+            {r.pain ? 'หลีกเลี่ยงท่าหรือการวิ่งที่ทำให้จุดนั้นเจ็บ ถ้าเจ็บเกิน 3 วันหรือบวม ควรพบแพทย์/นักกายภาพ — ' : ''}{advice[kind][level]}
+            {r.areas?.map(a => <span key={a} className="mt-1 block font-semibold">{PAIN_AREAS[a].label}: {PAIN_AREAS[a].avoid}</span>)}
+          </span>
         </div>
 
         <div className="flex gap-2">

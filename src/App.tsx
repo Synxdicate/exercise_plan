@@ -91,7 +91,7 @@ function Main({ session }: { session: Session | null }) {
     <div className="mx-auto min-h-dvh max-w-lg">
       <header className="sticky top-0 z-30 flex items-center justify-between gap-3 bg-bg/85 px-4 pb-3 pt-[calc(var(--sat)+0.75rem)] backdrop-blur">
         <div className="flex min-w-0 items-center gap-2.5">
-          <div className="grid size-9 shrink-0 place-items-center rounded-xl bg-accent text-white"><Dumbbell size={18} /></div>
+          <div className="grid size-9 shrink-0 place-items-center rounded-xl bg-accent text-white"><Footprints size={18} /></div>
           <div className="min-w-0">
             <div className="text-[11px] font-semibold uppercase tracking-wider text-accent">Kao</div>
             <h1 className="truncate text-lg font-bold leading-tight">{title}</h1>

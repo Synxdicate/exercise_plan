@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowLeft, ArrowRight, Check, Dumbbell } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Footprints } from 'lucide-react'
 import { locationInfo, programLength, programs, type LocationPref, type ProgramId } from '../data/programs'
 import { activityLevels, defaultProfile, goals, targets, type Profile } from '../lib/calc'
 import { useProgram } from '../lib/program'
@@ -50,7 +50,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
   return (
     <div className="mx-auto flex min-h-dvh max-w-lg flex-col gap-5 p-4 pt-[calc(var(--sat)+1.5rem)] pb-[calc(var(--sab)+1rem)]">
       <div className="flex items-center gap-3">
-        <div className="grid size-11 place-items-center rounded-2xl bg-accent text-white"><Dumbbell size={22} /></div>
+        <div className="grid size-11 place-items-center rounded-2xl bg-accent text-white"><Footprints size={22} /></div>
         <div>
           <div className="text-xs font-semibold uppercase tracking-wider text-accent">Kao</div>
           <div className="text-lg font-bold">ตั้งค่าครั้งแรก</div>

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Dumbbell, Lock, LogIn, Mail, UserPlus, Smartphone } from 'lucide-react'
+import { Footprints, Lock, LogIn, Mail, UserPlus, Smartphone } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { isNative, SITE_URL } from '../lib/native'
 import { nativeGoogleSignIn } from '../lib/nativeAuth'
@@ -50,7 +50,7 @@ export function Login() {
   return (
     <div className="min-h-dvh flex flex-col items-center justify-center gap-3 p-4 pt-[calc(var(--sat)+1rem)] pb-[calc(var(--sab)+1rem)]">
       <div className="w-full max-w-sm rounded-3xl bg-card p-6 shadow-sm ring-1 ring-line flex flex-col gap-3 text-center">
-        <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-accent text-white"><Dumbbell size={28} /></div>
+        <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-accent text-white"><Footprints size={28} /></div>
         <h1 className="text-2xl font-extrabold text-accent">Kao</h1>
         <p className="text-sm text-muted">เข้าสู่ระบบเพื่อบันทึกการฝึกและซิงก์ข้ามมือถือ/คอม</p>
 

@@ -235,6 +235,17 @@ test('นักวิ่งเงา: วิ่งทดสอบ 5K แข่�
   await expect(page.getByText('5K ที่ดีที่สุด เร็วขึ้น 1.5% (29:33)')).toBeVisible()
 })
 
+test('ทดสอบขา: กระโดดขาเดียวต่างกันเกิน 10% → บอกขาที่อ่อนกว่า', async ({ page }) => {
+  await seed(page)
+  await nav(page, 'บันทึก')
+  await page.getByRole('button', { name: /ฟิตเนส/ }).click()
+  await page.getByLabel('กระโดด ซ้าย').fill('120')
+  await page.getByLabel('กระโดด ขวา').fill('150')
+  await page.getByRole('button', { name: 'บันทึกผลทดสอบ' }).click()
+  await expect(page.getByText(/ขาซ้ายได้ 80% ของอีกข้าง/)).toBeVisible()
+  expect(((await idb(page, 'legTests')) as unknown[]).length).toBe(1)
+})
+
 test('รายงาน error: เก็บในเครื่องและดูได้จากเมนูบัญชี', async ({ page }) => {
   await seed(page)
   await expect(page.getByText(/เป้าเดือน/)).toBeVisible() // รอแอปโหลดเสร็จ (ตัวดัก error ติดตั้งหลังโหลดที่เก็บข้อมูล)

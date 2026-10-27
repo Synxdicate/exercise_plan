@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Bandage, HeartPulse, History } from 'lucide-react'
 import { clearance, clearanceText, useScreening } from '../lib/screening'
 import { comeback } from '../lib/detraining'
-import { recentPainDays, type Readiness } from '../lib/readiness'
+import { PAIN_AREAS, recentPainDays, repeatedPainAreas, type Readiness } from '../lib/readiness'
 import { useRuns, useSessions } from '../lib/log'
 import { useProgram } from '../lib/program'
 import { usePersisted } from '../lib/storage'
@@ -23,6 +23,7 @@ export function Alerts() {
   const [painSeen, setPainSeen] = usePersisted('painDismissed', '')
   const pain = recentPainDays(readiness, today())
   const showPain = pain.length >= 2 && painSeen !== pain.at(-1)
+  const areas = repeatedPainAreas(readiness, today())
 
   const dates = [...sessions.map(s => s.date), ...runs.map(r => r.date)]
   const lastActivity = dates.reduce((a, b) => (a > b ? a : b), '')
@@ -50,8 +51,10 @@ export function Alerts() {
           } />
       )}
       {showPain && (
-        <Banner tone="bad" icon={<Bandage size={20} />} title={`เจ็บ ${pain.length} วันใน 7 วันที่ผ่านมา`}
-          text="งดวิ่งหนักและวิ่งยาว 3–5 วัน เปลี่ยนเป็นวิ่งเบาสั้น ๆ เดิน หรือพัก แล้วค่อยกลับมาที่ระดับต่ำกว่าเดิม 1 สัปดาห์ ถ้าเจ็บเกิน 1 สัปดาห์ เจ็บจนเดินกะเผลก หรือบวม ควรพบแพทย์/นักกายภาพ"
+        <Banner tone="bad" icon={<Bandage size={20} />}
+          title={areas.length ? `เจ็บ${areas.map(a => PAIN_AREAS[a].label).join(', ')} ซ้ำใน 7 วัน` : `เจ็บ ${pain.length} วันใน 7 วันที่ผ่านมา`}
+          text={[...areas.map(a => `${PAIN_AREAS[a].label}: ${PAIN_AREAS[a].avoid}`),
+            'งดวิ่งหนักและวิ่งยาว 3–5 วัน แล้วกลับมาที่ระดับต่ำกว่าเดิม 1 สัปดาห์ ถ้าเจ็บเกิน 1 สัปดาห์ เดินกะเผลก หรือบวม ควรพบแพทย์/นักกายภาพ'].join(' · ')}
           action={
             <div className="flex gap-2">
               {!p.autoWeek && p.currentWeek > 1 && (

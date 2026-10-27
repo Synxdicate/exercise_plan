@@ -367,3 +367,28 @@ describe('estimate ignores walking-pace runs', () => {
     expect(estimate([walk, run], '2026-10-27')?.fiveK).toBe(1800)
   })
 })
+
+describe('leg tests (hop LSI, single-leg calf raise)', () => {
+  it('LSI = weaker / stronger, verdicts flag the weaker side', async () => {
+    const { lsi, legVerdict } = await import('../legTests')
+    expect(lsi(150, 135)).toBe(90)
+    expect(lsi(150, undefined)).toBeNull()
+    const v = legVerdict({ id: 'a', date: '2026-10-27', hopL: 120, hopR: 150, calfL: 30, calfR: 18 })
+    expect(v[0].tone).toBe('warn')
+    expect(v[0].text).toContain('ขาซ้าย')
+    expect(v[1].text).toContain('ขาขวา')
+    expect(legVerdict({ id: 'b', date: '2026-10-27', hopL: 150, hopR: 145, calfL: 28, calfR: 27 }).every(x => x.tone === 'good')).toBe(true)
+  })
+})
+
+describe('repeated pain areas', () => {
+  it('flags an area answered on ≥2 days in the last 7', async () => {
+    const { repeatedPainAreas } = await import('../readiness')
+    const log = {
+      '2026-10-20': { sleep: 0, sore: 0, pain: true, areas: ['knee'] },
+      '2026-10-25': { sleep: 0, sore: 0, pain: true, areas: ['shin', 'knee'] },
+      '2026-10-27': { sleep: 0, sore: 0, pain: true, areas: ['shin'] },
+    } as const
+    expect(repeatedPainAreas(log as never, '2026-10-27')).toEqual(['shin'])
+  })
+})

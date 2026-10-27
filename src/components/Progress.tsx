@@ -13,6 +13,7 @@ import { PhotoStrip, ProgressPhotos } from './Photos'
 import { TrainingCalendar } from './TrainingCalendar'
 import { useRemovePhotosFor } from '../lib/photos'
 import { ask } from '../lib/dialog'
+import { LegTestCard } from './LegTests'
 
 type Entry = { date: string; weight: number; waist?: number }
 
@@ -26,7 +27,7 @@ export function Progress() {
         { value: 'fitness', label: <><Activity size={16} /> ฟิตเนส</> },
         { value: 'body', label: <><Scale size={16} /> น้ำหนัก</> },
       ]} />
-      {view === 'workouts' ? <><TrainingCalendar /><WorkoutHistory /></> : view === 'stats' ? <StrengthStats /> : view === 'fitness' ? <Fitness /> : <BodyLog />}
+      {view === 'workouts' ? <><TrainingCalendar /><WorkoutHistory /></> : view === 'stats' ? <StrengthStats /> : view === 'fitness' ? <><Fitness /><LegTestCard /></> : <BodyLog />}
     </>
   )
 }
