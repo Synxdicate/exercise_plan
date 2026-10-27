@@ -150,7 +150,8 @@ const runnerStrength: Record<Mode, [Exercise[], Exercise[]]> = {
       ex('Pull-up', 'ดึงข้อ', '3', '4–8', '2 นาที', 'ทำไม่ได้ใช้ Negative', 'pull up progression for beginners calisthenics', { easier: 'Negative pull-up' }),
       ex('Single-leg Glute Bridge', 'ยกสะโพกขาเดียว', '2', '12 / ข้าง', '60 วิ', 'บีบก้นค้าง 1 วิ', 'single leg glute bridge form'),
       ex('Single-leg Calf Raise', 'เขย่งน่องขาเดียว (บนขอบบันได)', '3', '12–15 / ข้าง', '60 วิ', 'ลงช้า 3 วิ', 'single leg calf raise runners'),
-      ex('Banded Lateral Walk', 'เดินข้างพันยางยืดเหนือเข่า', '2', '12–15 ก้าว / ข้าง', '45 วิ', 'สะโพกด้านข้างอ่อน → สะโพกตก/เจ็บ IT band ตอนวิ่ง ไม่มียางทำนอนตะแคงยกขาแทน', 'banded lateral walk glute medius', { easier: 'Side-lying Hip Abduction' }),
+      // สวน: ไม่ต้องใช้อุปกรณ์ — มียางยืดเปลี่ยนเป็น Banded Lateral Walk ได้
+      ex('Side-lying Hip Abduction', 'นอนตะแคงยกขา (สะโพกด้านข้าง)', '2', '15–20 / ข้าง', '45 วิ', 'สะโพกด้านข้างอ่อน → สะโพกตก/เจ็บ IT band ตอนวิ่ง ขาบนตรง ยกช้า ค้าง 1 วิ', 'side lying hip abduction form', { harder: 'Banded Lateral Walk (ยางยืด)' }),
       ex('Side Plank', 'แพลงก์ด้านข้าง', '2', '30–45 วิ / ข้าง', '45 วิ', 'สะโพกไม่ตก', 'side plank proper form'),
     ],
     [

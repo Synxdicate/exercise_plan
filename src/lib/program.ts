@@ -20,7 +20,9 @@ export function applyCustom(days: Day[], program: string, swaps: Record<string, 
   return days.map(d => {
     if (d.type !== 'strength') return d
     // ผู้ใช้สลับเองมาก่อน ไม่งั้นถ้าฝึกคนเดียวและท่าต้องมีคนช่วย → ท่าทดแทนที่ปลอดภัย
-    const list = d.exercises.map(e => (swaps[e.name] ? swapExercise(e, swaps[e.name])
+    // ท่าที่สลับไปเป็นท่าของยิม (ต้องใช้เครื่อง/อุปกรณ์) ใช้เฉพาะวันยิม — วันสวนกลับเป็นท่าเดิม
+    const usable = (to: string) => d.location !== 'park' || libEx(to)?.where !== 'gym'
+    const list = d.exercises.map(e => (swaps[e.name] && usable(swaps[e.name]) ? swapExercise(e, swaps[e.name])
       : solo && needsSpotter[e.name] ? { ...swapExercise(e, needsSpotter[e.name].alt), solo: true } : e))
     return { ...d, exercises: [...list, ...(extras[extrasKey(program, d)] ?? []).map(e => ({ ...e, added: true }))] }
   })

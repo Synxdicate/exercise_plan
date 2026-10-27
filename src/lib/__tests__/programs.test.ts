@@ -142,7 +142,7 @@ describe('เวทของนักวิ่ง (จาก อ.เอกวิ
   it('มีสะโพกด้านข้าง น่องทั้งสองมัด และกระโดดเขย่งตั้งแต่สัปดาห์ 4 (ไม่ใส่ช่วง taper)', () => {
     for (const m of ['gym', 'park'] as const) {
       const names = (w: number) => variants('half', w)[m].flatMap(d => d.exercises.map(e => e.name))
-      expect(names(1)).toContain('Banded Lateral Walk')
+      expect(names(1)).toContain(m === 'gym' ? 'Banded Lateral Walk' : 'Side-lying Hip Abduction')
       expect(names(1).some(n => /Seated Calf Raise|Bent-knee Calf Raise/.test(n)), m).toBe(true)
       expect(names(2)).not.toContain('Pogo Jumps')
       expect(names(5)).toContain('Pogo Jumps')
@@ -182,5 +182,20 @@ describe('เริ่มวิ่ง (วิ่งสลับเดิน)', (
     expect(d.guide?.filter(s => s.kind === 'work')).toHaveLength(8)
     expect(d.guide?.every(s => !s.pace)).toBe(true)
     expect(weekKm('start', 1)).toBe(0)
+  })
+})
+
+describe('วันสวนไม่มีท่าที่ต้องใช้อุปกรณ์ยิม', () => {
+  it('ท่าในโปรแกรมทุกท่าของวันสวนทำได้ที่สวน และท่าที่สลับเป็นท่ายิมไม่ถูกใช้วันสวน', async () => {
+    const { libEx } = await import('../../data/library')
+    const { applyCustom } = await import('../program')
+    for (const id of Object.keys(programs) as (keyof typeof programs)[])
+      for (let w = 1; w <= programs[id].weeks; w++)
+        for (const d of variants(id, w).park) for (const e of d.exercises) expect(libEx(e.name)?.where, `${id} w${w} ${e.name}`).not.toBe('gym')
+    const park = weekPlan('start', 1, () => 'park')
+    const swapped = applyCustom(park, 'start', { 'Hollow Body Hold': 'Ab Wheel Rollout' }, {})
+    expect(swapped.flatMap(d => d.exercises.map(e => e.name))).not.toContain('Ab Wheel Rollout')
+    const gym = applyCustom(weekPlan('physique', 1, () => 'gym'), 'physique', { 'Hanging Leg Raise': 'Ab Wheel Rollout' }, {})
+    expect(gym.flatMap(d => d.exercises.map(e => e.name)).includes('Ab Wheel Rollout') || !weekPlan('physique', 1, () => 'gym').some(d => d.exercises.some(e => e.name === 'Hanging Leg Raise'))).toBe(true)
   })
 })
