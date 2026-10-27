@@ -253,6 +253,20 @@ test('โปรแกรมเริ่มวิ่ง: วิ่งสลับ
   await expect(page.getByText('วิ่งสลับเดิน (วิ่งรวม 8 นาที)').first()).toBeVisible()
 })
 
+test('ตารางฝึก: กดดูสัปดาห์อื่นไม่เปลี่ยนสัปดาห์ปัจจุบัน และเปลี่ยนได้ด้วยปุ่ม', async ({ page }) => {
+  await seed(page, { program: 'start', week: 1 })
+  await nav(page, 'ฝึก')
+  await expect(page.getByText('สัปดาห์ 1 · สัปดาห์นี้')).toBeVisible()
+  await page.getByRole('button', { name: /^สัปดาห์\s*3$/ }).click()
+  await expect(page.getByText('สัปดาห์ 3 · อีก 2 สัปดาห์')).toBeVisible()
+  await page.getByRole('button', { name: 'กลับไปสัปดาห์นี้ (1)' }).click()
+  await expect(page.getByText('สัปดาห์ 1 · สัปดาห์นี้')).toBeVisible()
+  await page.getByRole('button', { name: /^สัปดาห์\s*3$/ }).click()
+  await page.getByRole('button', { name: 'ข้ามไปสัปดาห์ 3' }).click()
+  await expect(page.getByText('สัปดาห์ 3 · สัปดาห์นี้')).toBeVisible()
+  expect(await idb(page, 'programStart')).toBeTruthy()
+})
+
 test('รายงาน error: เก็บในเครื่องและดูได้จากเมนูบัญชี', async ({ page }) => {
   await seed(page)
   await expect(page.getByText(/เป้าเดือน/)).toBeVisible() // รอแอปโหลดเสร็จ (ตัวดัก error ติดตั้งหลังโหลดที่เก็บข้อมูล)

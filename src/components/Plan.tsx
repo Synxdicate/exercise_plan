@@ -52,9 +52,12 @@ function PlanBody() {
   const [runs] = useRuns()
   const est = useMemo(() => estimate(runs), [runs])
 
-  const week = p.autoWeek ? viewWeek : p.currentWeek
+  // กดสัปดาห์ = ดูเฉย ๆ ไม่เปลี่ยนสัปดาห์ปัจจุบัน (เปลี่ยนด้วยปุ่ม "ใช้เป็นสัปดาห์นี้")
+  const [shownFor, setShownFor] = useState(p.currentWeek)
+  if (shownFor !== p.currentWeek) { setShownFor(p.currentWeek); setViewWeek(p.currentWeek) }
+  const week = viewWeek
   const isThisWeek = week === p.currentWeek
-  const selectWeek = (w: number) => (p.autoWeek ? setViewWeek(w) : p.setWeek(w))
+  const selectWeek = setViewWeek
   const days = p.plan(week)
   const dayDone = useDayDone()
   const isDone = (i: number) => dayDone(week, i, days[i])
@@ -92,8 +95,8 @@ function PlanBody() {
             <button key={w} onClick={() => selectWeek(w)}
               className={cx('relative flex min-w-14 shrink-0 snap-start flex-col items-center rounded-2xl px-3 py-1.5 ring-1',
                 w === week ? 'bg-ink text-bg ring-ink' : 'bg-card text-ink ring-line')}>
-              <span className={cx('text-[10px]', w === week ? 'opacity-70' : 'text-muted')}>
-                {w === p.meta.weeks && p.isRace ? 'แข่ง' : light ? 'เบา' : p.ongoing ? 'รอบที่' : 'สัปดาห์'}
+              <span className={cx('text-[10px]', w === week ? 'opacity-70' : w === p.currentWeek ? 'font-bold text-accent' : 'text-muted')}>
+                {w === p.currentWeek ? 'สัปดาห์นี้' : w === p.meta.weeks && p.isRace ? 'แข่ง' : light ? 'เบา' : p.ongoing ? 'รอบที่' : 'สัปดาห์'}
               </span>
               <span className="text-base font-bold leading-tight">{w}</span>
               {w === p.currentWeek && <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-accent" />}
@@ -105,7 +108,7 @@ function PlanBody() {
       {/* แถบวัน */}
       <div className="rounded-3xl bg-card p-3 shadow-sm ring-1 ring-line">
         <div className="mb-2 flex items-center justify-between px-1 text-xs">
-          <span className="font-semibold">สัปดาห์ {week}{isThisWeek && ' · สัปดาห์นี้'}</span>
+          <span className="font-semibold">สัปดาห์ {week} · {isThisWeek ? 'สัปดาห์นี้' : week < p.currentWeek ? `${p.currentWeek - week} สัปดาห์ก่อน` : `อีก ${week - p.currentWeek} สัปดาห์`}</span>
           <span className="tabular-nums text-muted">{doneCount}/{trainingIdx.length} วัน{p.kmTarget(week) ? ` · วิ่ง ${p.kmTarget(week)} กม.` : ''}</span>
         </div>
         <div className="grid grid-cols-7 gap-1">
@@ -127,6 +130,12 @@ function PlanBody() {
         </div>
         <div className="mt-2 px-1"><Meter value={doneCount} max={trainingIdx.length} tone="good" /></div>
         {note && <p className="mt-2 px-1 text-xs text-muted">{note}</p>}
+        {!isThisWeek && (
+          <div className="mt-2 flex flex-wrap gap-2 px-1">
+            <Button size="sm" variant="soft" onClick={() => setViewWeek(p.currentWeek)}>กลับไปสัปดาห์นี้ ({p.currentWeek})</Button>
+            {!p.autoWeek && <Button size="sm" variant="soft" onClick={() => p.setWeek(week)}>{week < p.currentWeek ? `ทำสัปดาห์ ${week} ซ้ำ` : `ข้ามไปสัปดาห์ ${week}`}</Button>}
+          </div>
+        )}
       </div>
 
       {/* วันที่เลือก */}
