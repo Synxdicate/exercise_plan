@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { programs, startSessions, variants, weekKm, weekPlan } from '../../data/programs'
 import { weeklySets } from '../../data/muscles'
 
-const race = ['five', 'ten', 'half', 'full'] as const
+const race = ['mini', 'five', 'ten', 'half', 'full'] as const
 const running = ['base', ...race] as const
 
 describe('โปรแกรมวิ่ง', () => {
@@ -53,7 +53,7 @@ describe('โปรแกรมวิ่ง', () => {
 
   it('วิ่งแต่ละครั้งไม่ยาวเกิน 110% ของครั้งที่ยาวที่สุดใน 30 วันก่อนหน้า ยกเว้นวันแข่ง (Frandsen 2025)', () => {
     // ระยะวิ่งยาวที่ควรทำได้ก่อนเริ่มแต่ละโปรแกรม (ตามที่เขียนใน summary)
-    const base = { base: 5, five: 5, ten: 5, half: 7, full: 18 } as const
+    const base = { base: 5, mini: 5, five: 5, ten: 5, half: 7, full: 18 } as const
     for (const p of running) {
       const cycles = programs[p].ongoing ? 2 : 1 // โปรแกรมวนรอบ ตรวจรอยต่อรอบด้วย
       const sessions: { day: number; km: number; race: boolean }[] = [{ day: -1, km: base[p], race: false }]

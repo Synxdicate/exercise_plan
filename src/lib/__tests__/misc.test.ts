@@ -432,3 +432,12 @@ describe('program weeks with repeats', () => {
     expect(weekAt(start, [], '2027-06-07', 9)).toBe(9) // ไม่เกินจำนวนสัปดาห์
   })
 })
+
+describe('mini marathon fit', () => {
+  it('a 4.8 km walk-jog makes the beginner mini program the recommendation', async () => {
+    const { capacity, recommended } = await import('../programFit')
+    const c = capacity([{ id: 'w', date: '2026-10-27', km: 4.8, seconds: 2950, kind: 'easy', source: 'gps' }], '2026-10-28')
+    expect(c.longestKm).toBe(0)
+    expect(recommended(c)).toBe('mini')
+  })
+})

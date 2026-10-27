@@ -46,6 +46,12 @@ export const guides = {
   ],
   /** ทดสอบ 5K (แทนการตรวจ VO2max ในแล็บ): วอร์ม 10 นาที → 5 กม. เต็มที่แบบคุมได้ → คูลดาวน์ — ผลใช้อัปเดตโซนเพซ */
   timeTrial: (): Step[] => [{ kind: 'warm', sec: 600, pace: 'easy' }, { kind: 'work', m: 5000, pace: 'interval', label: 'ทดสอบ 5K' }, cool(600)],
+  /** วิ่งสลับเดินจนครบระยะ: เดินวอร์ม 5 นาที → วิ่ง run / เดิน walk นาที (จำนวนรอบประมาณจากเพซรวม ~10 นาที/กม.) → เดินคูลดาวน์ */
+  runWalk: (km: number, run: number, walk: number): Step[] => [
+    { kind: 'warm', sec: 300, label: 'เดินเร็ววอร์มอัพ' },
+    ...repeat(Math.ceil((km * 10) / (run + walk)), { kind: 'work', sec: run * 60, label: 'วิ่งเบา' }, { kind: 'recover', sec: walk * 60, label: 'เดิน' }),
+    { kind: 'cool', sec: 300, label: 'เดินคูลดาวน์' },
+  ],
   /** โปรแกรมหุ่น: วอร์ม 10 นาที → เร็ว 1 / จ็อก 2 × n → คูลดาวน์ 5 นาที */
   intervals: (n: number): Step[] => [{ kind: 'warm', sec: 600, pace: 'easy' }, ...repeat(n, { kind: 'work', sec: 60, pace: 'interval' }, { kind: 'recover', sec: 120, pace: 'easy' }), cool()],
 }

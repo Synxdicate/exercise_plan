@@ -1,8 +1,8 @@
 import { gymWeek, parkWeek, type Day, type Exercise } from './workouts'
 import { guides, type Step } from '../lib/guide'
 
-export type ProgramId = 'physique' | 'strength' | 'start' | 'base' | 'five' | 'ten' | 'half' | 'full'
-type RunProgram = Exclude<ProgramId, 'physique' | 'strength' | 'start'>
+export type ProgramId = 'physique' | 'strength' | 'start' | 'mini' | 'base' | 'five' | 'ten' | 'half' | 'full'
+type RunProgram = Exclude<ProgramId, 'physique' | 'strength' | 'start' | 'mini'>
 export type Mode = 'gym' | 'park'
 export type LocationPref = Mode | 'mix'
 
@@ -10,6 +10,7 @@ export type LocationPref = Mode | 'mix'
 export const programs: Record<ProgramId, { name: string; short: string; weeks: number; raceKm?: number; ongoing?: boolean; summary: string }> = {
   physique: { name: 'หุ่นลีนแบบ Tom Holland', short: 'หุ่น', weeks: 12, summary: 'เวท 3 วัน + วิ่ง 2 วัน เน้นสร้างกล้ามและลดไขมัน' },
   start: { name: 'เริ่มวิ่ง (วิ่งสลับเดิน)', short: 'เริ่มวิ่ง', weeks: 9, summary: 'วิ่งสลับเดิน 3 วัน + เวทเบา 2 วัน จนวิ่งต่อเนื่อง 30 นาทีได้' },
+  mini: { name: 'มินิมาราธอน 10.5 กม. (มือใหม่)', short: 'มินิ', weeks: 10, raceKm: 10.5, summary: 'วิ่งสลับเดิน → วิ่งต่อเนื่อง 3 วัน + เวทเบา 2 วัน (~11 → 17 กม./สัปดาห์) ใส่วันแข่งได้' },
   base: { name: 'วิ่งต่อเนื่อง (ไม่มีเป้าแข่ง)', short: 'วิ่ง', weeks: 4, ongoing: true, summary: 'วิ่ง 3 วัน + เวท 2 วัน รักษาความฟิต ไม่มีเป้าแข่ง (~12–16 กม./สัปดาห์)' },
   strength: { name: 'เวทอย่างเดียว', short: 'เวท', weeks: 4, ongoing: true, summary: 'เวท 4 วัน ไม่มีวิ่ง สัปดาห์ที่ 4 ของรอบเบาลง' },
   five: { name: '5K เน้นความเร็ว', short: '5K', weeks: 8, raceKm: 5, summary: 'วิ่ง 3–4 วัน เน้น interval ให้ 5K เร็วขึ้น (~12 → 18 กม./สัปดาห์)' },
@@ -270,6 +271,51 @@ function startWeek(mode: Mode, week: number): Day[] {
   ]
 }
 
+// ---------- มินิมาราธอนสำหรับมือใหม่ (10 สัปดาห์) ----------
+// เริ่มจากวิ่งสลับเดิน ~5 กม. ไม่มีวันวิ่งหนัก — วิ่งยาวเพิ่มทีละ ≤10% (Frandsen 2025) มีสัปดาห์ลดปริมาณและ taper
+// วันแข่งวิ่งสลับเดินได้ (10.5 กม. ≈ 1.3 เท่าของวิ่งยาวที่สุด — ระยะวันแข่งได้รับยกเว้นกฎ 10%)
+// [วิ่งเบา อังคาร/พฤหัส กม., วิ่งยาว กม., นาทีวิ่ง, นาทีเดิน (0 = วิ่งต่อเนื่อง)]
+const miniWeeks: { easy: number; long: number; run: number; walk: number; note?: string }[] = [
+  { easy: 3, long: 5, run: 3, walk: 1, note: 'วิ่งช้าระดับพูดเป็นประโยคได้ เดินตามจังหวะเสียงนำ ไม่ต้องรอให้เหนื่อยก่อนเดิน' },
+  { easy: 3, long: 5.5, run: 4, walk: 1 },
+  { easy: 3.5, long: 6, run: 5, walk: 1 },
+  { easy: 3, long: 5, run: 5, walk: 1, note: 'สัปดาห์ลดปริมาณ ให้ร่างกายปรับตัว' },
+  { easy: 3.5, long: 6.5, run: 8, walk: 1 },
+  { easy: 4, long: 7, run: 10, walk: 1 },
+  { easy: 4, long: 7.5, run: 15, walk: 1 },
+  { easy: 4.5, long: 8.2, run: 0, walk: 0, note: 'วิ่งต่อเนื่องได้แล้ว — เหนื่อยเกินเดินพักได้ 1 นาที ไม่ผิด' },
+  { easy: 3.5, long: 6, run: 0, walk: 0, note: 'Taper: ลดระยะ ให้ขาสดก่อนวันแข่ง' },
+  { easy: 3, long: 10.5, run: 0, walk: 0, note: 'สัปดาห์แข่ง! วางแผนวิ่ง 8 นาที เดิน 1 นาทีตั้งแต่ต้น ดื่มน้ำทุกจุด ออกตัวช้า' },
+]
+
+function miniWeek(mode: Mode, week: number): Day[] {
+  const n = miniWeeks.length
+  const w = miniWeeks[Math.min(Math.max(week, 1), n) - 1]
+  const last = week >= n
+  const [a, b] = runnerStrength[mode]
+  const light = (list: Exercise[]) => list.map(e => ({ ...e, sets: '2' }))
+  const note = 'มือใหม่: ท่าละ 2 เซ็ต เหลือแรง 3–4 ครั้ง ไม่มีท่ากระโดด'
+  const ratio = w.walk ? `วิ่ง ${w.run} นาที / เดิน ${w.walk} นาที` : ''
+  const easy = (key: string, day: string, km: number): Day => w.walk
+    ? runDay(key, day, `วิ่งสลับเดิน ${km} กม.`, km, 'easy', `${ratio} จนครบระยะ (วิ่งช้าพูดเป็นประโยคได้)`, w.note, guides.runWalk(km, w.run, w.walk))
+    : runDay(key, day, 'Easy run', km, 'easy', 'วิ่งเบาระดับพูดคุยได้ (โซน E)', w.note)
+  return [
+    { key: 'strA', day: 'จันทร์', title: 'เวท A — ทั้งตัว', type: 'strength', duration: '35 นาที', note, exercises: light(a) },
+    easy('easyA', 'อังคาร', w.easy),
+    restDay('rest1', 'พุธ'),
+    last ? runDay('easyB', 'พฤหัสบดี', 'Easy run', 2.5, 'easy', 'วิ่งเบาสั้น ๆ ให้ขาตื่นตัว', w.note) : easy('easyB', 'พฤหัสบดี', w.easy),
+    last
+      ? { key: 'strB', day: 'ศุกร์', title: 'พัก / เดินเบา ๆ', type: 'rest', duration: '-', note: 'สัปดาห์แข่ง งดเวท', exercises: [] }
+      : { key: 'strB', day: 'ศุกร์', title: 'เวท B — ทั้งตัว', type: 'strength', duration: '35 นาที', note, exercises: light(b) },
+    restDay('rest2', 'เสาร์'),
+    last
+      ? runDay('long', 'อาทิตย์', 'วันแข่ง มินิมาราธอน 10.5 กม.', w.long, 'race', 'วิ่ง 8 นาที เดิน 1 นาทีตั้งแต่ต้น ออกตัวช้ากว่าที่รู้สึกว่าไหว ดื่มน้ำทุกจุด', w.note)
+      : w.walk
+        ? runDay('long', 'อาทิตย์', `วิ่งยาวสลับเดิน ${w.long} กม.`, w.long, 'long', `${ratio} จนครบระยะ — เน้นเวลาบนขา ไม่เน้นความเร็ว`, undefined, guides.runWalk(w.long, w.run, w.walk))
+        : runDay('long', 'อาทิตย์', 'วิ่งยาว (Long run)', w.long, 'long', 'ช้าระดับพูดคุยได้ (โซน E) — เดินพักได้'),
+  ]
+}
+
 // ---------- เวทอย่างเดียว ----------
 // ใช้วันเวทของโปรแกรมหุ่น 3 วัน (บน/ล่าง/บน) + วันขาที่ 2 = 4 วัน/สัปดาห์ (บน 2 ล่าง 2 — แต่ละกล้ามได้ฝึก 2 ครั้ง/สัปดาห์)
 // สัปดาห์ที่ 4 ของรอบเป็น Deload ลดเซ็ตครึ่งหนึ่ง น้ำหนักเท่าเดิม
@@ -314,6 +360,7 @@ export function variants(program: ProgramId, week: number): Record<Mode, Day[]> 
   if (program === 'physique') return { gym: gymWeek, park: parkWeek }
   if (program === 'strength') return { gym: strengthWeek('gym', week), park: strengthWeek('park', week) }
   if (program === 'start') return { gym: startWeek('gym', week), park: startWeek('park', week) }
+  if (program === 'mini') return { gym: miniWeek('gym', week), park: miniWeek('park', week) }
   return { gym: raceWeek(program, 'gym', week), park: raceWeek(program, 'park', week) }
 }
 
@@ -345,6 +392,7 @@ export const locationInfo: Record<LocationPref, { label: string; text: string }>
 export const weekNote = (program: ProgramId, week: number) =>
   program === 'strength' ? (week === 4 ? STRENGTH_DELOAD : undefined)
     : program === 'start' ? startWeeks[week - 1]?.note
+    : program === 'mini' ? miniWeeks[week - 1]?.note
     : program !== 'physique' ? tables[program][(week - 1) % tables[program].length]?.note
       : week === 9 ? 'สัปดาห์ Deload: ทำทุกท่าครึ่งหนึ่งของจำนวนเซ็ต น้ำหนักเท่าเดิม วิ่งเบาอย่างเดียว' : undefined
 
