@@ -11,4 +11,8 @@ describe('pace zones (เทียบเพซ 5K = 5:00/กม.)', () => {
     expect(z.reduce((a, b) => a + b.pct, 0)).toBeCloseTo(1)
     expect(z.find(x => x.id === 'E')!.km).toBeCloseTo(1)
   })
+  it('เพซเดิน (ช้ากว่า 10:00/กม.) เป็น Easy เสมอ แม้เพซ 5K อ้างอิงจะช้า', () => {
+    expect(zoneOf(780, 850)).toBe('E')
+    expect(zoneOf(985, 850)).toBe('E')
+  })
 })

@@ -32,7 +32,7 @@ export async function buildBackup() {
 /** บันทึกไฟล์สำรอง: แอปเปิดหน้าต่างแชร์ (เลือกเก็บลง Drive/ไฟล์ได้), เว็บดาวน์โหลด */
 export async function saveBackup() {
   const json = JSON.stringify(await buildBackup())
-  const name = `exercise-plan-backup-${today()}.json`
+  const name = `kao-backup-${today()}.json`
   if (isNative) {
     const { uri } = await Filesystem.writeFile({ path: name, data: btoa(unescape(encodeURIComponent(json))), directory: Directory.Cache })
     await Share.share({ files: [uri], dialogTitle: 'เก็บไฟล์สำรองข้อมูล' })

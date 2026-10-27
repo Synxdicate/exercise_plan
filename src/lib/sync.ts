@@ -154,7 +154,7 @@ export function exportData() {
 
 export function importData(json: unknown) {
   const d = (json as { app?: string; data?: Record<string, unknown> })
-  if (d?.app !== 'exercise-plan' || !d.data) throw new Error('ไม่ใช่ไฟล์ backup ของ Exercise-Plan')
+  if (d?.app !== 'exercise-plan' || !d.data) throw new Error('ไม่ใช่ไฟล์ backup ของ Kao')
   for (const key of SYNCED_KEYS) {
     if (d.data[key] === undefined || d.data[key] === null) continue
     hydrate(key, d.data[key])

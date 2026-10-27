@@ -22,9 +22,13 @@ export function vickersMarathon(sec: number, km: number, milesPerWeek: number) {
 type Source = { km: number; seconds: number; date: string; runId: string; segment: boolean }
 
 /** ผลที่ใช้คำนวณ: ทั้งการวิ่ง (≥3 กม.) และช่วงที่เร็วที่สุดภายในการวิ่ง (5K/10K/ฮาล์ฟ) — เลือกอันที่เทียบเป็น 5K ได้เร็วที่สุด */
+// ช้ากว่า 10:00/กม. คือเดินเร็ว/เดินสลับวิ่ง ไม่ใช่การวิ่งเต็มที่ — ใช้เป็นตัวอ้างอิงความฟิตไม่ได้
+// (เคยทำให้เพซ 5K อ้างอิงช้ามาก แล้วเพซเดิน 13–16 นาที/กม. ถูกจัดเป็นโซน Speed)
+export const MAX_SOURCE_PACE = 600
+
 function bestSource(runs: Run[]): Source | null {
   let best: Source | null = null
-  const consider = (c: Source) => { if (!best || riegel(c.seconds, c.km, 5) < riegel(best.seconds, best.km, 5)) best = c }
+  const consider = (c: Source) => { if (c.seconds / c.km > MAX_SOURCE_PACE) return; if (!best || riegel(c.seconds, c.km, 5) < riegel(best.seconds, best.km, 5)) best = c }
   for (const r of runs) {
     if (r.km >= 3 && r.seconds > 0) consider({ km: r.km, seconds: r.seconds, date: r.date, runId: r.id, segment: false })
     if (r.route && r.times && r.times.length === r.route.length)

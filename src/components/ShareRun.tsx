@@ -29,7 +29,7 @@ export function ShareRunSheet({ run, onClose }: { run: Run; onClose: () => void 
     setBusy(true)
     try {
       await saveImage(run, ready.canvas, style)
-      if (isNative) notify('บันทึกลงแกลเลอรีแล้ว (อัลบั้ม Exercise-Plan)', 'good')
+      if (isNative) notify('บันทึกลงแกลเลอรีแล้ว (อัลบั้ม Kao)', 'good')
     } catch (e) {
       notify(e instanceof Error ? e.message : 'บันทึกรูปไม่สำเร็จ', 'bad')
     } finally {

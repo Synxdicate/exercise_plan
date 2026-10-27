@@ -52,7 +52,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
       <div className="flex items-center gap-3">
         <div className="grid size-11 place-items-center rounded-2xl bg-accent text-white"><Dumbbell size={22} /></div>
         <div>
-          <div className="text-xs font-semibold uppercase tracking-wider text-accent">Exercise-Plan</div>
+          <div className="text-xs font-semibold uppercase tracking-wider text-accent">Kao</div>
           <div className="text-lg font-bold">ตั้งค่าครั้งแรก</div>
         </div>
       </div>

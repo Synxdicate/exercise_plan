@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { CircleMarker, MapContainer, Polyline, TileLayer, useMap } from 'react-leaflet'
-import { latLngBounds } from 'leaflet'
+import { latLngBounds, type Polyline as LPolyline } from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import type { Point } from '../lib/gps'
 
@@ -37,7 +37,9 @@ export default function RunMap({ route, position, follow = false, className = 'h
       attributionControl className={`w-full overflow-hidden rounded-2xl ${className}`}>
       <TileLayer url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" maxZoom={19}
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' />
-      {route.length > 1 && <Polyline positions={route} pathOptions={{ color: accent, weight: 5, opacity: 0.9, lineCap: 'round', lineJoin: 'round' }} />}
+      {/* การวิ่งที่จบแล้ว: เส้นทางค่อย ๆ ลากจากจุดเริ่มถึงจุดจบ (pathLength=1 ให้ dash ใช้สัดส่วนของเส้น) */}
+      {route.length > 1 && <Polyline positions={route} pathOptions={{ color: accent, weight: 5, opacity: 0.9, lineCap: 'round', lineJoin: 'round', className: position ? undefined : 'route-draw' }}
+        eventHandlers={{ add: e => (e.target as LPolyline).getElement()?.setAttribute('pathLength', '1') }} />}
       {route.length > 0 && !position && <CircleMarker center={route[0]} radius={6} pathOptions={{ color: '#fff', weight: 2, fillColor: '#10b981', fillOpacity: 1 }} />}
       {route.length > 1 && !position && <CircleMarker center={route.at(-1)!} radius={6} pathOptions={{ color: '#fff', weight: 2, fillColor: accent, fillOpacity: 1 }} />}
       {position && <CircleMarker center={position} radius={8} pathOptions={{ color: '#fff', weight: 3, fillColor: run, fillOpacity: 1 }} />}

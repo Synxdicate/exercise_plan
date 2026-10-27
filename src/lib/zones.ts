@@ -13,7 +13,9 @@ export const ZONES: { id: ZoneId; label: string; desc: string; color: string }[]
 // ขอบล่างของแต่ละโซน (สัดส่วนของเพซ 5K) — เพซมากกว่า = ช้ากว่า
 const BOUNDS: [ZoneId, number][] = [['E', 1.2], ['M', 1.1], ['T', 1.04], ['I', 0.97]]
 
+/** ช้ากว่า 10:00/กม. (เดิน/เดินสลับวิ่ง) เป็น Easy เสมอ ไม่ว่าเพซ 5K อ้างอิงจะเป็นเท่าไร */
 export function zoneOf(pace: number, fiveKPace: number): ZoneId {
+  if (pace >= 600) return 'E'
   const r = pace / fiveKPace
   for (const [id, min] of BOUNDS) if (r >= min) return id
   return 'R'

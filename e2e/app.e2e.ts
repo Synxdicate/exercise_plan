@@ -31,7 +31,7 @@ test('โหมดไม่ล็อกอิน: onboarding, บันทึก
   await expect(page.getByText('ยังไม่เคยสำรองข้อมูล')).toBeVisible()
   const download = page.waitForEvent('download')
   await page.getByRole('button', { name: 'สำรองเลย' }).click()
-  expect((await download).suggestedFilename()).toMatch(/^exercise-plan-backup-.*\.json$/)
+  expect((await download).suggestedFilename()).toMatch(/^kao-backup-.*\.json$/)
   await expect(page.getByText('ยังไม่เคยสำรองข้อมูล')).toBeHidden()
 
   // เมนูบัญชี → ล็อกอิน → กลับมาโหมดไม่ล็อกอิน ข้อมูลยังอยู่
@@ -217,6 +217,22 @@ test('ระหว่างวิ่ง: สัญญาณ GPS หายเก�
   await expect(page.getByText(/สัญญาณ GPS หาย/)).toBeVisible({ timeout: 30_000 })
   await context.setGeolocation({ latitude: 16.4420, longitude: 102.8360, accuracy: 8 })
   await expect(page.getByText(/สัญญาณ GPS หาย/)).toBeHidden({ timeout: 10_000 })
+})
+
+test('นักวิ่งเงา: วิ่งทดสอบ 5K แข่งกับ 5K ที่ดีที่สุดเร็วขึ้น 1.5%', async ({ page, context }) => {
+  await context.grantPermissions(['geolocation'])
+  await context.setGeolocation({ latitude: 16.4419, longitude: 102.8359, accuracy: 8 })
+  await seed(page, {
+    program: 'physique',
+    runs: [{ id: 'b', date: ymd(3), km: 5, seconds: 1800, kind: 'race', source: 'manual' }],
+    readiness: { [ymd(0)]: { sleep: 0, sore: 0, pain: false, level: 'green' } },
+  })
+  await nav(page, 'วิ่ง')
+  await page.getByRole('button', { name: 'แข่ง', exact: true }).click()
+  await page.getByRole('button', { name: /^(เริ่มวิ่ง|วิ่งอีกรอบ)$/ }).click()
+  await page.getByRole('button', { name: /เริ่มจับเวลา|เริ่มเลย/ }).click()
+  await expect(page.getByText('นักวิ่งเงา')).toBeVisible()
+  await expect(page.getByText('5K ที่ดีที่สุด เร็วขึ้น 1.5% (29:33)')).toBeVisible()
 })
 
 test('รายงาน error: เก็บในเครื่องและดูได้จากเมนูบัญชี', async ({ page }) => {

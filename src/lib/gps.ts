@@ -244,7 +244,7 @@ export function useRunTracker(opts: Opts = {}) {
       // แอป Android: ใช้ GPS เบื้องหลัง ปิดจอแล้วยังบันทึกต่อ
       if (nativeWatch.current) return true
       nativeWatch.current = BackgroundGeolocation.addWatcher(
-        { backgroundTitle: 'Exercise-Plan กำลังบันทึกการวิ่ง', backgroundMessage: 'แตะเพื่อกลับเข้าแอป', requestPermissions: true, stale: false, distanceFilter: 0 },
+        { backgroundTitle: 'Kao กำลังบันทึกการวิ่ง', backgroundMessage: 'แตะเพื่อกลับเข้าแอป', requestPermissions: true, stale: false, distanceFilter: 0 },
         (loc, err) => {
           if (err) {
             if (err.code === 'NOT_AUTHORIZED') {

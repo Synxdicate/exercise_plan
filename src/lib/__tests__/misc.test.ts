@@ -357,3 +357,13 @@ describe('solo mode', () => {
     expect(names(applyCustom(days, 'physique', {}, {}, false))).toContain('Back Squat')
   })
 })
+
+describe('estimate ignores walking-pace runs', () => {
+  it('a 3.3 km walk-jog at ~14 min/km is not a fitness reference', async () => {
+    const { estimate } = await import('../pace')
+    const walk = { id: 'w', date: '2026-10-25', km: 3.3, seconds: 3.3 * 850, kind: 'easy' as const, source: 'gps' as const }
+    expect(estimate([walk], '2026-10-27')).toBeNull()
+    const run = { ...walk, id: 'r', km: 5, seconds: 1800 }
+    expect(estimate([walk, run], '2026-10-27')?.fiveK).toBe(1800)
+  })
+})

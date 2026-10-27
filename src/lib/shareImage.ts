@@ -93,7 +93,7 @@ export async function renderRunCard(run: Run, style: CardStyle = 'card'): Promis
   g.globalAlpha = 0.75
   g.font = `600 34px ${FONT}`
   g.textAlign = 'right'
-  g.fillText('Exercise-Plan', W - 90, 150)
+  g.fillText('Kao', W - 90, 150)
   g.textAlign = 'left'
   g.globalAlpha = 1
   return c
@@ -125,7 +125,7 @@ function drawSticker(g: CanvasRenderingContext2D, c: HTMLCanvasElement, run: Run
   if (hasRoute) drawRoute(g, run, { x: 200, y: y - 20, w: W - 400, h: H - y - 100 }, ink, 11)
   g.globalAlpha = 0.8
   g.font = `600 32px ${FONT}`
-  g.fillText(`Exercise-Plan · ${thaiDate(run.date)}`, W / 2, H - 40)
+  g.fillText(`Kao · ${thaiDate(run.date)}`, W / 2, H - 40)
   g.globalAlpha = 1
   g.shadowBlur = 0
   g.textAlign = 'left'
@@ -153,7 +153,7 @@ export async function shareRunImage(run: Run, canvas: HTMLCanvasElement, style: 
   downloadImage(run, canvas, style)
 }
 
-const ALBUM = 'Exercise-Plan'
+const ALBUM = 'Kao'
 
 /** อัลบั้มของแอปในแกลเลอรี (สร้างครั้งแรก) — Android ต้องระบุอัลบั้มตอนบันทึก */
 async function albumId() {
@@ -164,7 +164,7 @@ async function albumId() {
   return find()
 }
 
-/** บันทึกรูป: แอปบันทึกลงแกลเลอรี (อัลบั้ม Exercise-Plan) เป็น PNG คงความโปร่งใส, เว็บดาวน์โหลดไฟล์ */
+/** บันทึกรูป: แอปบันทึกลงแกลเลอรี (อัลบั้ม Kao) เป็น PNG คงความโปร่งใส, เว็บดาวน์โหลดไฟล์ */
 export async function saveImage(run: Run, canvas: HTMLCanvasElement, style: CardStyle = 'card') {
   if (!isNative) return downloadImage(run, canvas, style)
   await Media.savePhoto({ path: canvas.toDataURL('image/png'), albumIdentifier: await albumId(), fileName: fileName(run, style).replace(/\.png$/, '') })

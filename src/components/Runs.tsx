@@ -1,5 +1,5 @@
-import { lazy, Suspense, useMemo, useRef, useState, type ReactNode } from 'react'
-import { CalendarCheck, Check, CircleCheck, FileUp, Footprints, Gauge, History, Map as MapIcon, Pause, Pencil, Play, Plus, Satellite, Share2, Trash2, TriangleAlert, Trophy, Volume2, VolumeX, X } from 'lucide-react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { CalendarCheck, Check, CircleCheck, FileUp, Footprints, Gauge, Ghost, History, Map as MapIcon, Pause, Pencil, Play, Plus, Satellite, Share2, Trash2, TriangleAlert, Trophy, Volume2, VolumeX, X } from 'lucide-react'
 import { GOOD_ACCURACY_M, useRunTracker, type Point } from '../lib/gps'
 import { formatDuration, formatPace, runKinds, uid, useRuns, type Run } from '../lib/log'
 import { criticalSpeed, estimate, paceHint, predictionTrend, type Estimate } from '../lib/pace'
@@ -34,6 +34,9 @@ import { MatchedRuns } from './Matched'
 import { CrossTrainingCard } from './CrossTraining'
 import { heatmapRoutes } from '../lib/matched'
 import { useRaceGoals } from '../lib/useGoals'
+import { useCountUp } from '../lib/useCountUp'
+import { ghostLead, ghostMeters, ghostText, raceGhost, trialGhost, type Ghost as GhostTarget } from '../lib/ghost'
+import { raceKeyOf } from '../lib/racePlan'
 import { parseDuration, raceKm, raceLabel, type RaceKey } from '../lib/goals'
 import { DateInput, NumberInput, SelectInput, TextInput } from './Form'
 import { cx } from '../lib/cx'
@@ -41,6 +44,8 @@ import { ask, notify } from '../lib/dialog'
 
 // วิ่งทดสอบ 5K (เลือกชนิด "แข่ง" ในวันที่ไม่ใช่วันแข่ง)
 const TRIAL = guides.timeTrial()
+// เรียกจาก callback ของ GPS เท่านั้น (ไม่ใช่ตอน render)
+const clockNow = () => Date.now()
 
 const RunMap = lazy(() => import('./RunMap'))
 const RouteHeatmap = lazy(() => import('./RouteHeatmap'))
@@ -73,16 +78,50 @@ export function Runs() {
   // วันแข่งตามแผนไม่มีชุดซ้อม — เลือก "แข่ง" ในวันอื่นคือวิ่งทดสอบ 5K
   const steps = todayRun?.guide && kind === todayRun.runKind ? todayRun.guide : kind === 'race' && todayRun?.runKind !== 'race' ? TRIAL : null
   const guide = useGuide(guideOn ? steps : null, est?.paces, voice)
+  // นักวิ่งเงา: เฉพาะวิ่งทดสอบ 5K (ช่วง 5 กม.) และวันแข่งตามแผน
+  const [ghostOn, setGhostOn] = usePersisted('ghostOn', true)
+  const [raceGoals] = useRaceGoals()
+  const raceKey = kind === 'race' && todayRun?.runKind === 'race' ? raceKeyOf(todayRun.targetKm) : null
+  const best5k = useMemo(() => personalBests(runs).find(e => e.km === 5)?.best?.seconds, [runs])
+  const ghost: GhostTarget | null = raceKey ? raceGhost(raceKey, raceGoals[raceKey], est?.[raceKey])
+    : steps === TRIAL && guideOn ? trialGhost(best5k, est?.fiveK) : null
+  const [ghostNow, setGhostNow] = useState<{ lead: number; m: number; ghostM: number } | null>(null)
+  const ghostKm = useRef(0)
+  const tRef = useRef<{ elapsed: number } | null>(null)
+  const ghostTick = (meters: number) => {
+    if (!ghost || !ghostOn) return
+    const r = guide.runner
+    let m: number, sec: number
+    if (r) {
+      if (!r.state.started || r.state.done || r.steps[r.state.index]?.kind !== 'work') return
+      m = meters - r.state.stepM
+      sec = (r.state.clock - r.state.stepT) / 1000
+    } else {
+      m = meters
+      sec = tRef.current?.elapsed ?? 0
+    }
+    if (m > ghost.km * 1000) return
+    const lead = ghostLead(ghost, m, sec)
+    setGhostNow({ lead, m, ghostM: ghostMeters(ghost, sec) })
+    // บอกทุก กม. ที่ +250 ม. ไม่ให้ชนกับเสียงบอกระยะทุก กม.
+    const k = Math.floor((m - 250) / 1000) + 1
+    if (k > ghostKm.current) {
+      ghostKm.current = k
+      if (voice) void speak(ghostText(lead))
+    }
+  }
+  const resetGhost = () => { setGhostNow(null); ghostKm.current = 0 }
   // โค้ชเสียงคุมเพซ — เรียกจาก onTick (callback ของ GPS) จึงเตือนได้แม้ปิดจอ
   const [coachOn, setCoachOn] = usePersisted('paceCoach', true)
   const coach = useRef(new PaceCoach())
   const coachStep = useRef<{ index: number; at: number }>({ index: -1, at: 0 })
   const onTick = (meters: number, active: boolean, pace: number | null) => {
     guide.onTick(meters, active)
+    ghostTick(meters)
     if (!voice || !coachOn || !est) return
     const r = guide.runner
     const step = r && r.state.started && !r.state.done ? r.steps[r.state.index] : null
-    const now = Date.now()
+    const now = clockNow()
     if (step && coachStep.current.index !== r!.state.index) {
       // เปลี่ยนช่วง: เพซ 30 วิล่าสุดยังเป็นของช่วงก่อน — รอให้นิ่งก่อนค่อยประเมิน
       coachStep.current = { index: r!.state.index, at: now }
@@ -103,6 +142,7 @@ export function Runs() {
     onTick,
     onEvent: e => { if (voice) void speak(eventText[e]) },
   })
+  useEffect(() => { tRef.current = t })
 
   const [shoes] = useShoes()
   const removePhotos = useRemovePhotosFor()
@@ -111,6 +151,8 @@ export function Runs() {
 
   const finish = () => {
     guide.reset()
+    if (ghostNow && ghostOn) notify(ghostNow.lead >= 0 ? `ชนะเงา ${Math.round(ghostNow.lead)} วินาที` : `ช้ากว่าเงา ${Math.round(-ghostNow.lead)} วินาที — ครั้งหน้าเอาใหม่`, ghostNow.lead >= 0 ? 'good' : 'info')
+    resetGhost()
     const r = t.finish()
     if (r.km < 0.05) return notify('ระยะสั้นเกินไป ไม่ได้บันทึก', 'bad')
     const run: Run = { id: uid(), date: today(), kind, source: 'gps', ...r }
@@ -133,7 +175,8 @@ export function Runs() {
   if (t.status !== 'idle') return (
     <ActiveRun t={t} kind={kind} target={todayRun?.targetKm} fiveK={est?.paces.interval} voice={voice} setVoice={setVoice} onFinish={finish}
       coachOn={coachOn && !!est} setCoachOn={est ? setCoachOn : undefined}
-      onDiscard={() => { guide.reset(); t.discard() }}
+      onDiscard={() => { guide.reset(); resetGhost(); t.discard() }}
+      ghost={ghost && <GhostCard ghost={ghost} now={ghostNow} on={ghostOn} setOn={setGhostOn} />}
       guide={steps && (
         <GuideCard steps={steps} runner={guide.runner} meters={t.meters} paces={est?.paces}
           on={guideOn} setOn={setGuideOn} onSkip={() => guide.skip(t.meters)} />
@@ -243,12 +286,12 @@ export function Runs() {
           onProceed={light => { if (light) setKind('easy'); setChecking(false); t.acquire() }} />
       )}
 
-      {open && <RunDetail run={open} runs={runs} fiveK={(est ?? estimate([open]))?.paces.interval} onClose={() => setDetail(null)} onUpdate={patch => setRuns(prev => prev.map(x => (x.id === open.id ? { ...x, ...patch } : x)).sort((a, b) => a.date.localeCompare(b.date)))} onDelete={() => { setRuns(prev => prev.filter(x => x.id !== open.id)); removePhotos(open.id); setDetail(null) }} />}
+      {open && <RunDetail run={open} runs={runs} fiveK={est?.paces.interval} onClose={() => setDetail(null)} onUpdate={patch => setRuns(prev => prev.map(x => (x.id === open.id ? { ...x, ...patch } : x)).sort((a, b) => a.date.localeCompare(b.date)))} onDelete={() => { setRuns(prev => prev.filter(x => x.id !== open.id)); removePhotos(open.id); setDetail(null) }} />}
     </div>
   )
 }
 
-function ActiveRun({ t, kind, target, fiveK, voice, setVoice, coachOn, setCoachOn, onFinish, onDiscard, guide }: { t: ReturnType<typeof useRunTracker>; kind: Run['kind']; target?: number; fiveK?: number; voice: boolean; setVoice: (v: boolean) => void; coachOn: boolean; setCoachOn?: (v: boolean) => void; onFinish: () => void; onDiscard: () => void; guide?: ReactNode }) {
+function ActiveRun({ t, kind, target, fiveK, voice, setVoice, coachOn, setCoachOn, onFinish, onDiscard, guide, ghost }: { t: ReturnType<typeof useRunTracker>; kind: Run['kind']; target?: number; fiveK?: number; voice: boolean; setVoice: (v: boolean) => void; coachOn: boolean; setCoachOn?: (v: boolean) => void; onFinish: () => void; onDiscard: () => void; guide?: ReactNode; ghost?: ReactNode }) {
   const km = t.meters / 1000
   // ระหว่างวิ่ง ปุ่มย้อนกลับแค่ย่อแอป (GPS บันทึกต่อ) ไม่ออกจากหน้าวิ่ง
   useBackClose(() => void App.minimizeApp())
@@ -304,6 +347,7 @@ function ActiveRun({ t, kind, target, fiveK, voice, setVoice, coachOn, setCoachO
         </div>
 
         {guide}
+        {ghost}
 
         {t.lastGap && (
           <div className="flex animate-fade-up items-start gap-2 rounded-2xl bg-warn/15 p-3 text-sm text-warn">
@@ -377,13 +421,18 @@ function Splits({ splits, fiveK }: { splits: number[]; fiveK?: number }) {
 }
 
 function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { run: Run; runs: Run[]; fiveK?: number; onClose: () => void; onDelete: () => void; onUpdate: (patch: Partial<Run>) => void }) {
+  const kmUp = useCountUp(run.km)
+  const secUp = useCountUp(run.seconds)
   const [editing, setEditing] = useState(false)
   const [sharing, setSharing] = useState(false)
   useBackClose(onClose)
   const series = run.route && run.times ? paceSeries(run.route, run.times) : []
   const sa = splitAnalysis(run.splits)
   const saText = sa && {
-    negative: { t: 'Negative split', c: 'text-good', d: `ครึ่งหลังเร็วกว่าครึ่งแรก ${Math.abs(sa.diffPct).toFixed(1)}% — คุมแรงได้ดี` },
+    // เร็วขึ้นเกิน 10% มักแปลว่าช่วงแรกเดิน/วอร์มอัพ มากกว่าการคุมแรง
+    negative: sa.diffPct < -10
+      ? { t: 'ครึ่งหลังเร็วขึ้นมาก', c: 'text-run', d: `เร็วขึ้น ${Math.abs(sa.diffPct).toFixed(1)}% — ช่วงแรกน่าจะเป็นการวอร์มอัพหรือเดิน` }
+      : { t: 'Negative split', c: 'text-good', d: `ครึ่งหลังเร็วกว่าครึ่งแรก ${Math.abs(sa.diffPct).toFixed(1)}% — คุมแรงได้ดี` },
     even: { t: 'Even split', c: 'text-run', d: 'สองครึ่งเพซใกล้กัน — สม่ำเสมอดี' },
     positive: { t: 'Positive split', c: 'text-warn', d: `ครึ่งหลังช้าลง ${sa.diffPct.toFixed(1)}% — ลองออกตัวช้าลงอีกนิด` },
   }[sa.kind]
@@ -404,8 +453,8 @@ function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { run: Run
         {sharing && <ShareRunSheet run={run} onClose={() => setSharing(false)} />}
         {run.route && run.route.length > 1 && <Map route={run.route} className="mb-3 h-56" />}
         <div className="mb-3 grid grid-cols-3 gap-2 text-center">
-          <Stat label="ระยะ" value={run.km.toFixed(2)} sub="กม." accent />
-          <Stat label="เวลาเคลื่อนที่" value={formatDuration(run.seconds)} sub={run.elapsedSeconds ? `รวม ${formatDuration(run.elapsedSeconds)}` : undefined} />
+          <Stat label="ระยะ" value={kmUp.toFixed(2)} sub="กม." accent />
+          <Stat label="เวลาเคลื่อนที่" value={formatDuration(secUp)} sub={run.elapsedSeconds ? `รวม ${formatDuration(run.elapsedSeconds)}` : undefined} />
           <Stat label="เพซเฉลี่ย" value={formatPace(run.seconds, run.km)} sub="นาที/กม." />
         </div>
         {run.gapSeconds ? <p className="mb-3 rounded-xl bg-warn/15 p-2 text-xs text-warn">ปิดจอรวม {formatDuration(run.gapSeconds)} — ระยะช่วงนั้นเป็นค่าประมาณ</p> : null}
@@ -741,5 +790,38 @@ function HeatmapCard({ runs }: { runs: Run[] }) {
       </Suspense>
       <p className="mt-2 text-xs text-muted">{routes.length} เส้นทาง — ทางที่วิ่งบ่อยเส้นจะเข้มขึ้น{hidden ? ` (ไม่รวม ${hidden} ครั้งที่วิ่งที่อื่น)` : ''}</p>
     </Card>
+  )
+}
+
+/** นักวิ่งเงา: ตำแหน่งเราเทียบเงาบนเส้นระยะ + นำ/ตามหลังกี่วินาที */
+function GhostCard({ ghost, now, on, setOn }: { ghost: GhostTarget; now: { lead: number; m: number; ghostM: number } | null; on: boolean; setOn: (v: boolean) => void }) {
+  const total = ghost.km * 1000
+  const pos = (m: number) => `${Math.min(100, Math.max(0, (m / total) * 100))}%`
+  const ahead = now && now.lead >= 2
+  const behind = now && now.lead <= -2
+  return (
+    <div className="rounded-2xl bg-card p-3 ring-1 ring-line">
+      <div className="flex items-center justify-between gap-2">
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5 text-sm font-bold"><Ghost size={15} className="text-accent" /> นักวิ่งเงา</div>
+          <div className="truncate text-xs text-muted">{ghost.label}</div>
+        </div>
+        <label className="flex shrink-0 items-center gap-1.5 text-xs text-muted">
+          <input type="checkbox" className="size-4 accent-accent" checked={on} onChange={e => setOn(e.target.checked)} /> แข่ง
+        </label>
+      </div>
+      {on && (
+        <>
+          <div className={cx('mt-2 text-center text-2xl font-extrabold tabular-nums', ahead ? 'text-good' : behind ? 'text-bad' : 'text-ink')}>
+            {now ? ghostText(now.lead) : 'เริ่มเมื่อถึงช่วงวัดเวลา'}
+          </div>
+          <div className="relative mt-3 h-2 rounded-full bg-raised">
+            {now && <span className="absolute top-1/2 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-muted/60 ring-2 ring-card transition-[left] duration-1000 ease-linear" style={{ left: pos(now.ghostM) }} />}
+            {now && <span className="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent ring-2 ring-card transition-[left] duration-1000 ease-linear" style={{ left: pos(now.m) }} />}
+          </div>
+          <div className="mt-1 flex justify-between text-[10px] text-muted"><span>0</span><span>{ghost.km} กม.</span></div>
+        </>
+      )}
+    </div>
   )
 }

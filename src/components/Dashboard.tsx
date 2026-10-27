@@ -161,7 +161,7 @@ function Ring({ value, max, label, text }: { value: number; max: number; label: 
       <svg viewBox="0 0 72 72" className="size-12 shrink-0" aria-hidden>
         <circle cx="36" cy="36" r={r} fill="none" stroke="rgb(255 255 255 / .25)" strokeWidth="8" />
         {pct > 0 && <circle cx="36" cy="36" r={r} fill="none" stroke="white" strokeWidth="8" strokeLinecap="round"
-          strokeDasharray={`${c * pct} ${c}`} transform="rotate(-90 36 36)" />}
+          strokeDasharray={`${c * pct} ${c}`} transform="rotate(-90 36 36)" className="animate-ring" />}
       </svg>
       <div>
         <div className="text-xl font-extrabold tabular-nums">{text}</div>

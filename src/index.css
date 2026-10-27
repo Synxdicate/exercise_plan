@@ -92,6 +92,8 @@
   @keyframes sheet-up { from { transform: translateY(100%); } to { transform: none; } }
   @keyframes pop { 0% { transform: scale(.6); } 100% { transform: scale(1); } }
   @keyframes reveal { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  --animate-ring: ring-in .9s cubic-bezier(.2,.8,.2,1) both;
+  @keyframes ring-in { from { stroke-dasharray: 0 999; } }
   @keyframes beat { 0%, 100% { transform: scale(1); } 15% { transform: scale(1.25); } 30% { transform: scale(1); } 45% { transform: scale(1.15); } }
 }
 
@@ -121,6 +123,10 @@
   :root:not([data-theme="light"]) .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(.9) contrast(.9); }
 }
 :root[data-theme="dark"] .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(.9) contrast(.9); }
+
+/* เส้นทางวิ่งค่อย ๆ ลาก (ต้องมี pathLength="1" บน path) */
+.route-draw { stroke-dasharray: 1; animation: route-draw 1.4s cubic-bezier(.4,0,.2,1) both; }
+@keyframes route-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 
 /* เปลี่ยนธีมแบบนุ่ม ๆ */
 html.theme-fade, html.theme-fade * { transition: background-color .3s, color .3s, border-color .3s, fill .3s !important; }
