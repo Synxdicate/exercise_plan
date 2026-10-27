@@ -19,6 +19,7 @@ import { Badge, Button, Collapse, Meter, Segmented } from './ui'
 import { AddSheet, SwapSheet } from './ExercisePicker'
 import { RacePlan } from './RacePlan'
 import { ExerciseDemo } from './ExerciseDemo'
+import { CircuitCard } from './CircuitPlayer'
 
 const short = ['จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส', 'อา']
 const todayIdx = () => (new Date().getDay() + 6) % 7 // 0 = จันทร์
@@ -151,6 +152,8 @@ function PlanBody() {
           })}
         </ul>
       </section>
+
+      <CircuitCard />
 
       {picking && <ProgramSheet onClose={() => setPicking(false)} />}
       {checking !== null && (

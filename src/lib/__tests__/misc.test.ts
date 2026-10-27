@@ -326,3 +326,17 @@ describe('criticalSpeed', () => {
     expect(criticalSpeed([], '2026-10-25')).toBeNull()
   })
 })
+
+describe('core circuit', () => {
+  it('2 rounds of 30/15 with no rest after the last station', async () => {
+    const { buildCircuit, circuitAt, circuitTotal, coreCircuit } = await import('../circuit')
+    const steps = buildCircuit(coreCircuit)
+    expect(steps.filter(s => s.kind === 'work')).toHaveLength(16)
+    expect(steps.at(-1)!.kind).toBe('work')
+    expect(circuitTotal(steps)).toBe(16 * 30 + 15 * 15)
+    expect(circuitAt(steps, 0)).toMatchObject({ index: 0, left: 30 })
+    expect(circuitAt(steps, 31).step.kind).toBe('rest')
+    expect(circuitAt(steps, 31).step.station.th).toContain('ซ้าย') // พักแล้วบอกท่าถัดไป
+    expect(circuitAt(steps, 10_000).done).toBe(true)
+  })
+})

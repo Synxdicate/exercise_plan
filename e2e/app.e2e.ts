@@ -280,3 +280,14 @@ test('คาร์ดิโออื่น: บันทึกปั่นจั
   await nav(page, 'บันทึก')
   await expect(page.getByText(/ออกกำลังกาย 1 วัน/)).toBeVisible()
 })
+
+test('เซอร์กิตแกนกลาง: เริ่ม ข้ามจนจบ แล้วบันทึก', async ({ page }) => {
+  await seed(page)
+  await nav(page, 'ฝึก')
+  await page.getByRole('button', { name: 'เริ่มเซอร์กิต' }).click()
+  await expect(page.getByText('แพลงก์').first()).toBeVisible()
+  for (let i = 0; i < 31; i++) await page.getByRole('button', { name: 'ข้าม' }).click()
+  await expect(page.getByText('จบเซอร์กิตแล้ว')).toBeVisible()
+  await page.getByRole('button', { name: 'บันทึก', exact: true }).last().click() // ไม่ใช่แท็บ "บันทึก" ด้านล่าง
+  await expect.poll(async () => ((await idb(page, 'sessions')) as { dayKey: string }[] | null)?.[0]?.dayKey).toBe('circuit')
+})
