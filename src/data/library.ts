@@ -6,12 +6,13 @@ import type { Muscle } from './muscles'
 
 export type Pattern =
   | 'squat' | 'single' | 'hinge' | 'hams' | 'quads' | 'hpush' | 'dip' | 'vpush' | 'hpull' | 'vpull'
-  | 'side' | 'rear' | 'biceps' | 'triceps' | 'calf' | 'core'
+  | 'side' | 'rear' | 'biceps' | 'triceps' | 'calf' | 'core' | 'hip' | 'plyo'
 
 export const patternNames: Record<Pattern, string> = {
   squat: 'สควอท', single: 'ขาเดียว / ลันจ์', hinge: 'พับสะโพก (ก้น-ต้นขาหลัง)', hams: 'ต้นขาหลัง', quads: 'ต้นขาหน้า',
   hpush: 'ดันแนวนอน (อก)', dip: 'ดิป', vpush: 'ดันขึ้น (ไหล่)', hpull: 'ดึงแนวนอน (หลังบน)', vpull: 'ดึงลง (ปีก)',
   side: 'ไหล่ข้าง', rear: 'ไหล่หลัง', biceps: 'หน้าแขน', triceps: 'หลังแขน', calf: 'น่อง', core: 'แกนกลาง',
+  hip: 'สะโพกด้านข้าง', plyo: 'กระโดด (พลัยโอเมตริก)',
 }
 
 export type LibEx = {
@@ -113,6 +114,17 @@ export const library: Record<Pattern, LibEx[]> = {
     x('Standing Calf Raise', 'เขย่งน่อง', 'ลงสุด ค้างบน 1 วิ', 'standing calf raise form', '12–15', 'gym'),
     x('Single-leg Calf Raise', 'เขย่งน่องขาเดียว', 'ลงช้า 3 วิ', 'single leg calf raise runners', '12–15 / ข้าง', 'both'),
     x('Seated Calf Raise', 'นั่งเขย่งน่อง', 'เข่างอ ~90° ลงสุด ค้างบน', 'seated calf raise form', '12–15', 'gym', m(['calves'])),
+    x('Bent-knee Calf Raise', 'เขย่งน่องงอเข่า (น่องมัดใน)', 'งอเข่าเล็กน้อยตลอด ขึ้นสุด ลงช้า 3 วิ — น่องมัดใน (soleus) รับแรงวิ่งมากที่สุด', 'bent knee calf raise soleus', '12–15', 'both', m(['calves'])),
+  ],
+  // สะโพกด้านข้าง (glute medius) อ่อน → สะโพกตกตอนวิ่ง เข่าบิดเข้า เจ็บ IT band (review 2024)
+  hip: [
+    x('Banded Lateral Walk', 'เดินข้างพันยางยืดเหนือเข่า', 'ย่อเข่าเล็กน้อย ลำตัวตั้ง ก้าวข้างช้า ๆ เข่าไม่บิดเข้า', 'banded lateral walk glute medius', '12–15 ก้าว / ข้าง', 'both', m(['glutes'], ['quads'])),
+    x('Side-lying Hip Abduction', 'นอนตะแคงยกขา', 'ขาบนเหยียดตรง ปลายเท้าชี้ไปข้างหน้า ยกช้า ค้าง 1 วิ ไม่ม้วนสะโพกไปหลัง', 'side lying hip abduction form', '15–20 / ข้าง', 'both', m(['glutes'])),
+  ],
+  // กระโดดเบา ๆ แตะพื้นสั้น — ฝึกเอ็นร้อยหวาย/น่องให้เด้งเหมือนสปริง (เริ่มหลังฝึกน่องแบบช้ามาแล้ว)
+  plyo: [
+    x('Pogo Jumps', 'กระโดดเขย่ง (ข้อเท้าแข็ง)', 'เข่าเกือบตรง เด้งด้วยข้อเท้า แตะพื้นสั้นที่สุด เบาและเงียบ', 'pogo jumps runners', '3 × 15–20', 'both', m(['calves'], ['quads'])),
+    x('Jump Rope', 'กระโดดเชือก', 'กระโดดต่ำ ลงปลายเท้า จังหวะสม่ำเสมอ', 'jump rope for runners', '1–2 นาที', 'both', m(['calves'], ['quads'])),
   ],
   core: [
     x('Plank', 'แพลงก์', 'ลำตัวตรง เกร็งก้นและท้อง', 'plank proper form', '30–45 วิ', 'both'),

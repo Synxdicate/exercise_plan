@@ -137,3 +137,16 @@ describe('เนินสั้น', () => {
     expect(hills).toBeGreaterThanOrEqual(4)
   })
 })
+
+describe('เวทของนักวิ่ง (จาก อ.เอกวิทย์ + งานวิจัย)', () => {
+  it('มีสะโพกด้านข้าง น่องทั้งสองมัด และกระโดดเขย่งตั้งแต่สัปดาห์ 4 (ไม่ใส่ช่วง taper)', () => {
+    for (const m of ['gym', 'park'] as const) {
+      const names = (w: number) => variants('half', w)[m].flatMap(d => d.exercises.map(e => e.name))
+      expect(names(1)).toContain('Banded Lateral Walk')
+      expect(names(1).some(n => /Seated Calf Raise|Bent-knee Calf Raise/.test(n)), m).toBe(true)
+      expect(names(2)).not.toContain('Pogo Jumps')
+      expect(names(5)).toContain('Pogo Jumps')
+      expect(names(programs.half.weeks)).not.toContain('Pogo Jumps')
+    }
+  })
+})

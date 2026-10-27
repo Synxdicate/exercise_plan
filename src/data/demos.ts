@@ -26,6 +26,7 @@ const demos: Record<string, string> = {
   'Hanging Knee/Leg Raise': 'Hanging_Leg_Raise',
   'Hip Thrust': 'Barbell_Hip_Thrust',
   'Incline DB Press': 'Incline_Dumbbell_Press',
+  'Jump Rope': 'Rope_Jumping',
   'Jump Squat': 'Freehand_Jump_Squat',
   'Kettlebell Swing': 'One-Arm_Kettlebell_Swings',
   'Lat Pulldown': 'Wide-Grip_Lat_Pulldown',

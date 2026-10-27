@@ -34,4 +34,25 @@ export const stickDemos: Record<string, StickDemo> = {
       { head: [19, 61], shoulder: [27, 65], elbow: [18, 59], hand: [9, 54], hip: [57, 68], knee: [77, 69], foot: [97, 69] },
     ],
   },
+  'Bent-knee Calf Raise': {
+    props: [{ kind: 'floor' }],
+    poses: [
+      { head: [58, 17], shoulder: [58, 26], elbow: [61, 37], hand: [62, 47], hip: [56, 48], knee: [60, 60], foot: [57, 72] },
+      { head: [58, 12], shoulder: [58, 21], elbow: [61, 32], hand: [62, 42], hip: [56, 43], knee: [60, 55], foot: [60, 69] },
+    ],
+  },
+  'Pogo Jumps': {
+    props: [{ kind: 'floor' }],
+    poses: [
+      { head: [60, 14], shoulder: [60, 23], elbow: [56, 34], hand: [60, 43], hip: [60, 46], knee: [61, 59], foot: [60, 71] },
+      { head: [60, 6], shoulder: [60, 15], elbow: [56, 26], hand: [60, 35], hip: [60, 38], knee: [61, 51], foot: [61, 63] },
+    ],
+  },
+  'Side-lying Hip Abduction': {
+    props: [{ kind: 'floor' }],
+    poses: [
+      { head: [18, 63], shoulder: [26, 66], elbow: [22, 56], hand: [18, 62], hip: [56, 68], knee: [76, 69], foot: [96, 69] },
+      { head: [18, 63], shoulder: [26, 66], elbow: [22, 56], hand: [18, 62], hip: [56, 68], knee: [75, 60], foot: [93, 50] },
+    ],
+  },
 }

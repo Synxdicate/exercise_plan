@@ -128,6 +128,7 @@ const runnerStrength: Record<Mode, [Exercise[], Exercise[]]> = {
       ex('Pull-up', 'ดึงข้อ', '3', '5–8', '2 นาที', 'ไม่เหวี่ยงตัว', 'how to do your first pull up progression', { easier: 'Lat pulldown' }),
       ex('Single-leg RDL', 'เดดลิฟต์ขาเดียว (ดัมเบล)', '2', '8 / ข้าง', '90 วิ', 'สะโพกตรง ช่วยการทรงตัวและต้นขาหลังของนักวิ่ง', 'single leg romanian deadlift form'),
       ex('Single-leg Calf Raise', 'เขย่งน่องขาเดียว', '3', '12–15 / ข้าง', '60 วิ', 'ลงช้า 3 วิ ช่วยกันเจ็บเอ็นร้อยหวาย', 'single leg calf raise runners'),
+      ex('Banded Lateral Walk', 'เดินข้างพันยางยืดเหนือเข่า', '2', '12–15 ก้าว / ข้าง', '45 วิ', 'สะโพกด้านข้างอ่อน → สะโพกตก/เจ็บ IT band ตอนวิ่ง ไม่มียางทำนอนตะแคงยกขาแทน', 'banded lateral walk glute medius', { easier: 'Side-lying Hip Abduction' }),
       ex('Side Plank', 'แพลงก์ด้านข้าง', '2', '30–45 วิ / ข้าง', '45 วิ', 'ลำตัวตรง สะโพกไม่ตก', 'side plank proper form'),
     ],
     [
@@ -136,6 +137,7 @@ const runnerStrength: Record<Mode, [Exercise[], Exercise[]]> = {
       ex('Seated Cable Row', 'ดึงเคเบิลนั่ง', '3', '8–12', '90 วิ', 'ดึงศอกไปหลัง อกยืด', 'seated cable row proper form'),
       ex('Bulgarian Split Squat', 'สควอทขาเดียว เท้าหลังพาดม้านั่ง', '2', '8 / ข้าง', '90 วิ', 'ลงช้า ๆ คุมเข่าไม่บิดเข้าใน', 'bulgarian split squat form'),
       ex('Dips', 'ดิปบาร์คู่', '2', '6–10', '90 วิ', 'ลงจนศอก ~90°', 'how to do dips correctly'),
+      ex('Seated Calf Raise', 'นั่งเขย่งน่อง (น่องมัดใน)', '2', '12–15', '60 วิ', 'เข่างอ ~90° ลงช้า — น่องมัดใน (soleus) รับแรงตอนวิ่งมากที่สุด', 'seated calf raise form'),
       ex('Dead Bug', 'นอนหงายยืดแขนขาสลับ', '2', '8 / ข้าง', '45 วิ', 'หลังล่างแนบพื้นตลอด', 'dead bug exercise form'),
     ],
   ],
@@ -146,6 +148,7 @@ const runnerStrength: Record<Mode, [Exercise[], Exercise[]]> = {
       ex('Pull-up', 'ดึงข้อ', '3', '4–8', '2 นาที', 'ทำไม่ได้ใช้ Negative', 'pull up progression for beginners calisthenics', { easier: 'Negative pull-up' }),
       ex('Single-leg Glute Bridge', 'ยกสะโพกขาเดียว', '2', '12 / ข้าง', '60 วิ', 'บีบก้นค้าง 1 วิ', 'single leg glute bridge form'),
       ex('Single-leg Calf Raise', 'เขย่งน่องขาเดียว (บนขอบบันได)', '3', '12–15 / ข้าง', '60 วิ', 'ลงช้า 3 วิ', 'single leg calf raise runners'),
+      ex('Banded Lateral Walk', 'เดินข้างพันยางยืดเหนือเข่า', '2', '12–15 ก้าว / ข้าง', '45 วิ', 'สะโพกด้านข้างอ่อน → สะโพกตก/เจ็บ IT band ตอนวิ่ง ไม่มียางทำนอนตะแคงยกขาแทน', 'banded lateral walk glute medius', { easier: 'Side-lying Hip Abduction' }),
       ex('Side Plank', 'แพลงก์ด้านข้าง', '2', '30–45 วิ / ข้าง', '45 วิ', 'สะโพกไม่ตก', 'side plank proper form'),
     ],
     [
@@ -154,6 +157,7 @@ const runnerStrength: Record<Mode, [Exercise[], Exercise[]]> = {
       ex('Australian Row', 'ดึงตัวบาร์ต่ำ', '3', '8–12', '90 วิ', 'ตัวตรง ดึงอกแตะบาร์', 'australian pull up inverted row form'),
       ex('Single-leg RDL', 'เดดลิฟต์ขาเดียว (ตัวเปล่า)', '2', '10 / ข้าง', '60 วิ', 'ช้า ๆ คุมการทรงตัว', 'single leg romanian deadlift form'),
       ex('Dips', 'ดิปบาร์คู่', '2', '6–10', '90 วิ', 'ลงจนศอก ~90°', 'dips progression beginner calisthenics'),
+      ex('Bent-knee Calf Raise', 'เขย่งน่องงอเข่า (น่องมัดใน)', '2', '15', '60 วิ', 'งอเข่าเล็กน้อยตลอด ลงช้า 3 วิ', 'bent knee calf raise soleus'),
       ex('Hollow Body Hold', 'นอนเกร็งท้องทรงเรือ', '2', '20–40 วิ', '45 วิ', 'หลังล่างแนบพื้น', 'hollow body hold tutorial'),
     ],
   ],
@@ -168,7 +172,11 @@ function raceWeek(program: RunProgram, mode: Mode, week: number): Day[] {
   const w = table[Math.min(Math.max(week, 1), table.length) - 1]
   const last = !!programs[program].raceKm && week === table.length
   const taper = last || (w.note?.startsWith('Taper') ?? false)
-  const [a, b] = runnerStrength[mode]
+  const [a0, b] = runnerStrength[mode]
+  // กระโดดเขย่ง (pogo) ตั้งแต่สัปดาห์ 4 หลังน่อง/เอ็นได้ฝึกแบบช้ามาก่อน — เวทแบบระเบิดแรงช่วยความประหยัดแรงวิ่ง (Rønnestad & Mujika 2014)
+  const a = week >= 4 && !taper && !last
+    ? [...a0, ex('Pogo Jumps', 'กระโดดเขย่ง (ข้อเท้าแข็ง)', '3', '15–20', '60 วิ', 'เข่าเกือบตรง เด้งด้วยข้อเท้า แตะพื้นสั้นที่สุด เบาและเงียบ — เจ็บน่อง/เอ็นร้อยหวายให้หยุด', 'pogo jumps runners')]
+    : a0
   const lighten = (list: Exercise[]) => (taper ? list.map(e => ({ ...e, sets: '2' })) : list)
   // ขึ้นเนินสั้น ๆ สัปดาห์เว้นสัปดาห์ (ไม่ใส่ในสัปดาห์ลดปริมาณ/taper) — วิ่งเร็วขึ้นเนินช่วยความประหยัดแรง (Barnes & Kilding 2015)
   const hillWeek = week % 2 === 0 && !taper && !w.note?.startsWith('สัปดาห์ลด')
