@@ -15,6 +15,7 @@ import { WorkoutPlayer } from './WorkoutPlayer'
 import { ProgramSheet } from './ProgramSheet'
 import { Alerts } from './Alerts'
 import { NextStepCard } from './ProgramPicker'
+import { WeekCheckCard } from './WeekCheck'
 import { WeeklyMuscles } from './WeeklyMuscles'
 import { RunTypeCard } from './RunTypes'
 import { ReadinessSheet } from './Readiness'
@@ -71,6 +72,7 @@ function PlanBody() {
     <>
       <Alerts />
       <NextStepCard />
+      <WeekCheckCard />
       <button onClick={() => setPicking(true)} className="flex w-full items-center gap-3 rounded-3xl bg-card p-4 text-left shadow-sm ring-1 ring-line active:scale-[.99]">
         <div className="min-w-0 flex-1">
           <div className="text-xs font-semibold text-accent">โปรแกรมของฉัน · {locationInfo[p.location].label.replace(/ \(.*\)/, '')}</div>

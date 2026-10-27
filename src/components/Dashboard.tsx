@@ -12,6 +12,7 @@ import { formLabel, trainingLoad } from '../lib/analysis'
 import { WorkoutPlayer } from './WorkoutPlayer'
 import { Alerts } from './Alerts'
 import { NextStepCard } from './ProgramPicker'
+import { WeekCheckCard } from './WeekCheck'
 import { HeatCard } from './Heat'
 import { MonthGoalCard } from './Goals'
 import { WeekSummary } from './WeekSummary'
@@ -59,6 +60,7 @@ export function Dashboard() {
     <>
       <Alerts />
       <NextStepCard />
+      <WeekCheckCard />
       <section className="rounded-2xl bg-gradient-to-br from-accent to-[#7c3aed] p-4 text-white shadow-sm">
         <div className="flex items-center justify-between">
           <div>

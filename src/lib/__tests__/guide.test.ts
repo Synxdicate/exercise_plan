@@ -54,3 +54,18 @@ describe('GuideRunner', () => {
     expect(stepAnnouncement(s, 0)).toBe('วอร์มอัพ. 2 กิโลเมตร')
   })
 })
+
+describe('guideResult', () => {
+  it('counts completed work steps only', async () => {
+    const { guideResult, guides, GuideRunner } = await import('../guide')
+    const steps = guides.reps('3 × 1 นาที / จ็อก 2 นาที') // warm, w, r, w, r, w, cool
+    const g = new GuideRunner(steps)
+    expect(guideResult(steps, g.state)).toBeNull()
+    g.start(0, 0)
+    g.skip(2000) // warm → work 1
+    g.skip(2000) // → recover (work 1 done)
+    expect(guideResult(steps, g.state)).toEqual({ work: 1, total: 3, finished: false })
+    for (let i = 0; i < 5; i++) g.skip(2000)
+    expect(guideResult(steps, g.state)).toEqual({ work: 3, total: 3, finished: true })
+  })
+})

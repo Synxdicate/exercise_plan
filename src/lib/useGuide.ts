@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { GuideRunner, stepAnnouncement, type GuideEvent, type GuideState, type Paces, type Step } from './guide'
-import { speak } from './voice'
+import { buzz, speak } from './voice'
 
 const KEY = 'activeGuide'
 type Saved = { sig: string; state: GuideState }
@@ -33,6 +33,8 @@ export function useGuide(steps: Step[] | null, paces: Paces | undefined, voice: 
     }
     if (!events.length) return
     rerender(n => n + 1)
+    for (const e of events)
+      buzz(e.type === 'done' ? 'done' : e.type === 'warn' ? 'warn' : g.steps[e.index]?.kind === 'work' ? 'hard' : 'easy')
     if (!opts.current.voice) return
     for (const e of events) {
       void speak(

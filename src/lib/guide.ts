@@ -173,3 +173,11 @@ export class GuideRunner {
 }
 
 export const totalWork = (steps: Step[]) => steps.filter(s => s.kind === 'work').length
+
+/** ผลชุดซ้อมตอนจบวิ่ง: ทำช่วงหลัก (วิ่ง/เร่ง) ครบกี่ช่วง — ช่วงที่ยังไม่จบไม่นับ */
+export function guideResult(steps: Step[], st: GuideState): { work: number; total: number; finished: boolean } | null {
+  if (!st.started) return null
+  const total = totalWork(steps)
+  const work = st.done ? total : steps.slice(0, st.index).filter(s => s.kind === 'work').length
+  return { work, total, finished: st.done }
+}

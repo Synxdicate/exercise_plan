@@ -17,6 +17,8 @@ export type Run = {
   elapsedSeconds?: number // รวมเวลาพัก
   gapSeconds?: number // ช่วงที่จอปิด GPS ไม่ได้บันทึก
   shoeId?: string
+  startedAt?: number // เวลาเริ่ม (ms) — ใช้ส่งออก GPX
+  guide?: { work: number; total: number; finished: boolean } // ทำชุดซ้อม (เสียงนำ) ได้กี่ช่วงหลัก
 }
 
 export type SetEntry = { kg: number; reps: number }

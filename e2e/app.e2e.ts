@@ -277,6 +277,17 @@ test('การวิ่งเก่าที่ระยะขาด: แก้
   await expect(page.getByRole('button', { name: 'ใช้ระยะตามเส้นทาง' })).toHaveCount(0)
 })
 
+test('รายละเอียดการวิ่ง: ผลชุดซ้อม และส่งออก GPX', async ({ page }) => {
+  await seed(page, { runs: [{ id: 'g', date: ymd(1), km: 3.4, seconds: 1800, kind: 'easy', source: 'gps', guide: { work: 5, total: 8, finished: false }, ...loopRoute() }] })
+  await nav(page, 'วิ่ง')
+  await page.getByRole('button', { name: 'ประวัติ' }).click()
+  await page.locator('main li button', { hasText: '3.40' }).click()
+  await expect(page.getByText(/ทำชุดซ้อมได้ 5\/8 ช่วง/)).toBeVisible()
+  const download = page.waitForEvent('download')
+  await page.getByRole('button', { name: 'ส่งออก GPX (Strava)' }).click()
+  expect((await download).suggestedFilename()).toMatch(/^kao-.*\.gpx$/)
+})
+
 test('รายงาน error: เก็บในเครื่องและดูได้จากเมนูบัญชี', async ({ page }) => {
   await seed(page)
   await expect(page.getByText(/เป้าเดือน/)).toBeVisible() // รอแอปโหลดเสร็จ (ตัวดัก error ติดตั้งหลังโหลดที่เก็บข้อมูล)

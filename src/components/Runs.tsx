@@ -1,10 +1,11 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { CalendarCheck, Check, CircleCheck, FileUp, Footprints, Gauge, Ghost, History, Map as MapIcon, Pause, Pencil, Play, Plus, Satellite, Share2, Trash2, TriangleAlert, Trophy, Volume2, VolumeX, X } from 'lucide-react'
+import { CalendarCheck, Check, CircleCheck, FileDown, FileUp, Footprints, Gauge, Ghost, History, ListChecks, Map as MapIcon, Pause, Pencil, Play, Plus, Satellite, Share2, Trash2, TriangleAlert, Trophy, Volume2, VolumeX, X } from 'lucide-react'
 import { GOOD_ACCURACY_M, useRunTracker, type Point } from '../lib/gps'
 import { formatDuration, formatPace, runKinds, uid, useRuns, type Run } from '../lib/log'
 import { criticalSpeed, estimate, paceHint, predictionTrend, type Estimate } from '../lib/pace'
 import { useProgram } from '../lib/program'
 import { parseGpx } from '../lib/gpx'
+import { saveGpx } from '../lib/gpxFile'
 import { DEFAULT_LIMIT_KM, defaultShoe, shoeKm, shoeStatus, useShoes, type Shoe } from '../lib/shoes'
 import { paceSeries, personalBests, remeasure, splitAnalysis } from '../lib/analysis'
 import { PaceChart, ZoneBar, ZoneLegend } from './Charts'
@@ -13,7 +14,7 @@ import { RpePicker } from './RpePicker'
 import { isNative } from '../lib/native'
 import { speak, splitAnnouncement } from '../lib/voice'
 import { useGuide } from '../lib/useGuide'
-import { guides, paceSec } from '../lib/guide'
+import { guideResult, guides, paceSec } from '../lib/guide'
 import { cueText, easyBand, PaceCoach, workBand } from '../lib/coach'
 import { useBackClose } from '../lib/back'
 import { App } from '@capacitor/app'
@@ -150,12 +151,13 @@ export function Runs() {
   const save = (r: Run) => setRuns(prev => [...prev, { ...r, shoeId: r.shoeId ?? defaultShoe(shoes)?.id }].sort((a, b) => a.date.localeCompare(b.date)))
 
   const finish = () => {
+    const done = guide.runner ? guideResult(guide.runner.steps, guide.runner.state) : null
     guide.reset()
     if (ghostNow && ghostOn) notify(ghostNow.lead >= 0 ? `ชนะเงา ${Math.round(ghostNow.lead)} วินาที` : `ช้ากว่าเงา ${Math.round(-ghostNow.lead)} วินาที — ครั้งหน้าเอาใหม่`, ghostNow.lead >= 0 ? 'good' : 'info')
     resetGhost()
     const r = t.finish()
     if (r.km < 0.05) return notify('ระยะสั้นเกินไป ไม่ได้บันทึก', 'bad')
-    const run: Run = { id: uid(), date: today(), kind, source: 'gps', ...r }
+    const run: Run = { id: uid(), date: today(), kind, source: 'gps', ...r, ...(done && { guide: done }) }
     save(run)
     setCooldown(run)
   }
@@ -447,6 +449,9 @@ function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { run: Run
             <div className="text-xs text-muted">{run.source === 'gps' ? 'บันทึกด้วย GPS' : run.source === 'gpx' ? 'นำเข้าจากไฟล์ GPX' : 'กรอกเอง'}</div>
           </div>
           <span className="flex gap-2">
+            {run.route && run.route.length > 1 && (
+              <button onClick={() => void saveGpx(run).catch(() => notify('ส่งออกไม่สำเร็จ', 'bad'))} aria-label="ส่งออก GPX (Strava)" title="ส่งออก GPX (Strava)" className="grid size-9 place-items-center rounded-full bg-raised"><FileDown size={17} /></button>
+            )}
             <button onClick={() => setSharing(true)} aria-label="แชร์เป็นรูป" className="grid size-9 place-items-center rounded-full bg-raised"><Share2 size={17} /></button>
             <button onClick={onClose} aria-label="ปิด" className="grid size-9 place-items-center rounded-full bg-raised"><X size={18} /></button>
           </span>
@@ -458,6 +463,12 @@ function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { run: Run
           <Stat label="เวลาเคลื่อนที่" value={formatDuration(secUp)} sub={run.elapsedSeconds ? `รวม ${formatDuration(run.elapsedSeconds)}` : undefined} />
           <Stat label="เพซเฉลี่ย" value={formatPace(run.seconds, run.km)} sub="นาที/กม." />
         </div>
+        {run.guide && (
+          <p className={cx('mb-3 flex items-center gap-2 rounded-xl p-2.5 text-sm font-semibold', run.guide.finished ? 'bg-good/15 text-good' : 'bg-raised text-ink')}>
+            <ListChecks size={16} className="shrink-0" />
+            {run.guide.finished ? `ทำชุดซ้อมครบ ${run.guide.total}/${run.guide.total} ช่วง` : `ทำชุดซ้อมได้ ${run.guide.work}/${run.guide.total} ช่วง — ครั้งหน้าลองให้ครบ หรือทำสัปดาห์นี้ซ้ำ`}
+          </p>
+        )}
         {fix && (
           <div className="mb-3 rounded-xl bg-warn/15 p-3 text-sm text-warn">
             <p>ระยะตามเส้นทางคือ <b>{fix.km.toFixed(2)} กม.</b> แต่บันทึกไว้ {run.km.toFixed(2)} กม. — แอปก่อน v2.26 นับช่วงเดินขาด</p>

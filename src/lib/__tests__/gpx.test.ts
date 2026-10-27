@@ -25,3 +25,16 @@ describe('GPX import', () => {
     expect(() => parseGpx('<gpx><trk></trk></gpx>')).toThrow('ไม่พบเส้นทาง')
   })
 })
+
+describe('toGpx', () => {
+  it('round-trips through parseGpx with times from start + moving seconds', async () => {
+    const { toGpx, parseGpx } = await import('../gpx')
+    const route = Array.from({ length: 41 }, (_, i) => [16.4 + (i * 25) / 111320, 102.8] as [number, number])
+    const xml = toGpx({ date: '2026-10-27', kind: 'easy', route, times: route.map((_, i) => i * 9), startedAt: Date.UTC(2026, 9, 26, 23, 0) }, 'Easy <1 กม.>')
+    expect(xml).toContain('&lt;1 กม.&gt;')
+    expect(xml).toContain('<time>2026-10-26T23:00:09.000Z</time>')
+    const g = parseGpx(xml)
+    expect(g.km).toBeCloseTo(1, 1)
+    expect(g.seconds).toBe(360)
+  })
+})

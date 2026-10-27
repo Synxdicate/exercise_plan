@@ -1,4 +1,5 @@
 import { TextToSpeech } from '@capacitor-community/text-to-speech'
+import { Haptics } from '@capacitor/haptics'
 import { isNative } from './native'
 
 // เสียงพูดภาษาไทย — แอปใช้ TTS ของเครื่อง (พูดได้แม้ปิดจอ), เว็บใช้ speechSynthesis
@@ -15,6 +16,20 @@ export async function speak(text: string) {
     }
   } catch {
     /* ไม่มีเสียงภาษาไทยในเครื่อง — ข้ามไป */
+  }
+}
+
+// สั่นตอนเปลี่ยนช่วง — รู้ตัวแม้ไม่ได้ยินเสียง (ข้างถนนเสียงดัง/เปิดเพลง)
+// ยาว = เริ่มช่วงหนัก (วิ่ง/เร่ง), สั้น = ช่วงเบา (เดิน/พัก), สั้นมาก = เตือน 10 วิ, ยาวมาก = จบชุดซ้อม
+// แอปใช้ Haptics (ทำงานแม้ปิดจอ เพราะถูกเรียกจาก callback ของ GPS), เว็บใช้ navigator.vibrate
+export type Buzz = 'hard' | 'easy' | 'warn' | 'done'
+const BUZZ_MS: Record<Buzz, number> = { hard: 700, easy: 300, warn: 120, done: 1200 }
+export function buzz(kind: Buzz) {
+  try {
+    if (isNative) void Haptics.vibrate({ duration: BUZZ_MS[kind] }).catch(() => {})
+    else navigator.vibrate?.(kind === 'hard' ? [300, 120, 300] : BUZZ_MS[kind])
+  } catch {
+    /* เครื่องไม่รองรับการสั่น */
   }
 }
 

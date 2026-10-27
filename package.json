@@ -1,7 +1,7 @@
 {
   "name": "exercise_plan",
   "private": true,
-  "version": "2.26.1",
+  "version": "2.27.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -24,6 +24,7 @@
     "@capacitor/browser": "^8.0.5",
     "@capacitor/core": "^8.5.3",
     "@capacitor/filesystem": "^8.1.4",
+    "@capacitor/haptics": "^8.0.2",
     "@capacitor/local-notifications": "^8.3.1",
     "@capacitor/share": "^8.0.3",
     "@supabase/supabase-js": "^2.118.0",

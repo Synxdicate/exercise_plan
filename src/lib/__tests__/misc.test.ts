@@ -417,3 +417,18 @@ describe('program fit', () => {
     expect(nextStep('base', { longestKm: 20, longestMin: 120 }, 4, 4, true)).toBeNull()
   })
 })
+
+describe('program weeks with repeats', () => {
+  it('a repeat holds the week number from the next Monday and gets its own attempt id', async () => {
+    const { weekAt, attemptOf } = await import('../program')
+    const start = '2026-10-26'
+    expect(weekAt(start, [], '2026-11-09', 9)).toBe(3)
+    const repeats = ['2026-11-16'] // ทำสัปดาห์ 3 ซ้ำ (กดระหว่างสัปดาห์ 9–15 พ.ย.)
+    expect(weekAt(start, repeats, '2026-11-09', 9)).toBe(3) // สัปดาห์ที่กดยังเป็น 3
+    expect(weekAt(start, repeats, '2026-11-16', 9)).toBe(3) // สัปดาห์ถัดไปเป็น 3 อีกรอบ
+    expect(weekAt(start, repeats, '2026-11-23', 9)).toBe(4)
+    expect(attemptOf(start, repeats, 3, '2026-11-09', 9)).toBe(0)
+    expect(attemptOf(start, repeats, 3, '2026-11-16', 9)).toBe(1)
+    expect(weekAt(start, [], '2027-06-07', 9)).toBe(9) // ไม่เกินจำนวนสัปดาห์
+  })
+})

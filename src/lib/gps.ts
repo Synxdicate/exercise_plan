@@ -45,7 +45,7 @@ function loadSaved(): Live {
 
 export const movingMs = (l: Live, now = Date.now()) => l.activeMs + (l.segStart !== null ? now - l.segStart : 0)
 
-export type FinishedRun = { km: number; seconds: number; elapsedSeconds: number; route: Point[]; times: number[]; splits: number[]; gapSeconds?: number }
+export type FinishedRun = { km: number; seconds: number; elapsedSeconds: number; route: Point[]; times: number[]; splits: number[]; gapSeconds?: number; startedAt: number }
 
 type Opts = {
   onSplit?: (km: number, splitSec: number, totalSec: number) => void
@@ -335,6 +335,7 @@ export function useRunTracker(opts: Opts = {}) {
         times: l.times,
         splits: l.splits,
         gapSeconds: l.gapSeconds ? Math.round(l.gapSeconds) : undefined,
+        startedAt: l.startedAt,
       }
       stopWatching()
       resetSegment()
