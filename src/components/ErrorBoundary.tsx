@@ -2,7 +2,8 @@ import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { captureError } from '../lib/errors'
 
 // จับ error ระหว่าง render ไม่ให้จอขาวทั้งแอป — บันทึกรายงานแล้วให้กดโหลดใหม่ได้
-export class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+// fallback: แสดงแทนเฉพาะส่วนที่พัง (เช่น แผนที่) ไม่ให้ทั้งแอปขึ้นหน้า error
+export class ErrorBoundary extends Component<{ children: ReactNode; fallback?: ReactNode }, { error: Error | null }> {
   state: { error: Error | null } = { error: null }
 
   static getDerivedStateFromError(error: Error) {
@@ -15,6 +16,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, { error: E
 
   render() {
     if (!this.state.error) return this.props.children
+    if (this.props.fallback !== undefined) return this.props.fallback
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center gap-3 p-6 text-center">
         <h1 className="text-xl font-bold">มีบางอย่างผิดพลาด</h1>

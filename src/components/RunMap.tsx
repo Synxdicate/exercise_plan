@@ -22,8 +22,6 @@ function Camera({ route, position, follow }: Pick<Props, 'route' | 'position' | 
   useEffect(() => {
     if (!follow && route.length > 1) map.fitBounds(latLngBounds(route), { padding: [24, 24], animate: false })
   }, [map, follow, route])
-  // ปิดแผนที่ระหว่างซูม/เลื่อน Leaflet ยังเรียก callback ของ animation แล้ว error — หยุดก่อนถอด
-  useEffect(() => () => { map.stop() }, [map])
   return null
 }
 
@@ -33,8 +31,10 @@ export default function RunMap({ route, position, follow = false, className = 'h
   const accent = style.getPropertyValue('--c-accent').trim() || '#e11d48'
   const run = style.getPropertyValue('--c-run').trim() || '#2563eb'
 
+  // ไม่ใช้แอนิเมชันซูม: ปิดแผนที่ระหว่างซูม Leaflet ยังเรียก _onZoomTransitionEnd หลังถูกถอดแล้ว error (_leaflet_pos)
+  // (เรียก map.stop() ตอนถอดก็ไม่ได้ — ตอนนั้นแผนที่ถูกลบไปแล้ว พังเหมือนกัน)
   return (
-    <MapContainer center={center} zoom={position || route.length ? 16 : 11} zoomControl={false}
+    <MapContainer center={center} zoom={position || route.length ? 16 : 11} zoomControl={false} zoomAnimation={false} markerZoomAnimation={false}
       dragging={interactive} scrollWheelZoom={interactive} touchZoom={interactive} doubleClickZoom={interactive}
       attributionControl className={`w-full overflow-hidden rounded-2xl ${className}`}>
       <TileLayer url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" maxZoom={19}

@@ -42,6 +42,7 @@ import { parseDuration, raceKm, raceLabel, type RaceKey } from '../lib/goals'
 import { DateInput, NumberInput, SelectInput, TextInput } from './Form'
 import { cx } from '../lib/cx'
 import { ask, notify } from '../lib/dialog'
+import { ErrorBoundary } from './ErrorBoundary'
 
 // วิ่งทดสอบ 5K (เลือกชนิด "แข่ง" ในวันที่ไม่ใช่วันแข่ง)
 const TRIAL = guides.timeTrial()
@@ -53,9 +54,11 @@ const RouteHeatmap = lazy(() => import('./RouteHeatmap'))
 
 function Map(props: { route: Point[]; position?: Point | null; follow?: boolean; className?: string; interactive?: boolean }) {
   return (
-    <Suspense fallback={<div className={cx('w-full animate-pulse rounded-2xl bg-raised', props.className ?? 'h-64')} />}>
-      <RunMap {...props} />
-    </Suspense>
+    <ErrorBoundary fallback={<div className={cx('grid w-full place-items-center rounded-2xl bg-raised text-sm text-muted', props.className ?? 'h-64')}>แสดงแผนที่ไม่ได้</div>}>
+      <Suspense fallback={<div className={cx('w-full animate-pulse rounded-2xl bg-raised', props.className ?? 'h-64')} />}>
+        <RunMap {...props} />
+      </Suspense>
+    </ErrorBoundary>
   )
 }
 

@@ -288,6 +288,21 @@ test('รายละเอียดการวิ่ง: ผลชุดซ้
   expect((await download).suggestedFilename()).toMatch(/^kao-.*\.gpx$/)
 })
 
+test('เปิดแล้วปิดรายละเอียดการวิ่งที่มีแผนที่ ไม่เกิด error (Leaflet _leaflet_pos)', async ({ page }) => {
+  await seed(page, { runs: [{ id: 'm', date: ymd(1), km: 3.4, seconds: 1800, kind: 'easy', source: 'gps', ...loopRoute() }] })
+  await nav(page, 'วิ่ง')
+  await page.getByRole('button', { name: 'ประวัติ' }).click()
+  for (let i = 0; i < 3; i++) {
+    await page.locator('main li button', { hasText: '3.40' }).click()
+    await expect(page.locator('.leaflet-container').first()).toBeVisible()
+    await page.getByRole('button', { name: 'ปิด', exact: true }).click()
+  }
+  await page.waitForTimeout(800)
+  await expect(page.getByText('มีบางอย่างผิดพลาด')).toHaveCount(0)
+  expect(await page.evaluate(() => localStorage.getItem('errorLog') ?? '[]')).not.toContain('_leaflet_pos')
+  expect(JSON.stringify(await idb(page, 'errorLog') ?? [])).not.toContain('_leaflet_pos')
+})
+
 test('รายงาน error: เก็บในเครื่องและดูได้จากเมนูบัญชี', async ({ page }) => {
   await seed(page)
   await expect(page.getByText(/เป้าเดือน/)).toBeVisible() // รอแอปโหลดเสร็จ (ตัวดัก error ติดตั้งหลังโหลดที่เก็บข้อมูล)
