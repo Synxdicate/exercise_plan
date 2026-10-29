@@ -17,10 +17,13 @@ export function trialGhost(best5k: number | null | undefined, predicted5k: numbe
 }
 
 /** วันแข่ง: เงา = เวลาเป้าหมายที่ตั้งไว้ ไม่งั้นเวลาคาดการณ์ (ไม่บวกเพิ่ม — วันแข่งคุมเพซตามแผน) */
-export function raceGhost(key: RaceKey, goal: number | undefined, predicted: number | null | undefined): Ghost | null {
-  const seconds = goal ?? (predicted ? Math.round(predicted) : null)
-  if (!seconds) return null
-  return { km: raceKm[key], seconds, label: `${goal ? 'เป้าหมาย' : 'คาดการณ์'} ${raceLabel[key]} ${formatDuration(seconds)}` }
+/** km = ระยะงานจริง (เช่น มินิ 11.55) — เวลาของระยะมาตรฐานปรับด้วย Riegel ให้เงาวิ่งครบระยะงาน */
+export function raceGhost(key: RaceKey, goal: number | undefined, predicted: number | null | undefined, km = raceKm[key]): Ghost | null {
+  const base = goal ?? (predicted ? Math.round(predicted) : null)
+  if (!base) return null
+  const seconds = km === raceKm[key] ? base : Math.round(base * (km / raceKm[key]) ** 1.07)
+  const name = km === raceKm[key] ? raceLabel[key] : `${km} กม.`
+  return { km, seconds, label: `${goal ? 'เป้าหมาย' : 'คาดการณ์'} ${name} ${formatDuration(seconds)}` }
 }
 
 /** วินาทีที่นำ (+) หรือตามหลัง (−) เงาที่วิ่งเพซคงที่ เมื่อวิ่งได้ m เมตรในเวลา sec วินาที */

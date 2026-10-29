@@ -19,6 +19,7 @@ const SPEED_SMOOTH = 0.4 // EMA ของความเร็ว
 const MAX_SPEED_MS = 10 // ~36 กม./ชม. เกินนี้ถือว่าจุดกระโดด
 const ACCEL_NOISE = 1.0 // m/s² — ความเร่งที่ยอมให้ (เปลี่ยนเพซ/เลี้ยว)
 const MAX_GAP_S = 30 // ขาดสัญญาณนานกว่านี้ เริ่มตัวกรองใหม่จากจุดถัดไป
+const MAX_BRIDGE_S = 300 // ขาดไม่เกิน 5 นาที: นับระยะเส้นตรงข้ามช่วงที่ขาด (สั้นกว่าทางจริงเล็กน้อย ดีกว่าหายทั้งช่วง)
 
 const M_PER_DEG = 111320
 
@@ -89,7 +90,23 @@ export class TrackFilter {
 
   process(f: Fix): FixResult {
     if (!(f.acc <= MAX_ACCURACY_M)) return { kind: 'ignored', p: null }
-    if (this.origin && (f.t - this.lastT) / 1000 > MAX_GAP_S) this.reset()
+    if (this.origin && (f.t - this.lastT) / 1000 > MAX_GAP_S) {
+      // สัญญาณขาดนาน: เดิมเริ่มใหม่แล้วทิ้งระยะช่วงที่ขาด (วิ่งจริง 29 ต.ค. หาย ~60 ม. จาก 3 ช่วง)
+      // ถ้าจุดใหม่แม่นพอและความเร็วเฉลี่ยข้ามช่วงเป็นไปได้ → นับระยะเส้นตรงจากตำแหน่งล่าสุด
+      const gapS = (f.t - this.lastT) / 1000
+      const o = this.origin
+      const dx = (f.lon - o.lon) * o.kx - this.ax.x
+      const dy = (f.lat - o.lat) * M_PER_DEG - this.ay.x
+      const bridge = Math.hypot(dx, dy)
+      const wasMoving = this.wasMoving
+      this.reset()
+      const r = this.process(f)
+      if (r.kind === 'start' && wasMoving && gapS <= MAX_BRIDGE_S && f.acc <= FIRST_FIX_ACCURACY_M && bridge <= MAX_SPEED_MS * gapS && bridge >= ANCHOR_M) {
+        this.wasMoving = true
+        return { kind: 'step', p: r.p, d: bridge, moving: true }
+      }
+      return r
+    }
     if (!this.origin) {
       if (f.acc > FIRST_FIX_ACCURACY_M) return { kind: 'ignored', p: [f.lat, f.lon] }
       this.origin = { lat: f.lat, lon: f.lon, kx: M_PER_DEG * Math.cos((f.lat * Math.PI) / 180) }
@@ -135,4 +152,21 @@ export class TrackFilter {
     this.anchor = { x: this.ax.x, y: this.ay.x }
     return { kind: 'step', p, d, moving: true }
   }
+}
+
+/**
+ * เวลาต่อกิโลที่ครบในช่วงนี้ — ระยะเพิ่มทีละจุดยึด (~26 ม.) เวลาผ่านหลักกิโลจริงจึงอยู่ระหว่างสองจุด:
+ * ประมาณแบบเส้นตรง (เดิมใช้เวลาตอนถึงจุดยึด เวลาต่อกิโลคลาดได้ ~10 วิ)
+ */
+export function addSplits(splits: number[], prevM: number, prevT: number, meters: number, t: number): number[] {
+  const out = [...splits]
+  let done = out.reduce((s, v) => s + v, 0)
+  while (meters >= (out.length + 1) * 1000) {
+    const mark = (out.length + 1) * 1000
+    const f = meters > prevM ? (mark - prevM) / (meters - prevM) : 1
+    const at = prevT + Math.min(1, Math.max(0, f)) * (t - prevT)
+    out.push(Math.round(at - done))
+    done = at
+  }
+  return out
 }

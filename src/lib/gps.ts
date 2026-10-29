@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { BackgroundGeolocation, isNative } from './native'
 
 import { haversine, roundPoint, type Point } from './geo'
-import { TrackFilter } from './track'
+import { addSplits, TrackFilter } from './track'
 import { ask } from './dialog'
 
 export { haversine, type Point }
@@ -171,12 +171,10 @@ export function useRunTracker(opts: Opts = {}) {
         next.lastMoveAt = n
         if (x.status === 'autopaused') next = { ...next, status: 'running', segStart: n }
       }
-      // เพซรายกิโล
+      // เพซรายกิโล — เวลาผ่านหลักกิโลประมาณระหว่างจุดก่อนหน้ากับจุดนี้
       const moved = movingMs(next, n) / 1000
-      while (next.meters >= (next.splits.length + 1) * 1000) {
-        const done = next.splits.reduce((s, v) => s + v, 0)
-        next = { ...next, splits: [...next.splits, Math.round(moved - done)] }
-      }
+      const prevT = x.times.at(-1) ?? 0
+      if (next.meters >= (next.splits.length + 1) * 1000) next = { ...next, splits: addSplits(next.splits, x.meters, prevT, next.meters, moved) }
       return next
     })
     // ครบกิโลใหม่ → แจ้ง (เสียงบอกเพซ) — เรียกจาก callback ของ GPS โดยตรง จึงทำงานแม้จอดับ

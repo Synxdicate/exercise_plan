@@ -91,7 +91,7 @@ export function Runs() {
   const [raceGoals] = useRaceGoals()
   const raceKey = kind === 'race' && todayRun?.runKind === 'race' ? raceKeyOf(todayRun.targetKm) : null
   const best5k = useMemo(() => personalBests(runs).find(e => e.km === 5)?.best?.seconds, [runs])
-  const ghost: GhostTarget | null = raceKey ? raceGhost(raceKey, raceGoals[raceKey], est?.[raceKey])
+  const ghost: GhostTarget | null = raceKey ? raceGhost(raceKey, raceGoals[raceKey], est?.[raceKey], todayRun?.targetKm)
     : steps === TRIAL && guideOn ? trialGhost(best5k, est?.fiveK) : null
   const [ghostNow, setGhostNow] = useState<{ lead: number; m: number; ghostM: number } | null>(null)
   const ghostKm = useRef(0)

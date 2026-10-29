@@ -103,4 +103,38 @@ describe('GPS distance filter (simulated noise)', () => {
     const total = pts.at(-1)!.y - pts[0].y
     for (const seed of [4, 5]) expect(Math.abs(run(pts, 4, 8, seed) - total) / total).toBeLessThan(0.05)
   })
+
+  it('สัญญาณขาด 60 วิระหว่างวิ่ง → นับระยะเส้นตรงข้ามช่วงที่ขาด (เดิมหายทั้งช่วง ~150 ม.)', () => {
+    const f = new TrackFilter()
+    const g = rng(21)
+    let m = 0
+    for (let i = 0; i < 600; i++) {
+      if (i >= 200 && i < 260) continue // ไม่มีจุด GPS 60 วิ
+      const r = f.process({ lat: 16.4 + (i * 2.5 + g() * 4) * M_LAT, lon: 102.8 + g() * 4 * M_LON, acc: 8, t: i * 1000 })
+      if (r.kind === 'step') m += r.d
+    }
+    m += f.flush()
+    expect(Math.abs(m - 599 * 2.5) / (599 * 2.5)).toBeLessThan(0.04)
+  })
+
+  it('ยืนนิ่งแล้วสัญญาณขาด → ไม่เพิ่มระยะ', () => {
+    const f = new TrackFilter()
+    let m = 0
+    for (const t of [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 100, 101, 102]) {
+      const r = f.process({ lat: 16.4, lon: 102.8, acc: 6, t: t * 1000, speed: 0 })
+      if (r.kind === 'step') m += r.d
+    }
+    expect(m).toBeLessThan(5)
+  })
 })
+
+describe('addSplits', () => {
+  it('interpolates the 1 km crossing between anchors', async () => {
+    const { addSplits } = await import('../track')
+    // จาก 990 ม. (เวลา 300 วิ) ไป 1016 ม. (310 วิ): ผ่าน 1000 ม. ที่ ~303.8 วิ
+    expect(addSplits([], 990, 300, 1016, 310)).toEqual([304])
+    // ข้ามสองหลัก (ช่วงสัญญาณขาด)
+    expect(addSplits([300], 1900, 580, 3100, 940)).toEqual([300, 310, 300])
+  })
+})
+

@@ -22,4 +22,10 @@ describe('นักวิ่งเงา', () => {
     expect(ghostText(-5.4)).toBe('ตามหลังเงา 5 วินาที')
     expect(ghostText(1)).toBe('วิ่งเคียงเงา')
   })
+  it('วันแข่งระยะไม่มาตรฐาน: เงาวิ่งครบระยะงาน เวลาปรับด้วย Riegel', () => {
+    const g = raceGhost('tenK', 3600, undefined, 11.55)!
+    expect(g.km).toBe(11.55)
+    expect(g.seconds).toBe(Math.round(3600 * 1.155 ** 1.07))
+    expect(g.label).toContain('11.55 กม.')
+  })
 })
