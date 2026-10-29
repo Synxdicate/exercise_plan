@@ -20,8 +20,10 @@ function Camera({ route, position, follow }: Pick<Props, 'route' | 'position' | 
     if (follow && position) map.setView(position, Math.max(map.getZoom(), 16), { animate: true })
   }, [map, follow, position])
   useEffect(() => {
-    if (!follow && route.length > 1) map.fitBounds(latLngBounds(route), { padding: [24, 24] })
+    if (!follow && route.length > 1) map.fitBounds(latLngBounds(route), { padding: [24, 24], animate: false })
   }, [map, follow, route])
+  // ปิดแผนที่ระหว่างซูม/เลื่อน Leaflet ยังเรียก callback ของ animation แล้ว error — หยุดก่อนถอด
+  useEffect(() => () => { map.stop() }, [map])
   return null
 }
 

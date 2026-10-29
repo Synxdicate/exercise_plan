@@ -13,6 +13,22 @@ export function swapExercise(e: Exercise, to: string): Exercise {
     reps: timed(e.reps) === timed(lib.reps) ? e.reps : lib.reps, swappedFrom: e.swappedFrom ?? e.name }
 }
 
+/**
+ * สัปดาห์แข่ง: ย้ายวันแข่งไปวันจริงตามวันแข่งที่ตั้งไว้ (ตารางวางวันแข่งไว้วันอาทิตย์)
+ * วันหลังวันแข่งเป็นวันพัก และวันก่อนแข่งไม่มีเวท
+ */
+export function placeRaceDay(days: Day[], raceIdx: number): Day[] {
+  const from = days.findIndex(d => d.runKind === 'race')
+  if (from < 0 || from === raceIdx || raceIdx < 0 || raceIdx > 6) return days
+  const rest = (d: Day, note: string): Day => ({ key: d.key, day: d.day, title: 'พัก / เดินเบา ๆ', type: 'rest', duration: '-', note, exercises: [] })
+  return days.map((d, i) => {
+    if (i === raceIdx) return { ...days[from], key: d.key, day: d.day }
+    if (i > raceIdx) return rest(d, 'หลังวันแข่ง: พัก เดินเบา ๆ ให้ร่างกายฟื้น')
+    if (i === raceIdx - 1 && d.type === 'strength') return rest(d, 'พรุ่งนี้แข่ง งดเวท')
+    return d
+  })
+}
+
 export const extrasKey = (program: string, d: Day) => `${program}:${d.key}:${d.location ?? 'gym'}`
 
 /** ใส่ท่าที่ผู้ใช้สลับ (ทุกวันที่มีท่านั้น) และท่าที่เพิ่มเอง (ต่อวัน+สถานที่) ลงในแผน */
@@ -46,7 +62,9 @@ export const attemptOf = (start: string, repeats: string[], week: number, monday
 
 // สถานะโปรแกรมปัจจุบัน — ใช้ร่วมกันทุกหน้า
 export function useProgram() {
-  const [program, setProgramRaw] = usePersisted<ProgramId>('program', 'physique')
+  const [stored, setProgramRaw] = usePersisted<ProgramId>('program', 'physique')
+  // โปรแกรมที่แอปเวอร์ชันนี้ไม่รู้จัก (ซิงก์มาจากเครื่องที่อัปเดตแล้ว) — ใช้โปรแกรมหุ่นแทนการพังทั้งแอป
+  const program: ProgramId = stored in programs ? stored : 'physique'
   const [location, setLocationPref] = usePersisted<LocationPref>('mode', 'gym')
   const [overrides, setOverrides] = usePersisted<Record<string, Mode>>('dayLocation', {})
   const [manualWeek, setManualWeek] = usePersisted('week', 1)
@@ -127,7 +145,10 @@ export function useProgram() {
       setProgramStart(thisMonday)
       setRepeats([])
     },
-    plan: (week = currentWeek) => applyCustom(weekPlan(program, week, i => locationFor(week, i)), program, swaps, extras, solo),
+    plan: (week = currentWeek) => {
+      const days = applyCustom(weekPlan(program, week, i => locationFor(week, i)), program, swaps, extras, solo)
+      return isRace && raceDate && week === meta.weeks ? placeRaceDay(days, (new Date(`${raceDate}T00:00:00`).getDay() + 6) % 7) : days
+    },
     solo,
     setSolo,
     /** สลับท่า from → to ทุกวันที่มีท่านี้ (to = undefined คือกลับเป็นท่าเดิม) */

@@ -58,6 +58,7 @@ export function useGuide(steps: Step[] | null, paces: Paces | undefined, voice: 
     runner,
     onTick,
     skip: (meters: number) => { if (runner) emit(runner, runner.skip(meters)) },
+    complete: () => { if (runner) emit(runner, runner.complete()) },
     reset: () => {
       runner?.reset()
       try { localStorage.removeItem(KEY) } catch { /* ignore */ }

@@ -441,3 +441,32 @@ describe('mini marathon fit', () => {
     expect(recommended(c)).toBe('mini')
   })
 })
+
+describe('race day on the real weekday', () => {
+  it('moves the Sunday race to Saturday; later days rest; no strength the day before', async () => {
+    const { placeRaceDay } = await import('../program')
+    const { variants } = await import('../../data/programs')
+    const days = placeRaceDay(variants('mini', 10).gym, 5)
+    expect(days[5].runKind).toBe('race')
+    expect(days[5].day).toBe('เสาร์')
+    expect(days[6].type).toBe('rest')
+    expect(days[4].type).not.toBe('strength')
+    const wed = placeRaceDay(variants('ten', 12).gym, 2)
+    expect(wed[2].runKind).toBe('race')
+    expect(wed.slice(3).every(d => d.type === 'rest')).toBe(true)
+    expect(wed[1].type).not.toBe('strength')
+  })
+})
+
+describe('guide completes at the planned distance', () => {
+  it('complete() ends early and counts the current run step', async () => {
+    const { GuideRunner, guides, guideResult } = await import('../guide')
+    const steps = guides.runWalk(3, 3, 1) // 8 รอบ (ประมาณจาก 10 นาที/กม.)
+    const g = new GuideRunner(steps)
+    g.start(0, 0)
+    for (let i = 0; i < 9; i++) g.skip(0) // วอร์ม + วิ่ง/เดิน 4 รอบ → อยู่ช่วงวิ่งที่ 5
+    expect(g.complete()).toEqual([{ type: 'done' }])
+    expect(guideResult(steps, g.state)).toEqual({ work: 5, total: 8, finished: true })
+    expect(g.complete()).toEqual([])
+  })
+})

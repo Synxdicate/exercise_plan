@@ -116,8 +116,11 @@ export function Runs() {
   const [coachOn, setCoachOn] = usePersisted('paceCoach', true)
   const coach = useRef(new PaceCoach())
   const coachStep = useRef<{ index: number; at: number }>({ index: -1, at: 0 })
+  // วิ่งตามระยะในแผน (เช่น วิ่งสลับเดิน 3 กม.): ถึงระยะแล้วจบชุดซ้อม ไม่ต้องสลับวิ่ง/เดินต่อจนครบรอบที่ประมาณไว้
+  const planKm = steps && steps !== TRIAL ? todayRun?.targetKm : undefined
   const onTick = (meters: number, active: boolean, pace: number | null) => {
     guide.onTick(meters, active)
+    if (planKm && meters >= planKm * 1000 && guide.runner?.state.started && !guide.runner.state.done) guide.complete()
     ghostTick(meters)
     if (!voice || !coachOn || !est) return
     const r = guide.runner
@@ -466,7 +469,7 @@ function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { run: Run
         {run.guide && (
           <p className={cx('mb-3 flex items-center gap-2 rounded-xl p-2.5 text-sm font-semibold', run.guide.finished ? 'bg-good/15 text-good' : 'bg-raised text-ink')}>
             <ListChecks size={16} className="shrink-0" />
-            {run.guide.finished ? `ทำชุดซ้อมครบ ${run.guide.total}/${run.guide.total} ช่วง` : `ทำชุดซ้อมได้ ${run.guide.work}/${run.guide.total} ช่วง — ครั้งหน้าลองให้ครบ หรือทำสัปดาห์นี้ซ้ำ`}
+            {run.guide.finished ? `ทำครบตามแผน (วิ่ง ${run.guide.work} ช่วง)` : `ทำชุดซ้อมได้ ${run.guide.work}/${run.guide.total} ช่วง — ครั้งหน้าลองให้ครบ หรือทำสัปดาห์นี้ซ้ำ`}
           </p>
         )}
         {fix && (

@@ -149,6 +149,13 @@ export class GuideRunner {
     }
   }
 
+  /** จบชุดซ้อมก่อนครบทุกขั้น (เช่น วิ่งสลับเดินถึงระยะตามแผนแล้ว — จำนวนรอบในชุดซ้อมประมาณจากเพซ ~10 นาที/กม.) */
+  complete(): GuideEvent[] {
+    if (this.state.done || !this.state.started) return []
+    this.state.done = true
+    return [{ type: 'done' }]
+  }
+
   /** ข้ามไปขั้นถัดไป (เช่น ช่วงพักรู้สึกพร้อมแล้ว) */
   skip(meters: number): GuideEvent[] {
     const st = this.state
@@ -184,6 +191,7 @@ export const totalWork = (steps: Step[]) => steps.filter(s => s.kind === 'work')
 export function guideResult(steps: Step[], st: GuideState): { work: number; total: number; finished: boolean } | null {
   if (!st.started) return null
   const total = totalWork(steps)
-  const work = st.done ? total : steps.slice(0, st.index).filter(s => s.kind === 'work').length
+  // จบก่อนครบขั้น (ถึงระยะแล้ว) นับช่วงวิ่งที่กำลังทำอยู่ด้วย
+  const work = steps.slice(0, st.done ? Math.min(st.index + 1, steps.length) : st.index).filter(s => s.kind === 'work').length
   return { work, total, finished: st.done }
 }
