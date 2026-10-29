@@ -303,6 +303,19 @@ test('เปิดแล้วปิดรายละเอียดการ�
   expect(JSON.stringify(await idb(page, 'errorLog') ?? [])).not.toContain('_leaflet_pos')
 })
 
+test('ทดสอบเหงื่อ: คำนวณอัตราเหงื่อและปริมาณที่ควรดื่ม', async ({ page }) => {
+  await seed(page)
+  await nav(page, 'วิ่ง')
+  await page.locator('main button', { hasText: 'สถิติ' }).first().click()
+  await page.getByLabel('ก่อนวิ่ง').fill('65')
+  await page.getByLabel('หลังวิ่ง').fill('64.2')
+  await page.getByLabel('ดื่มระหว่างวิ่ง').fill('400')
+  await page.getByLabel('เวลาวิ่ง').fill('60')
+  await page.getByRole('button', { name: 'บันทึกผลทดสอบ' }).click()
+  await expect(page.getByText(/เสียเหงื่อ ~1\.2 ลิตร\/ชม\./)).toBeVisible()
+  expect(((await idb(page, 'sweatTests')) as unknown[]).length).toBe(1)
+})
+
 test('รายงาน error: เก็บในเครื่องและดูได้จากเมนูบัญชี', async ({ page }) => {
   await seed(page)
   await expect(page.getByText(/เป้าเดือน/)).toBeVisible() // รอแอปโหลดเสร็จ (ตัวดัก error ติดตั้งหลังโหลดที่เก็บข้อมูล)
@@ -377,8 +390,12 @@ test('คาร์ดิโออื่น: บันทึกปั่นจั
   await seed(page)
   await nav(page, 'วิ่ง')
   await page.getByRole('button', { name: 'ประวัติ' }).click()
-  await page.locator('main').getByRole('button', { name: 'เพิ่ม', exact: true }).click()
-  await page.locator('main').getByRole('button', { name: 'บันทึก', exact: true }).last().click()
+  // จำกัดในการ์ดคาร์ดิโอ (หน้าเดียวกันมีปุ่ม "บันทึก" ของฟอร์มกรอกการวิ่งเอง) และรอฟอร์มกางเสร็จก่อนกด
+  const card = page.locator('section', { hasText: 'คาร์ดิโออื่น' })
+  await card.getByRole('button', { name: 'เพิ่ม', exact: true }).click()
+  const save = card.getByRole('button', { name: 'บันทึก', exact: true })
+  await expect(save).toBeVisible()
+  await save.click()
   await expect(page.getByText('ปั่นจักรยาน · 40 นาที')).toBeVisible()
   expect(((await idb(page, 'cross')) as unknown[]).length).toBe(1)
   await nav(page, 'บันทึก')

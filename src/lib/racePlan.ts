@@ -6,14 +6,17 @@ import { raceKm } from './goals'
 export const START_SLOWER_S = 8 // วินาที/กม. ช่วงออกตัว
 const START_KM = 2
 
-export function racePlan(key: RaceKey, goalSec: number) {
-  const D = raceKm[key]
+/** goalSec = เวลาเป้า/คาดการณ์ของระยะมาตรฐาน (key) · km = ระยะงานจริงถ้าต่างจากมาตรฐาน (เช่น มินิ 11.55) — ปรับเวลาด้วย Riegel */
+export function racePlan(key: RaceKey, standardSec: number, km = raceKm[key]) {
+  const D = km
+  const goalSec = km === raceKm[key] ? standardSec : standardSec * (km / raceKm[key]) ** 1.07
   const goalPace = goalSec / D
   // ชดเชยเวลาที่ช้าช่วงออกตัวด้วยเพซที่เร็วขึ้นเล็กน้อยช่วงที่เหลือ ให้รวมแล้วเท่าเป้า
   const restPace = (goalSec - START_KM * (goalPace + START_SLOWER_S)) / (D - START_KM)
   const at = (km: number) => (km <= START_KM ? km * (goalPace + START_SLOWER_S) : START_KM * (goalPace + START_SLOWER_S) + (km - START_KM) * restPace)
-  const marks = key === 'tenK' ? [2, 5, 8, 10] : key === 'fiveK' ? [1, 2, 3, 4, 5] : key === 'half' ? [2, 5, 10, 15, 20, D] : [2, 5, 10, 15, 20, 25, 30, 35, 40, D]
+  const marks = (key === 'tenK' ? [2, 5, 8, 10] : key === 'fiveK' ? [1, 2, 3, 4, 5] : key === 'half' ? [2, 5, 10, 15, 20] : [2, 5, 10, 15, 20, 25, 30, 35, 40]).filter(m => m < D).concat(D)
   return {
+    goalSec,
     goalPace,
     startPace: goalPace + START_SLOWER_S,
     restPace,

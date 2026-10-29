@@ -22,6 +22,7 @@ import { GuideCard } from './Guide'
 import { usePersisted } from '../lib/storage'
 import { RunTypeCard } from './RunTypes'
 import { RunFormTips } from './RunForm'
+import { SweatCard } from './Sweat'
 import { CooldownSheet } from './Cooldown'
 import { ShareRunSheet } from './ShareRun'
 import { PhotoStrip } from './Photos'
@@ -282,6 +283,7 @@ export function Runs() {
             <WeeklyBars runs={runs} target={target} />
           </Card>
           <HeatmapCard runs={runs} />
+          <SweatCard />
           <ShoesCard runs={runs} />
         </>
       )}

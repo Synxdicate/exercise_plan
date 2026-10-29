@@ -491,3 +491,29 @@ describe('program fit ignores run-walk as continuous running', () => {
     expect(isReady('mini', c)).toBe(true)
   })
 })
+
+describe('sweat test', () => {
+  it('rate from weight change + fluid; plan keeps loss under 2% without over-drinking', async () => {
+    const { sweatRate, drinkPlan } = await import('../sweat')
+    const r = sweatRate({ preKg: 65, postKg: 64.2, drankMl: 400, minutes: 60 })
+    expect(r.sweatL).toBeCloseTo(1.2)
+    expect(r.rateLph).toBeCloseTo(1.2)
+    expect(r.lossPct).toBeCloseTo(1.23, 1)
+    // 90 นาที: เสียได้ 1.3 ล. (2% ของ 65 กก.) → ต้องดื่ม 1.2 − 1.3/1.5 = 0.33 ล./ชม.
+    expect(drinkPlan(1.2, 65, 90).needMlph).toBe(333)
+    // วิ่งสั้น เสียไม่ถึง 2% ไม่จำเป็นต้องดื่ม
+    expect(drinkPlan(0.8, 65, 45).needMlph).toBe(0)
+    // ไม่เกินอัตราเหงื่อ
+    expect(drinkPlan(1.0, 65, 600).needMlph).toBeLessThanOrEqual(1000)
+  })
+})
+
+describe('race plan uses the real race distance', () => {
+  it('scales a 10K goal to 11.55 km with Riegel and ends splits at the finish', async () => {
+    const { racePlan } = await import('../racePlan')
+    const p = racePlan('tenK', 3600, 11.55)
+    expect(p.goalSec).toBeCloseTo(3600 * (1.155 ** 1.07), 0)
+    expect(p.splits.at(-1)!.km).toBe(11.55)
+    expect(Math.round(p.splits.at(-1)!.at)).toBe(Math.round(p.goalSec))
+  })
+})

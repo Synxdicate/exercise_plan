@@ -1,6 +1,6 @@
 import { ClipboardCheck, Timer } from 'lucide-react'
 import type { Day } from '../data/workouts'
-import { raceLabel } from '../lib/goals'
+import { raceKm, raceLabel } from '../lib/goals'
 import { racePlan, raceKeyOf } from '../lib/racePlan'
 import { formatDuration, formatPace, useRuns } from '../lib/log'
 import { estimate } from '../lib/pace'
@@ -8,6 +8,7 @@ import { useRaceGoals } from '../lib/useGoals'
 import { usePersisted } from '../lib/storage'
 import { defaultProfile, type Profile } from '../lib/calc'
 import { cx } from '../lib/cx'
+import { useRaceDrink } from '../lib/sweat'
 
 /** แผนวันแข่ง: เพซแต่ละช่วง + เวลาที่ควรถึงแต่ละจุด + เช็กลิสต์สัปดาห์แข่ง */
 export function RacePlan({ day, date }: { day: Day; date: string }) {
@@ -16,10 +17,11 @@ export function RacePlan({ day, date }: { day: Day; date: string }) {
   const [goals] = useRaceGoals()
   const [profile] = usePersisted<Profile>('profile', defaultProfile)
   const [checked, setChecked] = usePersisted<Record<string, string[]>>('raceChecklist', {})
+  const est = key ? estimate(runs) : null
+  const goal = key ? goals[key] ?? est?.[key] : undefined
+  const plan = key && goal ? racePlan(key, goal, day.targetKm) : null
+  const drink = useRaceDrink(plan ? plan.goalSec / 60 : 75)
   if (!key) return null
-  const est = estimate(runs)
-  const goal = goals[key] ?? est?.[key]
-  const plan = goal ? racePlan(key, goal) : null
   const carbs = Math.round(profile.weightKg * (key === 'full' ? 8 : 6))
   const items = [
     'ลดปริมาณตามแผน (taper) ไม่ซ้อมหนักเพิ่มเพื่อ "ชดเชย"',
@@ -42,7 +44,7 @@ export function RacePlan({ day, date }: { day: Day; date: string }) {
         <div className="mb-2 flex items-center gap-2 font-bold"><Timer size={16} className="text-accent" /> แผนเพซ {raceLabel[key]}</div>
         {plan ? (
           <>
-            <div className="text-xs text-muted">{goals[key] ? 'จากเป้าที่ตั้งไว้' : 'จากเวลาคาดการณ์ (ตั้งเป้าเองได้ที่หน้าวิ่ง → สถิติ)'} · {formatDuration(goal!)}</div>
+            <div className="text-xs text-muted">{goals[key] ? 'จากเป้าที่ตั้งไว้' : 'จากเวลาคาดการณ์ (ตั้งเป้าเองได้ที่หน้าวิ่ง → สถิติ)'} · {formatDuration(plan.goalSec)}{day.targetKm !== raceKm[key] && ` (${day.targetKm} กม.)`}</div>
             <ol className="mt-2 space-y-1">
               <li className="flex justify-between gap-2"><span>2 กม. แรก — อย่ารีบ</span><b className="tabular-nums">{formatPace(plan.startPace, 1)} /กม.</b></li>
               <li className="flex justify-between gap-2"><span>หลังจากนั้นถือเพซ</span><b className="tabular-nums">{formatPace(plan.restPace, 1)} /กม.</b></li>
@@ -56,6 +58,7 @@ export function RacePlan({ day, date }: { day: Day; date: string }) {
                 </div>
               ))}
             </div>
+            <p className="mt-2 text-xs">{drink ?? 'ยังไม่ได้ทดสอบเหงื่อ — ทำที่หน้าวิ่ง → สถิติ จะรู้ว่าต้องดื่มเท่าไร'}</p>
             {plan.fuel > 0 && <p className="mt-2 text-xs">ดื่มน้ำทุกจุดให้น้ำ (จิบ 2–3 อึก) · เจล/คาร์บ ~{plan.fuel} ครั้ง: ครั้งแรกนาทีที่ ~45 แล้วทุก ~35 นาที</p>}
           </>
         ) : <p className="text-xs text-muted">วิ่งให้ได้ ≥3 กม. สักครั้ง หรือตั้งเวลาเป้าหมาย แล้วแอปจะคำนวณแผนเพซให้</p>}
