@@ -166,6 +166,9 @@ const runnerStrength: Record<Mode, [Exercise[], Exercise[]]> = {
   ],
 }
 
+const calfHold = ex('Isometric Calf Hold', 'ยืนเขย่งค้าง (ฝึกเอ็นร้อยหวาย)', '3', '30–45 วิ / ข้าง', '60 วิ', 'เขย่งขาเดียวครึ่งทาง ค้างนิ่ง — เตรียมเอ็นก่อนเริ่มท่ากระโดด ถือดัมเบล/เป้เพิ่มน้ำหนักได้', 'isometric calf raise hold achilles')
+const nordic = ex('Nordic Curl', 'นอร์ดิกเคิร์ล (ใช้ยางยืดช่วยพยุงก่อน)', '2', '4–6', '2 นาที', 'เกี่ยวเท้าใต้ม้านั่ง/ให้คนจับ ค่อย ๆ ล้มไปข้างหน้าช้าที่สุด ใช้มือรับ — เริ่มด้วยยางยืดคล้องอกกับเสาช่วยพยุง ตะคริวให้หยุด', 'nordic hamstring curl band assisted')
+
 const strengthNote = 'เหลือแรง 2–3 ครั้งทุกเซ็ต ไม่เล่นจนหมดแรง เพื่อไม่ให้ขาล้าก่อนวันวิ่งคุณภาพ'
 
 const tables: Record<RunProgram, RunWeek[]> = { base: baseWeeks, five: fiveWeeks, ten: tenWeeks, half: halfWeeks, full: fullWeeks }
@@ -175,11 +178,14 @@ function raceWeek(program: RunProgram, mode: Mode, week: number): Day[] {
   const w = table[Math.min(Math.max(week, 1), table.length) - 1]
   const last = !!programs[program].raceKm && week === table.length
   const taper = last || (w.note?.startsWith('Taper') ?? false)
-  const [a0, b] = runnerStrength[mode]
-  // กระโดดเขย่ง (pogo) ตั้งแต่สัปดาห์ 4 หลังน่อง/เอ็นได้ฝึกแบบช้ามาก่อน — เวทแบบระเบิดแรงช่วยความประหยัดแรงวิ่ง (Rønnestad & Mujika 2014)
+  const [a0, b0] = runnerStrength[mode]
+  // เอ็นก่อนกระโดด (อ.เอกวิทย์): สัปดาห์ 1–3 เขย่งค้าง (isometric) ให้เอ็นรับโหลด — เอ็นปรับตัวกับแรงค้างนาน ๆ (Bohm 2015)
+  // แล้วค่อยกระโดดเขย่ง (pogo) ตั้งแต่สัปดาห์ 4 — เวทแบบระเบิดแรงช่วยความประหยัดแรงวิ่ง (Rønnestad & Mujika 2014)
   const a = week >= 4 && !taper && !last
     ? [...a0, ex('Pogo Jumps', 'กระโดดเขย่ง (ข้อเท้าแข็ง)', '3', '15–20', '60 วิ', 'เข่าเกือบตรง เด้งด้วยข้อเท้า แตะพื้นสั้นที่สุด เบาและเงียบ — เจ็บน่อง/เอ็นร้อยหวายให้หยุด', 'pogo jumps runners')]
-    : a0
+    : week < 4 ? [...a0, calfHold] : a0
+  // ต้นขาหลังแบบยืดค้าง (eccentric) ตั้งแต่สัปดาห์ 3 ไม่ใส่ช่วง taper — ลดการเจ็บต้นขาหลัง (Al Attar 2017: ศึกษาในนักฟุตบอล)
+  const b = week >= 3 && !taper && !last ? [...b0, nordic] : b0
   const lighten = (list: Exercise[]) => (taper ? list.map(e => ({ ...e, sets: '2' })) : list)
   // ขึ้นเนินสั้น ๆ สัปดาห์เว้นสัปดาห์ (ไม่ใส่ในสัปดาห์ลดปริมาณ/taper) — วิ่งเร็วขึ้นเนินช่วยความประหยัดแรง (Barnes & Kilding 2015)
   const hillWeek = week % 2 === 0 && !taper && !w.note?.startsWith('สัปดาห์ลด')
@@ -195,7 +201,7 @@ function raceWeek(program: RunProgram, mode: Mode, week: number): Day[] {
     { key: 'rest', day: 'ศุกร์', title: 'พัก', type: 'rest', duration: '-', note: 'พักเต็มวัน ให้ขาสดสำหรับวิ่งเสาร์–อาทิตย์', exercises: [] },
     w.easyB > 0
       ? (hillWeek
-        ? runDay('easyB', 'เสาร์', 'Easy run + เนินสั้น', w.easyB, 'easy', 'วิ่งเบา แล้ววิ่งขึ้นเนินสั้น ๆ 6 × 10 วิ (แรงแต่ฟอร์มดี) เดินลงพัก — ไม่มีเนินใช้สะพาน/ทางลาด', undefined, guides.hills(w.easyB))
+        ? runDay('easyB', 'เสาร์', 'Easy run + เนินสั้น', w.easyB, 'easy', 'วิ่งเบา แล้ววิ่งขึ้นเนินสั้น ๆ 6 × 10 วิ (แรงแต่ฟอร์มดี) — ชันไม่เกิน ~7% (วิ่งได้ ไม่ใช่ปีน) ลงเนินเดินหรือจ็อกช้า ก้าวสั้น · ไม่มีเนินใช้สะพาน/ทางลาด', undefined, guides.hills(w.easyB))
         : runDay('easyB', 'เสาร์', 'Easy run + Strides', w.easyB, 'easy', 'วิ่งเบา แล้ว Strides 4 × 20 วิ'))
       : { key: 'easyB', day: 'เสาร์', title: 'พัก / เดินเบา ๆ', type: 'rest', duration: '-', note: 'เดิน 20–30 นาที หรือยืดเหยียด', exercises: [] },
     last
@@ -301,7 +307,7 @@ function miniWeek(mode: Mode, week: number): Day[] {
     ? runDay(key, day, `วิ่งสลับเดิน ${km} กม.`, km, 'easy', `${ratio} จนครบระยะ (วิ่งช้าพูดเป็นประโยคได้)`, w.note, guides.runWalk(km, w.run, w.walk))
     : runDay(key, day, 'Easy run', km, 'easy', 'วิ่งเบาระดับพูดคุยได้ (โซน E)', w.note)
   return [
-    { key: 'strA', day: 'จันทร์', title: 'เวท A — ทั้งตัว', type: 'strength', duration: '35 นาที', note, exercises: light(a) },
+    { key: 'strA', day: 'จันทร์', title: 'เวท A — ทั้งตัว', type: 'strength', duration: '35 นาที', note, exercises: light([...a, calfHold]) },
     easy('easyA', 'อังคาร', w.easy),
     restDay('rest1', 'พุธ'),
     last ? runDay('easyB', 'พฤหัสบดี', 'Easy run', 2.5, 'easy', 'วิ่งเบาสั้น ๆ ให้ขาตื่นตัว', w.note) : easy('easyB', 'พฤหัสบดี', w.easy),

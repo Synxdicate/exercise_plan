@@ -199,3 +199,23 @@ describe('วันสวนไม่มีท่าที่ต้องใช�
     expect(gym.flatMap(d => d.exercises.map(e => e.name)).includes('Ab Wheel Rollout') || !weekPlan('physique', 1, () => 'gym').some(d => d.exercises.some(e => e.name === 'Hanging Leg Raise'))).toBe(true)
   })
 })
+
+describe('ความแข็งแรงตามช่วง (อ.เอกวิทย์ Part II)', () => {
+  it('เขย่งค้างสัปดาห์ 1–3 ก่อนกระโดด · Nordic ตั้งแต่สัปดาห์ 3 ไม่ใส่ช่วง taper · มินิมีเขย่งค้าง ไม่มีกระโดด', () => {
+    const names = (p: 'ten' | 'mini', w: number) => variants(p, w).gym.flatMap(d => d.exercises.map(e => e.name))
+    expect(names('ten', 1)).toContain('Isometric Calf Hold')
+    expect(names('ten', 4)).not.toContain('Isometric Calf Hold')
+    expect(names('ten', 4)).toContain('Pogo Jumps')
+    expect(names('ten', 2)).not.toContain('Nordic Curl')
+    expect(names('ten', 3)).toContain('Nordic Curl')
+    expect(names('ten', programs.ten.weeks)).not.toContain('Nordic Curl')
+    for (let w = 1; w <= programs.mini.weeks; w++) expect(names('mini', w)).not.toContain('Pogo Jumps')
+    expect(names('mini', 1)).toContain('Isometric Calf Hold')
+  })
+  it('วันแข่งใช้ระยะงานจริงได้ (มินิขอนแก่น 11.55 กม.)', async () => {
+    const { withRaceKm } = await import('../program')
+    const race = withRaceKm(variants('mini', 10).gym, 11.55).find(d => d.runKind === 'race')!
+    expect(race.targetKm).toBe(11.55)
+    expect(race.title).toContain('11.55 กม.')
+  })
+})

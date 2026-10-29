@@ -54,6 +54,7 @@ const demos: Record<string, string> = {
   'Seated Leg Curl': 'Seated_Leg_Curl',
   'Side Plank': 'Side_Bridge',
   'Single-leg Calf Raise': 'Standing_Calf_Raises',
+  'Isometric Calf Hold': 'Standing_Calf_Raises',
   'Single-leg Glute Bridge': 'Single_Leg_Glute_Bridge',
   'Single-leg RDL': 'Kettlebell_One-Legged_Deadlift',
   'Standing Calf Raise': 'Standing_Calf_Raises',

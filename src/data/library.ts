@@ -114,6 +114,7 @@ export const library: Record<Pattern, LibEx[]> = {
     x('Standing Calf Raise', 'เขย่งน่อง', 'ลงสุด ค้างบน 1 วิ', 'standing calf raise form', '12–15', 'gym'),
     x('Single-leg Calf Raise', 'เขย่งน่องขาเดียว', 'ลงช้า 3 วิ', 'single leg calf raise runners', '12–15 / ข้าง', 'both'),
     x('Seated Calf Raise', 'นั่งเขย่งน่อง', 'เข่างอ ~90° ลงสุด ค้างบน', 'seated calf raise form', '12–15', 'gym', m(['calves'])),
+    x('Isometric Calf Hold', 'ยืนเขย่งค้าง (ฝึกเอ็นร้อยหวาย)', 'เขย่งขาเดียวครึ่งทาง ค้างนิ่ง ถือดัมเบล/เป้ได้ เกร็งแต่ไม่ถึงกับสั่น', 'isometric calf raise hold achilles', '30–45 วิ / ข้าง', 'both', m(['calves'])),
     x('Bent-knee Calf Raise', 'เขย่งน่องงอเข่า (น่องมัดใน)', 'งอเข่าเล็กน้อยตลอด ขึ้นสุด ลงช้า 3 วิ — น่องมัดใน (soleus) รับแรงวิ่งมากที่สุด', 'bent knee calf raise soleus', '12–15', 'both', m(['calves'])),
   ],
   // สะโพกด้านข้าง (glute medius) อ่อน → สะโพกตกตอนวิ่ง เข่าบิดเข้า เจ็บ IT band (review 2024)

@@ -50,8 +50,9 @@ describe('GuideRunner', () => {
   })
   it('announcement counts reps and speaks the pace', () => {
     const s = guides.reps('5 × 800 ม. / จ็อก 2 นาที')
-    expect(stepAnnouncement(s, 3, { interval: 310 })).toBe('ช่วงเร็ว ครั้งที่ 2 จาก 5. 800 เมตร. เพซ 5 นาที 10 วินาที ต่อกิโล')
+    expect(stepAnnouncement(s, 4, { interval: 310 })).toBe('ช่วงเร็ว ครั้งที่ 2 จาก 5. 800 เมตร. เพซ 5 นาที 10 วินาที ต่อกิโล')
     expect(stepAnnouncement(s, 0)).toBe('วอร์มอัพ. 2 กิโลเมตร')
+    expect(stepAnnouncement(s, 1)).toBe('ท่าวอร์มอัพ ยกเข่า เอสคิป เตะก้น ลันจ์ ท่าละ 20 เมตร. 4 นาที')
   })
 })
 
@@ -62,7 +63,8 @@ describe('guideResult', () => {
     const g = new GuideRunner(steps)
     expect(guideResult(steps, g.state)).toBeNull()
     g.start(0, 0)
-    g.skip(2000) // warm → work 1
+    g.skip(2000) // warm → ท่าวอร์มอัพ
+    g.skip(2000) // ท่าวอร์มอัพ → work 1
     g.skip(2000) // → recover (work 1 done)
     expect(guideResult(steps, g.state)).toEqual({ work: 1, total: 3, finished: false })
     for (let i = 0; i < 5; i++) g.skip(2000)

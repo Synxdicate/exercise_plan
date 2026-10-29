@@ -29,6 +29,17 @@ export function placeRaceDay(days: Day[], raceIdx: number): Day[] {
   })
 }
 
+/** วันแข่งใช้ระยะงานจริง (เช่น มินิขอนแก่น 11.55 กม.) แทนระยะมาตรฐานของโปรแกรม */
+export function withRaceKm(days: Day[], km: number): Day[] {
+  return days.map(d => d.runKind !== 'race' || !d.targetKm || d.targetKm === km ? d : {
+    ...d,
+    targetKm: km,
+    duration: `${km} กม.`,
+    title: d.title.replace(/[\d.]+ กม\./, `${km} กม.`),
+    exercises: d.exercises.map(e => ({ ...e, reps: `${km} กม.` })),
+  })
+}
+
 export const extrasKey = (program: string, d: Day) => `${program}:${d.key}:${d.location ?? 'gym'}`
 
 /** ใส่ท่าที่ผู้ใช้สลับ (ทุกวันที่มีท่านั้น) และท่าที่เพิ่มเอง (ต่อวัน+สถานที่) ลงในแผน */
@@ -72,6 +83,8 @@ export function useProgram() {
   const [programStart, setProgramStart] = usePersisted('programStart', '')
   const [repeats, setRepeats] = usePersisted<string[]>('repeatWeeks', [])
   const [raceDate, setRaceDate] = usePersisted('raceDate', '')
+  // ระยะงานจริง (กม.) — งานแต่ละงานยาวไม่เท่ากัน โดยเฉพาะมินิมาราธอน (10–12 กม.)
+  const [raceKmOverride, setRaceKm] = usePersisted<number | null>('raceKm', null)
   const [swaps, setSwaps] = usePersisted<Record<string, string>>('exerciseSwaps', {})
   const [extras, setExtras] = usePersisted<Record<string, Exercise[]>>('extraExercises', {})
   const [solo, setSolo] = usePersisted('soloMode', false)
@@ -120,6 +133,8 @@ export function useProgram() {
     location,
     setLocationPref,
     raceDate,
+    raceKm: raceKmOverride ?? meta.raceKm,
+    setRaceKm,
     setRaceDate,
     currentWeek,
     weeksUntilStart,
@@ -144,6 +159,7 @@ export function useProgram() {
       setManualWeek(1)
       setProgramStart(thisMonday)
       setRepeats([])
+      setRaceKm(null)
     },
     /** สัปดาห์ของโปรแกรม ณ วันจันทร์ monday (null = อยู่นอกช่วงโปรแกรม) — ใช้กับปฏิทิน ให้ตรงกับวันแข่ง/การทำซ้ำ */
     weekOf(monday: string): number | null {
@@ -158,7 +174,9 @@ export function useProgram() {
     },
     plan: (week = currentWeek) => {
       const days = applyCustom(weekPlan(program, week, i => locationFor(week, i)), program, swaps, extras, solo)
-      return isRace && raceDate && week === meta.weeks ? placeRaceDay(days, (new Date(`${raceDate}T00:00:00`).getDay() + 6) % 7) : days
+      if (!isRace || week !== meta.weeks) return days
+      const sized = raceKmOverride ? withRaceKm(days, raceKmOverride) : days
+      return raceDate ? placeRaceDay(sized, (new Date(`${raceDate}T00:00:00`).getDay() + 6) % 7) : sized
     },
     solo,
     setSolo,

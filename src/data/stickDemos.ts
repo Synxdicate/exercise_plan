@@ -34,6 +34,13 @@ export const stickDemos: Record<string, StickDemo> = {
       { head: [19, 61], shoulder: [27, 65], elbow: [18, 59], hand: [9, 54], hip: [57, 68], knee: [77, 69], foot: [97, 69] },
     ],
   },
+  'Isometric Calf Hold': {
+    props: [{ kind: 'floor' }],
+    poses: [
+      { head: [58, 12], shoulder: [58, 21], elbow: [61, 32], hand: [62, 42], hip: [58, 43], knee: [58, 57], foot: [60, 69] },
+      { head: [58, 12], shoulder: [58, 21], elbow: [61, 32], hand: [62, 42], hip: [58, 43], knee: [58, 57], foot: [60, 69] },
+    ],
+  },
   'Bent-knee Calf Raise': {
     props: [{ kind: 'floor' }],
     poses: [

@@ -21,6 +21,7 @@ import { App } from '@capacitor/app'
 import { GuideCard } from './Guide'
 import { usePersisted } from '../lib/storage'
 import { RunTypeCard } from './RunTypes'
+import { RunFormTips } from './RunForm'
 import { CooldownSheet } from './Cooldown'
 import { ShareRunSheet } from './ShareRun'
 import { PhotoStrip } from './Photos'
@@ -251,6 +252,7 @@ export function Runs() {
           <JourneyCard runs={runs} est={est} />
           <HeatCard />
           <RunTypeCard kind={kind} />
+          <RunFormTips />
         </>
       )}
 
@@ -475,7 +477,7 @@ function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { run: Run
         {run.guide && (
           <p className={cx('mb-3 flex items-center gap-2 rounded-xl p-2.5 text-sm font-semibold', run.guide.finished ? 'bg-good/15 text-good' : 'bg-raised text-ink')}>
             <ListChecks size={16} className="shrink-0" />
-            {run.guide.finished ? `ทำครบตามแผน (วิ่ง ${run.guide.work} ช่วง)` : `ทำชุดซ้อมได้ ${run.guide.work}/${run.guide.total} ช่วง — ครั้งหน้าลองให้ครบ หรือทำสัปดาห์นี้ซ้ำ`}
+            {run.guide.finished ? `ทำครบตามแผน (วิ่ง ${run.guide.work} ช่วง)` : `ทำชุดซ้อมได้ ${run.guide.work}/${run.guide.total} ช่วง — ร่างกายไม่พร้อมก็หยุดได้ ไม่ต้องฝืน วันหลังยังมี`}
           </p>
         )}
         {fix && (

@@ -8,12 +8,14 @@ export type Step = { kind: StepKind; sec?: number; m?: number; pace?: PaceKey; l
 
 const warm = (m = 2000): Step => ({ kind: 'warm', m, pace: 'easy' })
 const cool = (sec = 300): Step => ({ kind: 'cool', sec, pace: 'easy' })
+// วอร์มอัพไดนามิกก่อนช่วงเร็ว (วิ่งเร็ว/เนิน/ทดสอบ) — ท่าฝึกการประสานกล้ามเนื้อ (อ.เอกวิทย์, โค้ชใบพัน) · วอร์มอัพช่วยประสิทธิภาพ (Fradkin 2010)
+const drills: Step = { kind: 'warm', sec: 240, label: 'ท่าวอร์มอัพ ยกเข่า เอสคิป เตะก้น ลันจ์ ท่าละ 20 เมตร' }
 const repeat = (n: number, work: Step, rec: Step): Step[] =>
   Array.from({ length: n }, (_, i) => (i < n - 1 ? [work, rec] : [work])).flat()
 
 export const guides = {
   /** วิ่งเบา สลับเร่ง 1 นาที × 6 */
-  fartlek: (): Step[] => [{ kind: 'warm', sec: 600, pace: 'easy' }, ...repeat(6, { kind: 'work', sec: 60, pace: 'interval' }, { kind: 'recover', sec: 120, pace: 'easy' }), cool()],
+  fartlek: (): Step[] => [{ kind: 'warm', sec: 600, pace: 'easy' }, drills, ...repeat(6, { kind: 'work', sec: 60, pace: 'interval' }, { kind: 'recover', sec: 120, pace: 'easy' }), cool()],
   /** วิ่งเบาเกือบทั้งหมด แล้วปิดท้าย strides 6 × 20 วิ เดินกลับ */
   strides: (km: number): Step[] => [
     { kind: 'easy', m: Math.max(1000, km * 1000 - 500), pace: 'easy' },
@@ -22,7 +24,7 @@ export const guides = {
   /** "15" = tempo 15 นาที, "2×5" = 5 นาที 2 ครั้ง พักจ็อก 2 นาที */
   tempo: (min: string): Step[] => {
     const [n, each] = min.includes('×') ? min.split('×').map(Number) : [1, Number(min)]
-    return [warm(), ...repeat(n, { kind: 'work', sec: each * 60, pace: 'tempo' }, { kind: 'recover', sec: 120, pace: 'easy' }), cool()]
+    return [warm(), drills, ...repeat(n, { kind: 'work', sec: each * 60, pace: 'tempo' }, { kind: 'recover', sec: 120, pace: 'easy' }), cool()]
   },
   /** "6 × 1 นาที / จ็อก 2 นาที", "5 × 800 ม. / จ็อก 2 นาที", "5 × 1 กม. / จ็อก 2 นาที" */
   reps: (set: string): Step[] => {
@@ -30,22 +32,23 @@ export const guides = {
     if (!m) return []
     const amount = Number(m[2])
     const work: Step = m[3] === 'นาที' ? { kind: 'work', sec: amount * 60, pace: 'interval' } : { kind: 'work', m: m[3] === 'กม.' ? amount * 1000 : amount, pace: 'interval' }
-    return [warm(), ...repeat(Number(m[1]), work, { kind: 'recover', sec: Number(m[4]) * 60, pace: 'easy' }), cool()]
+    return [warm(), drills, ...repeat(Number(m[1]), work, { kind: 'recover', sec: Number(m[4]) * 60, pace: 'easy' }), cool()]
   },
   /** "3 × 2 กม." หรือ "6 กม." ที่เพซแข่ง พักจ็อก 2 นาที */
   pace: (set: string, label: string): Step[] => {
     const m = set.match(/(?:(\d+)\s*×\s*)?([\d.]+)\s*กม\./)
     if (!m) return []
     const pace: PaceKey = /10K/.test(label) ? 'tenK' : /5K/.test(label) ? 'interval' : /ฮาล์ฟ/.test(label) ? 'half' : 'marathon'
-    return [warm(), ...repeat(Number(m[1] ?? 1), { kind: 'work', m: Number(m[2]) * 1000, pace }, { kind: 'recover', sec: 120, pace: 'easy' }), cool()]
+    return [warm(), drills, ...repeat(Number(m[1] ?? 1), { kind: 'work', m: Number(m[2]) * 1000, pace }, { kind: 'recover', sec: 120, pace: 'easy' }), cool()]
   },
   /** วิ่งเบา แล้วขึ้นเนินสั้น ๆ 6 × 10 วิ (แรงแต่ฟอร์มดี) เดินลงพัก — ฝึกแรงขาและความประหยัดแรง ไม่นับเป็นวันหนัก */
   hills: (km: number): Step[] => [
     { kind: 'easy', m: Math.max(1000, km * 1000 - 400), pace: 'easy' },
+    drills,
     ...repeat(6, { kind: 'work', sec: 10, pace: 'stride', label: 'ขึ้นเนิน' }, { kind: 'recover', sec: 75 }),
   ],
   /** ทดสอบ 5K (แทนการตรวจ VO2max ในแล็บ): วอร์ม 10 นาที → 5 กม. เต็มที่แบบคุมได้ → คูลดาวน์ — ผลใช้อัปเดตโซนเพซ */
-  timeTrial: (): Step[] => [{ kind: 'warm', sec: 600, pace: 'easy' }, { kind: 'work', m: 5000, pace: 'interval', label: 'ทดสอบ 5K' }, cool(600)],
+  timeTrial: (): Step[] => [{ kind: 'warm', sec: 600, pace: 'easy' }, drills, { kind: 'work', m: 5000, pace: 'interval', label: 'ทดสอบ 5K' }, cool(600)],
   /** วิ่งสลับเดินจนครบระยะ: เดินวอร์ม 5 นาที → วิ่ง run / เดิน walk นาที (จำนวนรอบประมาณจากเพซรวม ~10 นาที/กม.) → เดินคูลดาวน์ */
   runWalk: (km: number, run: number, walk: number): Step[] => [
     { kind: 'warm', sec: 300, label: 'เดินเร็ววอร์มอัพ' },
@@ -53,7 +56,7 @@ export const guides = {
     { kind: 'cool', sec: 300, label: 'เดินคูลดาวน์' },
   ],
   /** โปรแกรมหุ่น: วอร์ม 10 นาที → เร็ว 1 / จ็อก 2 × n → คูลดาวน์ 5 นาที */
-  intervals: (n: number): Step[] => [{ kind: 'warm', sec: 600, pace: 'easy' }, ...repeat(n, { kind: 'work', sec: 60, pace: 'interval' }, { kind: 'recover', sec: 120, pace: 'easy' }), cool()],
+  intervals: (n: number): Step[] => [{ kind: 'warm', sec: 600, pace: 'easy' }, drills, ...repeat(n, { kind: 'work', sec: 60, pace: 'interval' }, { kind: 'recover', sec: 120, pace: 'easy' }), cool()],
 }
 
 export type Paces = Partial<Record<Exclude<PaceKey, 'stride' | 'easy'>, number>> & { easy?: readonly [number, number] }

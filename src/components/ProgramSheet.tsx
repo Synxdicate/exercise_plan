@@ -5,7 +5,7 @@ import { useProgram } from '../lib/program'
 import { daysBetween, today } from '../lib/date'
 import { cx } from '../lib/cx'
 import { Button, Collapse, Sheet } from './ui'
-import { DateInput } from './Form'
+import { DateInput, NumberInput } from './Form'
 import { ProgramPicker } from './ProgramPicker'
 import { clearance, useScreening } from '../lib/screening'
 
@@ -16,11 +16,16 @@ export function ProgramSheet({ onClose }: { onClose: () => void }) {
   const [screening] = useScreening()
   const [where, setWhere] = useState<LocationPref>(p.location)
   const [date, setDate] = useState(p.raceDate)
+  const [km, setKm] = useState(choice === p.program && p.raceKm !== programs[p.program].raceKm ? String(p.raceKm ?? '') : '')
   const weeksAway = date ? Math.ceil(daysBetween(today(), date) / 7) : null
 
   const save = () => {
     if (choice !== p.program) p.setProgram(choice)
-    if (programs[choice].raceKm) p.setRaceDate(date)
+    if (programs[choice].raceKm) {
+      p.setRaceDate(date)
+      const n = Number(km)
+      p.setRaceKm(n > 0 && n !== programs[choice].raceKm ? n : null)
+    }
     p.setLocationPref(where)
     onClose()
   }
@@ -41,6 +46,8 @@ export function ProgramSheet({ onClose }: { onClose: () => void }) {
             <p className="mb-3 rounded-xl bg-bad/15 p-2 text-xs text-bad">ผลเช็กสุขภาพแนะนำให้พบแพทย์ก่อนฝึกหนัก — โปรแกรมวิ่งแข่งมีวิ่ง tempo/interval ที่นับเป็นการฝึกหนัก</p>
           )}
           <DateInput label="วันแข่ง" hint="ไม่บังคับ — ใส่แล้วแอปจะนับสัปดาห์และ taper ให้เอง" value={date} onChange={setDate} />
+          <NumberInput className="mt-2" label="ระยะงานจริง" unit="กม." step={0.05} value={km} placeholder={String(programs[choice].raceKm)}
+            hint={`ไม่ใส่ = ${programs[choice].raceKm} กม. · งานมินิแต่ละงานยาวไม่เท่ากัน`} onChange={setKm} />
           {!!programs[choice].raceKm && weeksAway !== null && weeksAway < programs[choice].weeks && (
             <p className="mt-2 rounded-xl bg-warn/15 p-2 text-xs text-warn">
               เหลือ {Math.max(weeksAway, 0)} สัปดาห์ น้อยกว่าโปรแกรม {programs[choice].weeks} สัปดาห์ — แอปจะเริ่มจากกลางโปรแกรม ถ้าฐานยังไม่ถึง ควรเลือกงานที่ไกลกว่านี้
