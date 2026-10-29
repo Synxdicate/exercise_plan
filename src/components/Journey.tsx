@@ -47,7 +47,8 @@ export function JourneyCard({ runs, est }: { runs: Run[]; est: Estimate | null }
           <div className="font-bold">ด่านต่อไป: {next.title} — {next.text}</div>
           {pred && (
             <div className="mt-0.5 text-xs text-muted">
-              ตอนนี้คาดว่าวิ่ง {raceLabel[next.race]} ได้ <b className="tabular-nums text-ink">{formatDuration(pred)}</b>
+              ตอนนี้คาดว่าวิ่ง {raceLabel[next.race]} ได้ <b className="tabular-nums text-ink">{est?.from.easy && 'ไม่เกิน '}{formatDuration(pred)}</b>
+              {est?.from.easy && ' (คิดจากวิ่งเบา เวลาจริงน่าจะเร็วกว่านี้)'}
               {goal && (pred <= goal ? ' · ถึงเป้าแล้ว' : ` · ขาดอีก ${formatDuration(pred - goal)} ถึงเป้า ${formatDuration(goal)}`)}
             </div>
           )}

@@ -110,7 +110,7 @@ function PlanBody() {
       {/* แถบวัน */}
       <div className="rounded-3xl bg-card p-3 shadow-sm ring-1 ring-line">
         <div className="mb-2 flex items-center justify-between px-1 text-xs">
-          <span className="font-semibold">สัปดาห์ {week} · {isThisWeek ? 'สัปดาห์นี้' : week < p.currentWeek ? `${p.currentWeek - week} สัปดาห์ก่อน` : `อีก ${week - p.currentWeek} สัปดาห์`}</span>
+          <span className="font-semibold">สัปดาห์ {week} · {isThisWeek ? (p.weeksUntilStart > 0 ? 'ช่วงเตรียมตัว (ใช้แผนสัปดาห์ 1)' : 'สัปดาห์นี้') : week < p.currentWeek ? `${p.currentWeek - week} สัปดาห์ก่อน` : `อีก ${week - p.currentWeek + p.weeksUntilStart} สัปดาห์`}</span>
           <span className="tabular-nums text-muted">{doneCount}/{trainingIdx.length} วัน{p.kmTarget(week) ? ` · วิ่ง ${p.kmTarget(week)} กม.` : ''}</span>
         </div>
         <div className="grid grid-cols-7 gap-1">
@@ -142,7 +142,7 @@ function PlanBody() {
 
       {/* วันที่เลือก */}
       <DayDetail key={`${week}-${selected}-${day.location ?? ''}`} day={day} isToday={isThisWeek && selected === todayIdx()}
-        done={isDone(selected)} hint={paceHint(est, day.runKind, day.title)}
+        done={isDone(selected)} hint={paceHint(est, day.runKind, day.title)} weekNoteText={note}
         setDone={v => setDayDone(selected, v)}
         onStart={() => setChecking(selected)}
         onLocation={m => p.setDayLocation(week, selected, m)} slotId={p.doneId(week, selected)} />
@@ -187,8 +187,8 @@ function PlanBody() {
   )
 }
 
-function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slotId }: {
-  day: Day; isToday: boolean; done: boolean; hint: string | null
+function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slotId, weekNoteText }: {
+  day: Day; isToday: boolean; done: boolean; hint: string | null; weekNoteText?: string
   setDone: (v: boolean) => void; onStart: () => void; onLocation: (m: 'gym' | 'park') => void; slotId: string
 }) {
   const nav = useNav()
@@ -231,7 +231,7 @@ function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slo
         </div>
       )}
 
-      {day.note && <p className="mt-3 text-sm text-muted">{day.note}</p>}
+      {day.note && day.note !== weekNoteText && <p className="mt-3 text-sm text-muted">{day.note}</p>}
 
       {day.type === 'strength' && (
         <>

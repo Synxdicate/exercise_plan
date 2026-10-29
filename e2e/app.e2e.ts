@@ -334,7 +334,7 @@ test('แผนที่รวมทุกการวิ่ง (heatmap)', asyn
   await seed(page, {
     runs: [
       { id: 'h1', date: ymd(3), km: 3, seconds: 1200, kind: 'easy', source: 'gps', ...loopRoute() },
-      { id: 'h2', date: ymd(1), km: 3, seconds: 1150, kind: 'easy', source: 'gps', ...loopRoute() },
+      { id: 'h2', date: ymd(1), km: 3, seconds: 1150, kind: 'race', source: 'gps', ...loopRoute() }, // ผลวิ่งเต็มที่ — ความเร็ววิกฤต/โซนแสดงเมื่อไม่ได้คิดจากวิ่งเบา
     ],
   })
   await nav(page, 'วิ่ง')

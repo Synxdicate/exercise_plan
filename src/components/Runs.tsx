@@ -67,6 +67,8 @@ export function Runs() {
   const kmToday = runs.filter(r => r.date === today()).reduce((s, r) => s + r.km, 0)
   const [kind, setKind] = useState<Run['kind']>(todayRun?.runKind ?? 'easy')
   const est = useMemo(() => estimate(runs), [runs])
+  // โซนเพซคิดจากเพซ 5K — ถ้าได้มาจากวิ่งเบา โซนจะผิด (วิ่งเบาปกติถูกจัดเป็น Speed) จึงไม่แสดงโซน
+  const zoneRef = est && !est.from.easy ? est.paces.interval : undefined
   const [detail, setDetail] = useState<string | null>(null)
   const [manual, setManual] = useState(false)
   const [checking, setChecking] = useState(false)
@@ -179,7 +181,7 @@ export function Runs() {
   }
 
   if (t.status !== 'idle') return (
-    <ActiveRun t={t} kind={kind} target={todayRun?.targetKm} fiveK={est?.paces.interval} voice={voice} setVoice={setVoice} onFinish={finish}
+    <ActiveRun t={t} kind={kind} target={todayRun?.targetKm} fiveK={zoneRef} voice={voice} setVoice={setVoice} onFinish={finish}
       coachOn={coachOn && !!est} setCoachOn={est ? setCoachOn : undefined}
       onDiscard={() => { guide.reset(); resetGhost(); t.discard() }}
       ghost={ghost && <GhostCard ghost={ghost} now={ghostNow} on={ghostOn} setOn={setGhostOn} />}
@@ -292,7 +294,7 @@ export function Runs() {
           onProceed={light => { if (light) setKind('easy'); setChecking(false); t.acquire() }} />
       )}
 
-      {open && <RunDetail run={open} runs={runs} fiveK={est?.paces.interval} onClose={() => setDetail(null)} onUpdate={patch => setRuns(prev => prev.map(x => (x.id === open.id ? { ...x, ...patch } : x)).sort((a, b) => a.date.localeCompare(b.date)))} onDelete={() => { setRuns(prev => prev.filter(x => x.id !== open.id)); removePhotos(open.id); setDetail(null) }} />}
+      {open && <RunDetail run={open} runs={runs} fiveK={zoneRef} onClose={() => setDetail(null)} onUpdate={patch => setRuns(prev => prev.map(x => (x.id === open.id ? { ...x, ...patch } : x)).sort((a, b) => a.date.localeCompare(b.date)))} onDelete={() => { setRuns(prev => prev.filter(x => x.id !== open.id)); removePhotos(open.id); setDetail(null) }} />}
     </div>
   )
 }
@@ -598,7 +600,14 @@ function PaceCard({ est, runs, onTrial }: { est: Estimate | null; runs: Run[]; o
   const saveGoal = () => { setGoal(pick, parseDuration(draft)); setDraft('') }
   return (
     <Card title={<span className="flex items-center gap-2"><Gauge size={18} className="text-run" /> เวลาคาดการณ์ & โซนเพซ</span>}>
-      {daysBetween(est.from.date, today()) > 42 && (
+      {/* ยังไม่มีผลวิ่งเต็มที่: ตัวเลขคิดจากวิ่งเบา (ช้ากว่าจริง) — บอกก่อน และไม่แสดงโซน/ความเร็ววิกฤตที่จะผิด */}
+      {est.from.easy && (
+        <div className="mb-3 flex items-center gap-2 rounded-xl bg-warn/10 p-3 text-sm text-warn">
+          <span className="flex-1">ยังไม่มีผลวิ่งเต็มที่ — เวลาด้านล่างคิดจากวิ่งเบา เวลาจริงน่าจะเร็วกว่านี้ วิ่งทดสอบ 5K เมื่อวิ่งต่อเนื่องได้แล้ว</span>
+          <Button size="sm" variant="soft" onClick={onTrial}>ทดสอบ 5K</Button>
+        </div>
+      )}
+      {!est.from.easy && daysBetween(est.from.date, today()) > 42 && (
         <div className="mb-3 flex items-center gap-2 rounded-xl bg-run/10 p-3 text-sm text-run">
           <span className="flex-1">ผลที่ใช้คำนวณเก่าเกิน 6 สัปดาห์ — วิ่งทดสอบ 5K เพื่ออัปเดตโซนและเวลาคาดการณ์</span>
           <Button size="sm" variant="run" onClick={onTrial}>ทดสอบ 5K</Button>
@@ -642,7 +651,7 @@ function PaceCard({ est, runs, onTrial }: { est: Estimate | null; runs: Run[]; o
           </div>
         )}
       </div>
-      {cs && (
+      {cs && !est.from.easy && (
         <div className="mt-3 rounded-xl bg-raised p-3 text-sm">
           <div className="flex items-baseline justify-between gap-2">
             <span className="font-semibold">ความเร็ววิกฤต (Critical Speed)</span>
@@ -654,8 +663,12 @@ function PaceCard({ est, runs, onTrial }: { est: Estimate | null; runs: Run[]; o
           </p>
         </div>
       )}
-      <div className="mt-3 text-xs font-semibold text-muted">โซนเพซของคุณ (นาที/กม.)</div>
-      <div className="mt-1.5"><ZoneLegend fiveK={est.paces.interval} /></div>
+      {!est.from.easy && (
+        <>
+          <div className="mt-3 text-xs font-semibold text-muted">โซนเพซของคุณ (นาที/กม.)</div>
+          <div className="mt-1.5"><ZoneLegend fiveK={est.paces.interval} /></div>
+        </>
+      )}
       <p className="mt-2 text-xs text-muted">
         จาก{est.from.segment ? `ช่วง ${est.from.km} กม. ที่เร็วที่สุดในการวิ่ง` : `การวิ่ง ${est.from.km} กม.`} วันที่ {shortDate(est.from.date)}
         {est.stale && ' (เกิน 2 เดือนแล้ว — วิ่งเต็มที่สักครั้งเพื่ออัปเดต)'}

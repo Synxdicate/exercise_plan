@@ -91,7 +91,8 @@ export function Dashboard() {
             <div className="min-w-0 flex-1">
               <div className="text-xs text-muted">วันนี้ ({todayPlan.day})</div>
               <div className="font-bold">{todayPlan.title}</div>
-              <div className="text-xs text-muted">{todayPlan.duration !== '-' ? todayPlan.duration : todayPlan.note}</div>
+              {/* ชื่อบอกระยะอยู่แล้ว (เช่น "วิ่งสลับเดิน 3 กม.") ไม่ต้องซ้ำ */}
+              {!todayPlan.title.includes(todayPlan.duration) && <div className="text-xs text-muted">{todayPlan.duration !== '-' ? todayPlan.duration : todayPlan.note}</div>}
               {hint && <div className="text-xs font-semibold text-run">{hint}</div>}
             </div>
             {todayDone && <span className="grid size-9 shrink-0 animate-pop place-items-center rounded-full bg-good text-white"><Check size={18} strokeWidth={3} /></span>}
