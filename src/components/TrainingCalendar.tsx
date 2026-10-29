@@ -34,25 +34,22 @@ export function TrainingCalendar() {
 
   const grid = monthGrid(ym)
   const monthDays = grid.flat().filter((d): d is string => !!d)
-  // แผนของแต่ละวันในเดือนนี้: นับสัปดาห์ของโปรแกรมจากสัปดาห์ปัจจุบัน (โปรแกรมวนรอบใช้รอบเดิม)
+  // แผนของแต่ละวันในเดือนนี้: สัปดาห์ของโปรแกรมตามวันที่จริง (วันเริ่ม/วันแข่ง/สัปดาห์ที่ทำซ้ำ)
   const plans = useMemo(() => {
     const weeks = new Map<number, Day[]>()
     const out = new Map<string, Day | null>()
     const ticked = new Set<string>()
-    const thisMonday = weekStart(now)
-    const n = p.meta.weeks
     for (const date of monthGrid(ym).flat()) {
       if (!date) continue
-      const offset = Math.round(daysBetween(thisMonday, weekStart(date)) / 7)
-      const week = p.ongoing ? ((((p.currentWeek - 1 + offset) % n) + n) % n) + 1 : p.currentWeek + offset
-      if (week < 1 || week > n) { out.set(date, null); continue }
+      const week = p.weekOf(weekStart(date))
+      if (week === null) { out.set(date, null); continue }
       if (!weeks.has(week)) weeks.set(week, p.plan(week))
       const i = daysBetween(weekStart(date), date)
       out.set(date, weeks.get(week)![i] ?? null)
       if (p.isDone(done, week, i)) ticked.add(date)
     }
     return { out, ticked }
-  }, [p, now, ym, done])
+  }, [p, ym, done])
   const planFor = (date: string) => plans.out.get(date) ?? null
   // ติ๊ก "ทำแล้ว" ในตารางฝึก (โดยไม่ได้บันทึกระยะ/เซ็ต) ก็นับว่าได้ออกกำลังกายวันนั้น
   const tickedOn = (date: string) => plans.ticked.has(date)

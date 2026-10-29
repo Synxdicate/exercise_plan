@@ -470,3 +470,24 @@ describe('guide completes at the planned distance', () => {
     expect(g.complete()).toEqual([])
   })
 })
+
+describe('estimate source quality', () => {
+  it('ignores guided easy runs (run-walk) and flags easy sources', async () => {
+    const { estimate } = await import('../pace')
+    const rw = { id: 'rw', date: '2026-10-29', km: 3.13, seconds: 1575, kind: 'easy' as const, source: 'gps' as const, guide: { work: 5, total: 8, finished: true } }
+    expect(estimate([rw], '2026-10-29')).toBeNull()
+    const easy = { ...rw, id: 'e', guide: undefined }
+    expect(estimate([easy], '2026-10-29')?.from.easy).toBe(true)
+    const trial = { ...easy, id: 't', km: 5, seconds: 1650, kind: 'race' as const }
+    expect(estimate([easy, trial], '2026-10-29')?.from.easy).toBe(false)
+  })
+})
+
+describe('program fit ignores run-walk as continuous running', () => {
+  it('a 32-min run-walk does not unlock the 10K program but counts toward the mini', async () => {
+    const { capacity, isReady } = await import('../programFit')
+    const c = capacity([{ id: 'rw', date: '2026-10-29', km: 4, seconds: 1920, kind: 'easy', source: 'gps', guide: { work: 8, total: 8, finished: true } }], '2026-10-29')
+    expect(isReady('ten', c)).toBe(false)
+    expect(isReady('mini', c)).toBe(true)
+  })
+})

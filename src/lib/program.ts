@@ -145,6 +145,17 @@ export function useProgram() {
       setProgramStart(thisMonday)
       setRepeats([])
     },
+    /** สัปดาห์ของโปรแกรม ณ วันจันทร์ monday (null = อยู่นอกช่วงโปรแกรม) — ใช้กับปฏิทิน ให้ตรงกับวันแข่ง/การทำซ้ำ */
+    weekOf(monday: string): number | null {
+      if (ongoing) return (((Math.floor(daysBetween(CYCLE_EPOCH, monday) / 7) % meta.weeks) + meta.weeks) % meta.weeks) + 1
+      if (isRace && raceDate) {
+        const w = Math.floor(daysBetween(addDays(weekStart(raceDate), -7 * (meta.weeks - 1)), monday) / 7) + 1
+        // ก่อนเริ่มโปรแกรม แอปใช้แผนสัปดาห์ 1 (เหมือนหน้าฝึก) — ก่อนสัปดาห์นี้ไม่มีแผน
+        return w > meta.weeks ? null : w >= 1 ? w : monday >= thisMonday ? 1 : null
+      }
+      const raw = Math.floor(daysBetween(start, monday) / 7) + 1
+      return raw < 1 ? null : raw - repeats.filter(r => r > start && r <= monday).length > meta.weeks ? null : weekAt(start, repeats, monday, meta.weeks)
+    },
     plan: (week = currentWeek) => {
       const days = applyCustom(weekPlan(program, week, i => locationFor(week, i)), program, swaps, extras, solo)
       return isRace && raceDate && week === meta.weeks ? placeRaceDay(days, (new Date(`${raceDate}T00:00:00`).getDay() + 6) % 7) : days

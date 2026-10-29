@@ -135,7 +135,8 @@ export function Runs() {
     const settling = step && now - coachStep.current.at < 25_000
     const band = settling ? null
       : target ? workBand(target)
-      : (step ? step.pace === 'easy' : kind === 'easy' || kind === 'long') ? easyBand(est.paces.easy[0])
+      // คำนวณจากวิ่งเบา: โซน Easy จะช้ากว่าเพซวิ่งเบาจริงของเรา — ไม่เตือนให้ช้าลง
+      : !est.from.easy && (step ? step.pace === 'easy' : kind === 'easy' || kind === 'long') ? easyBand(est.paces.easy[0])
       : null
     const cue = coach.current.update(now, pace, band, target ? 20_000 : 45_000)
     if (cue) void speak(cueText(cue, !!target))
@@ -657,7 +658,8 @@ function PaceCard({ est, runs, onTrial }: { est: Estimate | null; runs: Run[]; o
       <div className="mt-1.5"><ZoneLegend fiveK={est.paces.interval} /></div>
       <p className="mt-2 text-xs text-muted">
         จาก{est.from.segment ? `ช่วง ${est.from.km} กม. ที่เร็วที่สุดในการวิ่ง` : `การวิ่ง ${est.from.km} กม.`} วันที่ {shortDate(est.from.date)}
-        {est.stale && ' (เกิน 2 เดือนแล้ว — วิ่งเต็มที่สักครั้งเพื่ออัปเดต)'} · ฟูลคิดจากระยะซ้อม ~{Math.round(est.weeklyKm)} กม./สัปดาห์ด้วย
+        {est.stale && ' (เกิน 2 เดือนแล้ว — วิ่งเต็มที่สักครั้งเพื่ออัปเดต)'}
+        {est.from.easy && ' (เป็นวิ่งเบา เวลาจริงน่าจะเร็วกว่านี้ — วิ่งทดสอบ 5K เพื่อให้แม่นขึ้น)'} · ฟูลคิดจากระยะซ้อม ~{Math.round(est.weeklyKm)} กม./สัปดาห์ด้วย
       </p>
     </Card>
   )

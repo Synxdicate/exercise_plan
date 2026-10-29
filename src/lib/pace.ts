@@ -19,7 +19,7 @@ export function vickersMarathon(sec: number, km: number, milesPerWeek: number) {
   return 42195 / v
 }
 
-type Source = { km: number; seconds: number; date: string; runId: string; segment: boolean }
+type Source = { km: number; seconds: number; date: string; runId: string; segment: boolean; easy: boolean }
 
 /** ผลที่ใช้คำนวณ: ทั้งการวิ่ง (≥3 กม.) และช่วงที่เร็วที่สุดภายในการวิ่ง (5K/10K/ฮาล์ฟ) — เลือกอันที่เทียบเป็น 5K ได้เร็วที่สุด */
 // ช้ากว่า 10:00/กม. คือเดินเร็ว/เดินสลับวิ่ง ไม่ใช่การวิ่งเต็มที่ — ใช้เป็นตัวอ้างอิงความฟิตไม่ได้
@@ -30,12 +30,16 @@ function bestSource(runs: Run[]): Source | null {
   let best: Source | null = null
   const consider = (c: Source) => { if (c.seconds / c.km > MAX_SOURCE_PACE) return; if (!best || riegel(c.seconds, c.km, 5) < riegel(best.seconds, best.km, 5)) best = c }
   for (const r of runs) {
-    if (r.km >= 3 && r.seconds > 0) consider({ km: r.km, seconds: r.seconds, date: r.date, runId: r.id, segment: false })
+    // วิ่งเบาที่มีชุดซ้อม (วิ่งสลับเดิน / strides / เนิน) มีช่วงเดินหรือพักอยู่ข้างใน ไม่ใช่การวิ่งต่อเนื่อง — ไม่ใช้เลย
+    if (r.kind === 'easy' && r.guide) continue
+    // วิ่งเบา/วิ่งยาวไม่ใช่การวิ่งเต็มที่ ใช้ได้แต่ต้องรู้ว่าเวลาคาดการณ์จะช้ากว่าความจริง
+    const easy = r.kind === 'easy' || r.kind === 'long' || r.kind === 'other'
+    if (r.km >= 3 && r.seconds > 0) consider({ km: r.km, seconds: r.seconds, date: r.date, runId: r.id, segment: false, easy })
     if (r.route && r.times && r.times.length === r.route.length)
       for (const km of [5, 10, 21.0975]) {
         if (r.km < km) break
         const t = bestEffort(r.route, r.times, km)
-        if (t) consider({ km, seconds: t, date: r.date, runId: r.id, segment: true })
+        if (t) consider({ km, seconds: t, date: r.date, runId: r.id, segment: true, easy })
       }
   }
   return best
@@ -56,7 +60,7 @@ export function estimate(runs: Run[], asOf = today()) {
   const half = riegel(src.seconds, src.km, 21.0975)
   const full = vickersMarathon(src.seconds, src.km, weeklyKm / MILES)
   return {
-    from: { km: +src.km.toFixed(2), date: src.date, id: src.runId, segment: src.segment },
+    from: { km: +src.km.toFixed(2), date: src.date, id: src.runId, segment: src.segment, easy: src.easy },
     stale,
     weeklyKm,
     // ฟูลยังไม่น่าเชื่อถือถ้าซ้อมน้อยหรือยังไม่เคยวิ่งไกล (ระยะยาวสุดที่ใช้คำนวณ < 10 กม.)

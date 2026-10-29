@@ -11,7 +11,8 @@ export type Capacity = { longestKm: number; longestMin: number; anyKm?: number }
 
 export function capacity(runs: Run[], asOf = today(), days = 60): Capacity {
   const from = addDays(asOf, -days)
-  const real = runs.filter(r => r.date > from && r.date <= asOf && r.km > 0 && r.seconds > 0 && r.seconds / r.km <= MAX_SOURCE_PACE)
+  // วิ่งเบาที่มีชุดซ้อม (วิ่งสลับเดิน) ไม่ใช่การวิ่งต่อเนื่อง แม้เพซเฉลี่ยจะเร็วกว่า 10:00/กม. — นับแค่ใน anyKm
+  const real = runs.filter(r => r.date > from && r.date <= asOf && r.km > 0 && r.seconds > 0 && r.seconds / r.km <= MAX_SOURCE_PACE && !(r.kind === 'easy' && r.guide))
   const any = runs.filter(r => r.date > from && r.date <= asOf && r.km > 0 && r.seconds > 0 && r.seconds / r.km <= 900)
   return {
     longestKm: Math.max(0, ...real.map(r => r.km)),
