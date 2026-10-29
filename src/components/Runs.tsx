@@ -8,6 +8,7 @@ import { parseGpx } from '../lib/gpx'
 import { saveGpx } from '../lib/gpxFile'
 import { DEFAULT_LIMIT_KM, defaultShoe, shoeKm, shoeStatus, useShoes, type Shoe } from '../lib/shoes'
 import { paceSeries, personalBests, remeasure, splitAnalysis } from '../lib/analysis'
+import { easyTooFast } from '../lib/recovery'
 import { PaceChart, ZoneBar, ZoneLegend } from './Charts'
 import { zoneInfo, zoneOf } from '../lib/zones'
 import { RpePicker } from './RpePicker'
@@ -444,6 +445,8 @@ function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { run: Run
   useBackClose(onClose)
   const series = run.route && run.times ? paceSeries(run.route, run.times) : []
   const sa = splitAnalysis(run.splits)
+  // "หลงความเร็ว" (ครูดิน): วิ่งเบาเร็วกว่าโซนเบา — เทียบเฉพาะเมื่อโซนคิดจากผลวิ่งเต็มที่ (fiveK มาจาก zoneRef)
+  const tooFast = easyTooFast(run, fiveK ? fiveK * 1.2 : undefined)
   const saText = sa && {
     // เร็วขึ้นเกิน 10% มักแปลว่าช่วงแรกเดิน/วอร์มอัพ มากกว่าการคุมแรง
     negative: sa.diffPct < -10
@@ -481,6 +484,9 @@ function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { run: Run
             <ListChecks size={16} className="shrink-0" />
             {run.guide.finished ? `ทำครบตามแผน (วิ่ง ${run.guide.work} ช่วง)` : `ทำชุดซ้อมได้ ${run.guide.work}/${run.guide.total} ช่วง — ร่างกายไม่พร้อมก็หยุดได้ ไม่ต้องฝืน วันหลังยังมี`}
           </p>
+        )}
+        {tooFast && (
+          <p className="mb-3 rounded-xl bg-warn/15 p-2.5 text-sm text-warn">วิ่งเบาเร็วกว่าโซนเบา ~{tooFast} วิ/กม. — วันเบาควรเบาจริง วันวิ่งเร็วจะได้มีแรง ("หลงความเร็ว" เป็นสาเหตุเจ็บที่พบบ่อย)</p>
         )}
         {fix && (
           <div className="mb-3 rounded-xl bg-warn/15 p-3 text-sm text-warn">

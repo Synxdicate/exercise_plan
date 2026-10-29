@@ -7,6 +7,7 @@ import { useRuns, useSessions } from '../lib/log'
 import { useProgram } from '../lib/program'
 import { usePersisted } from '../lib/storage'
 import { today } from '../lib/date'
+import { activeRecovery } from '../lib/recovery'
 import { cx } from '../lib/cx'
 import { Button } from './ui'
 import { ScreeningSheet } from './Screening'
@@ -30,6 +31,8 @@ export function Alerts() {
   const cb = comeback(dates, today())
   const showComeback = cb && dismissed !== lastActivity
   const result = screening ? clearance(screening) : null
+  const rec = activeRecovery(runs, today())
+  const [recSeen, setRecSeen] = usePersisted('recoveryDismissed', '')
 
   return (
     <>
@@ -49,6 +52,11 @@ export function Alerts() {
               <Button size="sm" variant="soft" onClick={() => setDismissed(lastActivity)}>รับทราบ</Button>
             </div>
           } />
+      )}
+      {rec && recSeen !== rec.race.id && (
+        <Banner tone="warn" icon={<History size={20} />} title={`ช่วงฟื้นตัวหลังแข่ง ${rec.race.km} กม. — อีก ${rec.left} วัน`}
+          text={`วิ่งเบาหรือพักจนถึง ${rec.until} งดวิ่งหนัก/วิ่งยาว (แข่งหนึ่งครั้งต้องฟื้นตัว ${rec.days} วัน — เหตุผลที่ไม่ควรลงแข่งเพิ่มระหว่างโปรแกรม)`}
+          action={<Button size="sm" variant="soft" onClick={() => setRecSeen(rec.race.id)}>รับทราบ</Button>} />
       )}
       {showPain && (
         <Banner tone="bad" icon={<Bandage size={20} />}

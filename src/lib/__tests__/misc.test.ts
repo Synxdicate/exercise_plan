@@ -517,3 +517,22 @@ describe('race plan uses the real race distance', () => {
     expect(Math.round(p.splits.at(-1)!.at)).toBe(Math.round(p.goalSec))
   })
 })
+
+describe('post-race recovery & easy-pace discipline', () => {
+  const run = (date: string, km: number, kind: 'race' | 'easy', seconds = km * 360) => ({ id: date + kind, date, km, seconds, kind, source: 'gps' as const })
+  it('recovery window by distance', async () => {
+    const { activeRecovery, recoveryDays } = await import('../recovery')
+    expect(recoveryDays(10)).toBe(3)
+    expect(recoveryDays(21.1)).toBe(8)
+    expect(recoveryDays(42.2)).toBe(14)
+    expect(activeRecovery([run('2027-01-10', 11.55, 'race')], '2027-01-11')).toMatchObject({ left: 2 })
+    expect(activeRecovery([run('2027-01-10', 11.55, 'race')], '2027-01-13')).toBeNull()
+    expect(activeRecovery([run('2027-01-10', 5, 'easy')], '2027-01-11')).toBeNull()
+  })
+  it('flags easy runs faster than the easy floor', async () => {
+    const { easyTooFast } = await import('../recovery')
+    expect(easyTooFast(run('2026-10-30', 5, 'easy', 5 * 330), 390)).toBe(60)
+    expect(easyTooFast(run('2026-10-30', 5, 'easy', 5 * 400), 390)).toBeNull()
+    expect(easyTooFast(run('2026-10-30', 5, 'easy', 5 * 330), undefined)).toBeNull()
+  })
+})
