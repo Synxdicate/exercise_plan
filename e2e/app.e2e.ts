@@ -420,3 +420,27 @@ test('ฝึกคนเดียว: สลับ Bench Press/Back Squat เป
   await expect(page.getByText('ฝึกคนเดียว').first()).toBeVisible()
   expect(await idb(page, 'soloMode')).toBe(true)
 })
+
+test('โลโก้กลับหน้าหลัก, เมนูบัญชีปิดเมื่อกดข้างนอก, สลับภาษา', async ({ page }) => {
+  await seed(page)
+  await nav(page, 'ฝึก')
+  await expect(page.locator('header h1')).toHaveText('ตารางฝึก')
+  await page.getByRole('button', { name: 'กลับหน้าหลัก' }).click()
+  await expect(page.locator('header h1')).toHaveText('ภาพรวม')
+
+  await page.getByRole('button', { name: 'เมนูบัญชี' }).click()
+  await expect(page.getByText('ตั้งค่าโปรแกรมและเป้าหมาย')).toBeVisible()
+  // กดตรงเนื้อหาด้านล่าง (นอกกรอบ header) — เดิม backdrop ถูกจำกัดอยู่ใน header เลยไม่ปิด
+  await page.mouse.click(30, 600)
+  await expect(page.getByText('ตั้งค่าโปรแกรมและเป้าหมาย')).toBeHidden()
+
+  await page.getByRole('button', { name: 'เมนูบัญชี' }).click()
+  await page.getByRole('button', { name: 'EN', exact: true }).click()
+  await expect(page.getByText('Program & goals')).toBeVisible()
+  await page.mouse.click(30, 600)
+  await expect(page.locator('nav')).toContainText('Home')
+  await expect(page.locator('header h1')).toHaveText('Overview')
+  expect(await page.evaluate(() => document.documentElement.lang)).toBe('en')
+  await page.reload()
+  await expect(page.locator('nav')).toContainText('Train')
+})
