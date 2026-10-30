@@ -1,5 +1,5 @@
 import { TextToSpeech } from '@capacitor-community/text-to-speech'
-import { Haptics } from '@capacitor/haptics'
+import { Haptics, ImpactStyle } from '@capacitor/haptics'
 import { isNative } from './native'
 
 // เสียงพูดภาษาไทย — แอปใช้ TTS ของเครื่อง (พูดได้แม้ปิดจอ), เว็บใช้ speechSynthesis
@@ -28,6 +28,16 @@ export function buzz(kind: Buzz) {
   try {
     if (isNative) void Haptics.vibrate({ duration: BUZZ_MS[kind] }).catch(() => {})
     else navigator.vibrate?.(kind === 'hard' ? [300, 120, 300] : BUZZ_MS[kind])
+  } catch {
+    /* เครื่องไม่รองรับการสั่น */
+  }
+}
+
+/** สั่นเบา ๆ ตอนติ๊ก "ทำแล้ว" — ยืนยันว่ากดติด */
+export function tick() {
+  try {
+    if (isNative) void Haptics.impact({ style: ImpactStyle.Light }).catch(() => {})
+    else navigator.vibrate?.(15)
   } catch {
     /* เครื่องไม่รองรับการสั่น */
   }

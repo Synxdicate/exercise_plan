@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { ChevronDown, MapPin, Thermometer, Wind } from 'lucide-react'
 import { airAdvice, airLevel, bestHour, heatAdvice, heatLevel, useHeat, type AirLevel, type HeatLevel } from '../lib/weather'
 import { cx } from '../lib/cx'
-import { Card, Collapse } from './ui'
+import { Collapse } from './ui'
 
 const tone: Record<HeatLevel, string> = {
   ok: 'bg-good/15 text-good',
@@ -24,7 +24,16 @@ export function HeatCard() {
   const { hours, place, error } = useHeat()
   const [open, setOpen] = useState(false)
   if (error) return null
-  if (!hours) return <Card><div className="h-20 animate-pulse rounded-2xl bg-raised" /></Card>
+  // โครงเดียวกับการ์ดจริง (สูงเท่ากัน) — หน้าไม่กระโดดตอนโหลดเสร็จ
+  if (!hours) return (
+    <section className="flex items-center gap-3 rounded-2xl bg-card p-3.5 shadow-sm ring-1 ring-line" aria-busy>
+      <span className="size-11 shrink-0 animate-pulse rounded-xl bg-raised" />
+      <span className="flex-1 space-y-1.5">
+        <span className="flex items-center gap-1.5 text-sm text-muted"><Thermometer size={14} /> กำลังโหลดสภาพอากาศ…</span>
+        <span className="block h-3 w-2/3 animate-pulse rounded bg-raised" />
+      </span>
+    </section>
+  )
 
   const now = nowIso()
   const cur = hours.find(h => h.time.slice(0, 13) === now.slice(0, 13)) ?? hours[0]

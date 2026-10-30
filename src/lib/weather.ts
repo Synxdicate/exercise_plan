@@ -62,6 +62,8 @@ async function locate(): Promise<Loc> {
   const fallback = { ...BANGKOK, precise: false }
   return new Promise(resolve => {
     if (!('geolocation' in navigator)) return resolve(fallback)
+    // option timeout ไม่นับช่วงที่หน้าขออนุญาตตำแหน่งค้างอยู่ — ถ้าไม่ตอบก็ใช้ค่าเริ่มต้นไปก่อน
+    setTimeout(() => resolve(fallback), 8000)
     navigator.geolocation.getCurrentPosition(
       p => resolve({ lat: +p.coords.latitude.toFixed(2), lon: +p.coords.longitude.toFixed(2), precise: true }), // ความละเอียด ~1 กม. พอสำหรับพยากรณ์
       () => resolve(fallback),
@@ -74,7 +76,7 @@ async function locate(): Promise<Loc> {
 // เรียกไม่เกินชั่วโมงละครั้ง (cache ร่วมกับพยากรณ์)
 async function placeName({ lat, lon }: Loc): Promise<string | null> {
   try {
-    const r = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=th`)
+    const r = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=th`, { signal: AbortSignal.timeout(TIMEOUT) })
     if (r.ok) {
       const d = await r.json() as { locality?: string; city?: string; principalSubdivision?: string }
       const parts = [d.locality || d.city, d.principalSubdivision].filter((v, i, a): v is string => !!v && a.indexOf(v) === i)
@@ -84,7 +86,7 @@ async function placeName({ lat, lon }: Loc): Promise<string | null> {
     /* ลองตัวสำรอง */
   }
   try {
-    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&zoom=12&accept-language=th`)
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&zoom=12&accept-language=th`, { signal: AbortSignal.timeout(TIMEOUT) })
     if (r.ok) {
       const a = (await r.json() as { address?: Record<string, string> }).address ?? {}
       const parts = [a.suburb || a.city_district || a.town || a.county, a.city || a.state].filter((v, i, arr): v is string => !!v && arr.indexOf(v) === i)
@@ -100,7 +102,7 @@ async function placeName({ lat, lon }: Loc): Promise<string | null> {
 async function fetchAir(lat: number, lon: number) {
   const out = new Map<string, number>()
   try {
-    const r = await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&hourly=pm2_5&timezone=auto&forecast_days=2`)
+    const r = await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&hourly=pm2_5&timezone=auto&forecast_days=2`, { signal: AbortSignal.timeout(TIMEOUT) })
     if (!r.ok) return out
     const d = await r.json() as { hourly: { time: string[]; pm2_5: (number | null)[] } }
     d.hourly.time.forEach((t, i) => { const v = d.hourly.pm2_5[i]; if (v != null) out.set(t, Math.round(v)) })
@@ -110,17 +112,35 @@ async function fetchAir(lat: number, lon: number) {
   return out
 }
 
-export async function fetchForecast(): Promise<Forecast> {
+// เน็ตช้า/ค้าง: เลิกรอหลัง 10 วิ (เดิมการ์ดค้างเป็นกล่องโหลดตลอด)
+const TIMEOUT = 10_000
+
+const readCache = () => {
   try {
     const c = JSON.parse(localStorage.getItem(CACHE_KEY) ?? 'null') as ({ at: number; v?: number } & Forecast) | null
-    if (c && c.place && c.v === 2 && Date.now() - c.at < TTL) return c
+    return c && c.place && c.v === 2 ? c : null
   } catch {
-    /* ignore */
+    return null
   }
+}
+
+export async function fetchForecast(): Promise<Forecast> {
+  const c = readCache()
+  if (c && Date.now() - c.at < TTL) return c
+  try {
+    return await fetchFresh()
+  } catch (e) {
+    // ออฟไลน์: ใช้พยากรณ์เดิมได้ถ้ายังครอบคลุมวันนี้ (ดึงมา 2 วัน)
+    if (c && Date.now() - c.at < 24 * 3600 * 1000) return c
+    throw e
+  }
+}
+
+async function fetchFresh(): Promise<Forecast> {
   const loc = await locate()
   const { lat, lon } = loc
   const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,relative_humidity_2m&timezone=auto&forecast_days=2`
-  const [res, air] = await Promise.all([fetch(url), fetchAir(lat, lon)])
+  const [res, air] = await Promise.all([fetch(url, { signal: AbortSignal.timeout(TIMEOUT) }), fetchAir(lat, lon)])
   if (!res.ok) throw new Error('weather')
   const d = await res.json() as { hourly: { time: string[]; temperature_2m: number[]; relative_humidity_2m: number[] } }
   const hours = d.hourly.time.map((time, i) => {

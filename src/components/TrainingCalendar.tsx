@@ -60,6 +60,8 @@ export function TrainingCalendar() {
     return a
   }, { km: 0, runs: 0, sessions: 0, active: 0 })
   const sel = picked ? byDate.get(picked) : null
+  // ดูล่วงหน้าได้ถึงเดือนวันแข่ง (หรือ 2 เดือนถ้าไม่มีวันแข่ง) เพื่อเห็นแผนที่เหลือ
+  const lastYm = [shiftMonth(now.slice(0, 7), 2), p.raceDate.slice(0, 7)].sort().at(-1)!
   const selPlan = picked ? planFor(picked) : null
 
   return (
@@ -67,10 +69,10 @@ export function TrainingCalendar() {
       <div className="mb-2 flex items-center justify-between">
         <button onClick={() => { setYm(shiftMonth(ym, -1)); setPicked(null) }} aria-label="เดือนก่อน" className="grid size-8 place-items-center rounded-full ring-1 ring-line"><ChevronLeft size={16} /></button>
         <div className="text-center">
-          <div className="text-sm font-bold">{monthLabel(ym)}</div>
+          <div className="text-sm font-bold">{monthLabel(ym)}{ym !== now.slice(0, 7) && <button onClick={() => { setYm(now.slice(0, 7)); setPicked(null) }} className="ml-2 rounded-full bg-raised px-2 py-0.5 text-[11px] font-semibold text-run">เดือนนี้</button>}</div>
           <div className="text-[11px] tabular-nums text-muted">ออกกำลังกาย {totals.active} วัน · วิ่ง {totals.km.toFixed(1)} กม. · เวท {totals.sessions} ครั้ง</div>
         </div>
-        <button onClick={() => { setYm(shiftMonth(ym, 1)); setPicked(null) }} disabled={ym >= now.slice(0, 7)} aria-label="เดือนถัดไป"
+        <button onClick={() => { setYm(shiftMonth(ym, 1)); setPicked(null) }} disabled={ym >= lastYm} aria-label="เดือนถัดไป"
           className="grid size-8 place-items-center rounded-full ring-1 ring-line disabled:opacity-30"><ChevronRight size={16} /></button>
       </div>
       <div className="grid grid-cols-7 gap-1 text-center text-[10px] text-muted">{DAYS.map(d => <span key={d}>{d}</span>)}</div>

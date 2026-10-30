@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { ArrowDown, ArrowLeftRight, ArrowUp, Check, ChevronRight, Dumbbell, Flag, Footprints, Moon, Play, Plus, RefreshCw, Trash2, Trees } from 'lucide-react'
+import { ArrowDown, ArrowLeftRight, ArrowUp, Check, ChevronDown, ChevronRight, Dumbbell, Flag, Footprints, Moon, Play, Plus, RefreshCw, Trash2, Trees } from 'lucide-react'
 import { yt, type Day, type Exercise } from '../data/workouts'
 import { locationInfo, weekNote } from '../data/programs'
 import { dayIntensity, musclesOf, muscleNames } from '../data/muscles'
@@ -9,6 +9,7 @@ import { useProgram } from '../lib/program'
 import { usePersisted } from '../lib/storage'
 import { useDayDone } from '../lib/dayDone'
 import { useNav } from '../lib/nav'
+import { tick } from '../lib/voice'
 import { cx } from '../lib/cx'
 import { BodyMap } from './BodyMap'
 import { WorkoutPlayer } from './WorkoutPlayer'
@@ -187,6 +188,33 @@ function PlanBody() {
   )
 }
 
+/** กล้ามเนื้อที่ฝึกวันนี้: ชิปสรุปแบบย่อ แตะเพื่อดูแผนภาพ (เดิมแผนภาพเต็มทำให้การ์ดยาวเกินจนต้องเลื่อนหาท่า) */
+function DayMuscles({ day }: { day: Day }) {
+  const [open, setOpen] = usePersisted('dayMapOpen', false)
+  const intensity = dayIntensity(day)
+  // เรียงตามจำนวนท่าที่ใช้กล้ามนั้นเป็นกล้ามหลัก
+  const count = new Map<keyof typeof muscleNames, number>()
+  for (const e of day.exercises) for (const m of musclesOf(e).primary) count.set(m, (count.get(m) ?? 0) + 1)
+  const ranked = [...count].sort((a, b) => b[1] - a[1])
+  const top = ranked.slice(0, 5)
+  return (
+    <div className="mt-3">
+      <button onClick={() => setOpen(!open)} aria-expanded={open}
+        className="flex w-full items-center gap-2 rounded-xl bg-raised px-3 py-2 text-left active:scale-100">
+        <span className="flex min-w-0 flex-1 flex-wrap gap-1">
+          {top.map(([m]) => <span key={m} className="rounded-full bg-accent-soft px-2 py-0.5 text-xs font-semibold text-accent">{muscleNames[m]}</span>)}
+          {ranked.length > top.length && <span className="px-1 py-0.5 text-xs text-muted">+{ranked.length - top.length}</span>}
+        </span>
+        <span className="shrink-0 text-xs text-muted">{open ? 'ซ่อน' : 'แผนภาพ'}</span>
+        <ChevronDown size={16} className={cx('shrink-0 text-muted transition-transform duration-300', open && 'rotate-180')} />
+      </button>
+      <Collapse open={open}>
+        <div className="pt-2"><BodyMap intensity={intensity} size="sm" /></div>
+      </Collapse>
+    </div>
+  )
+}
+
 function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slotId, weekNoteText }: {
   day: Day; isToday: boolean; done: boolean; hint: string | null; weekNoteText?: string
   setDone: (v: boolean) => void; onStart: () => void; onLocation: (m: 'gym' | 'park') => void; slotId: string
@@ -207,7 +235,7 @@ function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slo
           <h2 className="text-xl font-extrabold leading-tight">{day.title}</h2>
         </div>
         {day.type !== 'rest' && (
-          <button onClick={() => setDone(!done)} aria-label={done ? 'ทำแล้ว' : 'ยังไม่ทำ'} aria-pressed={done}
+          <button onClick={() => { if (!done) tick(); setDone(!done) }} aria-label={done ? 'ทำแล้ว' : 'ยังไม่ทำ'} aria-pressed={done}
             className={cx('grid size-10 shrink-0 place-items-center rounded-full ring-2 transition-all duration-300',
               done ? 'bg-good text-white ring-good' : 'text-transparent ring-line')}>
             <Check size={20} strokeWidth={3} className={done ? 'animate-pop' : ''} />
@@ -235,7 +263,7 @@ function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slo
 
       {day.type === 'strength' && (
         <>
-          <div className="mt-3"><BodyMap intensity={dayIntensity(day)} size="sm" /></div>
+          <DayMuscles day={day} />
           <ul className="mt-2 divide-y divide-line">
             {day.exercises.map((e, i) => (
               <ExerciseRow key={e.name} e={e} n={i + 1} onSwap={() => setSwapping(e)} onRemove={() => p.removeExercise(day, e.name)} />

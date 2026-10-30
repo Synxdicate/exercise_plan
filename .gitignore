@@ -34,3 +34,4 @@ android/keystore.properties
 *.keystore
 *.jks
 release/
+screens/
