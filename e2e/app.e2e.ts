@@ -125,7 +125,7 @@ test('แชร์การวิ่ง: การ์ดทึบ และส�
   expect((await download).suggestedFilename()).toMatch(/-sticker\.png$/)
 })
 
-test('เป้าเวลา + เส้นทางสู่มาราธอน + แผนวันแข่ง + เตือนเจ็บซ้ำ', async ({ page }) => {
+test('เป้าเวลา + แผนวันแข่ง + เตือนเจ็บซ้ำ', async ({ page }) => {
   await seed(page, {
     runs: [
       { id: 'a', date: ymd(60), km: 5.1, seconds: 1900, kind: 'easy', source: 'manual' },
@@ -135,9 +135,6 @@ test('เป้าเวลา + เส้นทางสู่มาราธ�
     readiness: { [ymd(1)]: { sleep: 0, sore: 1, pain: true, level: 'red' }, [ymd(3)]: { sleep: 0, sore: 0, pain: true, level: 'red' } },
   })
   await nav(page, 'วิ่ง')
-  await page.getByRole('button', { name: 'วิ่ง', exact: true }).first().click()
-  await expect(page.getByText('ด่านต่อไป: บอสฮาล์ฟ')).toBeVisible()
-
   await page.getByRole('button', { name: 'สถิติ' }).click()
   await expect(page.getByRole('button', { name: 'ทดสอบ 5K' })).toBeVisible() // ผลเก่าเกิน 6 สัปดาห์
   await page.getByRole('button', { name: /^ฮาล์ฟ/ }).click()

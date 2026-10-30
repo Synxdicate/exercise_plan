@@ -12,14 +12,17 @@ const safety: [string, string][] = [
   ['ป่วย', 'มีไข้หรืออาการทั้งตัว (ปวดเมื่อย ไอลงคอ) ให้พักจนหายดี ไม่ควรวิ่งฝืน'],
 ]
 
+// หน้าหลักเหลือแค่เรื่องของวันนี้ — ความรู้ประกอบย้ายไปหน้า "ความรู้และแหล่งข้อมูล" (เมนูบัญชี)
 export function Overview() {
+  return <Dashboard />
+}
+
+/** ความรู้ประกอบ: แผน 12 สัปดาห์ (โปรแกรมหุ่น), ความจริงเรื่องหุ่น, ความปลอดภัย, หลักการ */
+export function Guide() {
   const { program } = useProgram()
 
   return (
     <>
-      <Dashboard />
-
-      <div className="px-1 pt-2 text-sm font-semibold text-muted">อ่านเพิ่ม</div>
       {program === 'physique' && <Disclosure title="แผน 12 สัปดาห์" summary="ฐาน → เพิ่มความหนัก → Deload → ทดสอบ">
         <ol className="relative space-y-4 border-l-2 border-line pl-5">
           {phases.map(p => (

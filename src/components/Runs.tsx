@@ -21,7 +21,6 @@ import { useBackClose } from '../lib/back'
 import { App } from '@capacitor/app'
 import { GuideCard } from './Guide'
 import { usePersisted } from '../lib/storage'
-import { RunTypeCard } from './RunTypes'
 import { RunFormTips } from './RunForm'
 import { SweatCard } from './Sweat'
 import { CooldownSheet } from './Cooldown'
@@ -33,7 +32,6 @@ import { ReadinessSheet } from './Readiness'
 import { addDays, daysBetween, niceDate, shortDate, today, weekStart } from '../lib/date'
 import { Badge, Button, Card, Collapse, Portal, Segmented, Stat } from './ui'
 import { RunHistory } from './RunHistory'
-import { JourneyCard } from './Journey'
 import { MatchedRuns } from './Matched'
 import { CrossTrainingCard } from './CrossTraining'
 import { heatmapRoutes } from '../lib/matched'
@@ -251,9 +249,7 @@ export function Runs() {
 
       {view === 'start' && (
         <>
-          <JourneyCard runs={runs} est={est} />
           <HeatCard />
-          <RunTypeCard kind={kind} />
           <RunFormTips />
         </>
       )}

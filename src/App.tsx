@@ -84,7 +84,7 @@ function Main({ session }: { session: Session | null }) {
 
   if (!onboarded) return <Onboarding onDone={() => setOnboarded(true)} />
 
-  const title = tab === 'sources' ? 'แหล่งข้อมูล' : tabs.find(t => t.id === tab)?.title
+  const title = tab === 'sources' ? 'ความรู้และแหล่งข้อมูล' : tabs.find(t => t.id === tab)?.title
 
   return (
     <NavContext.Provider value={go}>
@@ -246,7 +246,7 @@ function UserMenu({ session, onSources }: { session: Session | null; onSources: 
             )}
             <div className="my-1 h-px bg-line" />
             <button onClick={() => { setOpen(false); onSources() }} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left hover:bg-raised">
-              <BookOpen size={16} /> แหล่งข้อมูลและช่อง YouTube
+              <BookOpen size={16} /> ความรู้และแหล่งข้อมูล
             </button>
             <button onClick={() => { setOpen(false); setErrorsOpen(true) }} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left hover:bg-raised">
               <Bug size={16} /> ปัญหาที่พบ{errorCount ? ` (${errorCount})` : ''}

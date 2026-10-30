@@ -1,5 +1,5 @@
 import { Fragment, useState } from 'react'
-import { Activity, CalendarDays, ChevronDown, Dumbbell, Pencil, Scale, Trash2, Trophy, TrendingUp } from 'lucide-react'
+import { Activity, CalendarDays, ChevronDown, Dumbbell, Pencil, Scale, Trash2, Trophy } from 'lucide-react'
 import { usePersisted } from '../lib/storage'
 import { monthLabel, niceDate, shortDate, today, weekStart } from '../lib/date'
 import { crossAsSession, useCross, useRuns, useSessions, type Session } from '../lib/log'
@@ -22,8 +22,8 @@ export function Progress() {
   return (
     <>
       <Segmented value={view} onChange={setView} options={[
-        { value: 'workouts', label: <><CalendarDays size={16} /> ประวัติ</> },
-        { value: 'stats', label: <><TrendingUp size={16} /> สถิติ</> },
+        { value: 'workouts', label: <><CalendarDays size={16} /> ปฏิทิน</> },
+        { value: 'stats', label: <><Dumbbell size={16} /> เวท</> },
         { value: 'fitness', label: <><Activity size={16} /> ฟิตเนส</> },
         { value: 'body', label: <><Scale size={16} /> น้ำหนัก</> },
       ]} />
