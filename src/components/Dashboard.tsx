@@ -69,7 +69,10 @@ export function Dashboard() {
       <section className="rounded-2xl bg-gradient-to-br from-accent to-[#7c3aed] p-4 text-white shadow-sm">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-sm opacity-80">{p.meta.short} · {p.ongoing ? t(`สัปดาห์ที่ ${week} ของรอบ`, `Cycle week ${week}`) : t(`สัปดาห์ที่ ${week} จาก ${p.meta.weeks}`, `Week ${week} of ${p.meta.weeks}`)}</div>
+            <div className="text-sm opacity-80">{p.meta.short} · {p.ongoing ? t(`สัปดาห์ที่ ${week} ของรอบ`, `Cycle week ${week}`)
+              // ก่อนสัปดาห์ 1 (นับถอยจากวันแข่ง) ใช้แผนสัปดาห์ 1 ซ้อมไปก่อน — บอกให้ชัดว่ายังไม่ใช่สัปดาห์ 1 จริง
+              : p.weeksUntilStart > 0 ? t(`ช่วงเตรียมตัว · สัปดาห์ 1 เริ่มในอีก ${p.weeksUntilStart} สัปดาห์`, `Prep · week 1 starts in ${p.weeksUntilStart} wk`)
+              : t(`สัปดาห์ที่ ${week} จาก ${p.meta.weeks}`, `Week ${week} of ${p.meta.weeks}`)}</div>
             <div className="text-xl font-extrabold">{p.daysToRace !== null && p.daysToRace >= 0 ? t(`อีก ${p.daysToRace} วันถึงวันแข่ง`, `${p.daysToRace} days to race day`) : t('สัปดาห์นี้', 'This week')}</div>
           </div>
           <div className="flex flex-col items-end gap-1">

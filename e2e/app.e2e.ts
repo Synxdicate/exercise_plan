@@ -466,3 +466,20 @@ test('พลาดวิ่งยาว: ไม่ต้องชดเชย, �
   await page.getByRole('button', { name: 'รับทราบ' }).click()
   await expect(page.getByText('วิ่งยาวสัปดาห์ที่แล้วไม่ได้ทำ')).toBeHidden()
 })
+
+test('ช่วงเตรียมตัวก่อนสัปดาห์ 1 (นับจากวันแข่ง): บอกชัด และติ๊กไม่ค้างไปสัปดาห์ 1 จริง', async ({ page }) => {
+  // วันแข่ง 10 ม.ค. 2027 → มินิ 10 สัปดาห์ สัปดาห์ 1 เริ่ม 2 พ.ย. — 30 ต.ค. ยังเป็นช่วงเตรียมตัว
+  await page.clock.install({ time: new Date('2026-10-30T08:00:00+07:00') })
+  await seed(page, { program: 'mini', programStart: '2026-10-26', raceDate: '2027-01-10' })
+  await expect(page.getByText(/ช่วงเตรียมตัว · สัปดาห์ 1 เริ่มในอีก 1 สัปดาห์/)).toBeVisible()
+  await nav(page, 'ฝึก')
+  await page.getByRole('button', { name: 'ยังไม่ทำ' }).click()
+  await expect.poll(async () => Object.keys((await idb(page, 'done')) as object)).toEqual(['mini-pre2026-10-26-d4'])
+})
+
+test('ข้อมูลเก่า: ติ๊กช่วงเตรียมตัวที่ค้างเป็นสัปดาห์ 1 ถูกล้าง (เฉพาะวันที่ยังไม่ถึง)', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-11-02T08:00:00+07:00') })
+  await seed(page, { program: 'mini', programStart: '2026-10-26', raceDate: '2027-01-10', done: { 'mini-w1-d0': true, 'mini-w1-d4': true, 'mini-w1-d6': false, 'ten-w1-d0': true } })
+  await expect(page.getByText('สัปดาห์ที่ 1 จาก 10')).toBeVisible()
+  await expect.poll(async () => idb(page, 'done')).toEqual({ 'mini-w1-d0': true, 'ten-w1-d0': true })
+})

@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { programs, variants, weekKm, weekPlan, type LocationPref, type Mode, type ProgramId } from '../data/programs'
 import { addDays, daysBetween, today, weekStart } from './date'
 import { usePersisted } from './storage'
@@ -99,9 +100,10 @@ export function useProgram() {
   let currentWeek = weekAt(start, repeats, thisMonday, meta.weeks)
   let weeksUntilStart = 0
   let daysToRace: number | null = null
-  if (isRace && raceDate) {
-    const start = addDays(weekStart(raceDate), -7 * (meta.weeks - 1))
-    const w = Math.floor(daysBetween(start, weekStart(today())) / 7) + 1
+  // วันจันทร์ของสัปดาห์ 1 เมื่อนับถอยจากวันแข่ง
+  const raceStart = isRace && raceDate ? addDays(weekStart(raceDate), -7 * (meta.weeks - 1)) : null
+  if (raceStart) {
+    const w = Math.floor(daysBetween(raceStart, weekStart(today())) / 7) + 1
     weeksUntilStart = Math.max(0, 1 - w)
     currentWeek = Math.min(Math.max(w, 1), meta.weeks)
     daysToRace = daysBetween(today(), raceDate)
@@ -113,6 +115,8 @@ export function useProgram() {
   // โปรแกรมต่อเนื่องวนเลขสัปดาห์ซ้ำ จึงผูก id กับวันจันทร์ของสัปดาห์จริงแทน (ไม่งั้นรอบใหม่จะติ๊กค้างจากรอบก่อน)
   const manual = !ongoing && !(isRace && raceDate)
   const slotId = (week: number, i: number) => {
+    // ช่วงเตรียมตัวก่อนสัปดาห์ 1 ใช้แผนสัปดาห์ 1 — ต้องแยก id ตามวันจันทร์ ไม่งั้นติ๊กไว้แล้วจะค้างไปถึงสัปดาห์ 1 จริง
+    if (weeksUntilStart > 0 && week === 1) return `${program}-pre${thisMonday}-d${i}`
     if (ongoing) return `${program}-${addDays(thisMonday, 7 * (week - currentWeek))}-d${i}`
     const n = manual ? attemptOf(start, repeats, week, thisMonday, meta.weeks) : 0
     return `${program}-w${week}${n ? `x${n}` : ''}-d${i}`
@@ -138,6 +142,9 @@ export function useProgram() {
     setRaceDate,
     currentWeek,
     weeksUntilStart,
+    raceStart,
+    /** synced programStart (ว่าง = ข้อมูลเก่า) */
+    storedStart: programStart,
     daysToRace,
     autoWeek: (isRace && !!raceDate) || ongoing,
     ongoing,
@@ -205,3 +212,26 @@ export function useProgram() {
   }
 }
 
+
+/**
+ * ก่อน v2.37 ช่วงเตรียมตัว (ก่อนสัปดาห์ 1 ที่นับถอยจากวันแข่ง) ใช้ id ช่องวันเดียวกับสัปดาห์ 1 —
+ * ติ๊ก/ยกเลิกติ๊กตอนเตรียมตัวจึงค้างมาที่สัปดาห์ 1 จริง: ล้างของวันที่ยังมาไม่ถึงในสัปดาห์ 1 ครั้งเดียว
+ * (วันที่ยังไม่ถึงไม่ควรมีค่าติ๊กอยู่แล้ว) — เฉพาะเมื่อเริ่มโปรแกรมก่อนสัปดาห์ 1 จริง
+ */
+export function usePreStartCleanup() {
+  const p = useProgram()
+  const [, setDone] = usePersisted<Record<string, boolean>>('done', {})
+  const [cleared, setCleared] = usePersisted('preStartCleared', '')
+  const key = p.raceStart ? `${p.program}:${p.raceStart}` : ''
+  const due = !!key && cleared !== key && p.currentWeek === 1 && p.weeksUntilStart === 0
+    && !!p.storedStart && p.storedStart < p.raceStart! && weekStart(today()) === p.raceStart
+  useEffect(() => {
+    if (!due) return
+    const todayIdx = daysBetween(p.raceStart!, today())
+    setDone(prev => Object.fromEntries(Object.entries(prev).filter(([id]) => {
+      const m = id.match(new RegExp(`^${p.program}-w1-d(\\d)$`))
+      return !m || +m[1] <= todayIdx
+    })))
+    setCleared(key)
+  }, [due, key, p.program, p.raceStart, setDone, setCleared])
+}

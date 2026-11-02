@@ -34,6 +34,7 @@ import { Sources } from './components/Sources'
 import { cx } from './lib/cx'
 import { defaultProfile, type Profile } from './lib/calc'
 import { NavContext } from './lib/nav'
+import { usePreStartCleanup } from './lib/program'
 
 // 5 แท็บล่างแบบแอปมือถือ — "แหล่งข้อมูล" อยู่ในเมนูโปรไฟล์
 const tabs = [
@@ -64,6 +65,7 @@ function Main({ session }: { session: Session | null }) {
   useReminderSchedule()
   useBadgeWatcher()
   useCompactRuns()
+  usePreStartCleanup()
   const update = useUpdateAvailable()
   const [dismissed, setDismissed] = usePersisted('updateDismissed', '')
   const t = useT()
