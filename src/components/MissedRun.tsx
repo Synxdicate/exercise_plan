@@ -27,10 +27,11 @@ export function MissedRunCard() {
   // วิ่งชดเชยไปแล้ววันอื่น (ระยะ ≥80% ของแผน หลังวันที่พลาด) ก็ไม่ต้องเตือน
   const madeUp = (date: string, km = 0) => runsOnly(runs).some(r => r.date > date && r.date <= today() && r.km >= km * 0.8)
   const doneThis = (i: number) => dayDone(week, i, plan[i]) || madeUp(addDays(monday, i), plan[i]?.targetKm)
-  const lastWeek = week > 1 && !p.ongoing ? week - 1 : null
-  const lastPlan = lastWeek ? p.plan(lastWeek) : null
-  const last = lastWeek && lastPlan
-    ? { plan: lastPlan, done: (i: number) => dayDone(lastWeek, i, lastPlan[i]) || madeUp(addDays(monday, i - 7), lastPlan[i]?.targetKm) }
+  // สัปดาห์ที่แล้ว: สัปดาห์ก่อนหน้าในโปรแกรม หรือช่วงเตรียมตัว (สัปดาห์ 0) ถ้าเริ่มก่อนสัปดาห์ 1
+  const lastWeek = !p.ongoing && (week > 1 || p.prepWeeks.includes(week - 1)) ? week - 1 : null
+  const lastPlan = lastWeek !== null ? p.plan(lastWeek) : null
+  const last = lastWeek !== null && lastPlan
+    ? { plan: lastPlan, done: (i: number) => dayDone(lastWeek, i, lastPlan[i]) || madeUp(addDays(p.mondayOf(lastWeek), i), lastPlan[i]?.targetKm) }
     : undefined
   const m = p.finished ? null : missedKeyRun(plan, todayIdx, doneThis, last)
   if (!m) return null

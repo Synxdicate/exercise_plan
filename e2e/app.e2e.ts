@@ -495,3 +495,16 @@ test('เช้าวันแข่งยังไม่ "จบโปรแก
   await expect(page.getByText(/จบมินิแล้ว/)).toBeVisible()
   await expect(page.getByRole('button', { name: 'เริ่มวิ่ง' })).toHaveCount(0)
 })
+
+test('ดูช่วงเตรียมตัวที่ผ่านมาได้ในแท็บฝึก (บันทึกยังขึ้นครบ)', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-11-02T08:00:00+07:00') })
+  const run = (date: string, km: number) => ({ id: date, date, km, seconds: km * 600, kind: 'easy', source: 'manual' })
+  const ses = (date: string, dayKey: string) => ({ id: date, date, mode: 'gym', dayKey, title: dayKey, entries: [{ name: 'Squat', sets: [{ kg: 20, reps: 8 }] }] })
+  await seed(page, { program: 'mini', programStart: '2026-10-26', raceDate: '2027-01-10', runs: [run('2026-10-27', 4.82), run('2026-10-29', 3.13)], sessions: [ses('2026-10-26', 'strA'), ses('2026-10-30', 'strB')] })
+  // วิ่งยาววันอาทิตย์ของช่วงเตรียมตัวไม่ได้ทำ → ไม่ต้องชดเชย
+  await expect(page.getByText('วิ่งยาวสัปดาห์ที่แล้วไม่ได้ทำ')).toBeVisible()
+  await nav(page, 'ฝึก')
+  await page.getByRole('button', { name: /เตรียมตัว\s*26\/10/ }).click()
+  await expect(page.getByText(/ช่วงเตรียมตัว 26\/10/)).toBeVisible()
+  await expect(page.getByText('4/5 วัน', { exact: false })).toBeVisible()
+})

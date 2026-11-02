@@ -114,9 +114,18 @@ export function useProgram() {
   // id ของช่องวัน (i = 0 จันทร์ … 6 อาทิตย์) — ไม่ผูกกับยิม/สวน สลับสถานที่แล้วสถานะไม่หาย
   // โปรแกรมต่อเนื่องวนเลขสัปดาห์ซ้ำ จึงผูก id กับวันจันทร์ของสัปดาห์จริงแทน (ไม่งั้นรอบใหม่จะติ๊กค้างจากรอบก่อน)
   const manual = !ongoing && !(isRace && raceDate)
+  // วันจันทร์ของสัปดาห์ `week` — มีวันแข่ง: นับจากสัปดาห์ 1 ที่คิดจากวันแข่ง (สัปดาห์ ≤ 0 = ช่วงเตรียมตัวที่ผ่านมา)
+  // ระหว่างเตรียมตัว หน้าจอใช้ "สัปดาห์ 1" แทนสัปดาห์นี้ จึงชี้ไปวันจันทร์นี้
+  const mondayOf = (week: number) => raceStart
+    ? (weeksUntilStart > 0 && week === 1 ? thisMonday : addDays(raceStart, 7 * (week - 1)))
+    : addDays(thisMonday, 7 * (week - currentWeek))
+  // ช่วงเตรียมตัวที่ผ่านมาแล้ว (เริ่มโปรแกรมก่อนสัปดาห์ 1 จริง) — ดูย้อนหลังได้เป็นสัปดาห์ 0, -1, …
+  const firstPrepWeek = raceStart && programStart && programStart < raceStart
+    ? 1 - Math.ceil(daysBetween(weekStart(programStart), raceStart) / 7) : 1
+  const prepWeeks = Array.from({ length: Math.max(0, 1 - firstPrepWeek) }, (_, k) => firstPrepWeek + k).filter(w => mondayOf(w) < thisMonday)
   const slotId = (week: number, i: number) => {
     // ช่วงเตรียมตัวก่อนสัปดาห์ 1 ใช้แผนสัปดาห์ 1 — ต้องแยก id ตามวันจันทร์ ไม่งั้นติ๊กไว้แล้วจะค้างไปถึงสัปดาห์ 1 จริง
-    if (weeksUntilStart > 0 && week === 1) return `${program}-pre${thisMonday}-d${i}`
+    if (raceStart && (week < 1 || (weeksUntilStart > 0 && week === 1))) return `${program}-pre${mondayOf(week)}-d${i}`
     if (ongoing) return `${program}-${addDays(thisMonday, 7 * (week - currentWeek))}-d${i}`
     const n = manual ? attemptOf(start, repeats, week, thisMonday, meta.weeks) : 0
     return `${program}-w${week}${n ? `x${n}` : ''}-d${i}`
@@ -126,7 +135,7 @@ export function useProgram() {
     const o = overrides[slotId(week, i)]
     if (o) return o
     if (location !== 'mix') return location
-    const strengthDays = variants(program, week).gym.flatMap((d, j) => (d.type === 'strength' ? [j] : []))
+    const strengthDays = variants(program, Math.max(1, week)).gym.flatMap((d, j) => (d.type === 'strength' ? [j] : []))
     return i === strengthDays.at(-1) ? 'park' : 'gym'
   }
 
@@ -145,6 +154,9 @@ export function useProgram() {
     raceStart,
     /** ผ่านวันแข่งแล้ว — ไม่มีแผน "วันนี้" อีก (เดิมยังโชว์สัปดาห์แข่งและวันแข่งซ้ำ) */
     finished: !!(isRace && raceDate && today() > raceDate),
+    mondayOf,
+    /** สัปดาห์เตรียมตัวที่ผ่านมา (เลข ≤ 0) */
+    prepWeeks,
     /** synced programStart (ว่าง = ข้อมูลเก่า) */
     storedStart: programStart,
     daysToRace,
@@ -176,13 +188,13 @@ export function useProgram() {
       if (isRace && raceDate) {
         const w = Math.floor(daysBetween(addDays(weekStart(raceDate), -7 * (meta.weeks - 1)), monday) / 7) + 1
         // ก่อนเริ่มโปรแกรม แอปใช้แผนสัปดาห์ 1 (เหมือนหน้าฝึก) — ก่อนสัปดาห์นี้ไม่มีแผน
-        return w > meta.weeks ? null : w >= 1 ? w : monday >= thisMonday ? 1 : null
+        return w > meta.weeks ? null : w >= 1 ? w : monday >= thisMonday ? 1 : prepWeeks.includes(w) ? w : null
       }
       const raw = Math.floor(daysBetween(start, monday) / 7) + 1
       return raw < 1 ? null : raw - repeats.filter(r => r > start && r <= monday).length > meta.weeks ? null : weekAt(start, repeats, monday, meta.weeks)
     },
     plan: (week = currentWeek) => {
-      const days = applyCustom(weekPlan(program, week, i => locationFor(week, i)), program, swaps, extras, solo)
+      const days = applyCustom(weekPlan(program, Math.max(1, week), i => locationFor(week, i)), program, swaps, extras, solo)
       if (!isRace || week !== meta.weeks) return days
       const sized = raceKmOverride ? withRaceKm(days, raceKmOverride) : days
       return raceDate ? placeRaceDay(sized, (new Date(`${raceDate}T00:00:00`).getDay() + 6) % 7) : sized
@@ -198,13 +210,14 @@ export function useProgram() {
     }),
     addExercise: (d: Day, e: Exercise) => setExtras(prev => ({ ...prev, [extrasKey(program, d)]: [...(prev[extrasKey(program, d)] ?? []), e] })),
     removeExercise: (d: Day, name: string) => setExtras(prev => ({ ...prev, [extrasKey(program, d)]: (prev[extrasKey(program, d)] ?? []).filter(e => e.name !== name) })),
-    kmTarget: (week = currentWeek) => weekKm(program, week),
+    kmTarget: (week = currentWeek) => weekKm(program, Math.max(1, week)),
     setDayLocation: (week: number, i: number, m: Mode) => setOverrides(prev => ({ ...prev, [slotId(week, i)]: m })),
     doneId: slotId,
     // รองรับ id แบบเก่า (ผูกกับ mode + key ของวัน) ที่เคยติ๊กไว้ก่อนหน้า
     isDone(done: Record<string, boolean>, week: number, i: number) {
       const id = slotId(week, i)
       if (id in done) return done[id]
+      if (week < 1) return false
       const v = variants(program, week)
       return (['gym', 'park'] as Mode[]).some(m => {
         const key = v[m][i]?.key

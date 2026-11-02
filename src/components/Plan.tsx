@@ -8,7 +8,7 @@ import { estimate, paceHint } from '../lib/pace'
 import { useProgram } from '../lib/program'
 import { usePersisted } from '../lib/storage'
 import { useDayDone } from '../lib/dayDone'
-import { addDays, today, weekStart } from '../lib/date'
+import { addDays, shortDate } from '../lib/date'
 import { useNav } from '../lib/nav'
 import { tick } from '../lib/voice'
 import { useT } from '../lib/i18n'
@@ -98,6 +98,13 @@ function PlanBody() {
 
       {/* สัปดาห์ */}
       <div className="-mx-4 flex snap-x scroll-px-4 gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
+        {p.prepWeeks.map(w => (
+          <button key={w} onClick={() => selectWeek(w)}
+            className={cx('flex min-w-14 shrink-0 snap-start flex-col items-center rounded-2xl px-3 py-1.5 ring-1', w === week ? 'bg-ink text-bg ring-ink' : 'bg-card text-muted ring-line')}>
+            <span className="text-[10px]">{t('เตรียมตัว', 'Prep')}</span>
+            <span className="text-base font-bold leading-tight">{shortDate(p.mondayOf(w))}</span>
+          </button>
+        ))}
         {Array.from({ length: p.meta.weeks }, (_, i) => i + 1).map(w => {
           const light = weekNote(p.program, w)?.startsWith('สัปดาห์ลด') || (p.program === 'physique' && w === 9)
           return (
@@ -117,7 +124,7 @@ function PlanBody() {
       {/* แถบวัน */}
       <div className="rounded-3xl bg-card p-3 shadow-sm ring-1 ring-line">
         <div className="mb-2 flex items-center justify-between px-1 text-xs">
-          <span className="font-semibold">{t('สัปดาห์', 'Week')} {week} · {isThisWeek ? (p.weeksUntilStart > 0 ? t('ช่วงเตรียมตัว (ใช้แผนสัปดาห์ 1)', 'Prep (using week 1)') : t('สัปดาห์นี้', 'this week')) : week < p.currentWeek ? t(`${p.currentWeek - week} สัปดาห์ก่อน`, `${p.currentWeek - week} wk ago`) : t(`อีก ${week - p.currentWeek + p.weeksUntilStart} สัปดาห์`, `in ${week - p.currentWeek + p.weeksUntilStart} wk`)}</span>
+          <span className="font-semibold">{week < 1 ? t(`ช่วงเตรียมตัว ${shortDate(p.mondayOf(week))} (แผนสัปดาห์ 1)`, `Prep week of ${shortDate(p.mondayOf(week))} (week 1 plan)`) : <>{t('สัปดาห์', 'Week')} {week} · {isThisWeek ? (p.weeksUntilStart > 0 ? t('ช่วงเตรียมตัว (ใช้แผนสัปดาห์ 1)', 'Prep (using week 1)') : t('สัปดาห์นี้', 'this week')) : week < p.currentWeek ? t(`${p.currentWeek - week} สัปดาห์ก่อน`, `${p.currentWeek - week} wk ago`) : t(`อีก ${week - p.currentWeek + p.weeksUntilStart} สัปดาห์`, `in ${week - p.currentWeek + p.weeksUntilStart} wk`)}</>}</span>
           <span className="tabular-nums text-muted">{doneCount}/{trainingIdx.length} {t('วัน', 'days')}{p.kmTarget(week) ? t(` · วิ่ง ${p.kmTarget(week)} กม.`, ` · run ${p.kmTarget(week)} km`) : ''}</span>
         </div>
         <div className="grid grid-cols-7 gap-1">
@@ -142,7 +149,7 @@ function PlanBody() {
         {!isThisWeek && (
           <div className="mt-2 flex flex-wrap gap-2 px-1">
             <Button size="sm" variant="soft" onClick={() => setViewWeek(p.currentWeek)}>{t('กลับไปสัปดาห์นี้', 'Back to this week')} ({p.currentWeek})</Button>
-            {!p.autoWeek && <Button size="sm" variant="soft" onClick={() => p.setWeek(week)}>{week < p.currentWeek ? t(`ทำสัปดาห์ ${week} ซ้ำ`, `Repeat week ${week}`) : t(`ข้ามไปสัปดาห์ ${week}`, `Jump to week ${week}`)}</Button>}
+            {!p.autoWeek && week >= 1 && <Button size="sm" variant="soft" onClick={() => p.setWeek(week)}>{week < p.currentWeek ? t(`ทำสัปดาห์ ${week} ซ้ำ`, `Repeat week ${week}`) : t(`ข้ามไปสัปดาห์ ${week}`, `Jump to week ${week}`)}</Button>}
           </div>
         )}
       </div>
@@ -153,7 +160,7 @@ function PlanBody() {
         setDone={v => setDayDone(selected, v)}
         onStart={() => setChecking(selected)}
         onLocation={m => p.setDayLocation(week, selected, m)} slotId={p.doneId(week, selected)}
-        date={addDays(weekStart(today()), (week - p.currentWeek) * 7 + selected)} />
+        date={addDays(p.mondayOf(week), selected)} />
 
       {/* ทั้งสัปดาห์แบบย่อ */}
       <section className="rounded-3xl bg-card p-2 shadow-sm ring-1 ring-line">
