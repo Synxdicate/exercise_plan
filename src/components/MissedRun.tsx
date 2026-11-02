@@ -1,6 +1,6 @@
 import { CalendarX2, ShieldAlert } from 'lucide-react'
 import type { Day } from '../data/workouts'
-import { addDays, daysBetween, today, weekStart } from '../lib/date'
+import { addDays, daysBetween, today, weekStart, WEEKDAYS_EN, WEEKDAYS_TH } from '../lib/date'
 import { useDayDone } from '../lib/dayDone'
 import { useRuns } from '../lib/log'
 import { longRunCap, missedKeyRun } from '../lib/missed'
@@ -10,8 +10,8 @@ import { runsOnly } from '../lib/walk'
 import { Button } from './ui'
 import { useT } from '../lib/i18n'
 
-const DAY_NAMES = ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์', 'อาทิตย์']
-const DAY_EN = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+const DAY_NAMES = WEEKDAYS_TH
+const DAY_EN = WEEKDAYS_EN
 
 /** วิ่งยาว/วิ่งคุณภาพที่พลาดไป: บอกว่าย้ายไปวันไหนได้ หรือข้ามไปเลย — ไม่วิ่งชดเชยซ้อนกับวันวิ่งอื่น */
 export function MissedRunCard() {

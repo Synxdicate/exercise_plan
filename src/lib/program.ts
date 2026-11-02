@@ -4,6 +4,7 @@ import { addDays, daysBetween, today, weekStart } from './date'
 import { usePersisted } from './storage'
 import { libEx, needsSpotter } from '../data/library'
 import type { Day, Exercise } from '../data/workouts'
+import { applyMoves, type DayMoves } from './moves'
 
 // สลับท่า: ใช้ช่วงครั้ง/เซ็ต/พักของท่าเดิม (โปรแกรมยังสมดุล) ยกเว้นหน่วยต่างกัน (ครั้ง ↔ วินาที) ใช้ค่าของท่าใหม่
 export function swapExercise(e: Exercise, to: string): Exercise {
@@ -89,6 +90,7 @@ export function useProgram() {
   const [swaps, setSwaps] = usePersisted<Record<string, string>>('exerciseSwaps', {})
   const [extras, setExtras] = usePersisted<Record<string, Exercise[]>>('extraExercises', {})
   const [solo, setSolo] = usePersisted('soloMode', false)
+  const [moves, setMoves] = usePersisted<DayMoves>('dayMoves', {})
 
   const meta = programs[program]
   const isRace = !!meta.raceKm
@@ -195,10 +197,19 @@ export function useProgram() {
     },
     plan: (week = currentWeek) => {
       const days = applyCustom(weekPlan(program, Math.max(1, week), i => locationFor(week, i)), program, swaps, extras, solo)
-      if (!isRace || week !== meta.weeks) return days
+      const mv = moves[mondayOf(week)]
+      if (!isRace || week !== meta.weeks) return applyMoves(days, mv)
       const sized = raceKmOverride ? withRaceKm(days, raceKmOverride) : days
-      return raceDate ? placeRaceDay(sized, (new Date(`${raceDate}T00:00:00`).getDay() + 6) % 7) : sized
+      return applyMoves(raceDate ? placeRaceDay(sized, (new Date(`${raceDate}T00:00:00`).getDay() + 6) % 7) : sized, mv)
     },
+    /** สลับเนื้อหาวัน a กับ b ในสัปดาห์ `week` (เช่น ทำแผนวันอังคารวันนี้) */
+    moveDay: (week: number, a: number, b: number) => setMoves(prev => ({ ...prev, [mondayOf(week)]: [...(prev[mondayOf(week)] ?? []), [a, b]] })),
+    hasMoves: (week: number) => !!moves[mondayOf(week)]?.length,
+    clearMoves: (week: number) => setMoves(prev => {
+      const next = { ...prev }
+      delete next[mondayOf(week)]
+      return next
+    }),
     solo,
     setSolo,
     /** สลับท่า from → to ทุกวันที่มีท่านี้ (to = undefined คือกลับเป็นท่าเดิม) */

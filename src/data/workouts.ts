@@ -30,6 +30,7 @@ export type Day = {
   runKind?: 'easy' | 'tempo' | 'interval' | 'long' | 'race'
   location?: 'gym' | 'park' // วันเวท: ฝึกที่ไหน (ตั้งโดย weekPlan)
   guide?: Step[] // วันวิ่งคุณภาพ: ขั้นของชุดซ้อมสำหรับเสียงนำ
+  movedFrom?: number // สลับมาจากวันที่ i ของสัปดาห์ (0 = จันทร์) — ดู lib/moves.ts
 }
 
 const warmupNote = 'วอร์มอัพ 5–10 นาที: จ็อกเบา ๆ หรือกระโดดเชือก + หมุนข้อต่อ แล้วเล่นเซ็ตเบา 1–2 เซ็ตของท่าแรก'

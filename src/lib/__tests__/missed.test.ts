@@ -45,3 +45,18 @@ describe('missedKeyRun', () => {
     expect(missedKeyRun(mini(2), 4, () => true)).toBeNull()
   })
 })
+
+describe('day moves', () => {
+  it('swaps content but keeps weekday labels; warns on back-to-back runs', async () => {
+    const { applyMoves, backToBackRuns } = await import('../moves')
+    const w = mini(1) // จ เวท, อ วิ่ง, พ พัก, พฤ วิ่ง, ศ เวท, ส พัก, อา วิ่งยาว
+    const moved = applyMoves(w, [[1, 0]]) // ทำวิ่งวันอังคารวันจันทร์
+    expect(moved[0]).toMatchObject({ type: 'run', day: w[0].day, key: w[1].key, movedFrom: 1 })
+    expect(moved[1]).toMatchObject({ type: 'strength', day: w[1].day, movedFrom: 0 })
+    expect(backToBackRuns(moved)).toEqual([])
+    // วิ่งยาววันอาทิตย์มาวันจันทร์ → จันทร์–อังคารวิ่งติดกัน
+    expect(backToBackRuns(applyMoves(w, [[6, 0]]))).toEqual([0])
+    // สลับซ้อนกันได้ และสลับกลับ = เหมือนเดิม
+    expect(applyMoves(w, [[1, 0], [1, 0]]).map(d => d.key)).toEqual(w.map(d => d.key))
+  })
+})

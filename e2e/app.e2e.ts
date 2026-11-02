@@ -508,3 +508,23 @@ test('ดูช่วงเตรียมตัวที่ผ่านมา�
   await expect(page.getByText(/ช่วงเตรียมตัว 26\/10/)).toBeVisible()
   await expect(page.getByText('4/5 วัน', { exact: false })).toBeVisible()
 })
+
+test('สลับวัน: ทำแผนวันอังคารวันนี้ → หน้าวิ่งใช้แผนนั้น, คืนลำดับเดิมได้', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-11-02T08:00:00+07:00') })
+  await seed(page, { program: 'mini', programStart: '2026-11-02', raceDate: '2027-01-10' })
+  await nav(page, 'ฝึก')
+  await page.getByRole('button', { name: /^อังคาร: วิ่งสลับเดิน/ }).click()
+  await page.getByRole('button', { name: /ทำวันนี้แทน/ }).click()
+  await expect(page.getByText('สลับมาจากวันอังคาร')).toBeVisible()
+  await expect.poll(async () => idb(page, 'dayMoves')).toEqual({ '2026-11-02': [[1, 0]] })
+  await nav(page, 'วิ่ง')
+  await expect(page.getByText(/แผนวันนี้: วิ่งสลับเดิน 3 กม/)).toBeVisible()
+  // วิ่งยาววันอาทิตย์มาวันนี้ → เตือนวิ่งติดกัน (จันทร์–อังคาร) ไม่สลับถ้ากดยกเลิก
+  await nav(page, 'ฝึก')
+  await page.getByRole('button', { name: 'คืนลำดับเดิม' }).click()
+  await page.getByRole('button', { name: /^อาทิตย์: วิ่งยาวสลับเดิน/ }).click()
+  await page.getByRole('button', { name: /ทำวันนี้แทน/ }).click()
+  await expect(page.getByText('วิ่งติดกันสองวัน')).toBeVisible()
+  await page.getByRole('button', { name: 'ยกเลิก' }).click()
+  await expect.poll(async () => idb(page, 'dayMoves')).toEqual({})
+})

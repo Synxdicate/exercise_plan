@@ -8,7 +8,9 @@ import { estimate, paceHint } from '../lib/pace'
 import { useProgram } from '../lib/program'
 import { usePersisted } from '../lib/storage'
 import { useDayDone } from '../lib/dayDone'
-import { addDays, shortDate } from '../lib/date'
+import { addDays, shortDate, WEEKDAYS_EN, WEEKDAYS_TH } from '../lib/date'
+import { applyMoves, backToBackRuns } from '../lib/moves'
+import { ask } from '../lib/dialog'
 import { useNav } from '../lib/nav'
 import { tick } from '../lib/voice'
 import { useT } from '../lib/i18n'
@@ -73,6 +75,19 @@ function PlanBody() {
   const doneCount = trainingIdx.filter(isDone).length
   const note = weekNote(p.program, week)
   const day = days[selected]
+  // ทำแผนของวันอื่นวันนี้ (สลับกับวันนี้) — เฉพาะสัปดาห์นี้ ทั้งสองวันยังไม่ได้ทำ และไม่ใช่วันแข่ง
+  const tIdx = todayIdx()
+  const canDoToday = isThisWeek && selected !== tIdx && day.type !== 'rest' && day.runKind !== 'race' && days[tIdx]?.runKind !== 'race'
+    && !isDone(selected) && !isDone(tIdx)
+  const doToday = async () => {
+    const b2b = backToBackRuns(applyMoves(days, [[selected, tIdx]]))
+    if (b2b.length && !(await ask(t(
+      `หลังสลับแล้วจะวิ่งติดกัน: ${b2b.map(i => `${WEEKDAYS_TH[i]}–${WEEKDAYS_TH[i + 1]}`).join(', ')} — ขาไม่ได้พักระหว่างวันวิ่ง เสี่ยงเจ็บ ลองสลับวันวิ่งอีกวันไปวันพักแทน`,
+      `After the swap you'd run on back-to-back days: ${b2b.map(i => `${WEEKDAYS_EN[i]}–${WEEKDAYS_EN[i + 1]}`).join(', ')}. No rest between runs raises injury risk — consider moving the other run to a rest day.`,
+    ), { title: t('วิ่งติดกันสองวัน', 'Back-to-back runs'), ok: t('สลับต่อ', 'Swap anyway') }))) return
+    p.moveDay(week, selected, tIdx)
+    setSelected(tIdx)
+  }
 
   return (
     <>
@@ -145,6 +160,12 @@ function PlanBody() {
           })}
         </div>
         <div className="mt-2 px-1"><Meter value={doneCount} max={trainingIdx.length} tone="good" /></div>
+        {p.hasMoves(week) && (
+          <div className="mt-2 flex items-center justify-between gap-2 px-1 text-xs text-muted">
+            <span className="flex items-center gap-1"><ArrowLeftRight size={13} /> {t('สัปดาห์นี้สลับวันไว้', 'Days swapped this week')}</span>
+            <button onClick={() => p.clearMoves(week)} className="font-semibold text-run">{t('คืนลำดับเดิม', 'Reset order')}</button>
+          </div>
+        )}
         {note && <p className="mt-2 px-1 text-xs text-muted">{note}</p>}
         {!isThisWeek && (
           <div className="mt-2 flex flex-wrap gap-2 px-1">
@@ -160,6 +181,7 @@ function PlanBody() {
         setDone={v => setDayDone(selected, v)}
         onStart={() => setChecking(selected)}
         onLocation={m => p.setDayLocation(week, selected, m)} slotId={p.doneId(week, selected)}
+        onDoToday={canDoToday ? () => void doToday() : undefined}
         date={addDays(p.mondayOf(week), selected)} />
 
       {/* ทั้งสัปดาห์แบบย่อ */}
@@ -230,8 +252,8 @@ function DayMuscles({ day }: { day: Day }) {
   )
 }
 
-function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slotId, weekNoteText, date }: {
-  day: Day; isToday: boolean; done: boolean; hint: string | null; weekNoteText?: string; date: string
+function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slotId, weekNoteText, date, onDoToday }: {
+  day: Day; isToday: boolean; done: boolean; hint: string | null; weekNoteText?: string; date: string; onDoToday?: () => void
   setDone: (v: boolean) => void; onStart: () => void; onLocation: (m: 'gym' | 'park') => void; slotId: string
 }) {
   const t = useT()
@@ -275,6 +297,14 @@ function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slo
         </div>
       )}
 
+      {day.movedFrom !== undefined && (
+        <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-run"><ArrowLeftRight size={13} /> {t(`สลับมาจากวัน${WEEKDAYS_TH[day.movedFrom]}`, `Moved from ${WEEKDAYS_EN[day.movedFrom]}`)}</p>
+      )}
+      {onDoToday && (
+        <Button size="sm" variant="soft" className="mt-3 w-full" onClick={onDoToday}>
+          <ArrowLeftRight size={15} /> {t('ทำวันนี้แทน (สลับกับแผนวันนี้)', "Do it today (swap with today's plan)")}
+        </Button>
+      )}
       {day.note && day.note !== weekNoteText && <p className="mt-3 text-sm text-muted">{day.note}</p>}
 
       {day.type === 'strength' && (
