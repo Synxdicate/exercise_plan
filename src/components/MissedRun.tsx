@@ -9,6 +9,7 @@ import { usePersisted } from '../lib/storage'
 import { runsOnly } from '../lib/walk'
 import { Button } from './ui'
 import { useT } from '../lib/i18n'
+import { useDayText } from '../lib/dayText'
 
 const DAY_NAMES = WEEKDAYS_TH
 const DAY_EN = WEEKDAYS_EN
@@ -20,6 +21,7 @@ export function MissedRunCard() {
   const dayDone = useDayDone()
   const [seen, setSeen] = usePersisted('missedSeen', '')
   const t = useT()
+  const dt = useDayText()
   const monday = weekStart(today())
   const todayIdx = daysBetween(monday, today())
   const week = p.currentWeek
@@ -41,7 +43,7 @@ export function MissedRunCard() {
   return (
     <section className="animate-fade-up rounded-2xl bg-warn/10 p-3.5 ring-1 ring-warn/30">
       <div className="flex items-center gap-2 font-bold text-warn">
-        <CalendarX2 size={18} /> {m.kind === 'lastWeek' ? t('วิ่งยาวสัปดาห์ที่แล้วไม่ได้ทำ', "Last week's long run was missed") : t(`พลาด${m.day.title}วัน${DAY_NAMES[m.i]}`, `Missed ${DAY_EN[m.i]}'s run: ${m.day.title}`)}
+        <CalendarX2 size={18} /> {m.kind === 'lastWeek' ? t('วิ่งยาวสัปดาห์ที่แล้วไม่ได้ทำ', "Last week's long run was missed") : t(`พลาด${m.day.title}วัน${DAY_NAMES[m.i]}`, `Missed ${DAY_EN[m.i]}'s ${dt.title(m.day)}`)}
       </div>
       <p className="mt-1 text-sm">
         {m.kind === 'lastWeek'

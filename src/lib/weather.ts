@@ -23,11 +23,11 @@ export function heatLevel(wbgt: number): HeatLevel {
   return 'danger'
 }
 
-export const heatAdvice: Record<HeatLevel, { label: string; text: string }> = {
-  ok: { label: 'เหมาะกับการวิ่ง', text: 'วิ่งตามแผนได้ ดื่มน้ำตามปกติ' },
-  warm: { label: 'ร้อน', text: 'วิ่งช้าลง 10–20 วิ/กม. ดื่มน้ำเพิ่ม ถ้ามีวิ่งหนักให้เลือกช่วงที่เย็นที่สุด' },
-  hot: { label: 'ร้อนจัด', text: 'เลี่ยงวิ่งหนักและวิ่งยาว ถ้าจะวิ่งให้สั้นและเบา พกน้ำ + เกลือแร่' },
-  danger: { label: 'อันตราย', text: 'งดวิ่งกลางแจ้งช่วงนี้ — เสี่ยง heat stroke เลื่อนไปช่วงเช้ามืด/ค่ำ หรือวิ่งในร่ม' },
+export const heatAdvice: Record<HeatLevel, { label: string; text: string; labelEn: string; textEn: string }> = {
+  ok: { label: 'เหมาะกับการวิ่ง', text: 'วิ่งตามแผนได้ ดื่มน้ำตามปกติ', labelEn: 'Good for running', textEn: 'Run as planned, drink as usual' },
+  warm: { label: 'ร้อน', text: 'วิ่งช้าลง 10–20 วิ/กม. ดื่มน้ำเพิ่ม ถ้ามีวิ่งหนักให้เลือกช่วงที่เย็นที่สุด', labelEn: 'Hot', textEn: 'Slow down 10–20 s/km and drink more; do hard sessions in the coolest hour' },
+  hot: { label: 'ร้อนจัด', text: 'เลี่ยงวิ่งหนักและวิ่งยาว ถ้าจะวิ่งให้สั้นและเบา พกน้ำ + เกลือแร่', labelEn: 'Very hot', textEn: 'Avoid hard and long runs; keep it short and easy, carry water + electrolytes' },
+  danger: { label: 'อันตราย', text: 'งดวิ่งกลางแจ้งช่วงนี้ — เสี่ยง heat stroke เลื่อนไปช่วงเช้ามืด/ค่ำ หรือวิ่งในร่ม', labelEn: 'Dangerous', textEn: 'No outdoor running now — heat stroke risk; move to early morning/night or indoors' },
 }
 
 // ฝุ่น PM2.5 (µg/m³): ช่วงตามดัชนีคุณภาพอากาศของกรมควบคุมมลพิษ (ประกาศ 2566, มาตรฐานเฉลี่ย 24 ชม. 37.5)
@@ -41,11 +41,11 @@ export function airLevel(pm25: number): AirLevel {
   return 'bad'
 }
 
-export const airAdvice: Record<AirLevel, { label: string; text: string }> = {
-  good: { label: 'อากาศดี', text: 'วิ่งได้ตามแผน' },
-  moderate: { label: 'ฝุ่นปานกลาง', text: 'วิ่งได้ ถ้าแสบคอ ไอ หรือแน่นหน้าอกให้ลดความหนัก' },
-  sensitive: { label: 'ฝุ่นเริ่มมีผลต่อสุขภาพ', text: 'ลดเวลาวิ่งกลางแจ้ง วันวิ่งหนักย้ายไปในร่มหรือช่วงที่ฝุ่นต่ำสุด' },
-  bad: { label: 'ฝุ่นมีผลต่อสุขภาพ', text: 'งดวิ่งกลางแจ้ง ฝึกในร่มแทน (ยิม/ลู่วิ่ง)' },
+export const airAdvice: Record<AirLevel, { label: string; text: string; labelEn: string; textEn: string }> = {
+  good: { label: 'อากาศดี', text: 'วิ่งได้ตามแผน', labelEn: 'Clean air', textEn: 'Run as planned' },
+  moderate: { label: 'ฝุ่นปานกลาง', text: 'วิ่งได้ ถ้าแสบคอ ไอ หรือแน่นหน้าอกให้ลดความหนัก', labelEn: 'Moderate PM2.5', textEn: 'OK to run; ease off if your throat burns, you cough or feel chest tightness' },
+  sensitive: { label: 'ฝุ่นเริ่มมีผลต่อสุขภาพ', text: 'ลดเวลาวิ่งกลางแจ้ง วันวิ่งหนักย้ายไปในร่มหรือช่วงที่ฝุ่นต่ำสุด', labelEn: 'Unhealthy for sensitive groups', textEn: 'Cut outdoor time; move hard runs indoors or to the cleanest hour' },
+  bad: { label: 'ฝุ่นมีผลต่อสุขภาพ', text: 'งดวิ่งกลางแจ้ง ฝึกในร่มแทน (ยิม/ลู่วิ่ง)', labelEn: 'Unhealthy', textEn: 'No outdoor running — train indoors (gym/treadmill)' },
 }
 
 export type Hour = { time: string; hour: number; temp: number; rh: number; wbgt: number; pm25?: number }

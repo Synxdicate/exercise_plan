@@ -4,6 +4,7 @@ import { yt, type Day, type Exercise } from '../data/workouts'
 import { locationInfo, weekNote } from '../data/programs'
 import { dayIntensity, musclesOf, muscleNames } from '../data/muscles'
 import { useRuns } from '../lib/log'
+import { useDayText } from '../lib/dayText'
 import { estimate, paceHint } from '../lib/pace'
 import { useProgram } from '../lib/program'
 import { usePersisted } from '../lib/storage'
@@ -51,6 +52,7 @@ const styleOf = (d: Day) => (d.runKind === 'race' ? { icon: Flag, tone: 'bg-acce
 
 function PlanBody() {
   const t = useT()
+  const dt = useDayText()
   const p = useProgram()
   const [, setDone] = usePersisted<Record<string, boolean>>('done', {})
   const [viewWeek, setViewWeek] = useState(p.currentWeek)
@@ -97,8 +99,8 @@ function PlanBody() {
       <WeekCheckCard />
       <button onClick={() => setPicking(true)} className="flex w-full items-center gap-3 rounded-3xl bg-card p-4 text-left shadow-sm ring-1 ring-line active:scale-[.99]">
         <div className="min-w-0 flex-1">
-          <div className="text-xs font-semibold text-accent">{t('โปรแกรมของฉัน', 'My program')} · {locationInfo[p.location].label.replace(/ \(.*\)/, '')}</div>
-          <div className="truncate text-lg font-bold leading-tight">{p.meta.name}</div>
+          <div className="text-xs font-semibold text-accent">{t('โปรแกรมของฉัน', 'My program')} · {dt.en ? { gym: 'Gym', park: 'Park', mix: 'Mixed' }[p.location] : locationInfo[p.location].label.replace(/ \(.*\)/, '')}</div>
+          <div className="truncate text-lg font-bold leading-tight">{dt.program(p.program).name}</div>
           {p.isRace && (
             <div className="mt-0.5 text-xs text-muted">
               {!p.raceDate ? t('ยังไม่ได้ใส่วันแข่ง — แตะเพื่อตั้ง', 'No race date yet — tap to set')
@@ -195,8 +197,8 @@ function PlanBody() {
                 <button onClick={() => { setSelected(i); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
                   className={cx('flex w-full items-center gap-3 rounded-2xl px-2 py-2.5 text-left', i === selected && 'bg-raised')}>
                   <span className={cx('size-2 shrink-0 rounded-full', isDone(i) ? 'bg-good' : st.dot)} />
-                  <span className="w-14 shrink-0 text-xs text-muted">{d.day}</span>
-                  <span className={cx('min-w-0 flex-1 truncate text-sm', d.type === 'rest' ? 'text-muted' : 'font-semibold', isDone(i) && 'text-muted line-through')}>{d.title}</span>
+                  <span className="w-14 shrink-0 text-xs text-muted">{dt.weekday(d)}</span>
+                  <span className={cx('min-w-0 flex-1 truncate text-sm', d.type === 'rest' ? 'text-muted' : 'font-semibold', isDone(i) && 'text-muted line-through')}>{dt.title(d)}</span>
                   {d.location && <Badge tone="muted">{d.location === 'gym' ? t('ยิม', 'Gym') : t('สวน', 'Park')}</Badge>}
                   {d.targetKm && <span className="text-xs tabular-nums text-muted">{d.targetKm} {t('กม.', 'km')}</span>}
                   <ChevronRight size={16} className="shrink-0 text-muted" />
@@ -227,6 +229,7 @@ function PlanBody() {
 /** กล้ามเนื้อที่ฝึกวันนี้: ชิปสรุปแบบย่อ แตะเพื่อดูแผนภาพ (เดิมแผนภาพเต็มทำให้การ์ดยาวเกินจนต้องเลื่อนหาท่า) */
 function DayMuscles({ day }: { day: Day }) {
   const t = useT()
+  const dt = useDayText()
   const [open, setOpen] = usePersisted('dayMapOpen', false)
   const intensity = dayIntensity(day)
   // เรียงตามจำนวนท่าที่ใช้กล้ามนั้นเป็นกล้ามหลัก
@@ -239,7 +242,7 @@ function DayMuscles({ day }: { day: Day }) {
       <button onClick={() => setOpen(!open)} aria-expanded={open}
         className="flex w-full items-center gap-2 rounded-xl bg-raised px-3 py-2 text-left active:scale-100">
         <span className="flex min-w-0 flex-1 flex-wrap gap-1">
-          {top.map(([m]) => <span key={m} className="rounded-full bg-accent-soft px-2 py-0.5 text-xs font-semibold text-accent">{muscleNames[m]}</span>)}
+          {top.map(([m]) => <span key={m} className="rounded-full bg-accent-soft px-2 py-0.5 text-xs font-semibold text-accent">{dt.muscle(m)}</span>)}
           {ranked.length > top.length && <span className="px-1 py-0.5 text-xs text-muted">+{ranked.length - top.length}</span>}
         </span>
         <span className="shrink-0 text-xs text-muted">{open ? t('ซ่อน', 'Hide') : t('แผนภาพ', 'Body map')}</span>
@@ -257,6 +260,7 @@ function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slo
   setDone: (v: boolean) => void; onStart: () => void; onLocation: (m: 'gym' | 'park') => void; slotId: string
 }) {
   const t = useT()
+  const dt = useDayText()
   const nav = useNav()
   const p = useProgram()
   const st = styleOf(day)
@@ -269,8 +273,8 @@ function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slo
       <div className="flex items-center gap-3">
         <div className={cx('grid size-14 shrink-0 place-items-center rounded-2xl', st.tone)}><st.icon size={26} /></div>
         <div className="min-w-0 flex-1">
-          <div className="text-xs font-semibold text-muted">{isToday ? `${t('วันนี้', 'Today')} · ${day.day}` : day.day}{day.duration !== '-' && ` · ${day.duration}`}</div>
-          <h2 className="text-xl font-extrabold leading-tight">{day.title}</h2>
+          <div className="text-xs font-semibold text-muted">{isToday ? `${t('วันนี้', 'Today')} · ${dt.weekday(day)}` : dt.weekday(day)}{day.duration !== '-' && ` · ${dt.duration(day)}`}</div>
+          <h2 className="text-xl font-extrabold leading-tight">{dt.title(day)}</h2>
         </div>
         {day.type !== 'rest' && (
           <button onClick={() => { if (!done) tick(); setDone(!done) }} aria-label={done ? t('ทำแล้ว', 'Done') : t('ยังไม่ทำ', 'Not done')} aria-pressed={done}
@@ -356,6 +360,7 @@ function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slo
 
 function ExerciseRow({ e, n, onSwap, onRemove }: { e: Exercise; n: number; onSwap: () => void; onRemove: () => void }) {
   const t = useT()
+  const dt = useDayText()
   const [open, setOpen] = useState(false)
   return (
     <li>
@@ -363,16 +368,16 @@ function ExerciseRow({ e, n, onSwap, onRemove }: { e: Exercise; n: number; onSwa
         <span className="grid size-7 shrink-0 place-items-center rounded-full bg-raised text-xs font-bold text-muted">{n}</span>
         <span className="min-w-0 flex-1">
           <span className="block truncate font-semibold">{e.name}{(e.swappedFrom || e.added) && <span className="ml-1.5 text-[10px] font-normal text-run">{e.added ? t('เพิ่มเอง', 'added') : e.solo ? t('ฝึกคนเดียว', 'solo') : t('สลับแล้ว', 'swapped')}</span>}{!e.swappedFrom && needsSpotter[e.name] && <span className="ml-1.5 text-[10px] font-normal text-warn">{t('ควรมีคนช่วย', 'needs spotter')}</span>}</span>
-          <span className="block truncate text-xs text-muted">{e.th}</span>
+          {!dt.en && <span className="block truncate text-xs text-muted">{e.th}</span>}
         </span>
-        <span className="shrink-0 text-sm font-semibold tabular-nums">{e.sets}×{e.reps}</span>
+        <span className="shrink-0 text-sm font-semibold tabular-nums">{e.sets}×{dt.reps(e.reps)}</span>
         <ChevronRight size={16} className={cx('shrink-0 text-muted transition-transform duration-300', open && 'rotate-90')} />
       </button>
       <Collapse open={open}>
         <div className="mb-3 ml-10 space-y-2 rounded-2xl bg-raised p-3 text-sm">
           <div className="flex flex-wrap gap-1.5">
             {e.rest !== '-' && <Badge tone="muted">{t('พัก', 'rest')} {e.rest}</Badge>}
-            {musclesOf(e).primary.map(m => <Badge key={m}>{muscleNames[m]}</Badge>)}
+            {musclesOf(e).primary.map(m => <Badge key={m}>{dt.muscle(m)}</Badge>)}
           </div>
           <ExerciseDemo name={e.name} />
           {e.solo && e.swappedFrom && needsSpotter[e.swappedFrom] && <p className="text-xs text-run">ไปคนเดียว: ใช้ท่านี้แทน {e.swappedFrom} — {needsSpotter[e.swappedFrom].note}</p>}

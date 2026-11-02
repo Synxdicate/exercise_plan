@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Award, Dumbbell, Flame, Footprints, Medal, Mountain, Pencil, Target, Trophy, Zap, type LucideIcon } from 'lucide-react'
 import { BADGES, earnedBadges, monthOf, periodStats, type BadgeIcon } from '../lib/goals'
+import { useT } from '../lib/i18n'
 import { useMonthGoal } from '../lib/useGoals'
 import { formatDuration, useRuns, useSessions } from '../lib/log'
 import { today } from '../lib/date'
@@ -9,6 +10,7 @@ import { Button, Card, Collapse, Sheet } from './ui'
 import { NumberInput } from './Form'
 
 const icons: Record<BadgeIcon, LucideIcon> = { footprints: Footprints, medal: Medal, trophy: Trophy, flame: Flame, dumbbell: Dumbbell, target: Target, mountain: Mountain, zap: Zap }
+const enMonths = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 const thMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม']
 
 /** การ์ดหน้าหลัก: ระยะวิ่งเดือนนี้เทียบเป้า + ทางเข้าเหรียญ/สรุปปี */
@@ -19,31 +21,32 @@ export function MonthGoalCard() {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(String(goal))
   const [showBadges, setShowBadges] = useState(false)
+  const t = useT()
   const month = monthOf(today())
   const s = periodStats(runs, sessions, month)
   const pct = Math.min(1, s.km / goal)
   const earned = earnedBadges({ runs, sessions, goalKm: goal })
 
   return (
-    <Card title={`เป้าเดือน${thMonths[+month.slice(5) - 1]}`}
-      action={<button onClick={() => { setDraft(String(goal)); setEditing(!editing) }} aria-label="แก้เป้า" className="grid size-8 place-items-center rounded-full text-muted ring-1 ring-line"><Pencil size={14} /></button>}>
+    <Card title={t(`เป้าเดือน${thMonths[+month.slice(5) - 1]}`, `${enMonths[+month.slice(5) - 1]} goal`)}
+      action={<button onClick={() => { setDraft(String(goal)); setEditing(!editing) }} aria-label={t('แก้เป้า', 'Edit goal')} className="grid size-8 place-items-center rounded-full text-muted ring-1 ring-line"><Pencil size={14} /></button>}>
       <div className="flex items-baseline justify-between">
-        <span className="text-2xl font-extrabold tabular-nums">{s.km.toFixed(1)}<span className="ml-1 text-sm font-normal text-muted">/ {goal} กม.</span></span>
-        <span className={cx('text-sm font-semibold', pct >= 1 ? 'text-good' : 'text-muted')}>{pct >= 1 ? 'ถึงเป้าแล้ว' : `${Math.round(pct * 100)}%`}</span>
+        <span className="text-2xl font-extrabold tabular-nums">{s.km.toFixed(1)}<span className="ml-1 text-sm font-normal text-muted">/ {goal} {t('กม.', 'km')}</span></span>
+        <span className={cx('text-sm font-semibold', pct >= 1 ? 'text-good' : 'text-muted')}>{pct >= 1 ? t('ถึงเป้าแล้ว', 'Goal reached') : `${Math.round(pct * 100)}%`}</span>
       </div>
       <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-body">
         <div className={cx('h-full rounded-full transition-[width] duration-700', pct >= 1 ? 'bg-good' : 'bg-run')} style={{ width: `${pct * 100}%` }} />
       </div>
-      <div className="mt-2 text-xs text-muted">วิ่ง {s.runs} ครั้ง · เวท {s.workouts} ครั้ง{isDefault ? ' · เป้าตั้งจากโปรแกรม' : ''}</div>
+      <div className="mt-2 text-xs text-muted">{t(`วิ่ง ${s.runs} ครั้ง · เวท ${s.workouts} ครั้ง`, `${s.runs} runs · ${s.workouts} workouts`)}{isDefault ? t(' · เป้าตั้งจากโปรแกรม', ' · goal from program') : ''}</div>
       <Collapse open={editing}>
         <div className="mt-3 flex items-end gap-2">
-          <NumberInput className="flex-1" label="เป้าวิ่งต่อเดือน" unit="กม." step={5} stepper value={draft} onChange={setDraft} />
-          <Button onClick={() => { if (+draft > 0) setGoal(+draft); setEditing(false) }}>บันทึก</Button>
+          <NumberInput className="flex-1" label={t('เป้าวิ่งต่อเดือน', 'Monthly run goal')} unit={t('กม.', 'km')} step={5} stepper value={draft} onChange={setDraft} />
+          <Button onClick={() => { if (+draft > 0) setGoal(+draft); setEditing(false) }}>{t('บันทึก', 'Save')}</Button>
         </div>
       </Collapse>
       <button onClick={() => setShowBadges(true)} className="mt-3 flex w-full items-center gap-2 rounded-2xl bg-raised px-3 py-2 text-left text-sm">
         <Award size={18} className="text-accent" />
-        <span className="flex-1 font-semibold">เหรียญรางวัล & สรุปปี</span>
+        <span className="flex-1 font-semibold">{t('เหรียญรางวัล & สรุปปี', 'Badges & year summary')}</span>
         <span className="tabular-nums text-muted">{earned.length}/{BADGES.length}</span>
       </button>
       {showBadges && <BadgesSheet earned={earned} onClose={() => setShowBadges(false)} />}

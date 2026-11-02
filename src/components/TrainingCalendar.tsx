@@ -4,12 +4,13 @@ import { monthGrid, shiftMonth } from '../lib/calendar'
 import { crossKinds, useCross, useRuns, useSessions, formatDuration, runKinds } from '../lib/log'
 import { isWalk } from '../lib/walk'
 import { useProgram } from '../lib/program'
-import { programs } from '../data/programs'
 import { daysBetween, monthLabel, niceDate, today, weekStart } from '../lib/date'
 import type { Day } from '../data/workouts'
 import { cx } from '../lib/cx'
 import { usePersisted } from '../lib/storage'
 import { Card } from './ui'
+import { useT } from '../lib/i18n'
+import { useDayText } from '../lib/dayText'
 
 const DAYS = ['จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส', 'อา']
 
@@ -20,6 +21,8 @@ export function TrainingCalendar() {
   const [cross] = useCross()
   const [done] = usePersisted<Record<string, boolean>>('done', {})
   const p = useProgram()
+  const t = useT()
+  const dt = useDayText()
   const now = today()
   const [ym, setYm] = useState(now.slice(0, 7))
   const [picked, setPicked] = useState<string | null>(null)
@@ -115,7 +118,7 @@ export function TrainingCalendar() {
       {picked && (
         <div className="mt-3 animate-fade-up rounded-xl bg-raised p-3 text-sm">
           <div className="font-bold">{niceDate(picked)}</div>
-          {selPlan && selPlan.type !== 'rest' && <div className="text-xs text-muted">แผน ({programs[p.program].short}): {selPlan.title}{selPlan.targetKm ? ` · ${selPlan.targetKm} กม.` : ''}</div>}
+          {selPlan && selPlan.type !== 'rest' && <div className="text-xs text-muted">{t('แผน', 'Plan')} ({dt.program(p.program).short}): {dt.title(selPlan)}{selPlan.targetKm ? ` · ${selPlan.targetKm} กม.` : ''}</div>}
           {picked && tickedOn(picked) && !sel?.runs.length && !sel?.sessions.length && <div className="mt-1 flex items-center gap-1.5 text-xs text-good"><Check size={13} /> ทำแล้ว</div>}
           {!sel?.runs.length && !sel?.walks.length && !sel?.sessions.length && !sel?.cross.length && !(picked && tickedOn(picked)) && <div className="mt-1 text-xs text-muted">ไม่มีบันทึก</div>}
           {sel?.cross.map(c => <div key={c.id} className="mt-1 flex items-center gap-1.5"><Bike size={13} className="text-run" /> {crossKinds[c.kind]} · {c.minutes} นาที</div>)}

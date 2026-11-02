@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Check, Dumbbell, Flag, Flame, Footprints, Moon, Play } from 'lucide-react'
 import type { Day } from '../data/workouts'
 import { crossAsSession, useCross, useRuns, useSessions } from '../lib/log'
+import { useDayText } from '../lib/dayText'
 import { useTodayIdx } from '../lib/useToday'
 import { runsOnly } from '../lib/walk'
 import { estimate, paceHint } from '../lib/pace'
@@ -36,6 +37,7 @@ export function Dashboard() {
   const [checking, setChecking] = useState(false)
   const nav = useNav()
   const t = useT()
+  const dt = useDayText()
   const { currentWeek: week } = p
 
   const plan = p.plan()
@@ -71,7 +73,7 @@ export function Dashboard() {
       <section className="rounded-2xl bg-gradient-to-br from-accent to-[#7c3aed] p-4 text-white shadow-sm">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-sm opacity-80">{p.meta.short} · {p.ongoing ? t(`สัปดาห์ที่ ${week} ของรอบ`, `Cycle week ${week}`)
+            <div className="text-sm opacity-80">{dt.program(p.program).short} · {p.ongoing ? t(`สัปดาห์ที่ ${week} ของรอบ`, `Cycle week ${week}`)
               // ก่อนสัปดาห์ 1 (นับถอยจากวันแข่ง) ใช้แผนสัปดาห์ 1 ซ้อมไปก่อน — บอกให้ชัดว่ายังไม่ใช่สัปดาห์ 1 จริง
               : p.weeksUntilStart > 0 ? t(`ช่วงเตรียมตัว · สัปดาห์ 1 เริ่มในอีก ${p.weeksUntilStart} สัปดาห์`, `Prep · week 1 starts in ${p.weeksUntilStart} wk`)
               : t(`สัปดาห์ที่ ${week} จาก ${p.meta.weeks}`, `Week ${week} of ${p.meta.weeks}`)}</div>
@@ -99,10 +101,10 @@ export function Dashboard() {
               <TodayIcon size={22} />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-xs text-muted">{t(`วันนี้ (${todayPlan.day})`, 'Today')}</div>
-              <div className="font-bold">{todayPlan.title}</div>
+              <div className="text-xs text-muted">{t(`วันนี้ (${todayPlan.day})`, `Today (${dt.weekday(todayPlan)})`)}</div>
+              <div className="font-bold">{dt.title(todayPlan)}</div>
               {/* ชื่อบอกระยะอยู่แล้ว (เช่น "วิ่งสลับเดิน 3 กม.") ไม่ต้องซ้ำ */}
-              {!todayPlan.title.includes(todayPlan.duration) && <div className="text-xs text-muted">{todayPlan.duration !== '-' ? todayPlan.duration : todayPlan.note}</div>}
+              {!todayPlan.title.includes(todayPlan.duration) && <div className="text-xs text-muted">{todayPlan.duration !== '-' ? dt.duration(todayPlan) : todayPlan.note}</div>}
               {hint && <div className="text-xs font-semibold text-run">{hint}</div>}
             </div>
             {todayDone && <span className="grid size-9 shrink-0 animate-pop place-items-center rounded-full bg-good text-white"><Check size={18} strokeWidth={3} /></span>}
@@ -110,7 +112,7 @@ export function Dashboard() {
           {todayDone && (
             <div className="mt-3 flex items-center justify-between gap-2 border-t border-line pt-2.5 text-xs">
               <span className="font-semibold text-good">{todayPlan.type === 'run' && kmToday ? t(`วิ่งแล้ว ${kmToday.toFixed(2)} กม.`, `Ran ${kmToday.toFixed(2)} km`) : t('ทำแล้ววันนี้', 'Done today')}</span>
-              {tomorrow && <span className="min-w-0 truncate text-muted">{t('พรุ่งนี้', 'Tomorrow')}: {tomorrow.title}</span>}
+              {tomorrow && <span className="min-w-0 truncate text-muted">{t('พรุ่งนี้', 'Tomorrow')}: {dt.title(tomorrow)}</span>}
             </div>
           )}
           {!todayDone && todayPlan.type === 'strength' && (

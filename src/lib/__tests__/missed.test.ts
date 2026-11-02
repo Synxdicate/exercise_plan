@@ -60,3 +60,18 @@ describe('day moves', () => {
     expect(applyMoves(w, [[1, 0], [1, 0]]).map(d => d.key)).toEqual(w.map(d => d.key))
   })
 })
+
+describe('day text (English)', () => {
+  it('translates every generated day title with no Thai left', async () => {
+    const { titleEn, durationEn } = await import('../dayText')
+    const { programs, weekPlan } = await import('../../data/programs')
+    for (const id of Object.keys(programs) as (keyof typeof programs)[])
+      for (let w = 1; w <= programs[id].weeks; w++)
+        for (const m of ['gym', 'park'] as const)
+          for (const d of weekPlan(id, w, () => m)) {
+            expect(titleEn(d.title), d.title).not.toMatch(/[฀-๿]/)
+            expect(durationEn(d.duration)).not.toMatch(/[฀-๿]/)
+          }
+    expect(titleEn('Interval 5 × 800 ม. / จ็อก 2 นาที')).toBe('Interval 5 × 800 m / jog 2 min')
+  })
+})

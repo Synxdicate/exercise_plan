@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import { muscleNames, type Muscle } from '../data/muscles'
+import { type Muscle } from '../data/muscles'
+import { useT } from '../lib/i18n'
+import { useDayText } from '../lib/dayText'
 import { heat } from '../lib/heat'
 
 // ทุก path วาดเฉพาะซีกซ้าย (x ≤ 100) แล้ว mirror ด้วย transform — ยกเว้น center: true
@@ -59,8 +61,11 @@ type Props = {
   size?: 'sm' | 'md'
 }
 
-export function BodyMap({ intensity, label = m => muscleNames[m], size = 'md' }: Props) {
+export function BodyMap({ intensity, label: labelProp, size = 'md' }: Props) {
   const [hover, setHover] = useState<Muscle | null>(null)
+  const t = useT()
+  const dt = useDayText()
+  const label = labelProp ?? dt.muscle
 
   const muscle = (s: Shape, key: string, transform?: string) => (
     <path key={key} d={s.d} transform={transform}
@@ -89,15 +94,15 @@ export function BodyMap({ intensity, label = m => muscleNames[m], size = 'md' }:
   return (
     <div>
       <div className="flex justify-center gap-4">
-        {figure(FRONT, 'ด้านหน้า')}
-        {figure(BACK, 'ด้านหลัง')}
+        {figure(FRONT, t('ด้านหน้า', 'Front'))}
+        {figure(BACK, t('ด้านหลัง', 'Back'))}
       </div>
-      <p className="mt-1 min-h-5 text-center text-sm font-semibold">{hover ? label(hover) : <span className="font-normal text-muted">แตะที่กล้ามเนื้อเพื่อดูรายละเอียด</span>}</p>
+      <p className="mt-1 min-h-5 text-center text-sm font-semibold">{hover ? label(hover) : <span className="font-normal text-muted">{t('แตะที่กล้ามเนื้อเพื่อดูรายละเอียด', 'Tap a muscle for details')}</span>}</p>
       {size === 'md' && (
         <div className="mx-auto mt-2 flex max-w-60 items-center gap-2 text-[11px] text-muted">
-          <span>น้อย</span>
+          <span>{t('น้อย', 'Less')}</span>
           <span className="h-2 flex-1 rounded-full" style={{ background: `linear-gradient(to right, ${heat(0)}, ${heat(0.01)}, ${heat(0.5)}, ${heat(1)})` }} />
-          <span>ครบเป้า</span>
+          <span>{t('ครบเป้า', 'Target')}</span>
         </div>
       )}
     </div>

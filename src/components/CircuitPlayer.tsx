@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Pause, Play, SkipForward, Timer, X } from 'lucide-react'
 import { buildCircuit, circuitAt, circuitTotal, coreCircuit } from '../lib/circuit'
+import { useT } from '../lib/i18n'
 import { speak } from '../lib/voice'
 import { uid, useSessions } from '../lib/log'
 import { today } from '../lib/date'
@@ -16,10 +17,11 @@ const TOTAL = circuitTotal(STEPS)
 /** การ์ดในหน้าฝึก: เริ่มเซอร์กิตแกนกลาง/สะโพก */
 export function CircuitCard() {
   const [open, setOpen] = useState(false)
+  const t = useT()
   return (
-    <Card title={<span className="flex items-center gap-2"><Timer size={18} className="text-accent" /> เซอร์กิตแกนกลาง/สะโพก</span>}>
-      <p className="text-sm text-muted">8 ท่า × 2 รอบ ท่าละ 30 วิ พัก 15 วิ (~{Math.round(TOTAL / 60)} นาที) ไม่ใช้อุปกรณ์ ทำหลังวิ่งเบาหรือวันพักได้</p>
-      <Button className="mt-3 w-full" onClick={() => setOpen(true)}><Play size={16} fill="currentColor" /> เริ่มเซอร์กิต</Button>
+    <Card title={<span className="flex items-center gap-2"><Timer size={18} className="text-accent" /> {t('เซอร์กิตแกนกลาง/สะโพก', 'Core & hip circuit')}</span>}>
+      <p className="text-sm text-muted">{t(`8 ท่า × 2 รอบ ท่าละ 30 วิ พัก 15 วิ (~${Math.round(TOTAL / 60)} นาที) ไม่ใช้อุปกรณ์ ทำหลังวิ่งเบาหรือวันพักได้`, `8 moves × 2 rounds, 30 s on / 15 s rest (~${Math.round(TOTAL / 60)} min), no equipment — after an easy run or on a rest day`)}</p>
+      <Button className="mt-3 w-full" onClick={() => setOpen(true)}><Play size={16} fill="currentColor" /> {t('เริ่มเซอร์กิต', 'Start circuit')}</Button>
       {open && <CircuitPlayer onClose={() => setOpen(false)} />}
     </Card>
   )

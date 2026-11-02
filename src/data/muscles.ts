@@ -24,6 +24,11 @@ export const muscleNames: Record<Muscle, string> = {
   hamstrings: 'ต้นขาหลัง',
   calves: 'น่อง',
 }
+export const muscleNamesEn: Record<Muscle, string> = {
+  chest: 'Chest', frontDelts: 'Front delts', sideDelts: 'Side delts', rearDelts: 'Rear delts', traps: 'Traps', biceps: 'Biceps',
+  triceps: 'Triceps', forearms: 'Forearms', abs: 'Abs', obliques: 'Obliques', lats: 'Lats', upperBack: 'Upper back',
+  lowerBack: 'Lower back', glutes: 'Glutes', quads: 'Quads', hamstrings: 'Hamstrings', calves: 'Calves',
+}
 
 type Target = { primary: Muscle[]; secondary: Muscle[] }
 const t = (primary: Muscle[], secondary: Muscle[] = []): Target => ({ primary, secondary })

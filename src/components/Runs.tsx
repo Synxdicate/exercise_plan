@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { CalendarCheck, Check, CircleCheck, FileDown, FileUp, Footprints, Gauge, Ghost, History, ListChecks, Map as MapIcon, Pause, Pencil, Play, Plus, Satellite, Share2, Trash2, TriangleAlert, Trophy, Volume2, VolumeX, X } from 'lucide-react'
 import { GOOD_ACCURACY_M, useRunTracker, type Point } from '../lib/gps'
+import { useDayText } from '../lib/dayText'
 import { useTodayIdx } from '../lib/useToday'
 import { formatDuration, formatPace, runKinds, runKindsEn, uid, useRuns, type Run } from '../lib/log'
 import { useT } from '../lib/i18n'
@@ -71,6 +72,7 @@ function Map(props: { route: Point[]; position?: Point | null; follow?: boolean;
 export function Runs() {
   const [runs, setRuns] = useRuns()
   const tr = useT()
+  const dt = useDayText()
   const p = useProgram()
   const todayIdx = useTodayIdx() // 0 = จันทร์ — เปลี่ยนเองเมื่อข้ามวัน
   const todayRun = p.finished ? undefined : p.plan().filter((d, i) => i === todayIdx && d.type === 'run')[0]
@@ -227,14 +229,14 @@ export function Runs() {
         </div>
         {todayRun && kmToday > 0 && (
           <div className="flex items-center gap-2 rounded-2xl bg-white/15 p-3 text-sm font-bold">
-            <CircleCheck size={18} className="shrink-0" /> {tr(`วันนี้วิ่งแล้ว ${kmToday.toFixed(2)} กม.`, `Ran ${kmToday.toFixed(2)} km today`)} · {todayRun.title}
+            <CircleCheck size={18} className="shrink-0" /> {tr(`วันนี้วิ่งแล้ว ${kmToday.toFixed(2)} กม.`, `Ran ${kmToday.toFixed(2)} km today`)} · {dt.title(todayRun)}
           </div>
         )}
         {todayRun && !kmToday && (
           <div className="flex items-start gap-2 rounded-2xl bg-white/15 p-3 text-sm">
             <CalendarCheck size={18} className="mt-0.5 shrink-0" />
             <div>
-              <div className="font-bold">{tr('แผนวันนี้', "Today's plan")}: {todayRun.title} · {todayRun.targetKm ? `${todayRun.targetKm} ${tr('กม.', 'km')}` : todayRun.duration}</div>
+              <div className="font-bold">{tr('แผนวันนี้', "Today's plan")}: {dt.title(todayRun)} · {todayRun.targetKm ? `${todayRun.targetKm} ${tr('กม.', 'km')}` : dt.duration(todayRun)}</div>
               <div className="opacity-85">{todayRun.exercises[0]?.cue}</div>
               {paceHint(est, todayRun.runKind, todayRun.title) && <div className="font-semibold">{paceHint(est, todayRun.runKind, todayRun.title)}</div>}
               <CapNote day={todayRun} date={today()} className="mt-1.5 flex items-start gap-1.5 rounded-xl bg-white/20 p-2 font-semibold" />

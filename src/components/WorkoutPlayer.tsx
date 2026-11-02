@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Check, ChevronLeft, ChevronRight, Minus, Play, Plus, SkipForward, TrendingUp, X } from 'lucide-react'
 import { yt, type Day, type Exercise } from '../data/workouts'
 import { lastSetsFor, formatDuration, uid, useSessions, type SetEntry } from '../lib/log'
+import { useDayText } from '../lib/dayText'
 import { usePersisted } from '../lib/storage'
 import { today } from '../lib/date'
 import { restSeconds, suggest } from '../lib/progression'
@@ -26,6 +27,7 @@ const targetReps = (e: Exercise) => e.reps.match(/\d+/)?.[0] ?? ''
 export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, onSaved }: {
   day: Day; sessionKey: string; mode: 'gym' | 'park'; light?: boolean; onClose: () => void; onSaved: () => void
 }) {
+  const dt = useDayText()
   const [sessions, setSessions] = useSessions()
   const [active, setActive] = usePersisted<Active | null>('activeWorkout', null)
   const [rest, setRest] = useState<{ end: number; total: number } | null>(null)
@@ -130,7 +132,7 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
         <div className="flex items-center gap-3">
           <button onClick={quit} aria-label="ปิด" className="grid size-10 place-items-center rounded-full bg-card ring-1 ring-line"><X size={18} /></button>
           <div className="min-w-0 flex-1">
-            <div className="truncate text-sm font-bold">{day.title}</div>
+            <div className="truncate text-sm font-bold">{dt.title(day)}</div>
             <div className="text-xs text-muted tabular-nums">{formatDuration((now - state.startedAt) / 1000)} · {doneCount}/{total} เซ็ต{light && ' · โหมดเบา'}</div>
           </div>
           <Button size="sm" variant="success" onClick={finish}><Check size={16} /> จบ</Button>
