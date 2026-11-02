@@ -21,6 +21,7 @@ import { WeekSummary } from './WeekSummary'
 import { ReadinessSheet } from './Readiness'
 import { Button, Card } from './ui'
 import { cx } from '../lib/cx'
+import { useT } from '../lib/i18n'
 
 
 export function Dashboard() {
@@ -33,6 +34,7 @@ export function Dashboard() {
   const [playing, setPlaying] = useState<{ day: Day; light: boolean } | null>(null)
   const [checking, setChecking] = useState(false)
   const nav = useNav()
+  const t = useT()
   const { currentWeek: week } = p
 
   const plan = p.plan()
@@ -67,20 +69,20 @@ export function Dashboard() {
       <section className="rounded-2xl bg-gradient-to-br from-accent to-[#7c3aed] p-4 text-white shadow-sm">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-sm opacity-80">{p.meta.short} · {p.ongoing ? `สัปดาห์ที่ ${week} ของรอบ` : `สัปดาห์ที่ ${week} จาก ${p.meta.weeks}`}</div>
-            <div className="text-xl font-extrabold">{p.daysToRace !== null && p.daysToRace >= 0 ? `อีก ${p.daysToRace} วันถึงวันแข่ง` : 'สัปดาห์นี้'}</div>
+            <div className="text-sm opacity-80">{p.meta.short} · {p.ongoing ? t(`สัปดาห์ที่ ${week} ของรอบ`, `Cycle week ${week}`) : t(`สัปดาห์ที่ ${week} จาก ${p.meta.weeks}`, `Week ${week} of ${p.meta.weeks}`)}</div>
+            <div className="text-xl font-extrabold">{p.daysToRace !== null && p.daysToRace >= 0 ? t(`อีก ${p.daysToRace} วันถึงวันแข่ง`, `${p.daysToRace} days to race day`) : t('สัปดาห์นี้', 'This week')}</div>
           </div>
           <div className="flex flex-col items-end gap-1">
             <div className="flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm font-semibold">
               {/* streak นับสัปดาห์ที่ฝึก ≥3 ครั้ง — ยังเป็น 0 ให้บอกว่าสัปดาห์นี้ได้กี่ครั้งแล้ว แทนการขึ้น "0 สัปดาห์" */}
-              <Flame size={16} /> {streak ? `ต่อเนื่อง ${streak} สัปดาห์` : `สัปดาห์นี้ ${Math.min(activeThisWeek, 3)}/3 ครั้ง`}
+              <Flame size={16} /> {streak ? t(`ต่อเนื่อง ${streak} สัปดาห์`, `${streak}-week streak`) : t(`สัปดาห์นี้ ${Math.min(activeThisWeek, 3)}/3 ครั้ง`, `This week ${Math.min(activeThisWeek, 3)}/3`)}
             </div>
-            {form && <button onClick={() => nav('progress')} className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">ฟอร์ม: {form.label}</button>}
+            {form && <button onClick={() => nav('progress')} className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">{t('ฟอร์ม', 'Form')}: {form.label}</button>}
           </div>
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">
-          <Ring value={sessionsThisWeek} max={strengthTarget} label="เวท" text={`${sessionsThisWeek}/${strengthTarget}`} />
-          <Ring value={kmThisWeek} max={kmTarget} label="วิ่ง (กม.)" text={kmTarget ? `${kmThisWeek.toFixed(1)}/${kmTarget}` : kmThisWeek.toFixed(1)} />
+          <Ring value={sessionsThisWeek} max={strengthTarget} label={t('เวท', 'Strength')} text={`${sessionsThisWeek}/${strengthTarget}`} />
+          <Ring value={kmThisWeek} max={kmTarget} label={t('วิ่ง (กม.)', 'Run (km)')} text={kmTarget ? `${kmThisWeek.toFixed(1)}/${kmTarget}` : kmThisWeek.toFixed(1)} />
         </div>
       </section>
 
@@ -92,7 +94,7 @@ export function Dashboard() {
               <TodayIcon size={22} />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-xs text-muted">วันนี้ ({todayPlan.day})</div>
+              <div className="text-xs text-muted">{t(`วันนี้ (${todayPlan.day})`, 'Today')}</div>
               <div className="font-bold">{todayPlan.title}</div>
               {/* ชื่อบอกระยะอยู่แล้ว (เช่น "วิ่งสลับเดิน 3 กม.") ไม่ต้องซ้ำ */}
               {!todayPlan.title.includes(todayPlan.duration) && <div className="text-xs text-muted">{todayPlan.duration !== '-' ? todayPlan.duration : todayPlan.note}</div>}
@@ -102,15 +104,15 @@ export function Dashboard() {
           </div>
           {todayDone && (
             <div className="mt-3 flex items-center justify-between gap-2 border-t border-line pt-2.5 text-xs">
-              <span className="font-semibold text-good">{todayPlan.type === 'run' && kmToday ? `วิ่งแล้ว ${kmToday.toFixed(2)} กม.` : 'ทำแล้ววันนี้'}</span>
-              {tomorrow && <span className="min-w-0 truncate text-muted">พรุ่งนี้: {tomorrow.title}</span>}
+              <span className="font-semibold text-good">{todayPlan.type === 'run' && kmToday ? t(`วิ่งแล้ว ${kmToday.toFixed(2)} กม.`, `Ran ${kmToday.toFixed(2)} km`) : t('ทำแล้ววันนี้', 'Done today')}</span>
+              {tomorrow && <span className="min-w-0 truncate text-muted">{t('พรุ่งนี้', 'Tomorrow')}: {tomorrow.title}</span>}
             </div>
           )}
           {!todayDone && todayPlan.type === 'strength' && (
-            <Button className="mt-3 w-full" onClick={() => setChecking(true)}><Play size={16} fill="currentColor" /> เริ่มฝึกเลย ({todayPlan.location === 'park' ? 'สวน' : 'ยิม'})</Button>
+            <Button className="mt-3 w-full" onClick={() => setChecking(true)}><Play size={16} fill="currentColor" /> {t('เริ่มฝึกเลย', 'Start workout')} ({todayPlan.location === 'park' ? t('สวน', 'park') : t('ยิม', 'gym')})</Button>
           )}
           {!todayDone && todayPlan.type === 'run' && (
-            <Button variant="run" className="mt-3 w-full" onClick={() => nav('runs')}><Footprints size={16} /> เริ่มวิ่ง</Button>
+            <Button variant="run" className="mt-3 w-full" onClick={() => nav('runs')}><Footprints size={16} /> {t('เริ่มวิ่ง', 'Start run')}</Button>
           )}
         </Card>
       )}

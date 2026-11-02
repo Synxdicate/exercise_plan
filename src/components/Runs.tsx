@@ -1,7 +1,8 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { CalendarCheck, Check, CircleCheck, FileDown, FileUp, Footprints, Gauge, Ghost, History, ListChecks, Map as MapIcon, Pause, Pencil, Play, Plus, Satellite, Share2, Trash2, TriangleAlert, Trophy, Volume2, VolumeX, X } from 'lucide-react'
 import { GOOD_ACCURACY_M, useRunTracker, type Point } from '../lib/gps'
-import { formatDuration, formatPace, runKinds, uid, useRuns, type Run } from '../lib/log'
+import { formatDuration, formatPace, runKinds, runKindsEn, uid, useRuns, type Run } from '../lib/log'
+import { useT } from '../lib/i18n'
 import { looksLikeWalk, runsOnly } from '../lib/walk'
 import { criticalSpeed, estimate, paceHint, predictionTrend, type Estimate } from '../lib/pace'
 import { useProgram } from '../lib/program'
@@ -68,6 +69,7 @@ function Map(props: { route: Point[]; position?: Point | null; follow?: boolean;
 
 export function Runs() {
   const [runs, setRuns] = useRuns()
+  const tr = useT()
   const p = useProgram()
   const [todayIdx] = useState(() => (new Date().getDay() + 6) % 7) // 0 = จันทร์
   const todayRun = p.plan().filter((d, i) => i === todayIdx && d.type === 'run')[0]
@@ -208,30 +210,30 @@ export function Runs() {
   return (
     <div className="space-y-4">
       <Segmented value={view} onChange={setView} options={[
-        { value: 'start', label: <><Play size={14} /> วิ่ง</> },
-        { value: 'history', label: <><History size={14} /> ประวัติ</> },
-        { value: 'stats', label: <><Gauge size={14} /> สถิติ</> },
+        { value: 'start', label: <><Play size={14} /> {tr('วิ่ง', 'Run')}</> },
+        { value: 'history', label: <><History size={14} /> {tr('ประวัติ', 'History')}</> },
+        { value: 'stats', label: <><Gauge size={14} /> {tr('สถิติ', 'Stats')}</> },
       ]} />
 
       {view === 'start' && (
       <section className="space-y-3 rounded-2xl bg-gradient-to-br from-run to-accent p-4 text-white shadow-sm">
         <div>
-          <div className="text-sm opacity-80">สัปดาห์นี้</div>
-          <div className="text-4xl font-extrabold tabular-nums">{kmThisWeek.toFixed(1)}<span className="ml-1 text-xl font-semibold opacity-80">{target ? `/ ${target} กม.` : 'กม.'}</span></div>
+          <div className="text-sm opacity-80">{tr('สัปดาห์นี้', 'This week')}</div>
+          <div className="text-4xl font-extrabold tabular-nums">{kmThisWeek.toFixed(1)}<span className="ml-1 text-xl font-semibold opacity-80">{target ? `/ ${target} ${tr('กม.', 'km')}` : tr('กม.', 'km')}</span></div>
         </div>
         <div className="h-2 overflow-hidden rounded-full bg-white/25">
           <div className="h-full rounded-full bg-white" style={{ width: `${target ? Math.min(100, (kmThisWeek / target) * 100) : 0}%` }} />
         </div>
         {todayRun && kmToday > 0 && (
           <div className="flex items-center gap-2 rounded-2xl bg-white/15 p-3 text-sm font-bold">
-            <CircleCheck size={18} className="shrink-0" /> วันนี้วิ่งแล้ว {kmToday.toFixed(2)} กม. · {todayRun.title}
+            <CircleCheck size={18} className="shrink-0" /> {tr(`วันนี้วิ่งแล้ว ${kmToday.toFixed(2)} กม.`, `Ran ${kmToday.toFixed(2)} km today`)} · {todayRun.title}
           </div>
         )}
         {todayRun && !kmToday && (
           <div className="flex items-start gap-2 rounded-2xl bg-white/15 p-3 text-sm">
             <CalendarCheck size={18} className="mt-0.5 shrink-0" />
             <div>
-              <div className="font-bold">แผนวันนี้: {todayRun.title} · {todayRun.targetKm ? `${todayRun.targetKm} กม.` : todayRun.duration}</div>
+              <div className="font-bold">{tr('แผนวันนี้', "Today's plan")}: {todayRun.title} · {todayRun.targetKm ? `${todayRun.targetKm} ${tr('กม.', 'km')}` : todayRun.duration}</div>
               <div className="opacity-85">{todayRun.exercises[0]?.cue}</div>
               {paceHint(est, todayRun.runKind, todayRun.title) && <div className="font-semibold">{paceHint(est, todayRun.runKind, todayRun.title)}</div>}
               <CapNote day={todayRun} date={today()} className="mt-1.5 flex items-start gap-1.5 rounded-xl bg-white/20 p-2 font-semibold" />
@@ -242,12 +244,12 @@ export function Runs() {
           {(Object.keys(runKinds) as Run['kind'][]).map(k => (
             <button key={k} onClick={() => setKind(k)}
               className={cx('rounded-full px-3 py-1 text-sm font-semibold', kind === k ? 'bg-white text-accent' : 'bg-white/15')}>
-              {runKinds[k]}
+              {tr(runKinds[k], runKindsEn[k])}
             </button>
           ))}
         </div>
         <button onClick={() => setChecking(true)} className="flex w-full items-center justify-center gap-2 rounded-full bg-white py-3 text-base font-bold text-accent shadow-lg active:scale-[.98]">
-          <Play size={22} fill="currentColor" /> {kmToday ? 'วิ่งอีกรอบ' : 'เริ่มวิ่ง'}
+          <Play size={22} fill="currentColor" /> {kmToday ? tr('วิ่งอีกรอบ', 'Run again') : tr('เริ่มวิ่ง', 'Start run')}
         </button>
         {t.error && <p className="rounded-xl bg-black/20 p-2 text-sm">{t.error}</p>}
       </section>
@@ -262,13 +264,13 @@ export function Runs() {
 
       {view === 'history' && (
         <>
-        <Card title="ประวัติการวิ่ง" action={
+        <Card title={tr('ประวัติการวิ่ง', 'Run history')} action={
           <div className="flex gap-1.5">
             <label className="inline-flex cursor-pointer items-center gap-1 rounded-full bg-raised px-3 py-1.5 text-sm font-semibold ring-1 ring-line">
               <FileUp size={14} /> GPX
               <input type="file" accept=".gpx,application/gpx+xml" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) void importGpx(f); e.target.value = '' }} />
             </label>
-            <Button variant="soft" size="sm" onClick={() => setManual(!manual)}><Plus size={14} /> กรอกเอง</Button>
+            <Button variant="soft" size="sm" onClick={() => setManual(!manual)}><Plus size={14} /> {tr('กรอกเอง', 'Add manually')}</Button>
           </div>
         }>
           <Collapse open={manual}><ManualEntry onSave={r => { save(r); setManual(false) }} /></Collapse>
@@ -282,7 +284,7 @@ export function Runs() {
         <>
           <PaceCard est={est} runs={runs} onTrial={() => { setKind('race'); setView('start'); window.scrollTo({ top: 0, behavior: 'smooth' }) }} />
           <BestEfforts runs={runs} />
-          <Card title="8 สัปดาห์ล่าสุด">
+          <Card title={tr('8 สัปดาห์ล่าสุด', 'Last 8 weeks')}>
             <WeeklyBars runs={runs} target={target} />
           </Card>
           <HeatmapCard runs={runs} />
@@ -293,8 +295,8 @@ export function Runs() {
 
       <p className="px-2 text-xs text-muted">
         {isNative
-          ? 'ถ้าบันทึกหยุดเองตอนปิดจอ ให้ตั้งแบตเตอรี่ของแอปเป็น "ไม่จำกัด"'
-          : 'บนเว็บ GPS ทำงานเฉพาะตอนเปิดหน้านี้ค้างไว้ — ปิดจอได้ต้องใช้แอป Android'}
+          ? tr('ถ้าบันทึกหยุดเองตอนปิดจอ ให้ตั้งแบตเตอรี่ของแอปเป็น "ไม่จำกัด"', 'If recording stops when the screen is off, set the app battery usage to "Unrestricted"')
+          : tr('บนเว็บ GPS ทำงานเฉพาะตอนเปิดหน้านี้ค้างไว้ — ปิดจอได้ต้องใช้แอป Android', 'On the web, GPS only works while this page stays open — use the Android app to record with the screen off')}
       </p>
 
       {cooldown && <CooldownSheet run={runs.find(r => r.id === cooldown.id) ?? cooldown} onUpdate={patch => setRuns(prev => prev.map(x => (x.id === cooldown.id ? { ...x, ...patch } : x)))} onDone={() => { setDetail(cooldown.id); setCooldown(null) }} />}
@@ -311,15 +313,16 @@ export function Runs() {
 
 function ActiveRun({ t, kind, target, fiveK, voice, setVoice, coachOn, setCoachOn, onFinish, onDiscard, guide, ghost }: { t: ReturnType<typeof useRunTracker>; kind: Run['kind']; target?: number; fiveK?: number; voice: boolean; setVoice: (v: boolean) => void; coachOn: boolean; setCoachOn?: (v: boolean) => void; onFinish: () => void; onDiscard: () => void; guide?: ReactNode; ghost?: ReactNode }) {
   const km = t.meters / 1000
+  const tr = useT()
   // ระหว่างวิ่ง ปุ่มย้อนกลับแค่ย่อแอป (GPS บันทึกต่อ) ไม่ออกจากหน้าวิ่ง
   useBackClose(() => void App.minimizeApp())
   const weak = t.accuracy === null || t.accuracy > GOOD_ACCURACY_M
   const banner =
-    t.status === 'acquiring' ? (weak ? 'กำลังหาสัญญาณ GPS… ออกไปที่โล่ง' : 'GPS พร้อมแล้ว') :
+    t.status === 'acquiring' ? (weak ? tr('กำลังหาสัญญาณ GPS… ออกไปที่โล่ง', 'Finding GPS… move to open sky') : tr('GPS พร้อมแล้ว', 'GPS ready')) :
     // GPS หายมาก่อนหยุดอัตโนมัติ — ไม่มีจุดใหม่ก็ดูเหมือน "หยุดนิ่ง" ทั้งที่ยังวิ่งอยู่
-    t.signalLost ? 'สัญญาณ GPS หาย — ออกไปที่โล่ง ระยะช่วงนี้อาจคลาดเคลื่อน' :
-    t.status === 'autopaused' ? 'หยุดอัตโนมัติ — เริ่มวิ่งต่อแล้วจะนับเวลาเอง' :
-    t.status === 'paused' ? 'พักอยู่' : null
+    t.signalLost ? tr('สัญญาณ GPS หาย — ออกไปที่โล่ง ระยะช่วงนี้อาจคลาดเคลื่อน', 'GPS signal lost — move to open sky; distance here may be off') :
+    t.status === 'autopaused' ? tr('หยุดอัตโนมัติ — เริ่มวิ่งต่อแล้วจะนับเวลาเอง', 'Auto-paused — timing resumes when you move') :
+    t.status === 'paused' ? tr('พักอยู่', 'Paused') : null
 
   return (
     <Portal>
@@ -327,20 +330,20 @@ function ActiveRun({ t, kind, target, fiveK, voice, setVoice, coachOn, setCoachO
       <div className="mx-auto flex min-h-full max-w-lg flex-col gap-4 p-4 pb-[calc(var(--sab)+1rem)] pt-[calc(var(--sat)+1rem)]">
         <div className="flex items-center justify-between">
           <span className="flex items-center gap-2">
-            <Badge tone="run">{runKinds[kind]}</Badge>
-            <button onClick={() => { setVoice(!voice); if (!voice) void speak('เปิดเสียงบอกทุกกิโลเมตร') }} aria-label={voice ? 'ปิดเสียงบอกกิโล' : 'เปิดเสียงบอกกิโล'}
+            <Badge tone="run">{tr(runKinds[kind], runKindsEn[kind])}</Badge>
+            <button onClick={() => { setVoice(!voice); if (!voice) void speak('เปิดเสียงบอกทุกกิโลเมตร') }} aria-label={voice ? tr('ปิดเสียงบอกกิโล', 'Mute km cues') : tr('เปิดเสียงบอกกิโล', 'Unmute km cues')}
               className={cx('grid size-8 place-items-center rounded-full ring-1 ring-line', voice ? 'bg-run/15 text-run' : 'text-muted')}>
               {voice ? <Volume2 size={15} /> : <VolumeX size={15} />}
             </button>
             {setCoachOn && voice && (
-              <button onClick={() => { setCoachOn(!coachOn); if (!coachOn) void speak('เปิดโค้ชเพซ') }} aria-label={coachOn ? 'ปิดโค้ชเพซ' : 'เปิดโค้ชเพซ'}
+              <button onClick={() => { setCoachOn(!coachOn); if (!coachOn) void speak('เปิดโค้ชเพซ') }} aria-label={coachOn ? tr('ปิดโค้ชเพซ', 'Pace coach off') : tr('เปิดโค้ชเพซ', 'Pace coach on')}
                 className={cx('flex h-8 items-center gap-1 rounded-full px-2.5 text-xs font-semibold ring-1 ring-line', coachOn ? 'bg-run/15 text-run' : 'text-muted')}>
-                <Gauge size={14} /> โค้ชเพซ
+                <Gauge size={14} /> {tr('โค้ชเพซ', 'Pace coach')}
               </button>
             )}
           </span>
           <span className={cx('inline-flex items-center gap-1 text-xs font-semibold', weak ? 'text-warn' : 'text-good')}>
-            <Satellite size={14} /> GPS {t.accuracy !== null ? `±${Math.round(t.accuracy)} ม.` : '…'}
+            <Satellite size={14} /> GPS {t.accuracy !== null ? `±${Math.round(t.accuracy)} ${tr('ม.', 'm')}` : '…'}
           </span>
         </div>
 
@@ -350,7 +353,7 @@ function ActiveRun({ t, kind, target, fiveK, voice, setVoice, coachOn, setCoachO
 
         <div className="text-center">
           <div className="text-7xl font-extrabold leading-none tabular-nums">{km.toFixed(2)}</div>
-          <div className="mt-1 text-sm text-muted">กิโลเมตร{target ? ` จากเป้า ${target}` : ''}</div>
+          <div className="mt-1 text-sm text-muted">{tr('กิโลเมตร', 'kilometers')}{target ? tr(` จากเป้า ${target}`, ` of ${target}`) : ''}</div>
           {target && (
             <div className="mx-auto mt-2 h-2 max-w-60 overflow-hidden rounded-full bg-body">
               <div className={cx('h-full rounded-full transition-all duration-700', km >= target ? 'bg-good' : 'bg-run')} style={{ width: `${Math.min(100, (km / target) * 100)}%` }} />
@@ -359,9 +362,9 @@ function ActiveRun({ t, kind, target, fiveK, voice, setVoice, coachOn, setCoachO
         </div>
 
         <div className="grid grid-cols-3 gap-2 text-center">
-          <Stat label="เวลา" value={formatDuration(t.elapsed)} />
-          <Stat label="เพซเฉลี่ย" value={formatPace(t.elapsed, km)} />
-          <Stat label="เพซตอนนี้" value={t.currentPace ? formatPace(t.currentPace, 1) : '--:--'} />
+          <Stat label={tr('เวลา', 'Time')} value={formatDuration(t.elapsed)} />
+          <Stat label={tr('เพซเฉลี่ย', 'Avg pace')} value={formatPace(t.elapsed, km)} />
+          <Stat label={tr('เพซตอนนี้', 'Current pace')} value={t.currentPace ? formatPace(t.currentPace, 1) : '--:--'} />
         </div>
 
         {guide}
@@ -370,7 +373,7 @@ function ActiveRun({ t, kind, target, fiveK, voice, setVoice, coachOn, setCoachO
         {t.lastGap && (
           <div className="flex animate-fade-up items-start gap-2 rounded-2xl bg-warn/15 p-3 text-sm text-warn">
             <TriangleAlert size={18} className="mt-0.5 shrink-0" />
-            <span className="flex-1">ปิดจอไป <b>{formatDuration(t.lastGap)}</b> — ช่วงนั้นนับระยะเป็นเส้นตรง (อาจน้อยกว่าจริง)</span>
+            <span className="flex-1">{tr('ปิดจอไป', 'Screen was off for')} <b>{formatDuration(t.lastGap)}</b> — {tr('ช่วงนั้นนับระยะเป็นเส้นตรง (อาจน้อยกว่าจริง)', 'that stretch is counted as a straight line (may be short)')}</span>
             <button onClick={t.dismissGap} aria-label="ปิด" className="shrink-0"><X size={16} /></button>
           </div>
         )}
@@ -380,21 +383,21 @@ function ActiveRun({ t, kind, target, fiveK, voice, setVoice, coachOn, setCoachO
         <div className="mt-auto flex items-center justify-center gap-4 pt-2">
           {t.status === 'acquiring' && (
             <>
-              <Button variant="soft" size="lg" onClick={onDiscard}><X size={20} /> ยกเลิก</Button>
-              <Button size="lg" onClick={t.begin}><Play size={20} fill="currentColor" /> {weak ? 'เริ่มเลย' : 'เริ่มจับเวลา'}</Button>
+              <Button variant="soft" size="lg" onClick={onDiscard}><X size={20} /> {tr('ยกเลิก', 'Cancel')}</Button>
+              <Button size="lg" onClick={t.begin}><Play size={20} fill="currentColor" /> {weak ? tr('เริ่มเลย', 'Start anyway') : tr('เริ่มจับเวลา', 'Start')}</Button>
             </>
           )}
           {(t.status === 'running' || t.status === 'autopaused') && (
-            <button onClick={t.pause} aria-label="พัก" className="grid size-20 place-items-center rounded-full bg-accent text-white shadow-lg active:scale-95">
+            <button onClick={t.pause} aria-label={tr('พัก', 'Pause')} className="grid size-20 place-items-center rounded-full bg-accent text-white shadow-lg active:scale-95">
               <Pause size={32} fill="currentColor" />
             </button>
           )}
           {t.status === 'paused' && (
             <>
-              <button onClick={t.resume} aria-label="วิ่งต่อ" className="grid size-20 place-items-center rounded-full bg-accent text-white shadow-lg active:scale-95">
+              <button onClick={t.resume} aria-label={tr('วิ่งต่อ', 'Resume')} className="grid size-20 place-items-center rounded-full bg-accent text-white shadow-lg active:scale-95">
                 <Play size={32} fill="currentColor" />
               </button>
-              <button onClick={onFinish} aria-label="จบและบันทึก" className="grid size-20 place-items-center rounded-full bg-good text-white shadow-lg active:scale-95">
+              <button onClick={onFinish} aria-label={tr('จบและบันทึก', 'Finish & save')} className="grid size-20 place-items-center rounded-full bg-good text-white shadow-lg active:scale-95">
                 <Check size={32} />
               </button>
             </>
@@ -403,9 +406,9 @@ function ActiveRun({ t, kind, target, fiveK, voice, setVoice, coachOn, setCoachO
         {t.status === 'paused' && (
           <div className="flex items-center justify-between text-sm">
             <label className="flex items-center gap-2 text-muted">
-              <input type="checkbox" className="size-4 accent-accent" checked={t.autoPause} onChange={e => t.setAutoPause(e.target.checked)} /> หยุดอัตโนมัติ
+              <input type="checkbox" className="size-4 accent-accent" checked={t.autoPause} onChange={e => t.setAutoPause(e.target.checked)} /> {tr('หยุดอัตโนมัติ', 'Auto-pause')}
             </label>
-            <button className="text-bad" onClick={async () => (await ask('ระยะและเวลาที่บันทึกไว้จะหายไป', { title: 'ทิ้งการวิ่งนี้?', ok: 'ทิ้ง', danger: true })) && onDiscard()}>ทิ้งการวิ่งนี้</button>
+            <button className="text-bad" onClick={async () => (await ask(tr('ระยะและเวลาที่บันทึกไว้จะหายไป', 'The recorded distance and time will be lost.'), { title: tr('ทิ้งการวิ่งนี้?', 'Discard this run?'), ok: tr('ทิ้ง', 'Discard'), danger: true })) && onDiscard()}>{tr('ทิ้งการวิ่งนี้', 'Discard run')}</button>
           </div>
         )}
       </div>
@@ -439,6 +442,7 @@ function Splits({ splits, fiveK }: { splits: number[]; fiveK?: number }) {
 }
 
 function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { run: Run; runs: Run[]; fiveK?: number; onClose: () => void; onDelete: () => void; onUpdate: (patch: Partial<Run>) => void }) {
+  const tr = useT()
   const kmUp = useCountUp(run.km)
   const fix = remeasure(run)
   const secUp = useCountUp(run.seconds)
@@ -463,28 +467,28 @@ function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { run: Run
       <div className="max-h-[92dvh] w-full max-w-lg animate-sheet-up overflow-y-auto rounded-t-3xl bg-card p-4 pb-[calc(var(--sab)+1rem)] sm:animate-fade-up sm:rounded-3xl" onClick={e => e.stopPropagation()}>
         <div className="mb-3 flex items-center justify-between">
           <div>
-            <div className="font-bold">{runKinds[run.kind]} · {niceDate(run.date)}</div>
-            <div className="text-xs text-muted">{run.source === 'gps' ? 'บันทึกด้วย GPS' : run.source === 'gpx' ? 'นำเข้าจากไฟล์ GPX' : 'กรอกเอง'}</div>
+            <div className="font-bold">{tr(runKinds[run.kind], runKindsEn[run.kind])} · {niceDate(run.date)}</div>
+            <div className="text-xs text-muted">{run.source === 'gps' ? tr('บันทึกด้วย GPS', 'Recorded with GPS') : run.source === 'gpx' ? tr('นำเข้าจากไฟล์ GPX', 'Imported from GPX') : tr('กรอกเอง', 'Entered manually')}</div>
           </div>
           <span className="flex gap-2">
             {run.route && run.route.length > 1 && (
               <button onClick={() => void saveGpx(run).catch(() => notify('ส่งออกไม่สำเร็จ', 'bad'))} aria-label="ส่งออก GPX (Strava)" title="ส่งออก GPX (Strava)" className="grid size-9 place-items-center rounded-full bg-raised"><FileDown size={17} /></button>
             )}
-            <button onClick={() => setSharing(true)} aria-label="แชร์เป็นรูป" className="grid size-9 place-items-center rounded-full bg-raised"><Share2 size={17} /></button>
-            <button onClick={onClose} aria-label="ปิด" className="grid size-9 place-items-center rounded-full bg-raised"><X size={18} /></button>
+            <button onClick={() => setSharing(true)} aria-label={tr('แชร์เป็นรูป', 'Share as image')} className="grid size-9 place-items-center rounded-full bg-raised"><Share2 size={17} /></button>
+            <button onClick={onClose} aria-label={tr('ปิด', 'Close')} className="grid size-9 place-items-center rounded-full bg-raised"><X size={18} /></button>
           </span>
         </div>
         {sharing && <ShareRunSheet run={run} onClose={() => setSharing(false)} />}
         {run.route && run.route.length > 1 && <Map route={run.route} className="mb-3 h-56" />}
         <div className="mb-3 grid grid-cols-3 gap-2 text-center">
-          <Stat label="ระยะ" value={kmUp.toFixed(2)} sub="กม." accent />
-          <Stat label="เวลาเคลื่อนที่" value={formatDuration(secUp)} sub={run.elapsedSeconds ? `รวม ${formatDuration(run.elapsedSeconds)}` : undefined} />
-          <Stat label="เพซเฉลี่ย" value={formatPace(run.seconds, run.km)} sub="นาที/กม." />
+          <Stat label={tr('ระยะ', 'Distance')} value={kmUp.toFixed(2)} sub={tr('กม.', 'km')} accent />
+          <Stat label={tr('เวลาเคลื่อนที่', 'Moving time')} value={formatDuration(secUp)} sub={run.elapsedSeconds ? `${tr('รวม', 'total')} ${formatDuration(run.elapsedSeconds)}` : undefined} />
+          <Stat label={tr('เพซเฉลี่ย', 'Avg pace')} value={formatPace(run.seconds, run.km)} sub={tr('นาที/กม.', 'min/km')} />
         </div>
         {run.guide && (
           <p className={cx('mb-3 flex items-center gap-2 rounded-xl p-2.5 text-sm font-semibold', run.guide.finished ? 'bg-good/15 text-good' : 'bg-raised text-ink')}>
             <ListChecks size={16} className="shrink-0" />
-            {run.guide.finished ? `ทำครบตามแผน (วิ่ง ${run.guide.work} ช่วง)` : `ทำชุดซ้อมได้ ${run.guide.work}/${run.guide.total} ช่วง — ร่างกายไม่พร้อมก็หยุดได้ ไม่ต้องฝืน วันหลังยังมี`}
+            {run.guide.finished ? tr(`ทำครบตามแผน (วิ่ง ${run.guide.work} ช่วง)`, `Workout completed (${run.guide.work} reps)`) : tr(`ทำชุดซ้อมได้ ${run.guide.work}/${run.guide.total} ช่วง — ร่างกายไม่พร้อมก็หยุดได้ ไม่ต้องฝืน วันหลังยังมี`, `${run.guide.work}/${run.guide.total} reps done — stopping when your body says no is fine`)}
           </p>
         )}
         {tooFast && (
@@ -499,8 +503,8 @@ function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { run: Run
         {/* วัดระยะใหม่ก่อน — ระยะที่ขาดทำให้เพซดูช้าเหมือนเดิน */}
         {!fix && looksLikeWalk(run) && (
           <div className="mb-3 rounded-xl bg-warn/15 p-3 text-sm text-warn">
-            <p>เพซเฉลี่ย {formatPace(run.seconds, run.km)} /กม. ช้ากว่าการวิ่ง — ถ้ารอบนี้คือการเดิน บันทึกเป็น "เดิน" จะไม่นับรวมเป็นระยะวิ่ง (ยังนับเป็นวันที่ได้ออกกำลังกาย)</p>
-            <Button size="sm" className="mt-2" onClick={() => onUpdate({ kind: 'walk' })}>เปลี่ยนเป็นเดิน</Button>
+            <p>{tr(`เพซเฉลี่ย ${formatPace(run.seconds, run.km)} /กม. ช้ากว่าการวิ่ง — ถ้ารอบนี้คือการเดิน บันทึกเป็น "เดิน" จะไม่นับรวมเป็นระยะวิ่ง (ยังนับเป็นวันที่ได้ออกกำลังกาย)`, `Average pace ${formatPace(run.seconds, run.km)} /km is slower than running — if this was a walk, mark it so it won't count as running distance (still an active day)`)}</p>
+            <Button size="sm" className="mt-2" onClick={() => onUpdate({ kind: 'walk' })}>{tr('เปลี่ยนเป็นเดิน', 'Mark as walk')}</Button>
           </div>
         )}
         {run.gapSeconds ? <p className="mb-3 rounded-xl bg-warn/15 p-2 text-xs text-warn">ปิดจอรวม {formatDuration(run.gapSeconds)} — ระยะช่วงนั้นเป็นค่าประมาณ</p> : null}
@@ -530,8 +534,8 @@ function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { run: Run
           <EditRun run={run} onSave={patch => { onUpdate(patch); setEditing(false) }} />
         </Collapse>
         <div className="mt-3 flex gap-2">
-          <Button variant="soft" size="sm" onClick={() => setEditing(!editing)}><Pencil size={14} /> {editing ? 'ยกเลิกแก้ไข' : 'แก้ไข'}</Button>
-          <Button variant="danger" size="sm" onClick={async () => (await ask('ลบการวิ่งนี้ออกจากประวัติ?', { ok: 'ลบ', danger: true })) && onDelete()}><Trash2 size={14} /> ลบ</Button>
+          <Button variant="soft" size="sm" onClick={() => setEditing(!editing)}><Pencil size={14} /> {editing ? tr('ยกเลิกแก้ไข', 'Cancel edit') : tr('แก้ไข', 'Edit')}</Button>
+          <Button variant="danger" size="sm" onClick={async () => (await ask(tr('ลบการวิ่งนี้ออกจากประวัติ?', 'Delete this run from history?'), { ok: tr('ลบ', 'Delete'), danger: true })) && onDelete()}><Trash2 size={14} /> {tr('ลบ', 'Delete')}</Button>
         </div>
       </div>
     </div>

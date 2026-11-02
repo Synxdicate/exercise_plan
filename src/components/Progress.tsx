@@ -14,18 +14,20 @@ import { TrainingCalendar } from './TrainingCalendar'
 import { useRemovePhotosFor } from '../lib/photos'
 import { ask } from '../lib/dialog'
 import { LegTestCard } from './LegTests'
+import { useT } from '../lib/i18n'
 
 type Entry = { date: string; weight: number; waist?: number }
 
 export function Progress() {
   const [view, setView] = useState<'workouts' | 'stats' | 'fitness' | 'body'>('workouts')
+  const t = useT()
   return (
     <>
       <Segmented value={view} onChange={setView} options={[
-        { value: 'workouts', label: <><CalendarDays size={16} /> ปฏิทิน</> },
-        { value: 'stats', label: <><Dumbbell size={16} /> เวท</> },
-        { value: 'fitness', label: <><Activity size={16} /> ฟิตเนส</> },
-        { value: 'body', label: <><Scale size={16} /> น้ำหนัก</> },
+        { value: 'workouts', label: <><CalendarDays size={16} /> {t('ปฏิทิน', 'Calendar')}</> },
+        { value: 'stats', label: <><Dumbbell size={16} /> {t('เวท', 'Lifts')}</> },
+        { value: 'fitness', label: <><Activity size={16} /> {t('ฟิตเนส', 'Fitness')}</> },
+        { value: 'body', label: <><Scale size={16} /> {t('น้ำหนัก', 'Weight')}</> },
       ]} />
       {view === 'workouts' ? <><TrainingCalendar /><WorkoutHistory /></> : view === 'stats' ? <StrengthStats /> : view === 'fitness' ? <><Fitness /><LegTestCard /></> : <BodyLog />}
     </>

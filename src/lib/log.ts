@@ -64,6 +64,7 @@ export const runKinds: Record<Run['kind'], string> = {
   other: 'อื่น ๆ',
   walk: 'เดิน',
 }
+export const runKindsEn: Record<Run['kind'], string> = { easy: 'Easy', tempo: 'Tempo', interval: 'Interval', long: 'Long run', race: 'Race', other: 'Other', walk: 'Walk' }
 
 
 export const uid = () => Math.random().toString(36).slice(2, 10)

@@ -8,6 +8,7 @@ import { cx } from '../lib/cx'
 import { FoodLog } from './FoodLog'
 import { TextInput } from './Form'
 import { ProfileCard } from './ProfileCard'
+import { useT } from '../lib/i18n'
 
 const verdict = {
   good: { label: 'แนะนำ', cls: 'bg-good/15 text-good' },
@@ -21,34 +22,35 @@ export function Nutrition({ profile, setProfile }: { profile: Profile; setProfil
   const { isRace } = useProgram()
   const t = targets(profile, isRace)
   const [view, setView] = useState<View>('menu')
+  const tr = useT()
   const [q, setQ] = useState('')
   const dishes = searchFoods(streetDishes, q)
 
   return (
     <>
       <section className="grid grid-cols-4 divide-x divide-line rounded-2xl bg-card py-2.5 text-center shadow-sm ring-1 ring-line">
-        {[['พลังงาน', t.kcal, 'kcal', true], ['โปรตีน', t.protein, 'ก.', true], ['ไขมัน', t.fat, 'ก.', false], ['คาร์บ', t.carbs, 'ก.', false]].map(([l, v, u, a]) => (
+        {[[tr('พลังงาน', 'Energy'), t.kcal, 'kcal', true], [tr('โปรตีน', 'Protein'), t.protein, tr('ก.', 'g'), true], [tr('ไขมัน', 'Fat'), t.fat, tr('ก.', 'g'), false], [tr('คาร์บ', 'Carbs'), t.carbs, tr('ก.', 'g'), false]].map(([l, v, u, a]) => (
           <div key={String(l)} className="px-1">
             <div className="text-[11px] text-muted">{l}</div>
             <div className={cx('text-lg font-bold leading-tight tabular-nums', !!a && 'text-accent')}>{v}</div>
-            <div className="text-[10px] text-muted">{u}/วัน</div>
+            <div className="text-[10px] text-muted">{u}/{tr('วัน', 'day')}</div>
           </div>
         ))}
       </section>
 
-      {t.raceAdjusted && <p className="rounded-xl bg-run/10 px-3 py-2 text-xs text-run">อยู่ในโปรแกรมวิ่ง: กินเท่าที่ใช้ (ไม่กินขาด) และเพิ่มคาร์บ เพื่อฟื้นตัวทัน</p>}
+      {t.raceAdjusted && <p className="rounded-xl bg-run/10 px-3 py-2 text-xs text-run">{tr('อยู่ในโปรแกรมวิ่ง: กินเท่าที่ใช้ (ไม่กินขาด) และเพิ่มคาร์บ เพื่อฟื้นตัวทัน', 'On a running program: eat at maintenance (no deficit) and add carbs to recover in time')}</p>}
 
       <FoodLog proteinTarget={t.protein} kcalTarget={t.kcal} />
 
       <ProfileCard profile={profile} setProfile={setProfile} />
 
       <Segmented value={view} onChange={setView} options={[
-        { value: 'menu', label: 'เมนูตัวอย่าง' },
-        { value: 'street', label: 'ร้านตามสั่ง' },
-        { value: 'foods', label: 'วัตถุดิบ' },
+        { value: 'menu', label: tr('เมนูตัวอย่าง', 'Sample menus') },
+        { value: 'street', label: tr('ร้านตามสั่ง', 'Street food') },
+        { value: 'foods', label: tr('วัตถุดิบ', 'Ingredients') },
       ]} />
 
-      {view !== 'menu' && <TextInput value={q} onChange={setQ} placeholder={view === 'street' ? 'ค้นหาเมนู' : 'ค้นหาวัตถุดิบ'} icon={<Search size={16} />} />}
+      {view !== 'menu' && <TextInput value={q} onChange={setQ} placeholder={view === 'street' ? tr('ค้นหาเมนู', 'Search dishes') : tr('ค้นหาวัตถุดิบ', 'Search ingredients')} icon={<Search size={16} />} />}
 
       {view === 'menu' && (
         <>
