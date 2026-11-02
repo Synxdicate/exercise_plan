@@ -483,3 +483,15 @@ test('ข้อมูลเก่า: ติ๊กช่วงเตรียม
   await expect(page.getByText('สัปดาห์ที่ 1 จาก 10')).toBeVisible()
   await expect.poll(async () => idb(page, 'done')).toEqual({ 'mini-w1-d0': true, 'ten-w1-d0': true })
 })
+
+test('เช้าวันแข่งยังไม่ "จบโปรแกรม" และหลังวันแข่งไม่โชว์วันแข่งซ้ำ', async ({ page }) => {
+  await page.clock.install({ time: new Date('2027-01-10T05:00:00+07:00') })
+  await seed(page, { program: 'mini', programStart: '2026-11-02', raceDate: '2027-01-10' })
+  await expect(page.getByText('วันนี้วันแข่ง!')).toBeVisible()
+  await expect(page.getByText('จบมินิแล้ว', { exact: false })).toHaveCount(0)
+  await page.clock.setFixedTime(new Date('2027-01-17T08:00:00+07:00'))
+  await page.reload()
+  await expect(page.getByText('จบโปรแกรมแล้ว', { exact: false })).toBeVisible()
+  await expect(page.getByText(/จบมินิแล้ว/)).toBeVisible()
+  await expect(page.getByRole('button', { name: 'เริ่มวิ่ง' })).toHaveCount(0)
+})

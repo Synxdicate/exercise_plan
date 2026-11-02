@@ -54,10 +54,11 @@ export function recommended(c: Capacity): ProgramId {
 export type NextStep = { to: ProgramId; why: string }
 
 /** ควรเปลี่ยนโปรแกรมไหม: พร้อมขั้นต่อไปแล้ว (เริ่มวิ่ง) หรือถึงสัปดาห์สุดท้ายของโปรแกรมที่มีวันจบ */
-export function nextStep(current: ProgramId, c: Capacity, week: number, weeks: number, ongoing: boolean): NextStep | null {
+/** `raceDone` = false: มีวันแข่งแต่ยังไม่ถึง/ยังไม่ผ่าน — สัปดาห์สุดท้ายคือสัปดาห์แข่ง ยังไม่ "จบ" (เดิมเช้าวันแข่งขึ้นว่าจบแล้ว) */
+export function nextStep(current: ProgramId, c: Capacity, week: number, weeks: number, ongoing: boolean, raceDone?: boolean): NextStep | null {
   if (current === 'start')
     return isReady('ten', c) ? { to: 'ten', why: 'วิ่งต่อเนื่อง 30 นาทีได้แล้ว พร้อมเริ่ม 10K' } : null
-  if (ongoing || week < weeks) return null
+  if (ongoing || week < weeks || raceDone === false) return null
   switch (current) {
     case 'ten': return isReady('half', c)
       ? { to: 'half', why: 'จบ 10K และวิ่งยาว 7 กม.ได้แล้ว — วิ่งเบา 1–2 สัปดาห์ก่อนเริ่มฮาล์ฟ' }

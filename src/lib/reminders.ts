@@ -3,6 +3,7 @@ import { scheduleReminders, type Reminder } from './notify'
 import { useProgram } from './program'
 import { usePersisted } from './storage'
 import { isNative } from './native'
+import { addDays, daysBetween, toDateStr, weekStart } from './date'
 
 export type ReminderSetting = { on: boolean; time: string } // time = 'HH:MM'
 
@@ -13,21 +14,21 @@ export const useReminderSetting = () => usePersisted<ReminderSetting>('reminder'
 export function useReminderSchedule() {
   const p = useProgram()
   const [setting] = useReminderSetting()
-  const key = `${p.program}|${p.location}|${p.currentWeek}|${p.raceDate}|${setting.on}|${setting.time}`
+  const key = `${p.program}|${p.location}|${p.currentWeek}|${p.raceDate}|${p.programStart}|${p.raceKm}|${setting.on}|${setting.time}`
 
   useEffect(() => {
     if (!isNative) return
     if (!setting.on) return void scheduleReminders([])
     const [hh, mm] = setting.time.split(':').map(Number)
     const now = new Date()
-    const todayIdx = (now.getDay() + 6) % 7 // 0 = จันทร์
     const list: Reminder[] = []
     for (let d = 0; d < 14; d++) {
       const at = new Date(now.getFullYear(), now.getMonth(), now.getDate() + d, hh, mm)
-      const offset = todayIdx + d
-      const ahead = p.currentWeek + Math.floor(offset / 7)
-      const week = p.ongoing ? ((ahead - 1) % p.meta.weeks) + 1 : Math.min(p.meta.weeks, ahead)
-      const day = p.plan(week)[offset % 7]
+      // สัปดาห์ของโปรแกรมตามวันที่จริง (ช่วงเตรียมตัว/สัปดาห์ที่ทำซ้ำ/หลังจบโปรแกรม) — เดิมบวกเลขสัปดาห์ไปเรื่อย ๆ
+      const date = addDays(toDateStr(now), d)
+      const week = p.weekOf(weekStart(date))
+      if (week === null) continue
+      const day = p.plan(week)[daysBetween(weekStart(date), date)]
       if (!day) continue
       list.push(day.type === 'rest'
         ? { at, title: 'วันนี้วันพัก', body: 'เดินเบา ๆ ยืดเหยียด นอนให้พอ' }

@@ -63,7 +63,7 @@ function PlanBody() {
   const [shownFor, setShownFor] = useState(p.currentWeek)
   if (shownFor !== p.currentWeek) { setShownFor(p.currentWeek); setViewWeek(p.currentWeek) }
   const week = viewWeek
-  const isThisWeek = week === p.currentWeek
+  const isThisWeek = week === p.currentWeek && !p.finished
   const selectWeek = setViewWeek
   const days = p.plan(week)
   const dayDone = useDayDone()

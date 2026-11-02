@@ -32,7 +32,7 @@ export function MissedRunCard() {
   const last = lastWeek && lastPlan
     ? { plan: lastPlan, done: (i: number) => dayDone(lastWeek, i, lastPlan[i]) || madeUp(addDays(monday, i - 7), lastPlan[i]?.targetKm) }
     : undefined
-  const m = missedKeyRun(plan, todayIdx, doneThis, last)
+  const m = p.finished ? null : missedKeyRun(plan, todayIdx, doneThis, last)
   if (!m) return null
   const id = m.kind === 'thisWeek' ? p.doneId(week, m.i) : `last:${monday}`
   if (seen === id) return null

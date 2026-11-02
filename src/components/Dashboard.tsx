@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Check, Dumbbell, Flag, Flame, Footprints, Moon, Play } from 'lucide-react'
 import type { Day } from '../data/workouts'
 import { crossAsSession, useCross, useRuns, useSessions } from '../lib/log'
+import { useTodayIdx } from '../lib/useToday'
 import { runsOnly } from '../lib/walk'
 import { estimate, paceHint } from '../lib/pace'
 import { useProgram } from '../lib/program'
@@ -40,18 +41,19 @@ export function Dashboard() {
   const plan = p.plan()
   const loadDays = trainingLoad(runs, [...sessions, ...cross.map(crossAsSession)], today())
   const form = loadDays.length >= 7 ? formLabel(loadDays.at(-1)!.form, loadDays.at(-1)!.fitness, loadDays.at(-1)!.day) : null
-  const strengthTarget = plan.filter(d => d.type === 'strength').length
+  const strengthTarget = p.finished ? 0 : plan.filter(d => d.type === 'strength').length
   const thisWeek = weekStart(today())
   // เซสชันที่บันทึกในสัปดาห์นี้ + วันเวทที่ติ๊กทำแล้วโดยไม่ได้บันทึกเซ็ต
   const logged = sessions.filter(s => weekStart(s.date) === thisWeek)
   const tickedOnly = plan.filter((d, i) => d.type === 'strength' && p.isDone(done, week, i) && !logged.some(s => s.date === addDays(thisWeek, i))).length
   const sessionsThisWeek = logged.length + tickedOnly
   const kmThisWeek = runsOnly(runs).filter(r => weekStart(r.date) === thisWeek).reduce((s, r) => s + r.km, 0)
-  const kmTarget = p.kmTarget()
+  const kmTarget = p.finished ? 0 : p.kmTarget()
   const streak = weekStreak(sessions.map(s => s.date), runs.map(r => r.date))
   const activeThisWeek = [...sessions, ...runs].filter(x => weekStart(x.date) === thisWeek).length
-  const [todayIdx] = useState(() => (new Date().getDay() + 6) % 7) // 0 = จันทร์
-  const todayPlan = plan[todayIdx]
+  const todayIdx = useTodayIdx() // 0 = จันทร์ — เปลี่ยนเองเมื่อข้ามวัน
+  // ผ่านวันแข่งแล้ว: ไม่มีแผนวันนี้ (การ์ดขั้นต่อไปด้านบนพาไปเลือกโปรแกรมใหม่)
+  const todayPlan = p.finished ? undefined : plan[todayIdx]
 
   const TodayIcon = todayPlan?.runKind === 'race' ? Flag : todayPlan?.type === 'run' ? Footprints : todayPlan?.type === 'strength' ? Dumbbell : Moon
   const todayDone = dayDone(week, todayIdx, todayPlan)
@@ -73,7 +75,7 @@ export function Dashboard() {
               // ก่อนสัปดาห์ 1 (นับถอยจากวันแข่ง) ใช้แผนสัปดาห์ 1 ซ้อมไปก่อน — บอกให้ชัดว่ายังไม่ใช่สัปดาห์ 1 จริง
               : p.weeksUntilStart > 0 ? t(`ช่วงเตรียมตัว · สัปดาห์ 1 เริ่มในอีก ${p.weeksUntilStart} สัปดาห์`, `Prep · week 1 starts in ${p.weeksUntilStart} wk`)
               : t(`สัปดาห์ที่ ${week} จาก ${p.meta.weeks}`, `Week ${week} of ${p.meta.weeks}`)}</div>
-            <div className="text-xl font-extrabold">{p.daysToRace !== null && p.daysToRace >= 0 ? t(`อีก ${p.daysToRace} วันถึงวันแข่ง`, `${p.daysToRace} days to race day`) : t('สัปดาห์นี้', 'This week')}</div>
+            <div className="text-xl font-extrabold">{p.daysToRace === 0 ? t('วันนี้วันแข่ง!', 'Race day!') : p.daysToRace !== null && p.daysToRace > 0 ? t(`อีก ${p.daysToRace} วันถึงวันแข่ง`, `${p.daysToRace} days to race day`) : p.finished ? t('จบโปรแกรมแล้ว — พักฟื้นก่อนเริ่มเป้าหมายใหม่', 'Program done — recover before the next goal') : t('สัปดาห์นี้', 'This week')}</div>
           </div>
           <div className="flex flex-col items-end gap-1">
             <div className="flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm font-semibold">
@@ -84,7 +86,7 @@ export function Dashboard() {
           </div>
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">
-          <Ring value={sessionsThisWeek} max={strengthTarget} label={t('เวท', 'Strength')} text={`${sessionsThisWeek}/${strengthTarget}`} />
+          <Ring value={sessionsThisWeek} max={strengthTarget} label={t('เวท', 'Strength')} text={strengthTarget ? `${sessionsThisWeek}/${strengthTarget}` : String(sessionsThisWeek)} />
           <Ring value={kmThisWeek} max={kmTarget} label={t('วิ่ง (กม.)', 'Run (km)')} text={kmTarget ? `${kmThisWeek.toFixed(1)}/${kmTarget}` : kmThisWeek.toFixed(1)} />
         </div>
       </section>

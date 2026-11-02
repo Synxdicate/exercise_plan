@@ -66,7 +66,7 @@ export function Badge({ children, tone = 'accent' }: { children: ReactNode; tone
 
 export function Segmented<T extends string>({ value, options, onChange }: { value: T; options: { value: T; label: ReactNode }[]; onChange: (v: T) => void }) {
   return (
-    <div className="flex rounded-full bg-raised p-1 ring-1 ring-line">
+    <div data-segmented className="flex rounded-full bg-raised p-1 ring-1 ring-line">
       {options.map(o => (
         <button key={o.value} onClick={() => onChange(o.value)}
           className={cx('flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition',

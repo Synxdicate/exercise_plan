@@ -1,6 +1,6 @@
-import { useState } from 'react'
 import { CalendarCheck } from 'lucide-react'
 import { useProgram } from '../lib/program'
+import { useTodayIdx } from '../lib/useToday'
 import { useDayDone } from '../lib/dayDone'
 import { usePersisted } from '../lib/storage'
 import { cx } from '../lib/cx'
@@ -18,8 +18,8 @@ export function WeekCheckCard() {
   const p = useProgram()
   const dayDone = useDayDone()
   const [answers, setAnswers] = usePersisted<Record<string, Feel | true>>('weekCheck', {})
-  const [todayIdx] = useState(() => (new Date().getDay() + 6) % 7) // 0 = จันทร์
-  if (p.ongoing || p.program === 'strength') return null
+  const todayIdx = useTodayIdx() // 0 = จันทร์ — เปลี่ยนเองเมื่อข้ามวัน
+  if (p.ongoing || p.program === 'strength' || p.finished) return null
   const plan = p.plan()
   const training = plan.flatMap((d, i) => (d.type !== 'rest' ? [i] : []))
   const done = training.filter(i => dayDone(p.currentWeek, i, plan[i])).length

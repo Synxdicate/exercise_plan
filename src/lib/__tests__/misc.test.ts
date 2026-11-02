@@ -415,6 +415,9 @@ describe('program fit', () => {
     expect(nextStep('ten', ready30, 12, 12, false)?.to).toBe('base')
     expect(nextStep('ten', { longestKm: 8, longestMin: 50 }, 12, 12, false)?.to).toBe('half')
     expect(nextStep('base', { longestKm: 20, longestMin: 120 }, 4, 4, true)).toBeNull()
+    // มีวันแข่ง: สัปดาห์สุดท้ายยังไม่จบจนกว่าจะผ่านวันแข่ง
+    expect(nextStep('mini', ready30, 10, 10, false, false)).toBeNull()
+    expect(nextStep('mini', ready30, 10, 10, false, true)?.to).toBe('ten')
   })
 })
 

@@ -143,6 +143,8 @@ export function useProgram() {
     currentWeek,
     weeksUntilStart,
     raceStart,
+    /** ผ่านวันแข่งแล้ว — ไม่มีแผน "วันนี้" อีก (เดิมยังโชว์สัปดาห์แข่งและวันแข่งซ้ำ) */
+    finished: !!(isRace && raceDate && today() > raceDate),
     /** synced programStart (ว่าง = ข้อมูลเก่า) */
     storedStart: programStart,
     daysToRace,

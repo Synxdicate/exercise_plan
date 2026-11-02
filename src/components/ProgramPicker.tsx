@@ -61,7 +61,7 @@ export function NextStepCard() {
   const p = useProgram()
   const c = useCapacity()
   const [seen, setSeen] = usePersisted('nextStepSeen', '')
-  const step = nextStep(p.program, c, p.currentWeek, p.meta.weeks, !!p.ongoing)
+  const step = nextStep(p.program, c, p.currentWeek, p.meta.weeks, !!p.ongoing, p.raceDate && p.isRace ? p.finished : undefined)
   if (!step || seen === `${p.program}>${step.to}`) return null
   return (
     <section className="animate-fade-up rounded-2xl bg-good/10 p-3.5 ring-1 ring-good/30">

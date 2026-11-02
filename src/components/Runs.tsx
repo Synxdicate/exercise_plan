@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { CalendarCheck, Check, CircleCheck, FileDown, FileUp, Footprints, Gauge, Ghost, History, ListChecks, Map as MapIcon, Pause, Pencil, Play, Plus, Satellite, Share2, Trash2, TriangleAlert, Trophy, Volume2, VolumeX, X } from 'lucide-react'
 import { GOOD_ACCURACY_M, useRunTracker, type Point } from '../lib/gps'
+import { useTodayIdx } from '../lib/useToday'
 import { formatDuration, formatPace, runKinds, runKindsEn, uid, useRuns, type Run } from '../lib/log'
 import { useT } from '../lib/i18n'
 import { looksLikeWalk, runsOnly } from '../lib/walk'
@@ -71,8 +72,8 @@ export function Runs() {
   const [runs, setRuns] = useRuns()
   const tr = useT()
   const p = useProgram()
-  const [todayIdx] = useState(() => (new Date().getDay() + 6) % 7) // 0 = จันทร์
-  const todayRun = p.plan().filter((d, i) => i === todayIdx && d.type === 'run')[0]
+  const todayIdx = useTodayIdx() // 0 = จันทร์ — เปลี่ยนเองเมื่อข้ามวัน
+  const todayRun = p.finished ? undefined : p.plan().filter((d, i) => i === todayIdx && d.type === 'run')[0]
   const kmToday = runsOnly(runs).filter(r => r.date === today()).reduce((s, r) => s + r.km, 0)
   const [kind, setKind] = useState<Run['kind']>(todayRun?.runKind ?? 'easy')
   const est = useMemo(() => estimate(runs), [runs])
