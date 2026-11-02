@@ -1,5 +1,6 @@
 import { haversine, type Point } from './geo'
 import type { Run, Session } from './log'
+import { runsOnly } from './walk'
 import { addDays, daysBetween } from './date'
 
 // ---------- Pace analysis ----------
@@ -112,7 +113,7 @@ export function bestEffort(route: Point[], times: number[], km: number): number 
 export function personalBests(runs: Run[]) {
   return EFFORTS.map(e => {
     let best: { seconds: number; date: string; id: string } | null = null
-    for (const r of runs) {
+    for (const r of runsOnly(runs)) {
       let t: number | null = null
       if (r.route && r.times && r.times.length === r.route.length) t = bestEffort(r.route, r.times, e.km)
       else if (r.seconds > 0 && Math.abs(r.km - e.km) / e.km <= 0.02) t = Math.round((r.seconds * e.km) / r.km)
@@ -125,7 +126,7 @@ export function personalBests(runs: Run[]) {
 // ---------- Training load: Fitness / Fatigue / Form ----------
 
 // session-RPE (Foster 2001): ภาระ = ความเหนื่อย (0–10) × นาที — ถ้าไม่ได้ให้คะแนนไว้ ใช้ค่าประมาณตามชนิดการวิ่ง
-const defaultRpe: Record<Run['kind'], number> = { easy: 3, long: 4, tempo: 6, interval: 8, race: 9, other: 4 }
+const defaultRpe: Record<Run['kind'], number> = { easy: 3, long: 4, tempo: 6, interval: 8, race: 9, other: 4, walk: 2 }
 export const runLoad = (r: Run) => (r.rpe ?? defaultRpe[r.kind]) * (r.seconds / 60)
 export const sessionLoad = (s: Session) => (s.rpe ?? 6) * (s.minutes ?? 50)
 

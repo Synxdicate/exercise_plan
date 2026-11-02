@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Check, Droplets, Footprints, Play, Sandwich, StretchHorizontal } from 'lucide-react'
-import { formatDuration } from '../lib/log'
+import { formatDuration, formatPace, type Run } from '../lib/log'
+import { isWalk, looksLikeWalk } from '../lib/walk'
+import { RpePicker } from './RpePicker'
 import { speak } from '../lib/voice'
 import { cx } from '../lib/cx'
 import { Button, Collapse, Sheet } from './ui'
@@ -29,7 +31,10 @@ const stretches = [
  * งานวิจัย: cool-down ไม่ได้ลดอาการปวดเมื่อย/บาดเจ็บ แต่ช่วยร่างกายกลับสู่ภาวะพัก (Van Hooren & Peake 2018)
  * ยืดเหยียดลดปวดเมื่อยได้น้อยมาก (Herbert 2011) — จึงเป็นทางเลือกเพื่อความสบายตัว
  */
-export function CooldownSheet({ km, onDone }: { km: number; onDone: () => void }) {
+export function CooldownSheet({ run, onUpdate, onDone }: { run: Run; onUpdate: (patch: Partial<Run>) => void; onDone: () => void }) {
+  const km = run.km
+  // ถามตอนนี้เลย (แตะครั้งเดียว) — ถ้ารอไปถามในหน้ารายละเอียด ครึ่งหนึ่งไม่ได้ให้คะแนน แล้วภาระการฝึกต้องใช้ค่าเดา
+  const [suggestWalk] = useState(() => looksLikeWalk(run))
   const [endAt, setEndAt] = useState<number | null>(null)
   const [now, setNow] = useState(() => Date.now())
   const [walked, setWalked] = useState(false)
@@ -52,8 +57,21 @@ export function CooldownSheet({ km, onDone }: { km: number; onDone: () => void }
   }, [endAt])
 
   return (
-    <Sheet onClose={onDone} title={`เยี่ยม! วิ่ง ${km.toFixed(2)} กม. — ต่อด้วยคูลดาวน์`}>
+    <Sheet onClose={onDone} title={isWalk(run) ? `เดิน ${km.toFixed(2)} กม. — บันทึกแล้ว` : `เยี่ยม! วิ่ง ${km.toFixed(2)} กม. — ต่อด้วยคูลดาวน์`}>
       <div className="space-y-4">
+        {suggestWalk && (
+          <div className="rounded-2xl bg-warn/10 p-3 text-sm ring-1 ring-warn/30">
+            {isWalk(run)
+              ? <span className="flex items-center gap-2 font-semibold text-good"><Check size={16} /> บันทึกเป็น "เดิน" แล้ว — ไม่นับเป็นระยะวิ่ง</span>
+              : <>
+                  <p>เพซเฉลี่ย {formatPace(run.seconds, run.km)} /กม. — ช้ากว่าการวิ่ง (รวมวิ่งสลับเดิน) รอบนี้เป็นการ<b>เดิน</b>ใช่ไหม? ถ้าใช่ ระยะนี้จะไม่นับรวมเป็นระยะวิ่งของสัปดาห์ แต่ยังนับเป็นวันที่ได้ออกกำลังกาย</p>
+                  <div className="mt-2 flex gap-2">
+                    <Button size="sm" onClick={() => onUpdate({ kind: 'walk' })}><Footprints size={15} /> บันทึกเป็นเดิน</Button>
+                  </div>
+                </>}
+          </div>
+        )}
+        <div className="rounded-2xl bg-raised p-3"><RpePicker value={run.rpe} onPick={rpe => onUpdate({ rpe })} /></div>
         <div className="rounded-2xl bg-raised p-4 text-center">
           <div className="text-xs text-muted">เดินหรือจ็อกเบามาก ๆ</div>
           <div className="text-5xl font-extrabold tabular-nums">{formatDuration(left)}</div>

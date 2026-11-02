@@ -8,6 +8,7 @@ import { estimate, paceHint } from '../lib/pace'
 import { useProgram } from '../lib/program'
 import { usePersisted } from '../lib/storage'
 import { useDayDone } from '../lib/dayDone'
+import { addDays, today, weekStart } from '../lib/date'
 import { useNav } from '../lib/nav'
 import { tick } from '../lib/voice'
 import { cx } from '../lib/cx'
@@ -16,6 +17,7 @@ import { WorkoutPlayer } from './WorkoutPlayer'
 import { ProgramSheet } from './ProgramSheet'
 import { Alerts } from './Alerts'
 import { NextStepCard } from './ProgramPicker'
+import { CapNote, MissedRunCard } from './MissedRun'
 import { WeekCheckCard } from './WeekCheck'
 import { WeeklyMuscles } from './WeeklyMuscles'
 import { RunTypeCard } from './RunTypes'
@@ -73,6 +75,7 @@ function PlanBody() {
     <>
       <Alerts />
       <NextStepCard />
+      <MissedRunCard />
       <WeekCheckCard />
       <button onClick={() => setPicking(true)} className="flex w-full items-center gap-3 rounded-3xl bg-card p-4 text-left shadow-sm ring-1 ring-line active:scale-[.99]">
         <div className="min-w-0 flex-1">
@@ -146,7 +149,8 @@ function PlanBody() {
         done={isDone(selected)} hint={paceHint(est, day.runKind, day.title)} weekNoteText={note}
         setDone={v => setDayDone(selected, v)}
         onStart={() => setChecking(selected)}
-        onLocation={m => p.setDayLocation(week, selected, m)} slotId={p.doneId(week, selected)} />
+        onLocation={m => p.setDayLocation(week, selected, m)} slotId={p.doneId(week, selected)}
+        date={addDays(weekStart(today()), (week - p.currentWeek) * 7 + selected)} />
 
       {/* ทั้งสัปดาห์แบบย่อ */}
       <section className="rounded-3xl bg-card p-2 shadow-sm ring-1 ring-line">
@@ -215,8 +219,8 @@ function DayMuscles({ day }: { day: Day }) {
   )
 }
 
-function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slotId, weekNoteText }: {
-  day: Day; isToday: boolean; done: boolean; hint: string | null; weekNoteText?: string
+function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slotId, weekNoteText, date }: {
+  day: Day; isToday: boolean; done: boolean; hint: string | null; weekNoteText?: string; date: string
   setDone: (v: boolean) => void; onStart: () => void; onLocation: (m: 'gym' | 'park') => void; slotId: string
 }) {
   const nav = useNav()
@@ -292,6 +296,7 @@ function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slo
             <p>{day.exercises[0]?.cue}</p>
             {hint && <p className="mt-1 font-semibold text-run">{hint}</p>}
           </div>
+          {!done && <CapNote day={day} date={date} />}
           {day.runKind === 'race' && <RacePlan day={day} date={slotId} />}
           {day.runKind && <RunTypeCard kind={day.runKind} />}
           {day.runKind !== 'race' && (

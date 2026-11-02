@@ -1,4 +1,5 @@
 import type { Run } from './log'
+import { runsOnly } from './walk'
 import { bestEffort } from './analysis'
 import { addDays, today } from './date'
 
@@ -46,7 +47,7 @@ function bestSource(runs: Run[]): Source | null {
 }
 
 export function estimate(runs: Run[], asOf = today()) {
-  const past = runs.filter(r => r.date <= asOf)
+  const past = runsOnly(runs).filter(r => r.date <= asOf)
   const from = addDays(asOf, -WINDOW_DAYS)
   const recent = past.filter(r => r.date > from)
   const src = bestSource(recent) ?? bestSource(past)
@@ -118,7 +119,7 @@ const CS_DISTANCES = [0.4, 0.8, 1, 1.5, 3, 5]
 const CS_WINDOW_DAYS = 90
 
 export function criticalSpeed(runs: Run[], asOf = today()) {
-  const recent = runs.filter(r => r.date <= asOf && r.date > addDays(asOf, -CS_WINDOW_DAYS) && r.route && r.times && r.times.length === r.route.length)
+  const recent = runsOnly(runs).filter(r => r.date <= asOf && r.date > addDays(asOf, -CS_WINDOW_DAYS) && r.route && r.times && r.times.length === r.route.length)
   const pts: { m: number; s: number }[] = []
   for (const km of CS_DISTANCES) {
     let best = Infinity

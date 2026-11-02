@@ -8,7 +8,7 @@ export type Run = {
   date: string
   km: number
   seconds: number
-  kind: 'easy' | 'tempo' | 'interval' | 'long' | 'race' | 'other'
+  kind: 'easy' | 'tempo' | 'interval' | 'long' | 'race' | 'other' | 'walk'
   source: 'gps' | 'manual' | 'gpx'
   route?: Point[]
   times?: number[] // เวลาเคลื่อนที่สะสมของแต่ละจุดใน route
@@ -62,7 +62,9 @@ export const runKinds: Record<Run['kind'], string> = {
   long: 'วิ่งยาว',
   race: 'แข่ง',
   other: 'อื่น ๆ',
+  walk: 'เดิน',
 }
+
 
 export const uid = () => Math.random().toString(36).slice(2, 10)
 

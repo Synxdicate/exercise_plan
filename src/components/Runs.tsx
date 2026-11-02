@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } 
 import { CalendarCheck, Check, CircleCheck, FileDown, FileUp, Footprints, Gauge, Ghost, History, ListChecks, Map as MapIcon, Pause, Pencil, Play, Plus, Satellite, Share2, Trash2, TriangleAlert, Trophy, Volume2, VolumeX, X } from 'lucide-react'
 import { GOOD_ACCURACY_M, useRunTracker, type Point } from '../lib/gps'
 import { formatDuration, formatPace, runKinds, uid, useRuns, type Run } from '../lib/log'
+import { looksLikeWalk, runsOnly } from '../lib/walk'
 import { criticalSpeed, estimate, paceHint, predictionTrend, type Estimate } from '../lib/pace'
 import { useProgram } from '../lib/program'
 import { parseGpx } from '../lib/gpx'
@@ -24,6 +25,8 @@ import { usePersisted } from '../lib/storage'
 import { RunFormTips } from './RunForm'
 import { SweatCard } from './Sweat'
 import { CooldownSheet } from './Cooldown'
+import { CapNote } from './MissedRun'
+import { longRunCap } from '../lib/missed'
 import { ShareRunSheet } from './ShareRun'
 import { PhotoStrip } from './Photos'
 import { useRemovePhotosFor } from '../lib/photos'
@@ -68,7 +71,7 @@ export function Runs() {
   const p = useProgram()
   const [todayIdx] = useState(() => (new Date().getDay() + 6) % 7) // 0 = จันทร์
   const todayRun = p.plan().filter((d, i) => i === todayIdx && d.type === 'run')[0]
-  const kmToday = runs.filter(r => r.date === today()).reduce((s, r) => s + r.km, 0)
+  const kmToday = runsOnly(runs).filter(r => r.date === today()).reduce((s, r) => s + r.km, 0)
   const [kind, setKind] = useState<Run['kind']>(todayRun?.runKind ?? 'easy')
   const est = useMemo(() => estimate(runs), [runs])
   // โซนเพซคิดจากเพซ 5K — ถ้าได้มาจากวิ่งเบา โซนจะผิด (วิ่งเบาปกติถูกจัดเป็น Speed) จึงไม่แสดงโซน
@@ -123,7 +126,9 @@ export function Runs() {
   const coach = useRef(new PaceCoach())
   const coachStep = useRef<{ index: number; at: number }>({ index: -1, at: 0 })
   // วิ่งตามระยะในแผน (เช่น วิ่งสลับเดิน 3 กม.): ถึงระยะแล้วจบชุดซ้อม ไม่ต้องสลับวิ่ง/เดินต่อจนครบรอบที่ประมาณไว้
-  const planKm = steps && steps !== TRIAL ? todayRun?.targetKm : undefined
+  // พลาดวิ่งยาวมาก่อน → แผนวันนี้อาจกระโดดเกิน 110% ของครั้งที่ยาวที่สุด: จบชุดซ้อมที่เพดานแทน
+  const cap = longRunCap(runs, today(), todayRun)
+  const planKm = steps && steps !== TRIAL ? (cap?.cap ?? todayRun?.targetKm) : undefined
   const onTick = (meters: number, active: boolean, pace: number | null) => {
     guide.onTick(meters, active)
     if (planKm && meters >= planKm * 1000 && guide.runner?.state.started && !guide.runner.state.done) guide.complete()
@@ -196,7 +201,7 @@ export function Runs() {
   )
 
   const thisWeek = weekStart(today())
-  const kmThisWeek = runs.filter(r => weekStart(r.date) === thisWeek).reduce((s, r) => s + r.km, 0)
+  const kmThisWeek = runsOnly(runs).filter(r => weekStart(r.date) === thisWeek).reduce((s, r) => s + r.km, 0)
   const target = p.kmTarget()
   const open = runs.find(r => r.id === detail)
 
@@ -229,6 +234,7 @@ export function Runs() {
               <div className="font-bold">แผนวันนี้: {todayRun.title} · {todayRun.targetKm ? `${todayRun.targetKm} กม.` : todayRun.duration}</div>
               <div className="opacity-85">{todayRun.exercises[0]?.cue}</div>
               {paceHint(est, todayRun.runKind, todayRun.title) && <div className="font-semibold">{paceHint(est, todayRun.runKind, todayRun.title)}</div>}
+              <CapNote day={todayRun} date={today()} className="mt-1.5 flex items-start gap-1.5 rounded-xl bg-white/20 p-2 font-semibold" />
             </div>
           </div>
         )}
@@ -291,7 +297,7 @@ export function Runs() {
           : 'บนเว็บ GPS ทำงานเฉพาะตอนเปิดหน้านี้ค้างไว้ — ปิดจอได้ต้องใช้แอป Android'}
       </p>
 
-      {cooldown && <CooldownSheet km={cooldown.km} onDone={() => { setDetail(cooldown.id); setCooldown(null) }} />}
+      {cooldown && <CooldownSheet run={runs.find(r => r.id === cooldown.id) ?? cooldown} onUpdate={patch => setRuns(prev => prev.map(x => (x.id === cooldown.id ? { ...x, ...patch } : x)))} onDone={() => { setDetail(cooldown.id); setCooldown(null) }} />}
 
       {checking && (
         <ReadinessSheet kind="run" onClose={() => setChecking(false)}
@@ -490,6 +496,13 @@ function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { run: Run
             <Button size="sm" className="mt-2" onClick={() => onUpdate({ km: fix.km, splits: fix.splits })}>ใช้ระยะตามเส้นทาง</Button>
           </div>
         )}
+        {/* วัดระยะใหม่ก่อน — ระยะที่ขาดทำให้เพซดูช้าเหมือนเดิน */}
+        {!fix && looksLikeWalk(run) && (
+          <div className="mb-3 rounded-xl bg-warn/15 p-3 text-sm text-warn">
+            <p>เพซเฉลี่ย {formatPace(run.seconds, run.km)} /กม. ช้ากว่าการวิ่ง — ถ้ารอบนี้คือการเดิน บันทึกเป็น "เดิน" จะไม่นับรวมเป็นระยะวิ่ง (ยังนับเป็นวันที่ได้ออกกำลังกาย)</p>
+            <Button size="sm" className="mt-2" onClick={() => onUpdate({ kind: 'walk' })}>เปลี่ยนเป็นเดิน</Button>
+          </div>
+        )}
         {run.gapSeconds ? <p className="mb-3 rounded-xl bg-warn/15 p-2 text-xs text-warn">ปิดจอรวม {formatDuration(run.gapSeconds)} — ระยะช่วงนั้นเป็นค่าประมาณ</p> : null}
         {series.length > 2 && (
           <div className="mb-3 space-y-3 rounded-2xl bg-raised p-3">
@@ -554,7 +567,7 @@ function WeeklyBars({ runs, target }: { runs: Run[]; target: number }) {
   const [hover, setHover] = useState<number | null>(null)
   const current = weekStart(today())
   const weeks = Array.from({ length: 8 }, (_, i) => addDays(current, (i - 7) * 7))
-  const totals = weeks.map(w => runs.filter(r => weekStart(r.date) === w).reduce((s, r) => s + r.km, 0))
+  const totals = weeks.map(w => runsOnly(runs).filter(r => weekStart(r.date) === w).reduce((s, r) => s + r.km, 0))
   const max = Math.max(target, 1, ...totals) * 1.15
   const W = 320, H = 140, pad = 22, bw = (W - pad) / weeks.length
   const y = (v: number) => H - pad - (v / max) * (H - pad - 8)
@@ -719,11 +732,11 @@ function TrendLine({ points, goal }: { points: { date: string; v: number | null 
 function BestEfforts({ runs }: { runs: Run[] }) {
   if (!runs.length) return null
   const pbs = personalBests(runs).filter(p => p.best)
-  const longest = runs.reduce((m, r) => Math.max(m, r.km), 0)
+  const longest = runsOnly(runs).reduce((m, r) => Math.max(m, r.km), 0)
   return (
     <Card title={<span className="flex items-center gap-2"><Trophy size={18} className="text-warn" /> สถิติของฉัน</span>}>
       <div className="grid grid-cols-3 gap-2 text-center">
-        <Stat label="ระยะรวม" value={runs.reduce((s, r) => s + r.km, 0).toFixed(1)} sub="กม." />
+        <Stat label="ระยะรวม" value={runsOnly(runs).reduce((s, r) => s + r.km, 0).toFixed(1)} sub="กม." />
         <Stat label="จำนวนครั้ง" value={runs.length} sub="ครั้ง" />
         <Stat label="ไกลสุด" value={longest.toFixed(1)} sub="กม." />
       </div>

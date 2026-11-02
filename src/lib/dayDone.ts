@@ -1,6 +1,7 @@
 import type { Day } from '../data/workouts'
 import { addDays, today, weekStart } from './date'
 import { useRuns, useSessions } from './log'
+import { isWalk } from './walk'
 import { useProgram } from './program'
 import { usePersisted } from './storage'
 
@@ -18,7 +19,7 @@ export function useDayDone() {
     if (id in done) return done[id]
     if (p.isDone(done, week, i)) return true
     const date = addDays(weekStart(today()), (week - p.currentWeek) * 7 + i)
-    if (day?.type === 'run') return runs.some(r => r.date === date)
+    if (day?.type === 'run') return runs.some(r => r.date === date && !isWalk(r))
     if (day?.type === 'strength') return sessions.some(s => s.date === date && s.dayKey !== 'circuit' && s.dayKey !== 'cross')
     return false
   }

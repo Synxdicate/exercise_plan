@@ -3,13 +3,15 @@
 // (มือใหม่เพิ่มระยะเร็วเกินเจ็บบ่อยกว่า — Nielsen 2014)
 import type { ProgramId } from '../data/programs'
 import type { Run } from './log'
+import { runsOnly } from './walk'
 import { addDays, today } from './date'
 import { MAX_SOURCE_PACE } from './pace'
 
 // anyKm: ระยะไกลสุดรวมวิ่งสลับเดิน (ไม่นับเดินล้วน ช้ากว่า 15:00/กม.) — ใช้กับโปรแกรมที่เริ่มจากวิ่งสลับเดิน
 export type Capacity = { longestKm: number; longestMin: number; anyKm?: number }
 
-export function capacity(runs: Run[], asOf = today(), days = 60): Capacity {
+export function capacity(all: Run[], asOf = today(), days = 60): Capacity {
+  const runs = runsOnly(all)
   const from = addDays(asOf, -days)
   // วิ่งเบาที่มีชุดซ้อม (วิ่งสลับเดิน) ไม่ใช่การวิ่งต่อเนื่อง แม้เพซเฉลี่ยจะเร็วกว่า 10:00/กม. — นับแค่ใน anyKm
   const real = runs.filter(r => r.date > from && r.date <= asOf && r.km > 0 && r.seconds > 0 && r.seconds / r.km <= MAX_SOURCE_PACE && !(r.kind === 'easy' && r.guide))

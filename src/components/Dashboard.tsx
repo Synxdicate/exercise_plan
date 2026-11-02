@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Check, Dumbbell, Flag, Flame, Footprints, Moon, Play } from 'lucide-react'
 import type { Day } from '../data/workouts'
 import { crossAsSession, useCross, useRuns, useSessions } from '../lib/log'
+import { runsOnly } from '../lib/walk'
 import { estimate, paceHint } from '../lib/pace'
 import { useProgram } from '../lib/program'
 import { usePersisted } from '../lib/storage'
@@ -12,6 +13,7 @@ import { formLabel, trainingLoad } from '../lib/analysis'
 import { WorkoutPlayer } from './WorkoutPlayer'
 import { Alerts } from './Alerts'
 import { NextStepCard } from './ProgramPicker'
+import { MissedRunCard } from './MissedRun'
 import { WeekCheckCard } from './WeekCheck'
 import { HeatCard } from './Heat'
 import { MonthGoalCard } from './Goals'
@@ -42,7 +44,7 @@ export function Dashboard() {
   const logged = sessions.filter(s => weekStart(s.date) === thisWeek)
   const tickedOnly = plan.filter((d, i) => d.type === 'strength' && p.isDone(done, week, i) && !logged.some(s => s.date === addDays(thisWeek, i))).length
   const sessionsThisWeek = logged.length + tickedOnly
-  const kmThisWeek = runs.filter(r => weekStart(r.date) === thisWeek).reduce((s, r) => s + r.km, 0)
+  const kmThisWeek = runsOnly(runs).filter(r => weekStart(r.date) === thisWeek).reduce((s, r) => s + r.km, 0)
   const kmTarget = p.kmTarget()
   const streak = weekStreak(sessions.map(s => s.date), runs.map(r => r.date))
   const activeThisWeek = [...sessions, ...runs].filter(x => weekStart(x.date) === thisWeek).length
@@ -52,7 +54,7 @@ export function Dashboard() {
   const TodayIcon = todayPlan?.runKind === 'race' ? Flag : todayPlan?.type === 'run' ? Footprints : todayPlan?.type === 'strength' ? Dumbbell : Moon
   const todayDone = dayDone(week, todayIdx, todayPlan)
   const tomorrow = todayIdx < 6 ? plan[todayIdx + 1] : null
-  const kmToday = runs.filter(r => r.date === today()).reduce((s, r) => s + r.km, 0)
+  const kmToday = runsOnly(runs).filter(r => r.date === today()).reduce((s, r) => s + r.km, 0)
   const est = useMemo(() => estimate(runs), [runs])
   const hint = todayPlan?.type === 'run' ? paceHint(est, todayPlan.runKind, todayPlan.title) : null
 
@@ -60,6 +62,7 @@ export function Dashboard() {
     <>
       <Alerts />
       <NextStepCard />
+      <MissedRunCard />
       <WeekCheckCard />
       <section className="rounded-2xl bg-gradient-to-br from-accent to-[#7c3aed] p-4 text-white shadow-sm">
         <div className="flex items-center justify-between">

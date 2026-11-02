@@ -444,3 +444,25 @@ test('โลโก้กลับหน้าหลัก, เมนูบัญ
   await page.reload()
   await expect(page.locator('nav')).toContainText('Train')
 })
+
+test('พลาดวิ่งยาว: ไม่ต้องชดเชย, เพดาน 110% วันวิ่งยาว, เปลี่ยนรอบเพซช้าเป็นเดิน', async ({ page }) => {
+  // จันทร์ 2 พ.ย. 2026 — มินิสัปดาห์ 2 (เริ่ม 26 ต.ค.) วิ่งยาว 5 กม. วันอาทิตย์ 1 พ.ย. ไม่ได้ทำ
+  await page.clock.install({ time: new Date('2026-11-02T08:00:00+07:00') })
+  const run = (date: string, km: number, min: number) => ({ id: date, date, km, seconds: km * min * 60, kind: 'easy', source: 'manual' })
+  await seed(page, { program: 'mini', programStart: '2026-10-26', runs: [run('2026-10-27', 4.82, 10), run('2026-10-29', 3.13, 8.4), run('2026-10-31', 2.49, 14.2)] })
+  await expect(page.getByText('วิ่งยาวสัปดาห์ที่แล้วไม่ได้ทำ')).toBeVisible()
+  // ระยะสัปดาห์นับแต่การวิ่ง: เปลี่ยนรอบเพซ 14 นาทีเป็นเดิน
+  await nav(page, 'วิ่ง')
+  await page.getByRole('button', { name: 'ประวัติ' }).click()
+  await page.getByText('2.49 กม.').click()
+  await page.getByRole('button', { name: 'เปลี่ยนเป็นเดิน' }).click()
+  await expect.poll(async () => ((await idb(page, 'runs')) as { id: string; kind: string }[]).find(r => r.id === '2026-10-31')?.kind).toBe('walk')
+  await page.getByRole('button', { name: 'ปิด' }).first().click()
+  // วันอาทิตย์สัปดาห์นี้: แผน 5.5 กม. > 110% ของ 4.82 → ไม่เกิน 5.3 กม.
+  await nav(page, 'ฝึก')
+  await page.getByRole('button', { name: /อาทิตย์/ }).last().click()
+  await expect(page.getByText('5.3 กม.', { exact: true })).toBeVisible()
+  await nav(page, 'หน้าหลัก')
+  await page.getByRole('button', { name: 'รับทราบ' }).click()
+  await expect(page.getByText('วิ่งยาวสัปดาห์ที่แล้วไม่ได้ทำ')).toBeHidden()
+})

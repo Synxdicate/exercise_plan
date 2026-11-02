@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { ChevronRight, Footprints } from 'lucide-react'
 import { formatDuration, formatPace, runKinds, type Run } from '../lib/log'
+import { runsOnly } from '../lib/walk'
 import { projectRoute } from '../lib/geo'
 import { monthLabel, niceDate } from '../lib/date'
 import { cx } from '../lib/cx'
@@ -58,7 +59,7 @@ export function RunHistory({ runs, onOpen }: { runs: Run[]; onOpen: (id: string)
         <section key={ym} className="mb-1">
           <div className="sticky top-[calc(var(--sat)+4.25rem)] z-10 -mx-1 flex items-baseline justify-between bg-card/95 px-1 py-1.5 backdrop-blur">
             <span className="text-sm font-bold">{monthLabel(ym)}</span>
-            <span className="text-xs tabular-nums text-muted">{list.length} ครั้ง · {list.reduce((a, r) => a + r.km, 0).toFixed(1)} กม.</span>
+            <span className="text-xs tabular-nums text-muted">{list.length} ครั้ง · {runsOnly(list).reduce((a, r) => a + r.km, 0).toFixed(1)} กม.</span>
           </div>
           <ul className="divide-y divide-line">
             {list.map(r => (

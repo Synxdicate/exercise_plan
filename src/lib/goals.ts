@@ -1,4 +1,5 @@
 import type { Run, Session } from './log'
+import { runsOnly } from './walk'
 import { weekStart } from './date'
 import { personalBests } from './analysis'
 
@@ -7,7 +8,7 @@ import { personalBests } from './analysis'
 export const monthOf = (date: string) => date.slice(0, 7) // YYYY-MM
 
 export function periodStats(runs: Run[], sessions: Session[], prefix: string) {
-  const r = runs.filter(x => x.date.startsWith(prefix))
+  const r = runsOnly(runs).filter(x => x.date.startsWith(prefix))
   const s = sessions.filter(x => x.date.startsWith(prefix))
   return {
     km: r.reduce((a, x) => a + x.km, 0),
@@ -37,11 +38,11 @@ export type BadgeIcon = 'footprints' | 'medal' | 'trophy' | 'flame' | 'dumbbell'
 export type BadgeDef = { id: string; title: string; text: string; icon: BadgeIcon }
 type Ctx = { runs: Run[]; sessions: Session[]; goalKm: number }
 
-const totalKm = (c: Ctx) => c.runs.reduce((a, r) => a + r.km, 0)
-const longest = (c: Ctx) => c.runs.reduce((a, r) => Math.max(a, r.km), 0)
+const totalKm = (c: Ctx) => runsOnly(c.runs).reduce((a, r) => a + r.km, 0)
+const longest = (c: Ctx) => runsOnly(c.runs).reduce((a, r) => Math.max(a, r.km), 0)
 
 export const BADGES: (BadgeDef & { earned: (c: Ctx) => boolean })[] = [
-  { id: 'first-run', title: 'ก้าวแรก', text: 'บันทึกการวิ่งครั้งแรก', icon: 'footprints', earned: c => c.runs.length > 0 },
+  { id: 'first-run', title: 'ก้าวแรก', text: 'บันทึกการวิ่งครั้งแรก', icon: 'footprints', earned: c => runsOnly(c.runs).length > 0 },
   { id: 'first-workout', title: 'เริ่มยก', text: 'ฝึกเวทครั้งแรก', icon: 'dumbbell', earned: c => c.sessions.length > 0 },
   { id: 'run-5k', title: '5K', text: 'วิ่งต่อเนื่องได้ 5 กม.', icon: 'medal', earned: c => longest(c) >= 5 },
   { id: 'run-10k', title: '10K', text: 'วิ่งต่อเนื่องได้ 10 กม.', icon: 'medal', earned: c => longest(c) >= 10 },
@@ -53,7 +54,7 @@ export const BADGES: (BadgeDef & { earned: (c: Ctx) => boolean })[] = [
   { id: 'workouts-25', title: 'ยกครบ 25 ครั้ง', text: 'ฝึกเวทสะสม 25 ครั้ง', icon: 'dumbbell', earned: c => c.sessions.length >= 25 },
   { id: 'streak-4', title: 'ต่อเนื่อง 4 สัปดาห์', text: 'ออกกำลังกาย ≥3 ครั้ง/สัปดาห์ ติดกัน 4 สัปดาห์', icon: 'flame', earned: c => bestWeekStreak(c.runs, c.sessions) >= 4 },
   { id: 'streak-12', title: 'ต่อเนื่อง 12 สัปดาห์', text: 'ออกกำลังกาย ≥3 ครั้ง/สัปดาห์ ติดกัน 12 สัปดาห์', icon: 'flame', earned: c => bestWeekStreak(c.runs, c.sessions) >= 12 },
-  { id: 'month-goal', title: 'ทำตามเป้าเดือน', text: 'วิ่งครบเป้าหมายรายเดือน', icon: 'target', earned: c => c.goalKm > 0 && [...new Set(c.runs.map(r => monthOf(r.date)))].some(m => periodStats(c.runs, [], m).km >= c.goalKm) },
+  { id: 'month-goal', title: 'ทำตามเป้าเดือน', text: 'วิ่งครบเป้าหมายรายเดือน', icon: 'target', earned: c => c.goalKm > 0 && [...new Set(runsOnly(c.runs).map(r => monthOf(r.date)))].some(m => periodStats(c.runs, [], m).km >= c.goalKm) },
 ]
 
 export const earnedBadges = (c: Ctx) => BADGES.filter(b => b.earned(c)).map(b => b.id)
@@ -85,7 +86,7 @@ export const LEVELS = [
 
 /** ด่านที่ผ่านแล้ว = เคยวิ่งต่อเนื่องถึงระยะนั้น (ครั้งแรกที่ทำได้) */
 export function journey(runs: Run[]) {
-  const sorted = [...runs].sort((a, b) => a.date.localeCompare(b.date))
+  const sorted = runsOnly(runs).sort((a, b) => a.date.localeCompare(b.date))
   const levels = LEVELS.map(l => {
     const first = sorted.find(r => r.km >= l.km)
     return { ...l, clearedOn: first?.date ?? null, clearedRun: first ?? null }

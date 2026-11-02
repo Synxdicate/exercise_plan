@@ -1,6 +1,7 @@
 import { CalendarRange } from 'lucide-react'
 import { defaultProfile, targets, type Profile } from '../lib/calc'
 import { useRuns, useSessions } from '../lib/log'
+import { runsOnly } from '../lib/walk'
 import { useProgram } from '../lib/program'
 import { usePersisted } from '../lib/storage'
 import { addDays, shortDate, today, weekStart } from '../lib/date'
@@ -24,13 +25,13 @@ export function WeekSummary() {
   const n = p.meta.weeks
   const prevWeek = p.ongoing ? ((p.currentWeek - 2 + n) % n) + 1 : Math.max(1, p.currentWeek - 1)
   const prevPlan = p.plan(prevWeek)
-  const km = r.reduce((a, x) => a + x.km, 0)
+  const km = runsOnly(r).reduce((a, x) => a + x.km, 0)
   const kmGoal = p.kmTarget(prevWeek)
   const strGoal = prevPlan.filter(d => d.type === 'strength').length
   const foodDays = Array.from({ length: 7 }, (_, i) => food[addDays(last, i)]).filter(d => d?.length)
   const protein = foodDays.length ? foodDays.reduce((a, d) => a + d.reduce((b, i) => b + i.protein, 0), 0) / foodDays.length : null
   const proteinGoal = targets(profile, p.isRace).protein
-  const longest = r.reduce((a, x) => Math.max(a, x.km), 0)
+  const longest = runsOnly(r).reduce((a, x) => Math.max(a, x.km), 0)
 
   const rows = [
     // โปรแกรมไม่มีแผนวิ่ง: แสดงระยะเฉย ๆ ไม่นับเป็นเป้า
