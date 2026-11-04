@@ -110,6 +110,8 @@ const fullWeeks: RunWeek[] = [
 ]
 
 // วิ่งนานเกิน ~75–90 นาที ควรเติมคาร์บระหว่างวิ่ง 30–60 ก./ชม. (ACSM 2016, Jeukendrup 2014)
+// มือใหม่วิ่งมินิราว 1.5–2 ชม. — วิ่งยาวช่วงท้าย (~70–85 นาที) ใช้ซ้อมดื่ม/กินแบบวันแข่ง (Jeukendrup 2017: ลำไส้ฝึกได้)
+const gutNote = 'ซ้อมดื่มน้ำ/เกลือแร่ (และเจล ถ้าจะใช้วันแข่ง) ระหว่างวิ่งยาวนี้ แบบเดียวกับที่จะทำวันแข่ง — ท้องปรับตัวได้ด้วยการซ้อม วันแข่งไม่ใช้ของใหม่'
 const fuelNote = 'วิ่งนานเกิน ~75 นาที: พกเจล/เครื่องดื่มเกลือแร่ เติมคาร์บ 30–60 ก./ชม. (เจล 1 ซองทุก 30–40 นาที) และซ้อมกินแบบนี้ก่อนวันแข่ง'
 const runDay = (key: string, day: string, title: string, km: number, runKind: Day['runKind'], how: string, note?: string, guide?: Step[]): Day => ({
   key, day, title, type: 'run', duration: `${km} กม.`, targetKm: km, runKind, guide,
@@ -318,8 +320,8 @@ function miniWeek(mode: Mode, week: number): Day[] {
     last
       ? runDay('long', 'อาทิตย์', 'วันแข่ง มินิมาราธอน 10.5 กม.', w.long, 'race', 'วิ่ง 8 นาที เดิน 1 นาทีตั้งแต่ต้น ออกตัวช้ากว่าที่รู้สึกว่าไหว ดื่มน้ำทุกจุด', w.note)
       : w.walk
-        ? runDay('long', 'อาทิตย์', `วิ่งยาวสลับเดิน ${w.long} กม.`, w.long, 'long', `${ratio} จนครบระยะ — เน้นเวลาบนขา ไม่เน้นความเร็ว`, undefined, guides.runWalk(w.long, w.run, w.walk))
-        : runDay('long', 'อาทิตย์', 'วิ่งยาว (Long run)', w.long, 'long', 'ช้าระดับพูดคุยได้ (โซน E) — เดินพักได้'),
+        ? runDay('long', 'อาทิตย์', `วิ่งยาวสลับเดิน ${w.long} กม.`, w.long, 'long', `${ratio} จนครบระยะ — เน้นเวลาบนขา ไม่เน้นความเร็ว`, week >= 6 ? gutNote : undefined, guides.runWalk(w.long, w.run, w.walk))
+        : runDay('long', 'อาทิตย์', 'วิ่งยาว (Long run)', w.long, 'long', 'ช้าระดับพูดคุยได้ (โซน E) — เดินพักได้', week >= 6 ? gutNote : undefined),
   ]
 }
 

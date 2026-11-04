@@ -73,6 +73,7 @@ export const references: { cat: string; title: string; url: string; used: string
   { cat: 'โภชนาการ', level: 'guideline', title: 'ISSN Position Stand: Protein and Exercise (Jäger et al., 2017)', url: 'https://jissn.biomedcentral.com/articles/10.1186/s12970-017-0177-8', used: 'โปรตีน 1.4–2.0 ก./กก./วัน' },
   { cat: 'โภชนาการ', level: 'meta', title: 'Schoenfeld & Aragon 2018 — Protein per meal for muscle building', url: pm('29497353'), used: 'แบ่งโปรตีน ~4 มื้อ มื้อละ ~0.4 ก./กก.' },
   { cat: 'โภชนาการ', level: 'guideline', title: 'ACSM/AND/DC Joint Position: Nutrition and Athletic Performance (2016)', url: pm('26891166'), used: 'คาร์บ 5–7 ก./กก. (ซ้อมปานกลาง) ถึง 6–10 ก./กก. (ซ้อม 1–3 ชม./วัน) และเติมคาร์บระหว่างวิ่งยาว' },
+  { cat: 'โภชนาการ', level: 'meta', title: 'Jeukendrup 2017 — Training the gut for athletes (Sports Med)', url: pm('28332114'), used: 'ซ้อมดื่ม/กินเจลระหว่างวิ่งยาวก่อนวันแข่ง (มินิสัปดาห์ 6 ขึ้นไป) — ลำไส้ปรับตัวได้ ลดอาการท้องไส้' },
   { cat: 'โภชนาการ', level: 'meta', title: 'Jeukendrup 2014 — Carbohydrate intake during exercise', url: pm('24791914'), used: 'เติมคาร์บ 30–60 ก./ชม. เมื่อวิ่งนานกว่า ~1–2 ชม.' },
   { cat: 'โภชนาการ', level: 'guideline', title: 'ISSN Position Stand: Nutrient timing (Kerksick et al., 2017)', url: pm('28919842'), used: 'กินโปรตีน + คาร์บหลังออกกำลังกาย' },
   { cat: 'โภชนาการ', level: 'guideline', title: 'IOC Consensus: Relative Energy Deficiency in Sport (RED-S) 2018', url: pm('29773536'), used: 'ไม่กินขาดช่วงซ้อมมาราธอน' },
