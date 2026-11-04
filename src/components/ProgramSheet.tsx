@@ -62,7 +62,7 @@ export function ProgramSheet({ onClose }: { onClose: () => void }) {
 
       <div className="mb-2 mt-5 text-sm font-semibold text-muted">ฝึกเวทที่ไหน</div>
       <div className="space-y-2">
-        {(['mix', 'gym', 'park'] as LocationPref[]).map(id => (
+        {(['mix', 'gym', 'park', 'home'] as LocationPref[]).map(id => (
           <button key={id} onClick={() => setWhere(id)}
             className={cx('flex w-full items-start gap-3 rounded-2xl p-3 text-left ring-2 transition-colors active:scale-[.99]',
               where === id ? 'bg-accent-soft/50 ring-accent' : 'bg-raised ring-transparent')}>

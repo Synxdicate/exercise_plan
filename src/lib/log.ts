@@ -26,7 +26,7 @@ export type SetEntry = { kg: number; reps: number }
 export type Session = {
   id: string
   date: string
-  mode: 'gym' | 'park'
+  mode: 'gym' | 'park' | 'home'
   dayKey: string
   title: string
   entries: { name: string; sets: SetEntry[] }[]

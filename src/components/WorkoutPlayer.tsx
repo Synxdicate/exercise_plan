@@ -25,7 +25,7 @@ const targetReps = (e: Exercise) => e.reps.match(/\d+/)?.[0] ?? ''
 
 /** หน้าพาฝึกทีละท่า: กรอกน้ำหนัก×ครั้ง ติ๊กเซ็ต แล้วนับเวลาพักให้อัตโนมัติ */
 export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, onSaved }: {
-  day: Day; sessionKey: string; mode: 'gym' | 'park'; light?: boolean; onClose: () => void; onSaved: () => void
+  day: Day; sessionKey: string; mode: 'gym' | 'park' | 'home'; light?: boolean; onClose: () => void; onSaved: () => void
 }) {
   const dt = useDayText()
   const [sessions, setSessions] = useSessions()
@@ -184,13 +184,13 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
 
           <div className="mt-4 space-y-2">
             <div className="grid grid-cols-[2rem_1fr_1fr_3rem] gap-2 px-1 text-xs text-muted">
-              <span>เซ็ต</span><span className="text-center">{mode === 'park' ? '+กก.' : 'กก.'}</span><span className="text-center">ครั้ง</span><span />
+              <span>เซ็ต</span><span className="text-center">{mode !== 'gym' ? '+กก.' : 'กก.'}</span><span className="text-center">ครั้ง</span><span />
             </div>
             {rows.map((r, i) => (
               <div key={i} className={cx('grid grid-cols-[2rem_1fr_1fr_3rem] items-center gap-2 rounded-2xl p-1 transition-colors',
                 r.done ? 'bg-good/10' : i === currentSet ? 'bg-accent-soft/60' : '')}>
                 <span className="text-center font-bold text-muted">{i + 1}</span>
-                <Stepper value={r.kg} placeholder={prev?.sets[i]?.kg ? String(prev.sets[i].kg) : '0'} step={mode === 'park' ? 1 : 2.5} onChange={v => setRow(i, { kg: v })} />
+                <Stepper value={r.kg} placeholder={prev?.sets[i]?.kg ? String(prev.sets[i].kg) : '0'} step={mode !== 'gym' ? 1 : 2.5} onChange={v => setRow(i, { kg: v })} />
                 <Stepper value={r.reps} placeholder={targetReps(ex) || '-'} step={1} onChange={v => setRow(i, { reps: v })} />
                 <button onClick={() => completeSet(i)} aria-label={r.done ? 'ยกเลิกเซ็ตนี้' : 'ทำเซ็ตนี้เสร็จ'}
                   className={cx('grid size-11 place-items-center justify-self-end rounded-full transition', r.done ? 'animate-pop bg-good-fill text-white' : 'bg-raised text-muted ring-1 ring-line')}>

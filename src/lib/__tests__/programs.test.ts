@@ -219,3 +219,20 @@ describe('ความแข็งแรงตามช่วง (อ.เอก�
     expect(race.title).toContain('11.55 กม.')
   })
 })
+
+describe('home (in-room) variant', () => {
+  it('no home strength day needs a bar or gym machine, and no exercise repeats within a day', async () => {
+    const { programs, variants } = await import('../../data/programs')
+    const { homeUsable, libEx } = await import('../../data/library')
+    for (const id of Object.keys(programs) as (keyof typeof programs)[])
+      for (let w = 1; w <= programs[id].weeks; w++)
+        for (const d of variants(id, w).home) {
+          if (d.type !== 'strength') continue
+          const names = d.exercises.map(e => e.name)
+          expect(new Set(names).size, `${id} w${w} ${d.title}`).toBe(names.length)
+          for (const n of names) if (n !== 'Cindy (AMRAP)') expect(homeUsable(n), `${id} w${w} ${n}`).toBe(true)
+          for (const n of names) if (n !== 'Cindy (AMRAP)') expect(libEx(n), n).toBeTruthy()
+          expect(d.title).not.toMatch(/สวน/)
+        }
+  })
+})

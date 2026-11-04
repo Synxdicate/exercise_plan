@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { ArrowDown, ArrowLeftRight, ArrowUp, Check, ChevronDown, ChevronRight, Dumbbell, Flag, Footprints, Moon, Play, Plus, RefreshCw, Trash2, Trees } from 'lucide-react'
+import { ArrowDown, ArrowLeftRight, House, ArrowUp, Check, ChevronDown, ChevronRight, Dumbbell, Flag, Footprints, Moon, Play, Plus, RefreshCw, Trash2, Trees } from 'lucide-react'
 import { yt, type Day, type Exercise } from '../data/workouts'
 import { locationInfo, weekNote } from '../data/programs'
 import { dayIntensity, musclesOf, muscleNames } from '../data/muscles'
@@ -99,7 +99,7 @@ function PlanBody() {
       <WeekCheckCard />
       <button onClick={() => setPicking(true)} className="flex w-full items-center gap-3 rounded-3xl bg-card p-4 text-left shadow-sm ring-1 ring-line active:scale-[.99]">
         <div className="min-w-0 flex-1">
-          <div className="text-xs font-semibold text-accent">{t('โปรแกรมของฉัน', 'My program')} · {dt.en ? { gym: 'Gym', park: 'Park', mix: 'Mixed' }[p.location] : locationInfo[p.location].label.replace(/ \(.*\)/, '')}</div>
+          <div className="text-xs font-semibold text-accent">{t('โปรแกรมของฉัน', 'My program')} · {dt.en ? { gym: 'Gym', park: 'Park', home: 'Home', mix: 'Mixed' }[p.location] : locationInfo[p.location].label.replace(/ \(.*\)/, '')}</div>
           <div className="truncate text-lg font-bold leading-tight">{dt.program(p.program).name}</div>
           {p.isRace && (
             <div className="mt-0.5 text-xs text-muted">
@@ -201,7 +201,7 @@ function PlanBody() {
                   <span className={cx('size-2 shrink-0 rounded-full', isDone(i) ? 'bg-good-fill' : st.dot)} />
                   <span className="w-14 shrink-0 text-xs text-muted">{dt.weekday(d)}</span>
                   <span className={cx('min-w-0 flex-1 truncate text-sm', d.type === 'rest' ? 'text-muted' : 'font-semibold', isDone(i) && 'text-muted line-through')}>{dt.title(d)}</span>
-                  {d.location && <Badge tone="muted">{d.location === 'gym' ? t('ยิม', 'Gym') : t('สวน', 'Park')}</Badge>}
+                  {d.location && <Badge tone="muted">{d.location === 'gym' ? t('ยิม', 'Gym') : d.location === 'home' ? t('บ้าน', 'Home') : t('สวน', 'Park')}</Badge>}
                   {d.targetKm && <span className="text-xs tabular-nums text-muted">{d.targetKm} {t('กม.', 'km')}</span>}
                   <ChevronRight size={16} className="shrink-0 text-muted" />
                 </button>
@@ -259,7 +259,7 @@ function DayMuscles({ day }: { day: Day }) {
 
 function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slotId, weekNoteText, date, onDoToday }: {
   day: Day; isToday: boolean; done: boolean; hint: string | null; weekNoteText?: string; date: string; onDoToday?: () => void
-  setDone: (v: boolean) => void; onStart: () => void; onLocation: (m: 'gym' | 'park') => void; slotId: string
+  setDone: (v: boolean) => void; onStart: () => void; onLocation: (m: 'gym' | 'park' | 'home') => void; slotId: string
 }) {
   const t = useT()
   const dt = useDayText()
@@ -292,6 +292,7 @@ function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slo
           <Segmented value={day.location} onChange={onLocation} options={[
             { value: 'gym', label: <><Dumbbell size={15} /> {t('ยิม', 'Gym')}</> },
             { value: 'park', label: <><Trees size={15} /> {t('สวน', 'Park')}</> },
+            { value: 'home', label: <><House size={15} /> {t('ที่บ้าน', 'Home')}</> },
           ]} />
           {day.location === 'gym' && (
             <label className="mt-2 flex items-center gap-2 rounded-xl bg-raised px-3 py-2 text-sm">

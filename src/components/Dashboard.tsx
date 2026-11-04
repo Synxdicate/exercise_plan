@@ -124,7 +124,7 @@ export function Dashboard() {
             </div>
           )}
           {!todayDone && todayPlan.type === 'strength' && (
-            <Button className="mt-3 w-full" onClick={() => setChecking(true)}><Play size={16} fill="currentColor" /> {t('เริ่มฝึกเลย', 'Start workout')} ({todayPlan.location === 'park' ? t('สวน', 'park') : t('ยิม', 'gym')})</Button>
+            <Button className="mt-3 w-full" onClick={() => setChecking(true)}><Play size={16} fill="currentColor" /> {t('เริ่มฝึกเลย', 'Start workout')} ({todayPlan.location === 'park' ? t('สวน', 'park') : todayPlan.location === 'home' ? t('ที่บ้าน', 'home') : t('ยิม', 'gym')})</Button>
           )}
           {!todayDone && todayPlan.type === 'run' && (
             <Button variant="run" className="mt-3 w-full" onClick={() => nav('runs')}><Footprints size={16} /> {t('เริ่มวิ่ง', 'Start run')}</Button>

@@ -21,7 +21,7 @@ export type LibEx = {
   cue: string
   video: string
   reps: string // ช่วงครั้งเริ่มต้น เมื่อสลับจากท่าที่นับต่างหน่วย (ครั้ง ↔ วินาที)
-  where: 'gym' | 'park' | 'both'
+  where: 'gym' | 'park' | 'both' // 'park' = ไม่ต้องใช้เครื่อง (สวน) — ที่บ้านดู homeAlt/homeUsable
   muscles?: { primary: Muscle[]; secondary: Muscle[] } // เฉพาะท่าใหม่ที่ไม่มีใน muscles.ts
 }
 
@@ -45,6 +45,7 @@ export const library: Record<Pattern, LibEx[]> = {
     x('Step-up', 'ก้าวขึ้นกล่อง/ม้านั่ง', 'ดันขึ้นด้วยขาบน ไม่ถีบขาล่าง', 'step up exercise form', '8–12 / ข้าง', 'both', m(['quads', 'glutes'], ['hamstrings', 'calves'])),
   ],
   hinge: [
+    x('Superman', 'นอนคว่ำยกแขนขา', 'ยกแขน-อก-ขาพร้อมกัน ค้าง 2 วิ คอตรง', 'superman exercise form', '10–15', 'both', m(['lowerBack', 'glutes'], ['upperBack'])),
     x('Romanian Deadlift', 'โรมาเนียนเดดลิฟต์', 'หลังตรง บาร์ชิดขา ดันสะโพกไปหลัง', 'romanian deadlift proper form', '6–10', 'gym'),
     x('Trap Bar Deadlift', 'เดดลิฟต์บาร์หกเหลี่ยม', 'ยืนกลางบาร์ ดันพื้น หลังตรง', 'trap bar deadlift form', '5–8', 'gym', m(['glutes', 'quads', 'hamstrings'], ['lowerBack', 'traps', 'forearms'])),
     x('Hip Thrust', 'ฮิปทรัสต์', 'หลังบนพาดม้านั่ง คางชิดอก บีบก้นค้างด้านบน', 'hip thrust proper form', '8–12', 'gym', m(['glutes'], ['hamstrings'])),
@@ -70,6 +71,7 @@ export const library: Record<Pattern, LibEx[]> = {
     x('Archer / Decline Push-up', 'วิดพื้นแบบยาก', 'คุมลำตัวตรง ลงช้า', 'archer push up progression', '6–10', 'park'),
   ],
   dip: [
+    x('Chair Dips', 'ดิปเก้าอี้', 'เก้าอี้ไม่มีล้อ ชิดผนัง ลงจนศอก ~90° ไหล่ไม่ห่อ', 'chair dips at home form', '8–12', 'both', m(['triceps'], ['chest', 'frontDelts'])),
     x('Dips', 'ดิปบาร์คู่', 'ลงจนศอก ~90° ไหล่ไม่ห่อ', 'how to do dips correctly', '6–10', 'both'),
     x('Straight Bar Dip', 'ดิปบาร์เดี่ยว', 'ตัวเอนหน้าเล็กน้อย ลงจนบาร์แตะใต้อก', 'straight bar dip tutorial', '5–8', 'park'),
     x('Bench Dip', 'ดิปม้านั่ง', 'ก้นชิดม้านั่ง ลงจนศอก ~90°', 'bench dip form', '10–15', 'both', m(['triceps'], ['chest', 'frontDelts'])),
@@ -80,6 +82,7 @@ export const library: Record<Pattern, LibEx[]> = {
     x('Pike Push-up', 'วิดพื้นสะโพกสูง', 'ศีรษะลงหน้ามือ เป็นสามเหลี่ยม', 'pike push up tutorial', '6–10', 'both'),
   ],
   hpull: [
+    x('Table Row', 'ดึงตัวใต้โต๊ะ', 'ใช้โต๊ะที่แข็งแรงไม่ล้ม จับขอบโต๊ะ ตัวตรง ดึงอกขึ้นหาขอบ — ไม่มีโต๊ะเหมาะใช้ Superman แทน', 'table inverted row at home', '8–12', 'both', m(['upperBack', 'lats'], ['biceps', 'rearDelts'])),
     x('Seated Cable Row', 'ดึงเคเบิลนั่ง', 'ดึงศอกไปหลัง อกยืด', 'seated cable row proper form', '8–12', 'gym'),
     x('One-arm DB Row', 'ดึงดัมเบลแขนเดียว', 'มือ-เข่าพาดม้านั่ง ดึงศอกไปทางสะโพก', 'one arm dumbbell row form', '8–12 / ข้าง', 'gym', m(['lats', 'upperBack'], ['biceps', 'rearDelts'])),
     x('Chest-supported Row', 'ดึงดัมเบลนอนคว่ำม้านั่งเอียง', 'อกแนบเบาะ ไม่เหวี่ยงตัว', 'chest supported dumbbell row', '8–12', 'gym', m(['upperBack', 'lats'], ['rearDelts', 'biceps'])),
@@ -128,6 +131,7 @@ export const library: Record<Pattern, LibEx[]> = {
     x('Jump Rope', 'กระโดดเชือก', 'กระโดดต่ำ ลงปลายเท้า จังหวะสม่ำเสมอ', 'jump rope for runners', '1–2 นาที', 'both', m(['calves'], ['quads'])),
   ],
   core: [
+    x('Lying Leg Raise', 'นอนยกขา', 'หลังล่างแนบพื้น ลงช้า ไม่ให้ขาแตะพื้น', 'lying leg raise form', '8–15', 'both', m(['abs'], ['obliques'])),
     x('Plank', 'แพลงก์', 'ลำตัวตรง เกร็งก้นและท้อง', 'plank proper form', '30–45 วิ', 'both'),
     x('Side Plank', 'แพลงก์ด้านข้าง', 'สะโพกไม่ตก', 'side plank proper form', '30–45 วิ / ข้าง', 'both'),
     x('Hollow Body Hold', 'นอนเกร็งท้องทรงเรือ', 'หลังล่างแนบพื้น', 'hollow body hold tutorial', '20–40 วิ', 'both'),
@@ -158,11 +162,28 @@ export const needsSpotter: Record<string, { alt: string; note: string }> = {
 }
 
 /** ท่าที่สลับแทนได้ (กลุ่มเดียวกัน ไม่รวมตัวเอง) — ท่าที่ทำได้ในที่นั้นขึ้นก่อน */
-export function alternatives(name: string, where: 'gym' | 'park') {
+export function alternatives(name: string, where: 'gym' | 'park' | 'home') {
   const p = patternOf(name)
   if (!p) return []
   const self = alias[name] ?? name
   return library[p]
     .filter(e => e.name !== self)
-    .sort((a, b) => Number(b.where === where || b.where === 'both') - Number(a.where === where || a.where === 'both'))
+    .sort((a, b) => {
+      const ok = (e: LibEx) => (where === 'home' ? homeUsable(e.name) : e.where === where || e.where === 'both')
+      return Number(ok(b)) - Number(ok(a))
+    })
 }
+
+/** ท่าที่ต้องใช้บาร์ (สวน/ยิม) → ท่าแทนที่ทำในห้องได้ ตามลำดับ (เลือกตัวแรกที่ยังไม่ซ้ำในวันนั้น) */
+export const homeAlt: Record<string, string[]> = {
+  'Pull-up': ['Table Row', 'Superman'],
+  'Chin-up': ['Table Row', 'Superman'],
+  'Negative Pull-up': ['Table Row', 'Superman'],
+  'Australian Row': ['Table Row', 'Superman'],
+  'Dips': ['Chair Dips', 'Diamond Push-up'],
+  'Straight Bar Dip': ['Chair Dips', 'Diamond Push-up'],
+  'Hanging Knee/Leg Raise': ['Lying Leg Raise', 'Hollow Body Hold'],
+  'Hanging Knee Raise': ['Lying Leg Raise', 'Hollow Body Hold'],
+}
+/** ทำที่บ้าน/ในห้องได้ (ไม่ต้องใช้เครื่องหรือบาร์) */
+export const homeUsable = (name: string) => !homeAlt[alias[name] ?? name] && !homeAlt[name] && libEx(name)?.where !== 'gym'

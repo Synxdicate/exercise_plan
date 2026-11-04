@@ -99,7 +99,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
         {step === 3 && (
           <>
             <p className="text-sm text-muted">วันไหนอยากเปลี่ยนที่ สลับเฉพาะวันนั้นได้ในหน้าฝึก</p>
-            {(['mix', 'gym', 'park'] as LocationPref[]).map(id => (
+            {(['mix', 'gym', 'park', 'home'] as LocationPref[]).map(id => (
               <Option key={id} on={where === id} onClick={() => setWhere(id)} title={locationInfo[id].label} text={locationInfo[id].text} />
             ))}
           </>

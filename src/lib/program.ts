@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { programs, variants, weekKm, weekPlan, type LocationPref, type Mode, type ProgramId } from '../data/programs'
 import { addDays, daysBetween, today, weekStart } from './date'
 import { usePersisted } from './storage'
-import { libEx, needsSpotter } from '../data/library'
+import { homeUsable, libEx, needsSpotter } from '../data/library'
 import type { Day, Exercise } from '../data/workouts'
 import { applyMoves, type DayMoves } from './moves'
 
@@ -50,7 +50,7 @@ export function applyCustom(days: Day[], program: string, swaps: Record<string, 
     if (d.type !== 'strength') return d
     // ผู้ใช้สลับเองมาก่อน ไม่งั้นถ้าฝึกคนเดียวและท่าต้องมีคนช่วย → ท่าทดแทนที่ปลอดภัย
     // ท่าที่สลับไปเป็นท่าของยิม (ต้องใช้เครื่อง/อุปกรณ์) ใช้เฉพาะวันยิม — วันสวนกลับเป็นท่าเดิม
-    const usable = (to: string) => d.location !== 'park' || libEx(to)?.where !== 'gym'
+    const usable = (to: string) => d.location === 'home' ? homeUsable(to) : d.location !== 'park' || libEx(to)?.where !== 'gym'
     const list = d.exercises.map(e => (swaps[e.name] && usable(swaps[e.name]) ? swapExercise(e, swaps[e.name])
       : solo && needsSpotter[e.name] ? { ...swapExercise(e, needsSpotter[e.name].alt), solo: true } : e))
     return { ...d, exercises: [...list, ...(extras[extrasKey(program, d)] ?? []).map(e => ({ ...e, added: true }))] }

@@ -41,6 +41,14 @@ export const stickDemos: Record<string, StickDemo> = {
       { head: [58, 12], shoulder: [58, 21], elbow: [61, 32], hand: [62, 42], hip: [58, 43], knee: [58, 57], foot: [60, 69] },
     ],
   },
+  // ขาเดียวบนพื้น เข่าตึง — รูปจากคลังเป็นเครื่องยกน่องในยิม ดูไม่ตรงกับท่าบอดี้เวท
+  'Single-leg Calf Raise': {
+    props: [{ kind: 'floor' }],
+    poses: [
+      { head: [58, 14], shoulder: [58, 23], elbow: [61, 34], hand: [62, 44], hip: [58, 45], knee: [58, 58], foot: [58, 72] },
+      { head: [58, 9], shoulder: [58, 18], elbow: [61, 29], hand: [62, 39], hip: [58, 40], knee: [58, 53], foot: [60, 68] },
+    ],
+  },
   'Bent-knee Calf Raise': {
     props: [{ kind: 'floor' }],
     poses: [

@@ -1,9 +1,12 @@
 import { gymWeek, parkWeek, type Day, type Exercise } from './workouts'
 import { guides, type Step } from '../lib/guide'
+import { homeAlt, libEx } from './library'
 
 export type ProgramId = 'physique' | 'strength' | 'start' | 'mini' | 'base' | 'five' | 'ten' | 'half' | 'full'
 type RunProgram = Exclude<ProgramId, 'physique' | 'strength' | 'start' | 'mini'>
-export type Mode = 'gym' | 'park'
+export type Mode = 'gym' | 'park' | 'home'
+// แผนเขียนไว้สองแบบ (ยิม/สวน) — ที่บ้านแปลงจากแบบสวนใน homeWeek
+type Venue = 'gym' | 'park'
 export type LocationPref = Mode | 'mix'
 
 // ongoing = ไม่มีวันจบ วนรอบตามสัปดาห์ในปฏิทิน (weeks = ความยาวรอบ)
@@ -124,7 +127,7 @@ const runDay = (key: string, day: string, title: string, km: number, runKind: Da
 const ex = (name: string, th: string, sets: string, reps: string, rest: string, cue: string, video: string, extra: Partial<Exercise> = {}): Exercise =>
   ({ name, th, sets, reps, rest, cue, video, ...extra })
 
-const runnerStrength: Record<Mode, [Exercise[], Exercise[]]> = {
+const runnerStrength: Record<Venue, [Exercise[], Exercise[]]> = {
   gym: [
     [
       ex('Back Squat', 'สควอทบาร์หลัง', '3', '5', '2–3 นาที', 'หนักแต่เหลือแรง 2–3 ครั้ง ไม่เล่นจนหมด', 'Jeff Nippard how to squat', { easier: 'Goblet squat' }),
@@ -175,7 +178,7 @@ const strengthNote = 'เหลือแรง 2–3 ครั้งทุกเ
 
 const tables: Record<RunProgram, RunWeek[]> = { base: baseWeeks, five: fiveWeeks, ten: tenWeeks, half: halfWeeks, full: fullWeeks }
 
-function raceWeek(program: RunProgram, mode: Mode, week: number): Day[] {
+function raceWeek(program: RunProgram, mode: Venue, week: number): Day[] {
   const table = tables[program]
   const w = table[Math.min(Math.max(week, 1), table.length) - 1]
   const last = !!programs[program].raceKm && week === table.length
@@ -253,7 +256,7 @@ export const startSessions = (week: number) => {
   return [0, 1, 2].map(i => runWalkSteps(w.s[i] ?? w.s[0]))
 }
 
-function startWeek(mode: Mode, week: number): Day[] {
+function startWeek(mode: Venue, week: number): Day[] {
   const w = startWeeks[Math.min(Math.max(week, 1), startWeeks.length) - 1]
   const [a, b] = runnerStrength[mode]
   // มือใหม่: เวท 2 เซ็ต ไม่มีกระโดด — สร้างความแข็งแรงให้เอ็น/กล้ามรับแรงกระแทกก่อน
@@ -297,7 +300,7 @@ const miniWeeks: { easy: number; long: number; run: number; walk: number; note?:
   { easy: 3, long: 10.5, run: 0, walk: 0, note: 'สัปดาห์แข่ง! วางแผนวิ่ง 8 นาที เดิน 1 นาทีตั้งแต่ต้น ดื่มน้ำทุกจุด ออกตัวช้า' },
 ]
 
-function miniWeek(mode: Mode, week: number): Day[] {
+function miniWeek(mode: Venue, week: number): Day[] {
   const n = miniWeeks.length
   const w = miniWeeks[Math.min(Math.max(week, 1), n) - 1]
   const last = week >= n
@@ -330,7 +333,7 @@ function miniWeek(mode: Mode, week: number): Day[] {
 // สัปดาห์ที่ 4 ของรอบเป็น Deload ลดเซ็ตครึ่งหนึ่ง น้ำหนักเท่าเดิม
 const STRENGTH_DELOAD = 'สัปดาห์ Deload: ทำทุกท่าครึ่งหนึ่งของจำนวนเซ็ต น้ำหนักเท่าเดิม ให้ร่างกายฟื้นก่อนรอบใหม่'
 
-const lowerB: Record<Mode, Exercise[]> = {
+const lowerB: Record<Venue, Exercise[]> = {
   gym: [
     ex('Trap Bar Deadlift', 'เดดลิฟต์บาร์หกเหลี่ยม', '3', '5–8', '2–3 นาที', 'ยืนกลางบาร์ ดันพื้น หลังตรง (ไม่มีบาร์หกเหลี่ยมใช้ Romanian Deadlift)', 'trap bar deadlift form', { easier: 'Romanian Deadlift' }),
     ex('Walking Lunge', 'ลันจ์เดิน', '3', '10–12 / ข้าง', '90 วิ', 'ก้าวยาวพอดี เข่าหลังเกือบแตะพื้น', 'walking lunge proper form'),
@@ -351,7 +354,7 @@ const lowerB: Record<Mode, Exercise[]> = {
 
 const restDay = (key: string, day: string): Day => ({ key, day, title: 'พัก / เดินเบา ๆ', type: 'rest', duration: '-', note: 'เดิน 6,000–10,000 ก้าว ยืดเหยียด นอนให้ได้ 7–9 ชั่วโมง', exercises: [] })
 
-function strengthWeek(mode: Mode, week: number): Day[] {
+function strengthWeek(mode: Venue, week: number): Day[] {
   const [a, legs, b] = (mode === 'gym' ? gymWeek : parkWeek).filter(d => d.type === 'strength')
   const deload = week === 4
   const half = (d: Day): Day => (deload
@@ -366,11 +369,34 @@ function strengthWeek(mode: Mode, week: number): Day[] {
 
 // ทั้งสองเวอร์ชันมี 7 วันเรียง จันทร์→อาทิตย์ ตรงกัน วันวิ่ง/พักเหมือนกัน ต่างกันแค่วันเวท
 export function variants(program: ProgramId, week: number): Record<Mode, Day[]> {
-  if (program === 'physique') return { gym: gymWeek, park: parkWeek }
-  if (program === 'strength') return { gym: strengthWeek('gym', week), park: strengthWeek('park', week) }
-  if (program === 'start') return { gym: startWeek('gym', week), park: startWeek('park', week) }
-  if (program === 'mini') return { gym: miniWeek('gym', week), park: miniWeek('park', week) }
-  return { gym: raceWeek(program, 'gym', week), park: raceWeek(program, 'park', week) }
+  const v = program === 'physique' ? { gym: gymWeek, park: parkWeek }
+    : program === 'strength' ? { gym: strengthWeek('gym', week), park: strengthWeek('park', week) }
+    : program === 'start' ? { gym: startWeek('gym', week), park: startWeek('park', week) }
+    : program === 'mini' ? { gym: miniWeek('gym', week), park: miniWeek('park', week) }
+    : { gym: raceWeek(program, 'gym', week), park: raceWeek(program, 'park', week) }
+  return { ...v, home: homeWeek(v.park) }
+}
+
+/**
+ * ที่บ้าน/ในห้อง: ใช้แผนวันสวน แต่ท่าที่ต้องมีบาร์ (ดึงข้อ/ดิป/ห้อยตัว) เปลี่ยนเป็นท่าที่ทำในห้องได้
+ * เก็บเซ็ต/ครั้ง/พักเดิม (เปลี่ยนหน่วยเฉพาะถ้าท่าใหม่นับเป็นวินาที) — ไม่ซ้ำท่าในวันเดียวกัน
+ */
+function homeWeek(days: Day[]): Day[] {
+  return days.map(d => {
+    if (d.type !== 'strength') return d
+    const used = new Set(d.exercises.map(e => e.name))
+    const exercises = d.exercises.map(e => {
+      if (e.name === 'Cindy (AMRAP)') return { ...e, th: '5 ดึงตัวใต้โต๊ะ + 10 วิดพื้น + 15 สควอท วนให้ได้มากรอบที่สุด', cue: 'ไม่มีโต๊ะที่แข็งแรง: ใช้ Superman 5 ครั้งแทนการดึง' }
+      const alts = homeAlt[e.name]
+      if (!alts) return e
+      const to = alts.find(a => !used.has(a)) ?? alts[alts.length - 1]
+      used.add(to)
+      const lib = libEx(to)!
+      const timed = (r: string) => /วิ/.test(r)
+      return { ...e, name: lib.name, th: lib.th, cue: lib.cue, video: lib.video, easier: undefined, harder: undefined, reps: timed(e.reps) === timed(lib.reps) ? e.reps : lib.reps }
+    })
+    return { ...d, title: d.title.replace('(สวน)', '(ที่บ้าน)'), exercises }
+  })
 }
 
 // เลือกยิม/สวนทีละวัน (i = 0 จันทร์ … 6 อาทิตย์)
@@ -395,6 +421,7 @@ export const programLength = (id: ProgramId) => (programs[id].ongoing ? `วน�
 export const locationInfo: Record<LocationPref, { label: string; text: string }> = {
   gym: { label: 'ยิมทุกวัน', text: 'เพิ่มน้ำหนักได้ละเอียด เห็นผลเรื่องกล้ามเร็วที่สุด โดยเฉพาะขา' },
   mix: { label: 'ผสม (แนะนำถ้ามีสมาชิกยิม)', text: 'วันที่มีขา/ท่าหนักไปยิม วันเวทวันสุดท้ายของสัปดาห์ไปสวน (บอดี้เวทแบบ Tom Holland)' },
+  home: { label: 'ที่บ้าน/ในห้อง', text: 'ไม่ต้องมีอุปกรณ์ — ท่าที่ต้องใช้บาร์เปลี่ยนเป็น Table Row, Chair Dips, Lying Leg Raise ขาใช้ท่าขาเดียวและจังหวะลงช้า' },
   park: { label: 'สวนทุกวัน', text: 'ฟรี ใกล้บ้าน ดีมากสำหรับดึงข้อ/ดิป/วิดพื้น แต่ขาเพิ่มความหนักยาก ใช้ท่าขาเดียวและจังหวะลงช้าแทน' },
 }
 

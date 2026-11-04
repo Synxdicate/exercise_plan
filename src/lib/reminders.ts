@@ -37,7 +37,7 @@ export function useReminderSchedule() {
           title: day.type === 'run' ? `วันนี้วิ่ง: ${day.title}` : `วันนี้ฝึก: ${day.title}`,
           body: day.type === 'run'
             ? `${day.targetKm ? `${day.targetKm} กม.` : day.duration} — ${day.exercises[0]?.cue ?? ''}`
-            : `${day.location === 'park' ? 'ที่สวน' : 'ที่ยิม'} · ${day.duration} · ${day.exercises.length} ท่า`,
+            : `${day.location === 'park' ? 'ที่สวน' : day.location === 'home' ? 'ที่บ้าน' : 'ที่ยิม'} · ${day.duration} · ${day.exercises.length} ท่า`,
         })
     }
     void scheduleReminders(list)

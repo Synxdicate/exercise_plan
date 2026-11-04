@@ -23,7 +23,7 @@ function Row({ e, onClick, right }: { e: LibEx; onClick: () => void; right?: Rea
 }
 
 /** สลับท่าเป็นท่าอื่นในกลุ่มเดียวกัน — มีผลกับทุกวันที่มีท่านี้ */
-export function SwapSheet({ e, where, exclude, onPick, onClose }: { e: Exercise; where: 'gym' | 'park'; exclude: string[]; onPick: (to?: string) => void; onClose: () => void }) {
+export function SwapSheet({ e, where, exclude, onPick, onClose }: { e: Exercise; where: 'gym' | 'park' | 'home'; exclude: string[]; onPick: (to?: string) => void; onClose: () => void }) {
   const original = e.swappedFrom ?? e.name
   const p = patternOf(original)
   const list = alternatives(original, where).filter(x => !exclude.includes(x.name))
@@ -45,7 +45,7 @@ export function SwapSheet({ e, where, exclude, onPick, onClose }: { e: Exercise;
 }
 
 /** เพิ่มท่าจากคลังเข้าวันนี้ */
-export function AddSheet({ where, existing, onPick, onClose }: { where: 'gym' | 'park'; existing: string[]; onPick: (e: LibEx) => void; onClose: () => void }) {
+export function AddSheet({ where, existing, onPick, onClose }: { where: 'gym' | 'park' | 'home'; existing: string[]; onPick: (e: LibEx) => void; onClose: () => void }) {
   const [q, setQ] = useState('')
   const usable = allLibrary.filter(e => e.where === where || e.where === 'both')
   const found = searchFoods(usable, q).concat(q ? usable.filter(e => e.th.includes(q.trim()) && !e.name.toLowerCase().includes(q.trim().toLowerCase())) : [])
