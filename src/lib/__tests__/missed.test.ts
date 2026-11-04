@@ -92,3 +92,15 @@ describe('finishEstimate (run-walk beginners)', () => {
     expect(finishEstimate([run('2026-10-31', 2.49, 'easy', 14.2)], 11.55, '2026-11-05')).toBeNull()
   })
 })
+
+describe('circuitFit', () => {
+  it('good on rest/easy days, avoid on or before long/quality runs, skip on strength days', async () => {
+    const { circuitFit } = await import('../circuit')
+    const w = mini(1) // จ เวท, อ วิ่ง, พ พัก, พฤ วิ่ง, ศ เวท, ส พัก, อา วิ่งยาว
+    expect(circuitFit(w, 1)).toBe('good') // วิ่งเบา
+    expect(circuitFit(w, 2)).toBe('good') // วันพัก
+    expect(circuitFit(w, 0)).toBe('skip') // วันเวท
+    expect(circuitFit(w, 5)).toBe('avoid') // วันก่อนวิ่งยาว
+    expect(circuitFit(w, 6)).toBe('avoid') // วันวิ่งยาว
+  })
+})

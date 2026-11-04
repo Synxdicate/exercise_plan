@@ -402,6 +402,7 @@ test('คาร์ดิโออื่น: บันทึกปั่นจั
 test('เซอร์กิตแกนกลาง: เริ่ม ข้ามจนจบ แล้วบันทึก', async ({ page }) => {
   await seed(page)
   await nav(page, 'ฝึก')
+  await page.getByRole('button', { name: /^2 รอบ/ }).click()
   await page.getByRole('button', { name: 'เริ่มเซอร์กิต' }).click()
   await expect(page.getByText('แพลงก์').first()).toBeVisible()
   for (let i = 0; i < 31; i++) await page.getByRole('button', { name: 'ข้าม' }).click()

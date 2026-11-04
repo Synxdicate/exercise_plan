@@ -43,6 +43,8 @@ export const references: { cat: string; title: string; url: string; used: string
   { cat: 'เวทเทรนนิ่ง', level: 'meta', title: 'Schoenfeld et al. 2019 — Training frequency and muscle hypertrophy', url: pm('30558493'), used: 'ความถี่ไม่สำคัญเท่าปริมาณรวม (ขาฝึกวันเดียวได้)' },
   { cat: 'เวทเทรนนิ่ง', level: 'meta', title: 'Wilson et al. 2012 — Concurrent training: interference meta-analysis', url: pm('22002517'), used: 'เหตุผลที่ควรเน้นทีละเป้า (หุ่น vs มาราธอน)' },
   // วิ่ง
+  { cat: 'วิ่ง', level: 'meta', title: 'Lauersen et al. 2014 — Exercise interventions to prevent sports injuries (meta-analysis of RCTs, BJSM)', url: pm('24100287'), used: 'เหตุผลของเวทและเซอร์กิตแกนกลาง/สะโพก: การฝึกความแข็งแรงลดการบาดเจ็บจากกีฬาโดยรวม' },
+  { cat: 'วิ่ง', level: 'trial', title: 'Toresdahl et al. 2020 — Strength program to prevent injuries in NYC Marathon first-timers (RCT, 720 runners)', url: pm('31642726'), used: 'โปรแกรมแกนกลาง/สะโพก 10 นาที 3 ครั้ง/สัปดาห์ ไม่ลดการบาดเจ็บอย่างชัดเจน — บอกตามจริงในการ์ดเซอร์กิต' },
   { cat: 'วิ่ง', level: 'cohort', title: 'Frandsen et al. 2025 — How much running is too much? (5,200 runners, BJSM)', url: pm('40623829'), used: 'วิ่งยาวแต่ละครั้งไม่เกิน 110% ของครั้งที่ยาวที่สุดใน 30 วันก่อน (เกินแล้วเสี่ยงบาดเจ็บ ~1.6 เท่า)' },
   { cat: 'วิ่ง', level: 'cohort', title: 'Deaner et al. 2015 — Men are more likely than women to slow in the marathon', url: pm('24983344'), used: 'แผนเพซวันแข่ง: ออกตัวช้ากว่าเพซเป้าเล็กน้อย (นักวิ่งสมัครเล่นช้าลงมากในครึ่งหลัง)' },
   { cat: 'วิ่ง', level: 'cohort', title: 'Díaz et al. 2018 — The influence of pacing strategy on marathon world records', url: pm('29557279'), used: 'เพซคงที่หรือครึ่งหลังเร็วกว่าเป็นรูปแบบของสถิติที่ดีที่สุด' },

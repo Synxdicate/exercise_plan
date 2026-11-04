@@ -36,3 +36,18 @@ export function circuitAt(steps: CircuitStep[], elapsed: number) {
   }
   return { index: steps.length, step: steps.at(-1)!, left: 0, done: true }
 }
+
+/**
+ * วันนี้เหมาะทำเซอร์กิตไหม (สัปดาห์ละ 2–3 ครั้งพอ): วันพักหรือหลังวิ่งเบา = เหมาะ;
+ * วันวิ่งยาว/วิ่งหนัก หรือก่อนวันวิ่งยาว/วิ่งหนัก/แข่ง = เลี่ยง (ไม่ให้ขาล้าก่อนวันสำคัญ);
+ * วันเวท = ไม่ต้อง (มีท่าแกนกลางในวันเวทแล้ว)
+ */
+export function circuitFit(plan: { type: string; runKind?: string }[], todayIdx: number): 'good' | 'avoid' | 'skip' {
+  const d = plan[todayIdx]
+  const next = plan[todayIdx + 1]
+  const key = (x?: { type: string; runKind?: string }) => x?.type === 'run' && x.runKind !== 'easy'
+  if (!d) return 'good'
+  if (key(d) || key(next)) return 'avoid'
+  if (d.type === 'strength') return 'skip'
+  return 'good'
+}
