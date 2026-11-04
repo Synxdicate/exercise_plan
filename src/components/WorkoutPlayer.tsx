@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Check, ChevronLeft, ChevronRight, Minus, Play, Plus, SkipForward, TrendingUp, X } from 'lucide-react'
+import { Check, ChevronLeft, ChevronRight, Minus, Play, Plus, SkipForward, Timer, TrendingUp, X } from 'lucide-react'
 import { yt, type Day, type Exercise } from '../data/workouts'
 import { lastSetsFor, formatDuration, uid, useSessions, type SetEntry } from '../lib/log'
 import { useDayText } from '../lib/dayText'
@@ -14,6 +14,7 @@ import { cx } from '../lib/cx'
 import { useBackClose } from '../lib/back'
 import { ExerciseDemo } from './ExerciseDemo'
 import { ask } from '../lib/dialog'
+import { buzz, speak } from '../lib/voice'
 
 type SetRow = { kg: string; reps: string; done: boolean }
 type Active = { key: string; startedAt: number; idx: number; rows: Record<string, SetRow[]> }
@@ -22,6 +23,8 @@ const setsOf = (e: Exercise) => parseInt(e.sets, 10) || 1
 
 
 const targetReps = (e: Exercise) => e.reps.match(/\d+/)?.[0] ?? ''
+// ท่าค้าง (นับเป็นวินาที) ใช้ตัวจับเวลาในตัว — ท่า "/ ข้าง" จับเวลาข้างละครั้ง
+const holdOf = (e: Exercise) => (/วิ/.test(e.reps) ? { sec: parseInt(targetReps(e), 10) || 30, sides: /ข้าง/.test(e.reps) ? 2 : 1 } : null)
 
 /** หน้าพาฝึกทีละท่า: กรอกน้ำหนัก×ครั้ง ติ๊กเซ็ต แล้วนับเวลาพักให้อัตโนมัติ */
 export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, onSaved }: {
@@ -32,6 +35,12 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
   const [active, setActive] = usePersisted<Active | null>('activeWorkout', null)
   const [rest, setRest] = useState<{ end: number; total: number } | null>(null)
   const [now, setNow] = useState(() => Date.now())
+  // ตัวจับเวลาท่าค้าง: ข้างที่เท่าไร + เวลาสิ้นสุด (เริ่มนับหลังนับถอยหลัง 3 วิ)
+  const [hold, setHold] = useState<{ side: number; end: number } | null>(null)
+  const [voice] = usePersisted('voiceCues', true)
+  // วันสวน/ที่บ้านส่วนใหญ่ไม่มีน้ำหนักเพิ่ม — ซ่อนช่องกก. ไว้ก่อน (เปิดเองได้)
+  const [showKg, setShowKg] = usePersisted('bwWeights', false)
+  const kgCol = mode === 'gym' || showKg
 
   // เริ่มใหม่ หรือกลับมาทำต่อจากที่ค้างไว้ (เช่น เผลอปิดหน้า)
   const state: Active = active?.key === sessionKey ? active : {
@@ -66,6 +75,7 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
   }, [])
 
   const restLeft = rest ? Math.max(0, Math.ceil((rest.end - now) / 1000)) : 0
+  const holdLeft = hold ? Math.ceil((hold.end - now) / 1000) : 0
 
   const ex = day.exercises[state.idx]
   const rows = state.rows[ex.name]
@@ -73,6 +83,7 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
   const total = Object.values(state.rows).flat().length
   const doneCount = Object.values(state.rows).flat().filter(r => r.done).length
   const currentSet = rows.findIndex(r => !r.done)
+  const h = holdOf(ex)
 
   const setRow = (i: number, patch: Partial<SetRow>) =>
     update(s => ({ ...s, rows: { ...s.rows, [ex.name]: s.rows[ex.name].map((r, j) => (j === i ? { ...r, ...patch } : r)) } }))
@@ -95,8 +106,36 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
       // ถ้าจอดับระหว่างพัก แจ้งเตือนของเครื่องจะเด้งตอนหมดเวลา
       const nextName = advance ? day.exercises[state.idx + 1].name : `${ex.name} เซ็ต ${Math.min(i + 2, rows.length)}`
       void scheduleRestEnd(new Date(end), nextName)
-    }
+      if (voice) void speak(`พัก ${sec} วินาที ต่อไป ${nextName}`)
+    } else if (voice) void speak('ครบทุกเซ็ตแล้ว เยี่ยมมาก')
   }
+
+  // จับเวลาท่าค้าง: ครบเวลา → สั่น + เสียง → ข้างถัดไป หรือบันทึกเซ็ตนี้เสร็จ
+  useEffect(() => {
+    if (!hold || !h || now < hold.end) return
+    buzz('easy')
+    if (hold.side < h.sides) {
+      if (voice) void speak('สลับข้าง')
+      setHold({ side: hold.side + 1, end: Date.now() + (h.sec + 3) * 1000 })
+    } else {
+      setHold(null)
+      if (currentSet >= 0) completeSet(currentSet)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [now, hold])
+  const startHold = () => {
+    if (!h) return
+    if (voice) void speak(`${ex.name} ${h.sec} วินาที เริ่มใน 3 วินาที`)
+    setHold({ side: 1, end: Date.now() + (h.sec + 3) * 1000 })
+  }
+
+  // ปุ่มหลักปุ่มเดียว: บอกสิ่งที่ต้องทำต่อ (แบบแอปพาออกกำลังกาย)
+  const allDone = doneCount === total
+  const exDone = currentSet < 0
+  const cta = allDone ? { label: 'จบและบันทึก', icon: Check, run: () => void finish() }
+    : exDone ? { label: 'ท่าถัดไป', icon: ChevronRight, run: () => update(s => ({ ...s, idx: day.exercises.findIndex(e => state.rows[e.name].some(r => !r.done)) })) }
+    : h ? { label: `จับเวลา ${h.sec} วิ${h.sides > 1 ? ' / ข้าง' : ''} · เซ็ต ${currentSet + 1}/${rows.length}`, icon: Timer, run: startHold }
+    : { label: `เสร็จเซ็ต ${currentSet + 1}/${rows.length}${targetReps(ex) ? ` (${rows[currentSet].reps || targetReps(ex)} ครั้ง)` : ''}`, icon: Check, run: () => completeSet(currentSet) }
 
   const [rating, setRating] = useState(false)
 
@@ -173,6 +212,8 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
           {prev && <p className="mt-1 text-xs text-muted">ครั้งก่อน ({prev.date}): {prev.sets.map(s => (s.kg ? `${s.kg}×${s.reps}` : `${s.reps}`)).join(' · ')}</p>}
           {(() => {
             const sg = suggest(ex, prev?.sets)
+            // ไม่มีน้ำหนัก (บอดี้เวท): คำแนะนำเรื่องเลือกน้ำหนักไม่ตรง — เพิ่มความยากด้วยจังหวะ/ท่าแทน
+            if (!kgCol && !sg.up && /น้ำหนัก/.test(sg.text)) sg.text = `ทำ ${ex.reps} ให้ท่าถูก เหลือแรงอีก 2–3 ครั้ง — ทำครบช่วงบนได้ทุกเซ็ตแล้วค่อยเพิ่มความยาก (ลงช้าลง หรือท่ายากขึ้น)`
             return (
               <p className={cx('mt-2 flex gap-2 rounded-xl p-2 text-sm', sg.up ? 'bg-good/15 text-good' : 'bg-raised text-ink')}>
                 <TrendingUp size={16} className="mt-0.5 shrink-0" /><span>{sg.text}</span>
@@ -183,14 +224,14 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
           {mode === 'gym' && isBarbell(ex.name) && <WarmupPlates workKg={parseFloat(rows[0]?.kg) || 0} />}
 
           <div className="mt-4 space-y-2">
-            <div className="grid grid-cols-[2rem_1fr_1fr_3rem] gap-2 px-1 text-xs text-muted">
-              <span>เซ็ต</span><span className="text-center">{mode !== 'gym' ? '+กก.' : 'กก.'}</span><span className="text-center">ครั้ง</span><span />
+            <div className={cx('grid gap-2 px-1 text-xs text-muted', kgCol ? 'grid-cols-[2rem_1fr_1fr_3rem]' : 'grid-cols-[2rem_1fr_3rem]')}>
+              <span>เซ็ต</span>{kgCol && <span className="text-center">{mode !== 'gym' ? '+กก.' : 'กก.'}</span>}<span className="text-center">{h ? 'วินาที' : 'ครั้ง'}</span><span />
             </div>
             {rows.map((r, i) => (
-              <div key={i} className={cx('grid grid-cols-[2rem_1fr_1fr_3rem] items-center gap-2 rounded-2xl p-1 transition-colors',
+              <div key={i} className={cx('grid items-center gap-2 rounded-2xl p-1 transition-colors', kgCol ? 'grid-cols-[2rem_1fr_1fr_3rem]' : 'grid-cols-[2rem_1fr_3rem]',
                 r.done ? 'bg-good/10' : i === currentSet ? 'bg-accent-soft/60' : '')}>
                 <span className="text-center font-bold text-muted">{i + 1}</span>
-                <Stepper value={r.kg} placeholder={prev?.sets[i]?.kg ? String(prev.sets[i].kg) : '0'} step={mode !== 'gym' ? 1 : 2.5} onChange={v => setRow(i, { kg: v })} />
+                {kgCol && <Stepper value={r.kg} placeholder={prev?.sets[i]?.kg ? String(prev.sets[i].kg) : '0'} step={mode !== 'gym' ? 1 : 2.5} onChange={v => setRow(i, { kg: v })} />}
                 <Stepper value={r.reps} placeholder={targetReps(ex) || '-'} step={1} onChange={v => setRow(i, { reps: v })} />
                 <button onClick={() => completeSet(i)} aria-label={r.done ? 'ยกเลิกเซ็ตนี้' : 'ทำเซ็ตนี้เสร็จ'}
                   className={cx('grid size-11 place-items-center justify-self-end rounded-full transition', r.done ? 'animate-pop bg-good-fill text-white' : 'bg-raised text-muted ring-1 ring-line')}>
@@ -198,12 +239,17 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
                 </button>
               </div>
             ))}
+            {mode !== 'gym' && <button onClick={() => setShowKg(!showKg)} className="px-1 text-xs font-semibold text-run">{showKg ? 'ซ่อนช่องน้ำหนัก' : '+ ใส่น้ำหนักเพิ่ม (เช่น เป้/ขวดน้ำ)'}</button>}
           </div>
         </section>
 
-        <div className="mt-auto flex gap-2">
+        <div className="flex gap-2">
           <Button variant="soft" className="flex-1" disabled={state.idx === 0} onClick={() => update(s => ({ ...s, idx: s.idx - 1 }))}><ChevronLeft size={18} /> ท่าก่อน</Button>
           <Button variant="soft" className="flex-1" disabled={state.idx === day.exercises.length - 1} onClick={() => update(s => ({ ...s, idx: s.idx + 1 }))}>ท่าถัดไป <ChevronRight size={18} /></Button>
+        </div>
+        {/* ปุ่มหลักติดขอบล่าง กดได้ด้วยนิ้วโป้งข้างเดียว */}
+        <div className="sticky bottom-0 -mx-4 mt-auto bg-gradient-to-t from-bg via-bg to-bg/0 px-4 pb-[calc(var(--sab)+0.5rem)] pt-4">
+          <Button size="lg" className="w-full" onClick={cta.run}><cta.icon size={20} /> {cta.label}</Button>
         </div>
       </div>
 
@@ -216,8 +262,17 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
           </div>
         </div>
       )}
+      {hold && (
+        <div className="fixed inset-0 z-[60] flex animate-fade-in flex-col items-center justify-center gap-5 bg-bg/95 p-6 backdrop-blur">
+          <div className="text-sm font-semibold uppercase tracking-wider text-muted">{ex.name}{h && h.sides > 1 ? ` · ข้างที่ ${hold.side}/${h.sides}` : ''}</div>
+          <div className="text-8xl font-extrabold tabular-nums">{holdLeft > (h?.sec ?? 0) ? holdLeft - (h?.sec ?? 0) : Math.max(0, holdLeft)}</div>
+          <div className="text-sm text-muted">{holdLeft > (h?.sec ?? 0) ? 'เตรียมตัว…' : 'ค้างไว้'}</div>
+          <ExerciseDemo key={ex.name} name={ex.name} className="w-full max-w-60" />
+          <Button variant="soft" size="lg" onClick={() => setHold(null)}><X size={18} /> หยุด</Button>
+        </div>
+      )}
       {rest && restLeft > 0 && (
-        <RestOverlay left={restLeft} total={rest.total} next={currentSet >= 0 ? `${ex.name} เซ็ต ${currentSet + 1}` : undefined}
+        <RestOverlay left={restLeft} total={rest.total} next={currentSet >= 0 ? `${ex.name} เซ็ต ${currentSet + 1}` : undefined} nextName={currentSet >= 0 ? ex.name : undefined}
           onAdd={() => setRest(r => {
             if (!r) return r
             void scheduleRestEnd(new Date(r.end + 15000))
@@ -245,7 +300,7 @@ function Stepper({ value, placeholder, step, onChange }: { value: string; placeh
   )
 }
 
-function RestOverlay({ left, total, next, onAdd, onSkip }: { left: number; total: number; next?: string; onAdd: () => void; onSkip: () => void }) {
+function RestOverlay({ left, total, next, nextName, onAdd, onSkip }: { left: number; total: number; next?: string; nextName?: string; onAdd: () => void; onSkip: () => void }) {
   const r = 88
   const c = 2 * Math.PI * r
   const pct = Math.min(1, left / Math.max(total, left))
@@ -261,6 +316,7 @@ function RestOverlay({ left, total, next, onAdd, onSkip }: { left: number; total
         <div className="absolute inset-0 grid place-items-center text-6xl font-extrabold tabular-nums">{formatDuration(left)}</div>
       </div>
       {next && <div className="text-center text-sm text-muted">ถัดไป: <b className="text-ink">{next}</b></div>}
+      {nextName && <ExerciseDemo key={nextName} name={nextName} className="w-full max-w-60" />}
       <div className="flex gap-3">
         <Button variant="soft" size="lg" onClick={onAdd}><Plus size={18} /> 15 วิ</Button>
         <Button size="lg" onClick={onSkip}><SkipForward size={18} /> ข้ามการพัก</Button>

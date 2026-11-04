@@ -529,3 +529,23 @@ test('สลับวัน: ทำแผนวันอังคารวัน
   await page.getByRole('button', { name: 'ยกเลิก' }).click()
   await expect.poll(async () => idb(page, 'dayMoves')).toEqual({})
 })
+
+test('พาฝึก: ปุ่มหลักทำเซ็ตเสร็จ และจับเวลาท่าค้างข้างละครั้งแล้วบันทึกเซ็ตเอง (วันที่บ้าน)', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-11-02T08:00:00+07:00') })
+  await seed(page, { program: 'mini', programStart: '2026-11-02', dayLocation: { 'mini-w1-d0': 'home' }, voiceCues: false })
+  await nav(page, 'ฝึก')
+  await expect(page.getByText('Table Row').first()).toBeVisible() // ที่บ้าน: ดึงข้อ → Table Row
+  await page.getByRole('button', { name: 'เริ่มฝึก', exact: true }).click()
+  await page.getByRole('button', { name: 'เริ่มเลย' }).click()
+  await page.getByRole('button', { name: /เสร็จเซ็ต 1\/2/ }).click()
+  await page.getByRole('button', { name: 'ข้ามการพัก' }).click()
+  await page.getByRole('button', { name: /^\d+\. Side Plank/ }).click()
+  await page.getByRole('button', { name: /จับเวลา 30 วิ \/ ข้าง · เซ็ต 1\/2/ }).click()
+  await expect(page.getByText('เตรียมตัว…')).toBeVisible()
+  await page.clock.fastForward(34_000)
+  await expect(page.getByText(/ข้างที่ 2\/2/)).toBeVisible()
+  await page.clock.fastForward(34_000)
+  await expect(page.getByRole('button', { name: 'ข้ามการพัก' })).toBeVisible() // ครบสองข้าง → บันทึกเซ็ตแล้วเข้าช่วงพัก
+  await page.getByRole('button', { name: 'ข้ามการพัก' }).click()
+  await expect(page.getByRole('button', { name: /จับเวลา 30 วิ \/ ข้าง · เซ็ต 2\/2/ })).toBeVisible()
+})
