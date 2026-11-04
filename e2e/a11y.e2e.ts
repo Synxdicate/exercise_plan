@@ -11,6 +11,7 @@ for (const scheme of ['light', 'dark'] as const) test(`a11y ${scheme}`, async ({
   const found: string[] = []
   for (const i of [0, 1, 2, 3, 4]) {
     await page.locator('nav button').nth(i).click()
+    await page.locator('[data-tab-loading]').waitFor({ state: 'detached' }).catch(() => {})
     await page.waitForTimeout(400)
     const r = await new AxeBuilder({ page }).exclude('.leaflet-container').analyze()
     for (const v of r.violations.filter(v => v.impact === 'serious' || v.impact === 'critical'))

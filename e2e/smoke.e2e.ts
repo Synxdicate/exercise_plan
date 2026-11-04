@@ -17,6 +17,7 @@ for (const [program, at, raceDate] of cases) test(`smoke ${program} @ ${at}${rac
   let clicked = 0
   for (const i of [0, 1, 2, 3, 4]) {
     await page.locator('nav button').nth(i).click()
+    await expect(page.locator('[data-tab-loading]')).toHaveCount(0) // แท็บโหลดแยกไฟล์
     // แท็บย่อยชุดแรกของหน้า (วิ่ง: เริ่ม/ประวัติ/สถิติ, บันทึก: ปฏิทิน/เวท/ฟิตเนส/น้ำหนัก, อาหาร: เมนู/ร้าน/วัตถุดิบ)
     const subs = page.locator('main [data-segmented]').first().locator('button')
     for (let j = 0; j < await subs.count(); j++) { await subs.nth(j).click(); clicked++ }

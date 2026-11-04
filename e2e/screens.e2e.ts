@@ -13,6 +13,7 @@ for (const lang of ['th', 'en']) test(`screens ${lang}`, async ({ page }) => {
       await page.emulateMedia({ colorScheme: theme })
       for (const [i, name] of ['home', 'plan', 'runs', 'food', 'log'].entries()) {
         await page.locator('nav button').nth(i).click()
+    await page.locator('[data-tab-loading]').waitFor({ state: 'detached' }).catch(() => {})
         await page.waitForTimeout(600)
         await page.screenshot({ path: `screens/${lang}-${theme}-${name}.png`, fullPage: true })
       }

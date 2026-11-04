@@ -1,4 +1,4 @@
-import { useEffect, useState, useSyncExternalStore } from 'react'
+import { lazy, Suspense, useEffect, useState, useSyncExternalStore } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { Bell, BookOpen, Bug, Languages, Cloud, CloudOff, Download, Dumbbell, Footprints, House, LogIn, LogOut, Monitor, Moon, RefreshCw, SlidersHorizontal, Smartphone, Sun, TrendingUp, Upload, Utensils } from 'lucide-react'
 import { AuthGate } from './components/AuthGate'
@@ -26,11 +26,18 @@ import { readStored, usePersisted } from './lib/storage'
 import { lastBackup, setLocalMode } from './lib/localMode'
 import { daysBetween, today } from './lib/date'
 import { Overview } from './components/Overview'
-import { Plan } from './components/Plan'
-import { Nutrition } from './components/Nutrition'
-import { Progress } from './components/Progress'
-import { Runs } from './components/Runs'
-import { Sources } from './components/Sources'
+// แท็บอื่นนอกจากหน้าหลักโหลดแยกไฟล์ — เปิดแอปเร็วขึ้น แล้วค่อยโหลดล่วงหน้าตอนว่าง (สลับแท็บไม่ต้องรอ)
+const loadPlan = () => import('./components/Plan')
+const loadRuns = () => import('./components/Runs')
+const loadNutrition = () => import('./components/Nutrition')
+const loadProgress = () => import('./components/Progress')
+const loadSources = () => import('./components/Sources')
+const Plan = lazy(() => loadPlan().then(m => ({ default: m.Plan })))
+const Runs = lazy(() => loadRuns().then(m => ({ default: m.Runs })))
+const Nutrition = lazy(() => loadNutrition().then(m => ({ default: m.Nutrition })))
+const Progress = lazy(() => loadProgress().then(m => ({ default: m.Progress })))
+const Sources = lazy(() => loadSources().then(m => ({ default: m.Sources })))
+const TabFallback = () => <div className="space-y-3" aria-busy data-tab-loading><div className="h-40 animate-pulse rounded-2xl bg-card" /><div className="h-64 animate-pulse rounded-2xl bg-card" /></div>
 import { cx } from './lib/cx'
 import { defaultProfile, type Profile } from './lib/calc'
 import { NavContext } from './lib/nav'
@@ -69,6 +76,12 @@ function Main({ session }: { session: Session | null }) {
   const update = useUpdateAvailable()
   const [dismissed, setDismissed] = usePersisted('updateDismissed', '')
   const t = useT()
+
+  // โหลดแท็บอื่นล่วงหน้าหลังหน้าแรกขึ้นแล้ว
+  useEffect(() => {
+    const id = setTimeout(() => { void loadPlan(); void loadRuns(); void loadProgress(); void loadNutrition() }, 1500)
+    return () => clearTimeout(id)
+  }, [])
 
   // ลิงก์ตรงไปแท็บได้ เช่น /#runs
   useEffect(() => {
@@ -121,11 +134,13 @@ function Main({ session }: { session: Session | null }) {
 
       <main key={tab} className="animate-fade-up space-y-3 px-4 pt-1 pb-[calc(var(--sab)+6rem)]">
         {tab === 'overview' && <Overview />}
-        {tab === 'plan' && <Plan />}
-        {tab === 'runs' && <Runs />}
-        {tab === 'food' && <Nutrition profile={profile} setProfile={setProfile} />}
-        {tab === 'progress' && <Progress />}
-        {tab === 'sources' && <Sources />}
+        <Suspense fallback={<TabFallback />}>
+          {tab === 'plan' && <Plan />}
+          {tab === 'runs' && <Runs />}
+          {tab === 'food' && <Nutrition profile={profile} setProfile={setProfile} />}
+          {tab === 'progress' && <Progress />}
+          {tab === 'sources' && <Sources />}
+        </Suspense>
         <p className="pt-2 text-center text-xs text-muted">{t('ข้อมูลเพื่อการศึกษา ไม่ใช่คำแนะนำทางการแพทย์', 'For education only, not medical advice')}</p>
       </main>
 
