@@ -87,6 +87,8 @@ export function useProgram() {
   const [raceDate, setRaceDate] = usePersisted('raceDate', '')
   // ระยะงานจริง (กม.) — งานแต่ละงานยาวไม่เท่ากัน โดยเฉพาะมินิมาราธอน (10–12 กม.)
   const [raceKmOverride, setRaceKm] = usePersisted<number | null>('raceKm', null)
+  // เวลาตัดตัว (นาที) ของงานจริง — เทียบกับเวลาจบโดยประมาณ
+  const [raceCutoff, setRaceCutoff] = usePersisted<number | null>('raceCutoff', null)
   const [swaps, setSwaps] = usePersisted<Record<string, string>>('exerciseSwaps', {})
   const [extras, setExtras] = usePersisted<Record<string, Exercise[]>>('extraExercises', {})
   const [solo, setSolo] = usePersisted('soloMode', false)
@@ -150,6 +152,8 @@ export function useProgram() {
     raceDate,
     raceKm: raceKmOverride ?? meta.raceKm,
     setRaceKm,
+    raceCutoff,
+    setRaceCutoff,
     setRaceDate,
     currentWeek,
     weeksUntilStart,

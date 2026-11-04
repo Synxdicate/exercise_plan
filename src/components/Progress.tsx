@@ -227,7 +227,7 @@ function StrengthStats() {
       <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
         {names.map(n => (
           <button key={n} onClick={() => setPicked(n)}
-            className={cx('shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold ring-1', n === name ? 'bg-accent text-white ring-accent' : 'bg-card text-muted ring-line')}>
+            className={cx('shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold ring-1', n === name ? 'bg-accent-fill text-white ring-accent' : 'bg-card text-muted ring-line')}>
             {n}
           </button>
         ))}

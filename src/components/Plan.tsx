@@ -44,11 +44,11 @@ export function Plan() {
 }
 
 const typeStyle = {
-  strength: { icon: Dumbbell, tone: 'bg-accent-soft text-accent', dot: 'bg-accent' },
-  run: { icon: Footprints, tone: 'bg-run/15 text-run', dot: 'bg-run' },
+  strength: { icon: Dumbbell, tone: 'bg-accent-soft text-accent', dot: 'bg-accent-fill' },
+  run: { icon: Footprints, tone: 'bg-run/15 text-run', dot: 'bg-run-fill' },
   rest: { icon: Moon, tone: 'bg-raised text-muted', dot: 'bg-line' },
 }
-const styleOf = (d: Day) => (d.runKind === 'race' ? { icon: Flag, tone: 'bg-accent text-white', dot: 'bg-accent' } : typeStyle[d.type])
+const styleOf = (d: Day) => (d.runKind === 'race' ? { icon: Flag, tone: 'bg-accent-fill text-white', dot: 'bg-accent-fill' } : typeStyle[d.type])
 
 function PlanBody() {
   const t = useT()
@@ -132,7 +132,7 @@ function PlanBody() {
                 {w === p.currentWeek ? t('สัปดาห์นี้', 'Now') : w === p.meta.weeks && p.isRace ? t('แข่ง', 'Race') : light ? t('เบา', 'Easy') : p.ongoing ? t('รอบที่', 'Cycle') : t('สัปดาห์', 'Week')}
               </span>
               <span className="text-base font-bold leading-tight">{w}</span>
-              {w === p.currentWeek && <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-accent" />}
+              {w === p.currentWeek && <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-accent-fill" />}
             </button>
           )
         })}
@@ -150,11 +150,13 @@ function PlanBody() {
             const on = i === selected
             const isToday = isThisWeek && i === todayIdx()
             return (
-              <button key={i} onClick={() => setSelected(i)} aria-label={`${d.day}: ${d.title}`}
+              <button key={i} onClick={() => setSelected(i)} aria-pressed={on}
                 className={cx('flex flex-col items-center gap-1 rounded-2xl py-2 transition-colors', on ? 'bg-accent-soft' : '')}>
                 <span className={cx('text-[11px] font-semibold', on ? 'text-accent' : isToday ? 'text-ink' : 'text-muted')}>{isToday ? t('วันนี้', 'Today') : t(short[i], shortEn[i])}</span>
+                {/* ชื่อเต็มสำหรับโปรแกรมอ่านหน้าจอ — ต้องขึ้นต้นด้วยข้อความที่เห็น (WCAG 2.5.3) */}
+                <span className="sr-only">{dt.weekday(d)}: {dt.title(d)}</span>
                 <span className={cx('grid size-9 place-items-center rounded-full transition-all',
-                  isDone(i) ? 'bg-good text-white' : st.tone, on && 'ring-2 ring-accent ring-offset-2 ring-offset-card')}>
+                  isDone(i) ? 'bg-good-fill text-white' : st.tone, on && 'ring-2 ring-accent ring-offset-2 ring-offset-card')}>
                   {isDone(i) ? <Check size={16} strokeWidth={3} /> : <st.icon size={16} />}
                 </span>
               </button>
@@ -196,7 +198,7 @@ function PlanBody() {
               <li key={i}>
                 <button onClick={() => { setSelected(i); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
                   className={cx('flex w-full items-center gap-3 rounded-2xl px-2 py-2.5 text-left', i === selected && 'bg-raised')}>
-                  <span className={cx('size-2 shrink-0 rounded-full', isDone(i) ? 'bg-good' : st.dot)} />
+                  <span className={cx('size-2 shrink-0 rounded-full', isDone(i) ? 'bg-good-fill' : st.dot)} />
                   <span className="w-14 shrink-0 text-xs text-muted">{dt.weekday(d)}</span>
                   <span className={cx('min-w-0 flex-1 truncate text-sm', d.type === 'rest' ? 'text-muted' : 'font-semibold', isDone(i) && 'text-muted line-through')}>{dt.title(d)}</span>
                   {d.location && <Badge tone="muted">{d.location === 'gym' ? t('ยิม', 'Gym') : t('สวน', 'Park')}</Badge>}
@@ -279,7 +281,7 @@ function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slo
         {day.type !== 'rest' && (
           <button onClick={() => { if (!done) tick(); setDone(!done) }} aria-label={done ? t('ทำแล้ว', 'Done') : t('ยังไม่ทำ', 'Not done')} aria-pressed={done}
             className={cx('grid size-10 shrink-0 place-items-center rounded-full ring-2 transition-all duration-300',
-              done ? 'bg-good text-white ring-good' : 'text-transparent ring-line')}>
+              done ? 'bg-good-fill text-white ring-good' : 'text-transparent ring-line')}>
             <Check size={20} strokeWidth={3} className={done ? 'animate-pop' : ''} />
           </button>
         )}

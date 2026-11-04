@@ -97,11 +97,12 @@ function Main({ session }: { session: Session | null }) {
     <NavContext.Provider value={go}>
     <div className="mx-auto min-h-dvh max-w-lg">
       <header className="sticky top-0 z-30 flex items-center justify-between gap-3 bg-bg/85 px-4 pb-3 pt-[calc(var(--sat)+0.75rem)] backdrop-blur">
-        <button onClick={() => go('overview')} aria-label={t('กลับหน้าหลัก', 'Back to home')} className="flex min-w-0 items-center gap-2.5 text-left">
-          <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-accent text-white"><Footprints size={18} /></span>
+        <button onClick={() => go('overview')} className="flex min-w-0 items-center gap-2.5 text-left">
+          <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-accent-fill text-white"><Footprints size={18} /></span>
           <span className="min-w-0">
             <span className="block text-[11px] font-semibold uppercase tracking-wider text-accent">Kao</span>
             <h1 className="truncate text-lg font-bold leading-tight">{title}</h1>
+            <span className="sr-only"> — {t('กลับหน้าหลัก', 'back to home')}</span>
           </span>
         </button>
         <UserMenu session={session} onSources={() => go('sources')} />
@@ -111,7 +112,7 @@ function Main({ session }: { session: Session | null }) {
         <div className="mx-4 mb-2 flex animate-fade-up items-center gap-2 rounded-2xl bg-run/10 px-3.5 py-2.5 text-sm text-run ring-1 ring-run/30">
           <Download size={16} className="shrink-0" />
           <span className="flex-1">{t('มีแอปเวอร์ชันใหม่', 'New version available')} v{update}</span>
-          <button onClick={() => void downloadUpdate()} className="shrink-0 rounded-full bg-run px-3 py-1 text-xs font-semibold text-white">{t('ดาวน์โหลด', 'Download')}</button>
+          <button onClick={() => void downloadUpdate()} className="shrink-0 rounded-full bg-run-fill px-3 py-1 text-xs font-semibold text-white">{t('ดาวน์โหลด', 'Download')}</button>
           <button onClick={() => setDismissed(update)} aria-label={t('ปิด', 'Close')} className="shrink-0 text-xs font-semibold">{t('ปิด', 'Close')}</button>
         </div>
       )}
@@ -261,7 +262,7 @@ function UserMenu({ session, onSources }: { session: Session | null; onSources: 
                 <input type="time" value={reminder.time} disabled={!reminder.on} onChange={e => setReminder({ ...reminder, time: e.target.value })}
                   className="bare w-20 rounded-lg bg-raised px-1.5 py-1 text-sm disabled:opacity-40" />
                 <button role="switch" aria-checked={reminder.on} aria-label={t('เปิด/ปิดเตือนรายวัน', 'Toggle daily reminder')} onClick={() => setReminder({ ...reminder, on: !reminder.on })}
-                  className={cx('relative h-6 w-10 shrink-0 rounded-full transition-colors', reminder.on ? 'bg-good' : 'bg-body')}>
+                  className={cx('relative h-6 w-10 shrink-0 rounded-full transition-colors', reminder.on ? 'bg-good-fill' : 'bg-body')}>
                   <span className={cx('absolute top-0.5 size-5 rounded-full bg-white shadow transition-all', reminder.on ? 'left-[18px]' : 'left-0.5')} />
                 </button>
               </div>

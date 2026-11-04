@@ -59,8 +59,8 @@ export function FoodLog({ proteinTarget, kcalTarget }: { proteinTarget: number; 
   return (
     <Card title="วันนี้กินไปแล้ว">
       <div className="grid grid-cols-2 gap-3">
-        <Bar label="โปรตีน" value={p} max={proteinTarget} unit="ก." tone="bg-accent" />
-        <Bar label="พลังงาน" value={k} max={kcalTarget} unit="kcal" tone="bg-run" />
+        <Bar label="โปรตีน" value={p} max={proteinTarget} unit="ก." tone="bg-accent-fill" />
+        <Bar label="พลังงาน" value={k} max={kcalTarget} unit="kcal" tone="bg-run-fill" />
       </div>
 
       <TextInput className="mt-3" value={q} onChange={setQ} placeholder="ค้นหาเมนู เช่น กะเพรา, ไข่, ลาบ" icon={<Search size={16} />} />
@@ -126,7 +126,7 @@ export function FoodLog({ proteinTarget, kcalTarget }: { proteinTarget: number; 
           <TextInput className="col-span-2" label="ชื่ออาหาร" value={name} onChange={setName} placeholder="เช่น สเต๊กอกไก่" />
           <NumberInput label="โปรตีน" unit="ก." value={protein} onChange={setProtein} />
           <NumberInput label="พลังงาน" unit="kcal" value={kcal} onChange={setKcal} step={10} />
-          <button className="col-span-2 rounded-full bg-accent py-2.5 font-semibold text-white disabled:opacity-50" disabled={!protein}
+          <button className="col-span-2 rounded-full bg-accent-fill py-2.5 font-semibold text-white disabled:opacity-50" disabled={!protein}
             onClick={() => { add({ name: name || 'อาหาร', protein: +protein || 0, kcal: +kcal || 0 }); setName(''); setProtein(''); setKcal(''); setCustom(false) }}>
             เพิ่ม
           </button>
@@ -148,7 +148,7 @@ export function FoodLog({ proteinTarget, kcalTarget }: { proteinTarget: number; 
         naming ? (
           <div className="mt-2 flex animate-fade-up items-end gap-2">
             <TextInput className="flex-1" value={setName_} onChange={setSetName} placeholder="ชื่อชุด เช่น มื้อเช้าปกติ" />
-            <button onClick={saveSet} className="h-12 rounded-full bg-accent px-4 font-semibold text-white">บันทึก</button>
+            <button onClick={saveSet} className="h-12 rounded-full bg-accent-fill px-4 font-semibold text-white">บันทึก</button>
           </div>
         ) : (
           <button onClick={() => setNaming(true)} className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-run"><Save size={13} /> บันทึกรายการวันนี้เป็นชุด</button>
@@ -165,7 +165,7 @@ function Bar({ label, value, max, unit, tone }: { label: string; value: number; 
       <div className="flex items-baseline justify-between text-xs text-muted"><span>{label}</span><span>เป้า {max}</span></div>
       <div className="text-xl font-bold tabular-nums">{Math.round(value)}<span className="ml-1 text-xs font-normal text-muted">{unit}</span></div>
       <div className="mt-1 h-2 overflow-hidden rounded-full bg-body">
-        <div className={`h-full rounded-full transition-[width] duration-500 ${value >= max ? 'bg-good' : tone}`} style={{ width: `${pct}%` }} />
+        <div className={`h-full rounded-full transition-[width] duration-500 ${value >= max ? 'bg-good-fill' : tone}`} style={{ width: `${pct}%` }} />
       </div>
     </div>
   )

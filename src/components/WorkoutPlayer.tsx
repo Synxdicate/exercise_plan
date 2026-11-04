@@ -138,7 +138,7 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
           <Button size="sm" variant="success" onClick={finish}><Check size={16} /> จบ</Button>
         </div>
         <div className="h-1.5 overflow-hidden rounded-full bg-body">
-          <div className="h-full rounded-full bg-good transition-all duration-500" style={{ width: `${(doneCount / total) * 100}%` }} />
+          <div className="h-full rounded-full bg-good-fill transition-all duration-500" style={{ width: `${(doneCount / total) * 100}%` }} />
         </div>
 
         {/* แถบท่า */}
@@ -148,7 +148,7 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
             return (
               <button key={e.name} onClick={() => update(s => ({ ...s, idx: i }))}
                 className={cx('shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold ring-1',
-                  i === state.idx ? 'bg-accent text-white ring-accent' : all ? 'bg-good/15 text-good ring-good/30' : 'bg-card text-muted ring-line')}>
+                  i === state.idx ? 'bg-accent-fill text-white ring-accent' : all ? 'bg-good/15 text-good ring-good/30' : 'bg-card text-muted ring-line')}>
                 {all && <Check size={12} className="-mt-0.5 mr-1 inline" />}{i + 1}. {e.name}
               </button>
             )
@@ -162,7 +162,7 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
               <h2 className="text-2xl font-extrabold leading-tight">{ex.name}</h2>
               <div className="text-sm text-muted">{ex.th}</div>
             </div>
-            <a href={yt(ex.video)} target="_blank" rel="noreferrer" aria-label="ดูวิดีโอ" className="grid size-11 shrink-0 place-items-center rounded-full bg-accent text-white! shadow-sm"><Play size={18} fill="currentColor" /></a>
+            <a href={yt(ex.video)} target="_blank" rel="noreferrer" aria-label="ดูวิดีโอ" className="grid size-11 shrink-0 place-items-center rounded-full bg-accent-fill text-white! shadow-sm"><Play size={18} fill="currentColor" /></a>
           </div>
           <div className="mt-2 flex flex-wrap gap-1.5">
             <Badge tone="muted"><b className="text-ink">{ex.sets} × {ex.reps}</b></Badge>
@@ -193,7 +193,7 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
                 <Stepper value={r.kg} placeholder={prev?.sets[i]?.kg ? String(prev.sets[i].kg) : '0'} step={mode === 'park' ? 1 : 2.5} onChange={v => setRow(i, { kg: v })} />
                 <Stepper value={r.reps} placeholder={targetReps(ex) || '-'} step={1} onChange={v => setRow(i, { reps: v })} />
                 <button onClick={() => completeSet(i)} aria-label={r.done ? 'ยกเลิกเซ็ตนี้' : 'ทำเซ็ตนี้เสร็จ'}
-                  className={cx('grid size-11 place-items-center justify-self-end rounded-full transition', r.done ? 'animate-pop bg-good text-white' : 'bg-raised text-muted ring-1 ring-line')}>
+                  className={cx('grid size-11 place-items-center justify-self-end rounded-full transition', r.done ? 'animate-pop bg-good-fill text-white' : 'bg-raised text-muted ring-1 ring-line')}>
                   <Check size={20} strokeWidth={3} />
                 </button>
               </div>

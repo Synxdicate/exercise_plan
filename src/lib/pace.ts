@@ -140,3 +140,17 @@ export function criticalSpeed(runs: Run[], asOf = today()) {
   if (!(slope > 1.5 && slope < 7)) return null // นอกช่วงที่เป็นไปได้ของคน (กันข้อมูลเพี้ยน)
   return { cs: slope, pace: 1000 / slope, dPrime, points: pts.length, marathonFirstHalfPace: 1000 / (slope * 0.94) }
 }
+
+/**
+ * เวลาจบโดยประมาณสำหรับมือใหม่ที่วิ่งสลับเดิน — `estimate()` ตัดวิ่งสลับเดิน/เพซช้ากว่า 10:00/กม. ออก (ไม่ใช่การวิ่งต่อเนื่อง)
+ * จึงไม่มีตัวเลขให้คนที่ยังวิ่งสลับเดินอยู่เลย; อันนี้ใช้ทุกรอบ ≥3 กม. ใน 60 วันที่เพซไม่ช้ากว่า 12:00/กม. (ไม่ใช่เดิน)
+ * คิดจาก "รอบที่ไกลที่สุด" (ใกล้ระยะแข่งที่สุด = แม่นสุด) ด้วย Riegel และให้ช่วงจากรอบที่ดีที่สุดด้วย — เป็นค่าคร่าว ๆ
+ */
+export function finishEstimate(runs: Run[], km: number, asOf = today()) {
+  const from = addDays(asOf, -WINDOW_DAYS)
+  const c = runsOnly(runs).filter(r => r.date > from && r.date <= asOf && r.km >= 3 && r.seconds > 0 && r.seconds / r.km <= 12 * 60)
+  if (!c.length) return null
+  const longest = c.reduce((a, r) => (r.km > a.km || (r.km === a.km && r.date > a.date) ? r : a))
+  const best = Math.min(...c.map(r => riegel(r.seconds, r.km, km)))
+  return { sec: riegel(longest.seconds, longest.km, km), best, from: { km: longest.km, date: longest.date } }
+}

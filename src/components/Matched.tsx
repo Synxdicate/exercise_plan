@@ -32,7 +32,7 @@ export function MatchedRuns({ run, runs }: { run: Run; runs: Run[] }) {
             <span className="w-20 shrink-0 truncate text-muted">{niceDate(r.date)}</span>
             <span className="h-2 flex-1 overflow-hidden rounded-full bg-body">
               {/* ยาว = เร็ว */}
-              <span className={cx('block h-full rounded-full', r.id === run.id ? 'bg-run' : 'bg-run/40')}
+              <span className={cx('block h-full rounded-full', r.id === run.id ? 'bg-run-fill' : 'bg-run/40')}
                 style={{ width: `${slowest === fastest ? 100 : 40 + (60 * (slowest - pace(r))) / (slowest - fastest)}%` }} />
             </span>
             <span className="w-24 shrink-0 text-right tabular-nums">{formatDuration(r.seconds)} · {formatPace(r.seconds, r.km)}</span>

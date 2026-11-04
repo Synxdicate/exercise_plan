@@ -90,17 +90,17 @@ function CircuitPlayer({ onClose }: { onClose: () => void }) {
             </div>
           ) : (
             <>
-              <div className={cx('rounded-3xl p-5 text-center', work ? 'bg-accent text-white' : 'bg-raised')}>
+              <div className={cx('rounded-3xl p-5 text-center', work ? 'bg-accent-fill text-white' : 'bg-raised')}>
                 <div className="text-sm font-semibold opacity-80">{work ? 'ทำท่า' : 'พัก — ต่อไป'}</div>
                 <div className="text-xl font-bold">{at.step.station.th}</div>
                 <div className="mt-2 text-7xl font-extrabold tabular-nums">{Math.ceil(at.left)}</div>
                 <div className="mx-auto mt-3 h-2 max-w-60 overflow-hidden rounded-full bg-black/15">
-                  <div className={cx('h-full rounded-full', work ? 'bg-white' : 'bg-accent')} style={{ width: `${pct * 100}%` }} />
+                  <div className={cx('h-full rounded-full', work ? 'bg-white' : 'bg-accent-fill')} style={{ width: `${pct * 100}%` }} />
                 </div>
               </div>
               <ExerciseDemo key={at.step.station.name} name={at.step.station.name} />
               <div className="mt-auto flex items-center justify-center gap-4">
-                <button onClick={() => setRunning(!running)} aria-label={running ? 'หยุด' : 'ทำต่อ'} className="grid size-16 place-items-center rounded-full bg-accent text-white shadow-lg">
+                <button onClick={() => setRunning(!running)} aria-label={running ? 'หยุด' : 'ทำต่อ'} className="grid size-16 place-items-center rounded-full bg-accent-fill text-white shadow-lg">
                   {running ? <Pause size={28} fill="currentColor" /> : <Play size={28} fill="currentColor" />}
                 </button>
                 <button onClick={skip} aria-label="ข้าม" className="grid size-12 place-items-center rounded-full bg-raised"><SkipForward size={20} /></button>

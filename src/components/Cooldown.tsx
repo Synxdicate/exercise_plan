@@ -13,7 +13,7 @@ const WALK_SEC = 5 * 60
 function Item({ icon: Icon, title, text, done }: { icon: typeof Droplets; title: string; text: string; done?: boolean }) {
   return (
     <li className="flex gap-3">
-      <span className={cx('grid size-9 shrink-0 place-items-center rounded-xl', done ? 'bg-good text-white' : 'bg-raised text-run')}>{done ? <Check size={18} /> : <Icon size={18} />}</span>
+      <span className={cx('grid size-9 shrink-0 place-items-center rounded-xl', done ? 'bg-good-fill text-white' : 'bg-raised text-run')}>{done ? <Check size={18} /> : <Icon size={18} />}</span>
       <span><b className="block text-sm">{title}</b><span className="text-xs text-muted">{text}</span></span>
     </li>
   )

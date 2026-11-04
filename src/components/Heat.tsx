@@ -9,10 +9,10 @@ const tone: Record<HeatLevel, string> = {
   ok: 'bg-good/15 text-good',
   warm: 'bg-warn/15 text-warn',
   hot: 'bg-bad/15 text-bad',
-  danger: 'bg-bad text-white',
+  danger: 'bg-bad-fill text-white',
 }
 const airTone: Record<AirLevel, string> = { good: 'text-good', moderate: 'text-warn', sensitive: 'text-bad', bad: 'text-bad' }
-const bar: Record<HeatLevel, string> = { ok: 'bg-good', warm: 'bg-warn', hot: 'bg-bad', danger: 'bg-bad' }
+const bar: Record<HeatLevel, string> = { ok: 'bg-good-fill', warm: 'bg-warn', hot: 'bg-bad-fill', danger: 'bg-bad-fill' }
 
 const nowIso = () => {
   const d = new Date()

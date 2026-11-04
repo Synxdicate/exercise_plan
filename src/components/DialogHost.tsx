@@ -19,7 +19,7 @@ export function DialogHost() {
             <p className="text-sm text-ink/80">{pending.message}</p>
             <div className="mt-5 flex gap-2">
               <Button variant="soft" className="flex-1" onClick={() => answer(false)}>{pending.opts.cancel ?? 'ยกเลิก'}</Button>
-              <Button variant={pending.opts.danger ? 'primary' : 'run'} className={cx('flex-1', pending.opts.danger && 'bg-bad')} onClick={() => answer(true)}>
+              <Button variant={pending.opts.danger ? 'primary' : 'run'} className={cx('flex-1', pending.opts.danger && 'bg-bad-fill')} onClick={() => answer(true)}>
                 {pending.opts.ok ?? 'ตกลง'}
               </Button>
             </div>

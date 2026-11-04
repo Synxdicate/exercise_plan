@@ -156,7 +156,7 @@ export function RunTypeCard({ kind, compact, defaultOpen = false }: { kind: Run[
       {/* ระดับความเหนื่อย 1–10 */}
       <div className="mt-2 flex gap-1" aria-label={`ความเหนื่อย ${info.rpe[0]}–${info.rpe[1]} จาก 10`}>
         {Array.from({ length: 10 }, (_, i) => (
-          <span key={i} className={cx('h-1.5 flex-1 rounded-full', i < info.rpe[1] ? (i < 4 ? 'bg-run' : i < 7 ? 'bg-warn' : 'bg-accent') : 'bg-body')}
+          <span key={i} className={cx('h-1.5 flex-1 rounded-full', i < info.rpe[1] ? (i < 4 ? 'bg-run-fill' : i < 7 ? 'bg-warn' : 'bg-accent-fill') : 'bg-body')}
             style={motion ? { animation: `fade-in .3s ${0.4 + i * 0.06}s both` } : undefined} />
         ))}
       </div>

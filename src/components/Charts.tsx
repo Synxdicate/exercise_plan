@@ -97,9 +97,9 @@ export function FitnessChart({ days }: { days: LoadDay[] }) {
     <div>
       <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
         <span className="font-semibold">{hover !== null ? shortDate(h.date) : 'วันนี้'}</span>
-        <Legend swatch="bg-run" label="ฟิต" value={h.fitness} />
-        <Legend swatch="bg-accent" label="ล้า" value={h.fatigue} />
-        <Legend swatch={h.form >= 0 ? 'bg-good' : 'bg-warn'} label="ฟอร์ม" value={h.form} signed />
+        <Legend swatch="bg-run-fill" label="ฟิต" value={h.fitness} />
+        <Legend swatch="bg-accent-fill" label="ล้า" value={h.fatigue} />
+        <Legend swatch={h.form >= 0 ? 'bg-good-fill' : 'bg-warn'} label="ฟอร์ม" value={h.form} signed />
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="block w-full touch-none" role="img" aria-label="กราฟความฟิต ความล้า และฟอร์ม"
         onPointerMove={onMove} onPointerDown={onMove} onPointerLeave={() => setHover(null)}>

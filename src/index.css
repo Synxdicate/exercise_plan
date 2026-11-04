@@ -11,14 +11,18 @@
   --c-card: #ffffff;
   --c-raised: #f8f9fb;
   --c-ink: #0f1217;
-  --c-muted: #6b7280;
+  --c-muted: #646b78;
   --c-line: #e5e7eb;
-  --c-accent: #e11d48;
+  --c-accent: #d01544;
   --c-accent-soft: #ffe4e9;
   --c-good: #059669;
-  --c-warn: #b45309;
+  --c-warn: #9a4508;
   --c-bad: #dc2626;
-  --c-run: #2563eb;
+  --c-run: #1d4ed8;
+  --c-accent-fill: #d01544;
+  --c-run-fill: #1d4ed8;
+  --c-good-fill: #047857;
+  --c-bad-fill: #dc2626;
   --c-body: #e3e6eb;
   --c-body-line: #cdd2da;
   color-scheme: light;
@@ -39,6 +43,10 @@
     --c-warn: #fbbf24;
     --c-bad: #f87171;
     --c-run: #60a5fa;
+    --c-accent-fill: #e11d48;
+    --c-run-fill: #2563eb;
+    --c-good-fill: #047857;
+    --c-bad-fill: #dc2626;
     --c-body: #262b33;
     --c-body-line: #353b45;
     --z-e: #3987e5; --z-m: #199e70; --z-t: #c98500; --z-i: #d55181; --z-r: #9085e9;
@@ -58,6 +66,10 @@
   --c-warn: #fbbf24;
   --c-bad: #f87171;
   --c-run: #60a5fa;
+  --c-accent-fill: #e11d48;
+  --c-run-fill: #2563eb;
+  --c-good-fill: #047857;
+  --c-bad-fill: #dc2626;
   --c-body: #262b33;
   --c-body-line: #353b45;
   --z-e: #3987e5; --z-m: #199e70; --z-t: #c98500; --z-i: #d55181; --z-r: #9085e9;
@@ -78,6 +90,11 @@
   --color-warn: var(--c-warn);
   --color-bad: var(--c-bad);
   --color-run: var(--c-run);
+  /* พื้นทึบที่มีตัวอักษรขาว: เข้มพอให้ผ่าน WCAG 4.5:1 ทั้งสองธีม (สีสว่างของธีมมืดใช้กับตัวอักษรบนพื้นมืดเท่านั้น) */
+  --color-accent-fill: var(--c-accent-fill);
+  --color-run-fill: var(--c-run-fill);
+  --color-good-fill: var(--c-good-fill);
+  --color-bad-fill: var(--c-bad-fill);
   --color-body: var(--c-body);
   --color-body-line: var(--c-body-line);
 }

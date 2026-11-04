@@ -20,9 +20,9 @@ export function Card({ children, className, title, action }: { children: ReactNo
 }
 
 const variants = {
-  primary: 'bg-accent text-white shadow-sm active:scale-[.98]',
-  success: 'bg-good text-white active:scale-[.98]',
-  run: 'bg-run text-white active:scale-[.98]',
+  primary: 'bg-accent-fill text-white shadow-sm active:scale-[.98]',
+  success: 'bg-good-fill text-white active:scale-[.98]',
+  run: 'bg-run-fill text-white active:scale-[.98]',
   soft: 'bg-raised text-ink ring-1 ring-line',
   ghost: 'text-run',
   danger: 'text-bad',
@@ -79,7 +79,7 @@ export function Segmented<T extends string>({ value, options, onChange }: { valu
 }
 
 export function Meter({ value, max, tone = 'accent' }: { value: number; max: number; tone?: 'accent' | 'good' | 'run' }) {
-  const bg = { accent: 'bg-accent', good: 'bg-good', run: 'bg-run' }[tone]
+  const bg = { accent: 'bg-accent-fill', good: 'bg-good-fill', run: 'bg-run-fill' }[tone]
   return (
     <div className="h-2 overflow-hidden rounded-full bg-body">
       <div className={cx('h-full rounded-full transition-all', bg)} style={{ width: `${Math.min(100, (value / max) * 100)}%` }} />

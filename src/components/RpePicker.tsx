@@ -14,7 +14,7 @@ export function RpePicker({ value, onPick }: { value?: number; onPick: (v: numbe
         {Array.from({ length: 10 }, (_, i) => i + 1).map(n => (
           <button key={n} onClick={() => onPick(n)} aria-label={t(`ความเหนื่อย ${n}`, `Effort ${n}`)}
             className={cx('rounded-lg py-2 text-sm font-bold tabular-nums transition-colors',
-              value === n ? 'bg-accent text-white' : n <= 3 ? 'bg-run/15 text-run' : n <= 6 ? 'bg-warn/15 text-warn' : 'bg-bad/15 text-bad')}>
+              value === n ? 'bg-accent-fill text-white' : n <= 3 ? 'bg-run/15 text-run' : n <= 6 ? 'bg-warn/15 text-warn' : 'bg-bad/15 text-bad')}>
             {n}
           </button>
         ))}

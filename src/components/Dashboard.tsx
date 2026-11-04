@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
 import { Check, Dumbbell, Flag, Flame, Footprints, Moon, Play } from 'lucide-react'
 import type { Day } from '../data/workouts'
-import { crossAsSession, useCross, useRuns, useSessions } from '../lib/log'
+import { crossAsSession, formatDuration, useCross, useRuns, useSessions } from '../lib/log'
 import { useDayText } from '../lib/dayText'
+import { useFinish } from '../lib/useFinish'
 import { useTodayIdx } from '../lib/useToday'
 import { runsOnly } from '../lib/walk'
 import { estimate, paceHint } from '../lib/pace'
@@ -38,6 +39,8 @@ export function Dashboard() {
   const nav = useNav()
   const t = useT()
   const dt = useDayText()
+  const fin = useFinish()
+  const [, setRunsView] = usePersisted('runsView', 'start')
   const { currentWeek: week } = p
 
   const plan = p.plan()
@@ -70,7 +73,7 @@ export function Dashboard() {
       <NextStepCard />
       <MissedRunCard />
       <WeekCheckCard />
-      <section className="rounded-2xl bg-gradient-to-br from-accent to-[#7c3aed] p-4 text-white shadow-sm">
+      <section className="rounded-2xl bg-gradient-to-br from-accent-fill to-[#7c3aed] p-4 text-white shadow-sm">
         <div className="flex items-center justify-between">
           <div>
             <div className="text-sm opacity-80">{dt.program(p.program).short} · {p.ongoing ? t(`สัปดาห์ที่ ${week} ของรอบ`, `Cycle week ${week}`)
@@ -78,6 +81,11 @@ export function Dashboard() {
               : p.weeksUntilStart > 0 ? t(`ช่วงเตรียมตัว · สัปดาห์ 1 เริ่มในอีก ${p.weeksUntilStart} สัปดาห์`, `Prep · week 1 starts in ${p.weeksUntilStart} wk`)
               : t(`สัปดาห์ที่ ${week} จาก ${p.meta.weeks}`, `Week ${week} of ${p.meta.weeks}`)}</div>
             <div className="text-xl font-extrabold">{p.daysToRace === 0 ? t('วันนี้วันแข่ง!', 'Race day!') : p.daysToRace !== null && p.daysToRace > 0 ? t(`อีก ${p.daysToRace} วันถึงวันแข่ง`, `${p.daysToRace} days to race day`) : p.finished ? t('จบโปรแกรมแล้ว — พักฟื้นก่อนเริ่มเป้าหมายใหม่', 'Program done — recover before the next goal') : t('สัปดาห์นี้', 'This week')}</div>
+            {fin.show && fin.f && (
+              <button onClick={() => { setRunsView('stats'); nav('runs') }} className="mt-0.5 text-left text-xs font-semibold opacity-90 underline-offset-2 hover:underline">
+                {t(`คาดว่าจบ ~${formatDuration(fin.f.sec)}`, `Est. finish ~${formatDuration(fin.f.sec)}`)}{fin.cutoff ? ` · ${t('คัตออฟ', 'cutoff')} ${Math.floor(fin.cutoff / 60)}:${String(fin.cutoff % 60).padStart(2, '0')}:00` : ''}
+              </button>
+            )}
           </div>
           <div className="flex flex-col items-end gap-1">
             <div className="flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm font-semibold">
@@ -107,7 +115,7 @@ export function Dashboard() {
               {!todayPlan.title.includes(todayPlan.duration) && <div className="text-xs text-muted">{todayPlan.duration !== '-' ? dt.duration(todayPlan) : todayPlan.note}</div>}
               {hint && <div className="text-xs font-semibold text-run">{hint}</div>}
             </div>
-            {todayDone && <span className="grid size-9 shrink-0 animate-pop place-items-center rounded-full bg-good text-white"><Check size={18} strokeWidth={3} /></span>}
+            {todayDone && <span className="grid size-9 shrink-0 animate-pop place-items-center rounded-full bg-good-fill text-white"><Check size={18} strokeWidth={3} /></span>}
           </div>
           {todayDone && (
             <div className="mt-3 flex items-center justify-between gap-2 border-t border-line pt-2.5 text-xs">

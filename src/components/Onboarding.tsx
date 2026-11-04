@@ -41,7 +41,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
   const Option = ({ on, onClick, title, text }: { on: boolean; onClick: () => void; title: string; text: string }) => (
     <button onClick={onClick} className={cx('flex w-full items-start gap-3 rounded-2xl p-3 text-left ring-2 transition-colors active:scale-[.99]',
       on ? 'bg-accent-soft/50 ring-accent' : 'bg-card ring-line')}>
-      <span className={cx('mt-0.5 grid size-5 shrink-0 place-items-center rounded-full ring-2', on ? 'bg-accent ring-accent' : 'ring-line')}>
+      <span className={cx('mt-0.5 grid size-5 shrink-0 place-items-center rounded-full ring-2', on ? 'bg-accent-fill ring-accent' : 'ring-line')}>
         {on && <Check size={12} className="animate-pop text-white" strokeWidth={3} />}
       </span>
       <span><span className="block font-bold">{title}</span><span className="block text-sm text-muted">{text}</span></span>
@@ -51,7 +51,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
   return (
     <div className="mx-auto flex min-h-dvh max-w-lg flex-col gap-5 p-4 pt-[calc(var(--sat)+1.5rem)] pb-[calc(var(--sab)+1rem)]">
       <div className="flex items-center gap-3">
-        <div className="grid size-11 place-items-center rounded-2xl bg-accent text-white"><Footprints size={22} /></div>
+        <div className="grid size-11 place-items-center rounded-2xl bg-accent-fill text-white"><Footprints size={22} /></div>
         <div>
           <div className="text-xs font-semibold uppercase tracking-wider text-accent">Kao</div>
           <div className="text-lg font-bold">ตั้งค่าครั้งแรก</div>
@@ -59,7 +59,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
       </div>
 
       <div className="flex gap-1.5">
-        {STEPS.map((s, i) => <span key={s} className={cx('h-1.5 flex-1 rounded-full transition-colors duration-500', i <= step ? 'bg-accent' : 'bg-body')} />)}
+        {STEPS.map((s, i) => <span key={s} className={cx('h-1.5 flex-1 rounded-full transition-colors duration-500', i <= step ? 'bg-accent-fill' : 'bg-body')} />)}
       </div>
 
       <div key={step} className="flex-1 animate-fade-up space-y-3">

@@ -54,7 +54,7 @@ export function Login() {
     <div className="min-h-dvh flex flex-col items-center justify-center gap-3 p-4 pt-[calc(var(--sat)+1rem)] pb-[calc(var(--sab)+1rem)]">
       <LangToggle />
       <div className="w-full max-w-sm rounded-3xl bg-card p-6 shadow-sm ring-1 ring-line flex flex-col gap-3 text-center">
-        <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-accent text-white"><Footprints size={28} /></div>
+        <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-accent-fill text-white"><Footprints size={28} /></div>
         <h1 className="text-2xl font-extrabold text-accent">Kao</h1>
         <p className="text-sm text-muted">{t('เข้าสู่ระบบเพื่อบันทึกการฝึกและซิงก์ข้ามมือถือ/คอม', 'Sign in to log your training and sync across phone/computer')}</p>
 
@@ -73,7 +73,7 @@ export function Login() {
             <TextInput label={t('รหัสผ่าน', 'Password')} type="password" autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} required minLength={6}
               value={password} onChange={setPassword} placeholder={t('อย่างน้อย 6 ตัวอักษร', 'At least 6 characters')} icon={<Lock size={18} />} />
           )}
-          <button className="inline-flex items-center justify-center gap-2 rounded-full bg-accent px-4 py-3 font-semibold text-white disabled:opacity-50 active:scale-[.98]" type="submit" disabled={busy}>
+          <button className="inline-flex items-center justify-center gap-2 rounded-full bg-accent-fill px-4 py-3 font-semibold text-white disabled:opacity-50 active:scale-[.98]" type="submit" disabled={busy}>
             {mode === 'signin' && <><LogIn size={16} /> {t('เข้าสู่ระบบ', 'Sign in')}</>}
             {mode === 'signup' && <><UserPlus size={16} /> {t('สมัครสมาชิก', 'Sign up')}</>}
             {mode === 'reset' && <><Mail size={16} /> {t('ส่งลิงก์ตั้งรหัสผ่านใหม่', 'Send reset link')}</>}
@@ -122,7 +122,7 @@ export function NewPassword({ onDone }: { onDone: () => void }) {
       <form className="w-full max-w-sm rounded-3xl bg-card p-6 shadow-sm ring-1 ring-line flex flex-col gap-3 text-left" onSubmit={submit}>
         <h1 className="text-xl font-bold">{t('ตั้งรหัสผ่านใหม่', 'Set a new password')}</h1>
         <TextInput label={t('รหัสผ่านใหม่', 'New password')} type="password" autoComplete="new-password" required minLength={6} value={password} onChange={setPassword} icon={<Lock size={18} />} />
-        <button className="inline-flex items-center justify-center gap-2 rounded-full bg-accent px-4 py-3 font-semibold text-white disabled:opacity-50 active:scale-[.98]" type="submit" disabled={busy}>{t('บันทึกรหัสผ่าน', 'Save password')}</button>
+        <button className="inline-flex items-center justify-center gap-2 rounded-full bg-accent-fill px-4 py-3 font-semibold text-white disabled:opacity-50 active:scale-[.98]" type="submit" disabled={busy}>{t('บันทึกรหัสผ่าน', 'Save password')}</button>
         {error && <p className="text-sm text-bad">{error}</p>}
       </form>
     </div>

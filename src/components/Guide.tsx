@@ -3,7 +3,7 @@ import { stepLabel, type GuideRunner, type Paces, type Step, type StepKind } fro
 import { formatDuration, formatPace } from '../lib/log'
 import { cx } from '../lib/cx'
 
-const tone: Record<StepKind, string> = { warm: 'bg-muted', easy: 'bg-muted', work: 'bg-run', recover: 'bg-good', cool: 'bg-muted' }
+const tone: Record<StepKind, string> = { warm: 'bg-muted', easy: 'bg-muted', work: 'bg-run-fill', recover: 'bg-good-fill', cool: 'bg-muted' }
 
 const amount = (s: Step) => (s.sec ? formatDuration(s.sec) : s.m! >= 1000 ? `${+(s.m! / 1000).toFixed(1)} กม.` : `${s.m} ม.`)
 const left = (v: number, unit: 'sec' | 'm') => (unit === 'sec' ? formatDuration(Math.ceil(v)) : v >= 1000 ? `${(v / 1000).toFixed(2)} กม.` : `${Math.ceil(v)} ม.`)

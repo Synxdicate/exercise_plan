@@ -26,13 +26,13 @@ export function ProgramPicker({ value, onChange }: { value: ProgramId; onChange:
         className={cx('relative flex w-full items-start gap-3 rounded-2xl p-3 text-left ring-2 transition-colors active:scale-[.99]',
           on ? 'bg-accent-soft/50 ring-accent' : 'bg-raised ring-transparent')}>
         <span className={cx('grid size-7 shrink-0 place-items-center rounded-full text-xs font-bold',
-          on ? 'bg-accent text-white' : ready ? 'bg-good/15 text-good' : 'bg-card text-muted ring-1 ring-line')}>
+          on ? 'bg-accent-fill text-white' : ready ? 'bg-good/15 text-good' : 'bg-card text-muted ring-1 ring-line')}>
           {on ? <Check size={14} strokeWidth={3} /> : step ?? (ready ? <Check size={14} strokeWidth={3} /> : '·')}
         </span>
         <span className="min-w-0 flex-1">
           <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <b>{dt.program(id).name}</b>
-            {id === rec && <span className="flex items-center gap-1 rounded-full bg-accent px-2 py-0.5 text-[11px] font-bold text-white"><Sparkles size={11} /> {t('แนะนำ', 'Recommended')}</span>}
+            {id === rec && <span className="flex items-center gap-1 rounded-full bg-accent-fill px-2 py-0.5 text-[11px] font-bold text-white"><Sparkles size={11} /> {t('แนะนำ', 'Recommended')}</span>}
           </span>
           <span className="block text-xs text-muted">{dt.en ? `${programs[id].weeks} weeks${programs[id].ongoing ? ' (repeating)' : ''}` : programLength(id)} · {dt.program(id).summary}</span>
           {!ready && <span className="mt-1 block text-xs font-semibold text-warn">{t(`ยังไม่พร้อม: ต้อง${NEEDS[id]!.text}ได้ก่อน`, 'Not ready yet — build up first')}</span>}

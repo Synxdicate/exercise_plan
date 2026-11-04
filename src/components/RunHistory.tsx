@@ -49,7 +49,7 @@ export function RunHistory({ runs, onOpen }: { runs: Run[]; onOpen: (id: string)
         <div className="-mx-1 mb-2 flex gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none]">
           {(['all', ...kinds] as const).map(k => (
             <button key={k} onClick={() => { setKind(k); setMonths(PAGE) }}
-              className={cx('shrink-0 rounded-full px-3 py-1 text-xs font-semibold ring-1', kind === k ? 'bg-run text-white ring-run' : 'bg-raised ring-line')}>
+              className={cx('shrink-0 rounded-full px-3 py-1 text-xs font-semibold ring-1', kind === k ? 'bg-run-fill text-white ring-run' : 'bg-raised ring-line')}>
               {k === 'all' ? 'ทั้งหมด' : runKinds[k]}
             </button>
           ))}

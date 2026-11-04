@@ -13,7 +13,7 @@ export function Sources() {
           {channels.map(c => (
             <li key={c.name}>
               <a href={c.url} target="_blank" rel="noreferrer" className="flex items-center gap-3 py-3 text-ink!">
-                <div className="grid size-10 shrink-0 place-items-center rounded-full bg-accent text-white"><Play size={16} fill="currentColor" /></div>
+                <div className="grid size-10 shrink-0 place-items-center rounded-full bg-accent-fill text-white"><Play size={16} fill="currentColor" /></div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 font-semibold">{c.name} <Badge tone={c.lang === 'TH' ? 'good' : 'run'}>{c.lang}</Badge></div>
                   <div className="text-xs text-muted">{c.why}</div>

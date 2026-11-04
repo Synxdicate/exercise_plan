@@ -75,3 +75,20 @@ describe('day text (English)', () => {
     expect(titleEn('Interval 5 × 800 ม. / จ็อก 2 นาที')).toBe('Interval 5 × 800 m / jog 2 min')
   })
 })
+
+describe('finishEstimate (run-walk beginners)', () => {
+  it('uses the longest non-walk run ≥3 km (incl. guided run-walk) with Riegel', async () => {
+    const { finishEstimate } = await import('../pace')
+    const runs: Run[] = [
+      { ...run('2026-10-27', 4.82), seconds: 2950 },
+      { ...run('2026-10-29', 3.13), seconds: 1575, guide: { work: 5, total: 8, finished: false } },
+      run('2026-10-31', 2.49, 'easy', 14.2), // ช้าแบบเดิน ไม่นับ
+      run('2026-11-01', 6, 'walk', 13),
+    ]
+    const f = finishEstimate(runs, 11.55, '2026-11-05')!
+    expect(f.from).toEqual({ km: 4.82, date: '2026-10-27' })
+    expect(Math.round(f.sec / 60)).toBe(125) // ~2:05 — เกินคัตออฟ 2 ชม. เล็กน้อยตอนนี้
+    expect(f.best).toBeLessThan(f.sec)
+    expect(finishEstimate([run('2026-10-31', 2.49, 'easy', 14.2)], 11.55, '2026-11-05')).toBeNull()
+  })
+})

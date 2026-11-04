@@ -29,6 +29,7 @@ import { RunFormTips } from './RunForm'
 import { SweatCard } from './Sweat'
 import { CooldownSheet } from './Cooldown'
 import { CapNote } from './MissedRun'
+import { FinishCard } from './Finish'
 import { longRunCap } from '../lib/missed'
 import { ShareRunSheet } from './ShareRun'
 import { PhotoStrip } from './Photos'
@@ -219,7 +220,7 @@ export function Runs() {
       ]} />
 
       {view === 'start' && (
-      <section className="space-y-3 rounded-2xl bg-gradient-to-br from-run to-accent p-4 text-white shadow-sm">
+      <section className="space-y-3 rounded-2xl bg-gradient-to-br from-run-fill to-accent-fill p-4 text-white shadow-sm">
         <div>
           <div className="text-sm opacity-80">{tr('สัปดาห์นี้', 'This week')}</div>
           <div className="text-4xl font-extrabold tabular-nums">{kmThisWeek.toFixed(1)}<span className="ml-1 text-xl font-semibold opacity-80">{target ? `/ ${target} ${tr('กม.', 'km')}` : tr('กม.', 'km')}</span></div>
@@ -246,12 +247,12 @@ export function Runs() {
         <div className="flex flex-wrap gap-2">
           {(Object.keys(runKinds) as Run['kind'][]).map(k => (
             <button key={k} onClick={() => setKind(k)}
-              className={cx('rounded-full px-3 py-1 text-sm font-semibold', kind === k ? 'bg-white text-accent' : 'bg-white/15')}>
+              className={cx('rounded-full px-3 py-1 text-sm font-semibold', kind === k ? 'bg-white text-accent-fill' : 'bg-white/15')}>
               {tr(runKinds[k], runKindsEn[k])}
             </button>
           ))}
         </div>
-        <button onClick={() => setChecking(true)} className="flex w-full items-center justify-center gap-2 rounded-full bg-white py-3 text-base font-bold text-accent shadow-lg active:scale-[.98]">
+        <button onClick={() => setChecking(true)} className="flex w-full items-center justify-center gap-2 rounded-full bg-white py-3 text-base font-bold text-accent-fill shadow-lg active:scale-[.98]">
           <Play size={22} fill="currentColor" /> {kmToday ? tr('วิ่งอีกรอบ', 'Run again') : tr('เริ่มวิ่ง', 'Start run')}
         </button>
         {t.error && <p className="rounded-xl bg-black/20 p-2 text-sm">{t.error}</p>}
@@ -285,6 +286,7 @@ export function Runs() {
 
       {view === 'stats' && (
         <>
+          <FinishCard />
           <PaceCard est={est} runs={runs} onTrial={() => { setKind('race'); setView('start'); window.scrollTo({ top: 0, behavior: 'smooth' }) }} />
           <BestEfforts runs={runs} />
           <Card title={tr('8 สัปดาห์ล่าสุด', 'Last 8 weeks')}>
@@ -359,7 +361,7 @@ function ActiveRun({ t, kind, target, fiveK, voice, setVoice, coachOn, setCoachO
           <div className="mt-1 text-sm text-muted">{tr('กิโลเมตร', 'kilometers')}{target ? tr(` จากเป้า ${target}`, ` of ${target}`) : ''}</div>
           {target && (
             <div className="mx-auto mt-2 h-2 max-w-60 overflow-hidden rounded-full bg-body">
-              <div className={cx('h-full rounded-full transition-all duration-700', km >= target ? 'bg-good' : 'bg-run')} style={{ width: `${Math.min(100, (km / target) * 100)}%` }} />
+              <div className={cx('h-full rounded-full transition-all duration-700', km >= target ? 'bg-good-fill' : 'bg-run-fill')} style={{ width: `${Math.min(100, (km / target) * 100)}%` }} />
             </div>
           )}
         </div>
@@ -391,16 +393,16 @@ function ActiveRun({ t, kind, target, fiveK, voice, setVoice, coachOn, setCoachO
             </>
           )}
           {(t.status === 'running' || t.status === 'autopaused') && (
-            <button onClick={t.pause} aria-label={tr('พัก', 'Pause')} className="grid size-20 place-items-center rounded-full bg-accent text-white shadow-lg active:scale-95">
+            <button onClick={t.pause} aria-label={tr('พัก', 'Pause')} className="grid size-20 place-items-center rounded-full bg-accent-fill text-white shadow-lg active:scale-95">
               <Pause size={32} fill="currentColor" />
             </button>
           )}
           {t.status === 'paused' && (
             <>
-              <button onClick={t.resume} aria-label={tr('วิ่งต่อ', 'Resume')} className="grid size-20 place-items-center rounded-full bg-accent text-white shadow-lg active:scale-95">
+              <button onClick={t.resume} aria-label={tr('วิ่งต่อ', 'Resume')} className="grid size-20 place-items-center rounded-full bg-accent-fill text-white shadow-lg active:scale-95">
                 <Play size={32} fill="currentColor" />
               </button>
-              <button onClick={onFinish} aria-label={tr('จบและบันทึก', 'Finish & save')} className="grid size-20 place-items-center rounded-full bg-good text-white shadow-lg active:scale-95">
+              <button onClick={onFinish} aria-label={tr('จบและบันทึก', 'Finish & save')} className="grid size-20 place-items-center rounded-full bg-good-fill text-white shadow-lg active:scale-95">
                 <Check size={32} />
               </button>
             </>
@@ -432,7 +434,7 @@ function Splits({ splits, fiveK }: { splits: number[]; fiveK?: number }) {
             <span className="text-muted">กม. {i + 1}</span>
             <span className="h-2.5 overflow-hidden rounded-full bg-body">
               {/* แท่งยาว = เร็ว, สี = โซนเพซ */}
-              <span className={cx('block h-full rounded-full', !fiveK && (s === fastest ? 'bg-good' : 'bg-run'))}
+              <span className={cx('block h-full rounded-full', !fiveK && (s === fastest ? 'bg-good-fill' : 'bg-run-fill'))}
                 style={{ width: `${slowest === fastest ? 100 : 40 + 60 * ((slowest - s) / (slowest - fastest))}%`, background: fiveK ? zoneInfo(zoneOf(s, fiveK)).color : undefined }} />
             </span>
             <span className="text-center text-[10px] font-bold" style={{ color: fiveK ? zoneInfo(zoneOf(s, fiveK)).color : undefined }}>{fiveK ? zoneOf(s, fiveK) : ''}</span>
@@ -620,7 +622,7 @@ function PaceCard({ est, runs, onTrial }: { est: Estimate | null; runs: Run[]; o
   if (!est)
     return (
       <Card title={<span className="flex items-center gap-2"><Gauge size={18} className="text-run" /> เพซแนะนำ</span>}>
-        <p className="text-sm text-muted">วิ่งให้ได้ ≥3 กม. สักครั้ง แล้วแอปจะคำนวณเพซซ้อมและเวลาคาดการณ์ให้</p>
+        <p className="text-sm text-muted">เวลาคาดการณ์ 5K–มาราธอนและโซนเพซต้องใช้การวิ่ง<b>ต่อเนื่อง</b> ≥3 กม. ที่เพซเร็วกว่า 10:00/กม. (วิ่งสลับเดินและวิ่งช้ากว่านี้ไม่นับ เพราะจะคำนวณผิด) — ระหว่างนี้ดูเวลาจบงานแข่งโดยประมาณด้านบน</p>
       </Card>
     )
   // เทียบกับ 4 สัปดาห์ก่อน: ติดลบ = เร็วขึ้น
@@ -805,7 +807,7 @@ function ShoesCard({ runs }: { runs: Run[] }) {
     setShoes(prev => [...prev, s])
     setName(''); setStart('0'); setAdding(false)
   }
-  const tone = { good: 'bg-good', warn: 'bg-warn', bad: 'bg-bad' }
+  const tone = { good: 'bg-good-fill', warn: 'bg-warn', bad: 'bg-bad-fill' }
   return (
     <Card title={<span className="flex items-center gap-2"><Footprints size={18} className="text-run" /> รองเท้าวิ่ง</span>}
       action={<Button variant="soft" size="sm" onClick={() => setAdding(!adding)}><Plus size={14} /> เพิ่ม</Button>}>
@@ -882,7 +884,7 @@ function GhostCard({ ghost, now, on, setOn }: { ghost: GhostTarget; now: { lead:
           </div>
           <div className="relative mt-3 h-2 rounded-full bg-raised">
             {now && <span className="absolute top-1/2 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-muted/60 ring-2 ring-card transition-[left] duration-1000 ease-linear" style={{ left: pos(now.ghostM) }} />}
-            {now && <span className="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent ring-2 ring-card transition-[left] duration-1000 ease-linear" style={{ left: pos(now.m) }} />}
+            {now && <span className="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent-fill ring-2 ring-card transition-[left] duration-1000 ease-linear" style={{ left: pos(now.m) }} />}
           </div>
           <div className="mt-1 flex justify-between text-[10px] text-muted"><span>0</span><span>{ghost.km} กม.</span></div>
         </>

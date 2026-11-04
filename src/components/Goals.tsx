@@ -35,7 +35,7 @@ export function MonthGoalCard() {
         <span className={cx('text-sm font-semibold', pct >= 1 ? 'text-good' : 'text-muted')}>{pct >= 1 ? t('ถึงเป้าแล้ว', 'Goal reached') : `${Math.round(pct * 100)}%`}</span>
       </div>
       <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-body">
-        <div className={cx('h-full rounded-full transition-[width] duration-700', pct >= 1 ? 'bg-good' : 'bg-run')} style={{ width: `${pct * 100}%` }} />
+        <div className={cx('h-full rounded-full transition-[width] duration-700', pct >= 1 ? 'bg-good-fill' : 'bg-run-fill')} style={{ width: `${pct * 100}%` }} />
       </div>
       <div className="mt-2 text-xs text-muted">{t(`วิ่ง ${s.runs} ครั้ง · เวท ${s.workouts} ครั้ง`, `${s.runs} runs · ${s.workouts} workouts`)}{isDefault ? t(' · เป้าตั้งจากโปรแกรม', ' · goal from program') : ''}</div>
       <Collapse open={editing}>
@@ -69,7 +69,7 @@ function BadgesSheet({ earned, onClose }: { earned: string[]; onClose: () => voi
           const Icon = icons[b.icon]
           return (
             <li key={b.id} className={cx('flex flex-col items-center rounded-2xl p-2.5 text-center ring-1', on ? 'bg-accent-soft/60 ring-accent/30' : 'bg-raised ring-line')}>
-              <span className={cx('grid size-11 place-items-center rounded-full', on ? 'bg-accent text-white' : 'bg-body text-muted/50')}><Icon size={20} /></span>
+              <span className={cx('grid size-11 place-items-center rounded-full', on ? 'bg-accent-fill text-white' : 'bg-body text-muted/50')}><Icon size={20} /></span>
               <span className={cx('mt-1.5 text-xs font-bold leading-tight', !on && 'text-muted')}>{b.title}</span>
               <span className="mt-0.5 text-[10px] leading-tight text-muted">{b.text}</span>
             </li>
@@ -86,7 +86,7 @@ function BadgesSheet({ earned, onClose }: { earned: string[]; onClose: () => voi
       <div className="mt-3 flex h-24 items-end gap-1" role="img" aria-label="ระยะวิ่งรายเดือน">
         {months.map((km, i) => (
           <div key={i} className="flex flex-1 flex-col items-center gap-1">
-            <div className="w-full rounded-t-md bg-run" style={{ height: `${(km / max) * 72}px`, minHeight: km ? 2 : 0 }} title={`${thMonths[i]}: ${km.toFixed(1)} กม.`} />
+            <div className="w-full rounded-t-md bg-run-fill" style={{ height: `${(km / max) * 72}px`, minHeight: km ? 2 : 0 }} title={`${thMonths[i]}: ${km.toFixed(1)} กม.`} />
             <span className="text-[9px] text-muted">{i + 1}</span>
           </div>
         ))}

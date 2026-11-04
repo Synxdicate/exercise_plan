@@ -92,16 +92,17 @@ export function TrainingCalendar() {
               const missed = d < now && !ran && !lifted && !carded && !ticked && (plan?.type === 'run' || plan?.type === 'strength')
               const future = d > now && (plan?.type === 'run' || plan?.type === 'strength')
               return (
-                <button key={d} onClick={() => setPicked(picked === d ? null : d)} aria-label={niceDate(d)}
+                <button key={d} onClick={() => setPicked(picked === d ? null : d)} aria-pressed={picked === d}
                   className={cx('relative flex aspect-square flex-col items-center justify-center rounded-xl text-xs transition-colors',
                     ran && lifted ? 'bg-gradient-to-br from-run/25 to-accent/25' : ran ? 'bg-run/20' : lifted ? 'bg-accent-soft' : ticked ? 'bg-good/15' : 'bg-raised',
                     missed && 'border border-dashed border-muted/60', d === now && 'ring-2 ring-ink', picked === d && 'ring-2 ring-run')}>
                   <span className={cx('font-semibold tabular-nums', !ran && !lifted && 'text-muted')}>{+d.slice(8)}</span>
+                  <span className="sr-only">{niceDate(d)}</span>
                   {ran && <span className="text-[9px] font-bold tabular-nums text-run">{x!.km.toFixed(1)}</span>}
                   {!ran && lifted && <Dumbbell size={10} className="text-accent" />}
                   {!ran && !lifted && carded && (x?.cross.length ? <Bike size={10} className="text-run" /> : <Footprints size={10} className="text-muted" />)}
                   {ticked && <Check size={11} strokeWidth={3} className="text-good" />}
-                  {future && <span className={cx('absolute bottom-1 size-1 rounded-full', plan!.type === 'run' ? 'bg-run' : 'bg-accent')} />}
+                  {future && <span className={cx('absolute bottom-1 size-1 rounded-full', plan!.type === 'run' ? 'bg-run-fill' : 'bg-accent-fill')} />}
                 </button>
               )
             })}
@@ -113,7 +114,7 @@ export function TrainingCalendar() {
         <span className="flex items-center gap-1"><span className="size-2.5 rounded bg-accent-soft" /> เวท</span>
         <span className="flex items-center gap-1"><Check size={10} strokeWidth={3} className="text-good" /> ติ๊กทำแล้ว</span>
         <span className="flex items-center gap-1"><span className="size-2.5 rounded border border-dashed border-muted/60" /> ตามแผนแต่ไม่ได้ทำ</span>
-        <span className="flex items-center gap-1"><span className="size-1.5 rounded-full bg-run" /> แผนวันข้างหน้า</span>
+        <span className="flex items-center gap-1"><span className="size-1.5 rounded-full bg-run-fill" /> แผนวันข้างหน้า</span>
       </div>
       {picked && (
         <div className="mt-3 animate-fade-up rounded-xl bg-raised p-3 text-sm">

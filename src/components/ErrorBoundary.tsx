@@ -22,7 +22,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode; fallback?: R
         <h1 className="text-xl font-bold">มีบางอย่างผิดพลาด</h1>
         <p className="max-w-sm text-sm text-muted">บันทึกรายงานปัญหาไว้แล้ว ข้อมูลของคุณไม่หาย ลองโหลดใหม่อีกครั้ง</p>
         <code className="max-w-sm break-all rounded-xl bg-raised p-2 text-xs text-muted">{this.state.error.message}</code>
-        <button onClick={() => location.reload()} className="rounded-full bg-accent px-5 py-2.5 font-semibold text-white">โหลดใหม่</button>
+        <button onClick={() => location.reload()} className="rounded-full bg-accent-fill px-5 py-2.5 font-semibold text-white">โหลดใหม่</button>
       </div>
     )
   }

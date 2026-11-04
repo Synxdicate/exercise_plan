@@ -145,7 +145,7 @@ test('เป้าเวลา + แผนวันแข่ง + เตือ�
 
   await nav(page, 'ฝึก')
   await expect(page.getByText(/เจ็บ 2 วันใน 7 วัน/)).toBeVisible()
-  await page.locator('button[aria-label^="อาทิตย์"]').click()
+  await page.locator('button', { has: page.locator('.sr-only', { hasText: /^อาทิตย์:/ }) }).click()
   await expect(page.getByText('แผนเพซ ฮาล์ฟ')).toBeVisible()
   await expect(page.getByText('เช็กลิสต์สัปดาห์แข่ง')).toBeVisible()
 })
@@ -167,7 +167,7 @@ test('อาหาร: ค้นหาแบบไทย (ไข่ต้ม →
 test('สลับท่าและเพิ่มท่า', async ({ page }) => {
   await seed(page)
   await nav(page, 'ฝึก')
-  await page.locator('button[aria-label^="จันทร์"]').click()
+  await page.locator('button', { has: page.locator('.sr-only', { hasText: /^จันทร์:/ }) }).click()
   await page.locator('main li button', { hasText: 'Bench Press' }).click()
   await page.getByRole('button', { name: 'สลับท่า' }).click()
   await page.getByRole('button', { name: /DB Bench Press/ }).click()
@@ -196,7 +196,7 @@ test('เส้นทางเดิม: เทียบกับครั้ง
 test('รูปสาธิตท่าในตารางฝึก', async ({ page }) => {
   await seed(page)
   await nav(page, 'ฝึก')
-  await page.locator('button[aria-label^="จันทร์"]').click()
+  await page.locator('button', { has: page.locator('.sr-only', { hasText: /^จันทร์:/ }) }).click()
   await page.locator('main li button', { hasText: 'Bench Press' }).click()
   const img = page.getByAltText('Bench Press ท่าเริ่ม')
   await expect(img).toBeVisible()
@@ -331,7 +331,7 @@ test('ปฏิทินการฝึก: วันที่วิ่ง/เ�
   })
   await nav(page, 'บันทึก')
   await expect(page.getByText(/ออกกำลังกาย 1 วัน · วิ่ง 5\.3 กม\. · เวท 1 ครั้ง/)).toBeVisible()
-  await page.getByRole('button', { name: 'วันนี้', exact: true }).click()
+  await page.getByRole('button', { name: /^\d+ วันนี้/ }).click()
   await expect(page.getByText('Easy 5.30 กม. · 31:40')).toBeVisible()
 })
 
@@ -340,7 +340,7 @@ test('ปฏิทินการฝึก: วันที่ติ๊กทำ
   await seed(page, { program: 'physique', week: 1, done: { [`physique-w1-d${i}`]: true } })
   await nav(page, 'บันทึก')
   await expect(page.getByText(/ออกกำลังกาย 1 วัน/)).toBeVisible()
-  await page.getByRole('button', { name: 'วันนี้', exact: true }).click()
+  await page.getByRole('button', { name: /^\d+ วันนี้/ }).click()
   await expect(page.getByText('ทำแล้ว', { exact: true })).toBeVisible()
 })
 
@@ -376,7 +376,7 @@ test('ท่าที่ไม่มีรูปถ่ายแสดงภา�
   // หาวันในสัปดาห์ที่มีท่านี้ (วันขาในสวน)
   const target = page.locator('main li button', { hasText: 'Hollow Body Hold' })
   for (const d of ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์', 'อาทิตย์']) {
-    await page.locator(`button[aria-label^="${d}"]`).click()
+    await page.locator('button', { has: page.locator('.sr-only', { hasText: new RegExp(`^${d}:`) }) }).click()
     if (await target.count()) break
   }
   await target.first().click()
@@ -413,7 +413,7 @@ test('เซอร์กิตแกนกลาง: เริ่ม ข้า�
 test('ฝึกคนเดียว: สลับ Bench Press/Back Squat เป็นท่าที่ไม่ต้องมีคนช่วย', async ({ page }) => {
   await seed(page)
   await nav(page, 'ฝึก')
-  await page.locator('button[aria-label^="จันทร์"]').click()
+  await page.locator('button', { has: page.locator('.sr-only', { hasText: /^จันทร์:/ }) }).click()
   await expect(page.locator('main li button', { hasText: 'Bench Press' }).first()).toBeVisible()
   await page.getByText('ไปคนเดียว (ไม่มีคนช่วยจับบาร์)').click()
   await expect(page.locator('main li button', { hasText: 'DB Bench Press' })).toBeVisible()
@@ -425,7 +425,7 @@ test('โลโก้กลับหน้าหลัก, เมนูบัญ
   await seed(page)
   await nav(page, 'ฝึก')
   await expect(page.locator('header h1')).toHaveText('ตารางฝึก')
-  await page.getByRole('button', { name: 'กลับหน้าหลัก' }).click()
+  await page.getByRole('button', { name: /กลับหน้าหลัก/ }).click()
   await expect(page.locator('header h1')).toHaveText('ภาพรวม')
 
   await page.getByRole('button', { name: 'เมนูบัญชี' }).click()
@@ -513,7 +513,7 @@ test('สลับวัน: ทำแผนวันอังคารวัน
   await page.clock.install({ time: new Date('2026-11-02T08:00:00+07:00') })
   await seed(page, { program: 'mini', programStart: '2026-11-02', raceDate: '2027-01-10' })
   await nav(page, 'ฝึก')
-  await page.getByRole('button', { name: /^อังคาร: วิ่งสลับเดิน/ }).click()
+  await page.getByRole('button', { name: /อังคาร: วิ่งสลับเดิน/ }).click()
   await page.getByRole('button', { name: /ทำวันนี้แทน/ }).click()
   await expect(page.getByText('สลับมาจากวันอังคาร')).toBeVisible()
   await expect.poll(async () => idb(page, 'dayMoves')).toEqual({ '2026-11-02': [[1, 0]] })
@@ -522,7 +522,7 @@ test('สลับวัน: ทำแผนวันอังคารวัน
   // วิ่งยาววันอาทิตย์มาวันนี้ → เตือนวิ่งติดกัน (จันทร์–อังคาร) ไม่สลับถ้ากดยกเลิก
   await nav(page, 'ฝึก')
   await page.getByRole('button', { name: 'คืนลำดับเดิม' }).click()
-  await page.getByRole('button', { name: /^อาทิตย์: วิ่งยาวสลับเดิน/ }).click()
+  await page.getByRole('button', { name: /อาทิตย์: วิ่งยาวสลับเดิน/ }).click()
   await page.getByRole('button', { name: /ทำวันนี้แทน/ }).click()
   await expect(page.getByText('วิ่งติดกันสองวัน')).toBeVisible()
   await page.getByRole('button', { name: 'ยกเลิก' }).click()

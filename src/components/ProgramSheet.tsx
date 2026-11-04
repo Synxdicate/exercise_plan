@@ -17,6 +17,7 @@ export function ProgramSheet({ onClose }: { onClose: () => void }) {
   const [where, setWhere] = useState<LocationPref>(p.location)
   const [date, setDate] = useState(p.raceDate)
   const [km, setKm] = useState(choice === p.program && p.raceKm !== programs[p.program].raceKm ? String(p.raceKm ?? '') : '')
+  const [cutoff, setCutoff] = useState(choice === p.program && p.raceCutoff ? String(p.raceCutoff) : '')
   const weeksAway = date ? Math.ceil(daysBetween(today(), date) / 7) : null
 
   const save = () => {
@@ -25,13 +26,14 @@ export function ProgramSheet({ onClose }: { onClose: () => void }) {
       p.setRaceDate(date)
       const n = Number(km)
       p.setRaceKm(n > 0 && n !== programs[choice].raceKm ? n : null)
+      p.setRaceCutoff(Number(cutoff) > 0 ? Number(cutoff) : null)
     }
     p.setLocationPref(where)
     onClose()
   }
 
   const Radio = ({ on }: { on: boolean }) => (
-    <span className={cx('mt-0.5 grid size-5 shrink-0 place-items-center rounded-full ring-2 transition-colors', on ? 'bg-accent ring-accent' : 'ring-line')}>
+    <span className={cx('mt-0.5 grid size-5 shrink-0 place-items-center rounded-full ring-2 transition-colors', on ? 'bg-accent-fill ring-accent' : 'ring-line')}>
       {on && <Check size={12} className="animate-pop text-white" strokeWidth={3} />}
     </span>
   )
@@ -48,6 +50,8 @@ export function ProgramSheet({ onClose }: { onClose: () => void }) {
           <DateInput label="วันแข่ง" hint="ไม่บังคับ — ใส่แล้วแอปจะนับสัปดาห์และ taper ให้เอง" value={date} onChange={setDate} />
           <NumberInput className="mt-2" label="ระยะงานจริง" unit="กม." step={0.05} value={km} placeholder={String(programs[choice].raceKm)}
             hint={`ไม่ใส่ = ${programs[choice].raceKm} กม. · งานมินิแต่ละงานยาวไม่เท่ากัน`} onChange={setKm} />
+          <NumberInput className="mt-2" label="เวลาตัดตัว (cutoff)" unit="นาที" step={5} value={cutoff} placeholder="เช่น 120"
+            hint="ไม่บังคับ — แอปจะเทียบกับเวลาจบโดยประมาณ" onChange={setCutoff} />
           {!!programs[choice].raceKm && weeksAway !== null && weeksAway < programs[choice].weeks && (
             <p className="mt-2 rounded-xl bg-warn/15 p-2 text-xs text-warn">
               เหลือ {Math.max(weeksAway, 0)} สัปดาห์ น้อยกว่าโปรแกรม {programs[choice].weeks} สัปดาห์ — แอปจะเริ่มจากกลางโปรแกรม ถ้าฐานยังไม่ถึง ควรเลือกงานที่ไกลกว่านี้

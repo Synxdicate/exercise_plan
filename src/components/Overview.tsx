@@ -27,7 +27,7 @@ export function Guide() {
         <ol className="relative space-y-4 border-l-2 border-line pl-5">
           {phases.map(p => (
             <li key={p.weeks} className="relative">
-              <span className="absolute -left-[27px] top-1 size-3 rounded-full bg-accent ring-4 ring-card" />
+              <span className="absolute -left-[27px] top-1 size-3 rounded-full bg-accent-fill ring-4 ring-card" />
               <Badge>สัปดาห์ {p.weeks}</Badge>
               <div className="mt-1 font-bold">{p.name}</div>
               <p className="text-sm text-muted">{p.text}</p>

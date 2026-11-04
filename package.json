@@ -1,7 +1,7 @@
 {
   "name": "exercise_plan",
   "private": true,
-  "version": "2.38.1",
+  "version": "2.39.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -38,6 +38,7 @@
     "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@capacitor/cli": "^8.5.3",
     "@playwright/test": "^1.63.0",
     "@types/leaflet": "^1.9.22",
