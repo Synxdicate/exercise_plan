@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { programs, variants, weekKm, weekPlan, type LocationPref, type Mode, type ProgramId } from '../data/programs'
+import { programs, variants, withHills, weekKm, weekPlan, type LocationPref, type Mode, type ProgramId } from '../data/programs'
 import { addDays, daysBetween, today, weekStart } from './date'
 import { usePersisted } from './storage'
 import { homeUsable, libEx, needsSpotter } from '../data/library'
@@ -89,6 +89,8 @@ export function useProgram() {
   const [raceKmOverride, setRaceKm] = usePersisted<number | null>('raceKm', null)
   // เวลาตัดตัว (นาที) ของงานจริง — เทียบกับเวลาจบโดยประมาณ
   const [raceCutoff, setRaceCutoff] = usePersisted<number | null>('raceCutoff', null)
+  // เส้นทางแข่งมีเนิน (เช่น เนินซึมยาว) — เพิ่มการซ้อมเนินในแผน (withHills)
+  const [raceHills, setRaceHills] = usePersisted('raceHills', false)
   const [swaps, setSwaps] = usePersisted<Record<string, string>>('exerciseSwaps', {})
   const [extras, setExtras] = usePersisted<Record<string, Exercise[]>>('extraExercises', {})
   const [solo, setSolo] = usePersisted('soloMode', false)
@@ -154,6 +156,8 @@ export function useProgram() {
     setRaceKm,
     raceCutoff,
     setRaceCutoff,
+    raceHills,
+    setRaceHills,
     setRaceDate,
     currentWeek,
     weeksUntilStart,
@@ -200,7 +204,8 @@ export function useProgram() {
       return raw < 1 ? null : raw - repeats.filter(r => r > start && r <= monday).length > meta.weeks ? null : weekAt(start, repeats, monday, meta.weeks)
     },
     plan: (week = currentWeek) => {
-      const days = applyCustom(weekPlan(program, Math.max(1, week), i => locationFor(week, i)), program, swaps, extras, solo)
+      const base = applyCustom(weekPlan(program, Math.max(1, week), i => locationFor(week, i)), program, swaps, extras, solo)
+      const days = raceHills ? withHills(base, program, Math.max(1, week)) : base
       const mv = moves[mondayOf(week)]
       if (!isRace || week !== meta.weeks) return applyMoves(days, mv)
       const sized = raceKmOverride ? withRaceKm(days, raceKmOverride) : days

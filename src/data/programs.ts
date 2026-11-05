@@ -386,6 +386,25 @@ export function variants(program: ProgramId, week: number): Record<Mode, Day[]> 
 // อยู่ได้ถึง ~6 สัปดาห์ (Byrnes 1985; Tallis 2024 ซ้ำห่าง 3 สัปดาห์) — งานวิจัยใช้ลงเนินชัน 10–15% นาน 15–30 นาที
 // แอปให้แบบเบากว่ามาก (มือใหม่) และอยู่ก่อน taper เพื่อให้ขาหายปวดก่อนวันแข่ง
 export const downhillNote = 'ถ้าเส้นทางแข่งมีช่วงลงเนิน: วิ่งรอบนี้ในเส้นทางที่มีทางลาดลงเล็กน้อย (สะพาน/ถนนลาด) วิ่งลงช้า ๆ 4 × 1 นาที ก้าวสั้นและถี่ ลำตัวตั้ง ไม่เบรกด้วยส้นเท้า เดินขึ้นกลับ — ครั้งแรกน่องและต้นขาหน้าอาจปวด 1–2 วัน เป็นเรื่องปกติ ครั้งต่อไป (รวมวันแข่ง) จะปวดน้อยลง'
+// ผู้ใช้ตั้ง "เส้นทางแข่งมีเนิน" (synced raceHills — เช่น ขอนแก่นที่เป็นเนินซึมยาว): ซ้อมลงเนินแบบไม่มี "ถ้า",
+// วิ่งยาวก่อน taper บนเส้นทางมีเนิน และวันแข่งคุมความเหนื่อยแทนเพซ (Johnson 2022: เร็วสุดเมื่อออกแรงขึ้นเนินเพิ่ม ≤~10%)
+export const hillyDownhillNote = 'เส้นทางแข่งมีเนิน: วิ่งรอบนี้ในเส้นทางที่มีทางลาดลงเล็กน้อย (สะพาน/ถนนลาด) วิ่งลงช้า ๆ 4 × 1 นาที ก้าวสั้นและถี่ ลำตัวตั้ง ไม่เบรกด้วยส้นเท้า เดินขึ้นกลับ — ครั้งแรกน่องและต้นขาหน้าอาจปวด 1–2 วัน เป็นเรื่องปกติ ครั้งต่อไป (รวมวันแข่ง) จะปวดน้อยลง'
+export const hillyLongNote = 'สนามมีเนิน: วิ่งยาวรอบนี้บนเส้นทางที่มีเนินขึ้น–ลงยาว ๆ อย่างน้อยครึ่งทาง — ขึ้นเนินคุมความเหนื่อยเท่าทางราบ ปล่อยเพซช้าลงได้ ก้าวสั้นลง ลงเนินไม่เร่งจนต้องเบรก'
+export const hillyRaceNote = 'เนินซึม: คุมความเหนื่อย ไม่ใช่เพซ — ขึ้นเนินปล่อยให้ช้าลง (ฝืนเพซเดิมขึ้นเนินทำให้ขาหมดก่อนเส้นชัย) ลงเนินก้าวสั้นถี่ ไม่เบรก'
+
+/** ใส่ใน plan() เมื่อผู้ใช้ตั้งว่าเส้นทางแข่งมีเนิน — เฉพาะโปรแกรมแข่ง ก่อน taper และวันแข่ง */
+export function withHills(days: Day[], program: ProgramId, week: number): Day[] {
+  const p = programs[program]
+  if (!p.raceKm || p.ongoing) return days
+  const add = (d: Day, n: string) => ({ ...d, note: [d.note, n].filter(Boolean).join(' · ') })
+  return days.map(d => {
+    if (d.note?.includes(downhillNote)) return { ...d, note: d.note.replace(downhillNote, hillyDownhillNote) }
+    if (d.runKind === 'race') return add(d, hillyRaceNote)
+    if (d.runKind === 'long' && week >= p.weeks - 5 && week <= p.weeks - 2) return add(d, hillyLongNote)
+    return d
+  })
+}
+
 const downhillWeek = (program: ProgramId, week: number) =>
   !!programs[program].raceKm && !programs[program].ongoing && (week === programs[program].weeks - 4 || week === programs[program].weeks - 3)
 function withDownhill(days: Day[]): Day[] {

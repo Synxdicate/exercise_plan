@@ -274,3 +274,19 @@ describe('downhill practice before races (Byrnes 1985)', () => {
     }
   })
 })
+
+describe('hilly race course (raceHills)', () => {
+  it('adds hill long runs before taper, unconditional downhill practice and race-day hill pacing', async () => {
+    const { withHills, downhillNote, hillyDownhillNote, hillyLongNote, hillyRaceNote } = await import('../../data/programs')
+    const plan = (w: number) => withHills(weekPlan('mini', w, () => 'park'), 'mini', w)
+    const notes = (w: number) => plan(w).map(d => d.note ?? '').join('\n')
+    for (const w of [5, 6, 7, 8]) expect(plan(w).find(d => d.key === 'long')!.note, `w${w}`).toContain(hillyLongNote)
+    for (const w of [4, 9]) expect(notes(w), `w${w}`).not.toContain(hillyLongNote)
+    expect(notes(6)).toContain(hillyDownhillNote)
+    expect(notes(6)).not.toContain(downhillNote)
+    expect(plan(10).find(d => d.runKind === 'race')!.note).toContain(hillyRaceNote)
+    // โปรแกรมไม่แข่งไม่เปลี่ยน
+    const base = weekPlan('base', 2, () => 'gym')
+    expect(withHills(base, 'base', 2)).toEqual(base)
+  })
+})

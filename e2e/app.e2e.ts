@@ -551,3 +551,15 @@ test('พาฝึก: ปุ่มหลักทำเซ็ตเสร็จ
   await page.getByRole('button', { name: 'ข้ามการพัก' }).click()
   await expect(page.getByRole('button', { name: /จับเวลา 30 วิ \/ ข้าง · เซ็ต 2\/2/ })).toBeVisible()
 })
+
+test('เส้นทางแข่งมีเนิน: ติ๊กในตั้งค่าโปรแกรมแล้ววันแข่งมีวิธีคุมแรงบนเนิน', async ({ page }) => {
+  await page.clock.install({ time: new Date('2027-01-10T06:00:00+07:00') })
+  await seed(page, { program: 'mini', programStart: '2026-11-02', raceDate: '2027-01-10' })
+  await page.getByRole('button', { name: 'เมนูบัญชี' }).click()
+  await page.getByText('ตั้งค่าโปรแกรมและเป้าหมาย').click()
+  await page.getByText('เส้นทางแข่งมีเนิน').click()
+  await page.getByRole('button', { name: 'บันทึก', exact: true }).last().click()
+  await expect.poll(() => idb(page, 'raceHills')).toBe(true)
+  await nav(page, 'ฝึก')
+  await expect(page.getByText(/คุมความเหนื่อย ไม่ใช่เพซ/).first()).toBeVisible()
+})

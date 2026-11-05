@@ -20,6 +20,7 @@ export function ProgramSheet({ onClose }: { onClose: () => void }) {
   const [where, setWhere] = useState<LocationPref>(p.location)
   const [date, setDate] = useState(p.raceDate)
   const [km, setKm] = useState(choice === p.program && p.raceKm !== programs[p.program].raceKm ? String(p.raceKm ?? '') : '')
+  const [hills, setHills] = useState(p.raceHills)
   const [cutoff, setCutoff] = useState(choice === p.program && p.raceCutoff ? String(p.raceCutoff) : '')
   const weeksAway = date ? Math.ceil(daysBetween(today(), date) / 7) : null
 
@@ -30,6 +31,7 @@ export function ProgramSheet({ onClose }: { onClose: () => void }) {
       const n = Number(km)
       p.setRaceKm(n > 0 && n !== programs[choice].raceKm ? n : null)
       p.setRaceCutoff(Number(cutoff) > 0 ? Number(cutoff) : null)
+      p.setRaceHills(hills)
     }
     p.setLocationPref(where)
     onClose()
@@ -55,6 +57,13 @@ export function ProgramSheet({ onClose }: { onClose: () => void }) {
             hint={t(`ไม่ใส่ = ${programs[choice].raceKm} กม. · งานมินิแต่ละงานยาวไม่เท่ากัน`, `Blank = ${programs[choice].raceKm} km · mini races vary in length`)} onChange={setKm} />
           <NumberInput className="mt-2" label={t('เวลาตัดตัว (cutoff)', 'Cutoff time')} unit={t('นาที', 'min')} step={5} value={cutoff} placeholder={t('เช่น 120', 'e.g. 120')}
             hint={t('ไม่บังคับ — แอปจะเทียบกับเวลาจบโดยประมาณ', 'Optional — compared with your estimated finish')} onChange={setCutoff} />
+          <label className="mt-3 flex items-start gap-3 rounded-2xl bg-raised p-3">
+            <input type="checkbox" className="mt-0.5 size-5 shrink-0 accent-accent" checked={hills} onChange={e => setHills(e.target.checked)} />
+            <span>
+              <span className="block text-sm font-semibold">{t('เส้นทางแข่งมีเนิน', 'The race course is hilly')}</span>
+              <span className="block text-xs text-muted">{t('รวมถึง "เนินซึม" ยาว ๆ ที่มองไม่ค่อยเห็น (เช่น ขอนแก่น) — แผนจะเพิ่มวิ่งยาวบนเส้นทางมีเนิน ซ้อมลงเนิน และวิธีคุมแรงบนเนินวันแข่ง', 'Including long gradual grades you barely notice — the plan adds hilly long runs, downhill practice and hill pacing for race day')}</span>
+            </span>
+          </label>
           {!!programs[choice].raceKm && weeksAway !== null && weeksAway < programs[choice].weeks && (
             <p className="mt-2 rounded-xl bg-warn/15 p-2 text-xs text-warn">
               {t(`เหลือ ${Math.max(weeksAway, 0)} สัปดาห์ น้อยกว่าโปรแกรม ${programs[choice].weeks} สัปดาห์ — แอปจะเริ่มจากกลางโปรแกรม ถ้าฐานยังไม่ถึง ควรเลือกงานที่ไกลกว่านี้`, `${Math.max(weeksAway, 0)} weeks left, shorter than the ${programs[choice].weeks}-week program — the app starts mid-program; if your base isn't there yet, pick a later race`)}
