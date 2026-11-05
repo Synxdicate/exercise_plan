@@ -99,7 +99,7 @@ function PlanBody() {
       <WeekCheckCard />
       <button onClick={() => setPicking(true)} className="flex w-full items-center gap-3 rounded-3xl bg-card p-4 text-left shadow-sm ring-1 ring-line active:scale-[.99]">
         <div className="min-w-0 flex-1">
-          <div className="text-xs font-semibold text-accent">{t('โปรแกรมของฉัน', 'My program')} · {dt.en ? { gym: 'Gym', park: 'Park', home: 'Home', mix: 'Mixed' }[p.location] : locationInfo[p.location].label.replace(/ \(.*\)/, '')}</div>
+          <div className="text-xs font-semibold text-accent">{t('โปรแกรมของฉัน', 'My program')} · {(dt.en ? locationInfo[p.location].labelEn : locationInfo[p.location].label).replace(/ \(.*\)/, '')}</div>
           <div className="truncate text-lg font-bold leading-tight">{dt.program(p.program).name}</div>
           {p.isRace && (
             <div className="mt-0.5 text-xs text-muted">
@@ -383,8 +383,8 @@ function ExerciseRow({ e, n, onSwap, onRemove }: { e: Exercise; n: number; onSwa
             {musclesOf(e).primary.map(m => <Badge key={m}>{dt.muscle(m)}</Badge>)}
           </div>
           <ExerciseDemo name={e.name} />
-          {e.solo && e.swappedFrom && needsSpotter[e.swappedFrom] && <p className="text-xs text-run">ไปคนเดียว: ใช้ท่านี้แทน {e.swappedFrom} — {needsSpotter[e.swappedFrom].note}</p>}
-          {!e.swappedFrom && needsSpotter[e.name] && <p className="text-xs text-warn">ท่านี้ควรมีคนช่วยจับบาร์ ({needsSpotter[e.name].note}) — ไปคนเดียวติ๊ก "ไปคนเดียว" ด้านบนได้</p>}
+          {e.solo && e.swappedFrom && needsSpotter[e.swappedFrom] && <p className="text-xs text-run">{t(`ไปคนเดียว: ใช้ท่านี้แทน ${e.swappedFrom} — ${needsSpotter[e.swappedFrom].note}`, `Training solo: this replaces ${e.swappedFrom} — ${needsSpotter[e.swappedFrom].noteEn}`)}</p>}
+          {!e.swappedFrom && needsSpotter[e.name] && <p className="text-xs text-warn">{t(`ท่านี้ควรมีคนช่วยจับบาร์ (${needsSpotter[e.name].note}) — ไปคนเดียวติ๊ก "ไปคนเดียว" ด้านบนได้`, `This lift needs a spotter (${needsSpotter[e.name].noteEn}) — training alone? tick "Solo" above`)}</p>}
           <p className="text-muted">{e.cue}</p>
           {(e.easier || e.harder) && (
             <div className="flex flex-wrap gap-3 text-xs text-run">

@@ -64,6 +64,13 @@ export type Paces = Partial<Record<Exclude<PaceKey, 'stride' | 'easy'>, number>>
 const KIND_LABEL: Record<StepKind, string> = { warm: 'วอร์มอัพ', work: 'ช่วงเร็ว', recover: 'พัก', cool: 'คูลดาวน์', easy: 'วิ่งเบา' }
 export const stepLabel = (s: Step) => s.label ?? (s.pace === 'stride' ? 'เร่ง (Stride)' : s.kind === 'recover' && !s.pace ? 'เดินกลับ' : KIND_LABEL[s.kind])
 
+const KIND_LABEL_EN: Record<StepKind, string> = { warm: 'Warm-up', work: 'Fast', recover: 'Recover', cool: 'Cool-down', easy: 'Easy run' }
+const LABEL_EN: Record<string, string> = {
+  'ขึ้นเนิน': 'Uphill', 'เดิน': 'Walk', 'เดินคูลดาวน์': 'Cool-down walk', 'เดินเร็ววอร์มอัพ': 'Brisk-walk warm-up', 'ทดสอบ 5K': '5K test',
+  'ท่าวอร์มอัพ ยกเข่า เอสคิป เตะก้น ลันจ์ ท่าละ 20 เมตร': 'Drills: high knees, A-skips, butt kicks, lunges — 20 m each', 'วิ่งเบา': 'Easy run',
+}
+export const stepLabelEn = (s: Step) => (s.label ? LABEL_EN[s.label] ?? s.label : s.pace === 'stride' ? 'Stride' : s.kind === 'recover' && !s.pace ? 'Walk back' : KIND_LABEL_EN[s.kind])
+
 const spokenTime = (sec: number) => {
   const m = Math.floor(sec / 60), s = Math.round(sec % 60)
   return [m && `${m} นาที`, s && `${s} วินาที`].filter(Boolean).join(' ')

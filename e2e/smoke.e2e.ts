@@ -26,3 +26,19 @@ for (const [program, at, raceDate] of cases) test(`smoke ${program} @ ${at}${rac
   await expect(page.getByText('มีบางอย่างผิดพลาด')).toHaveCount(0)
   expect(errors).toEqual([])
 })
+
+// ภาษาอังกฤษ: ทุกแท็บและแท็บย่อยต้องไม่พัง และหน้าแหล่งอ้างอิงเป็นภาษาอังกฤษ
+test('smoke English', async ({ page }) => {
+  const errors: string[] = []
+  page.on('pageerror', e => errors.push(e.message))
+  await page.clock.install({ time: new Date('2027-01-03T08:00:00+07:00') })
+  await seed(page, { lang: 'en', program: 'mini', programStart: '2026-11-02', raceDate: '2027-01-10', runs: runs.filter(r => r.date <= '2027-01-03') })
+  for (const i of [0, 1, 2, 3, 4]) {
+    await page.locator('nav button').nth(i).click()
+    await expect(page.locator('[data-tab-loading]')).toHaveCount(0)
+    const subs = page.locator('main [data-segmented]').first().locator('button')
+    for (let j = 0; j < await subs.count(); j++) await subs.nth(j).click()
+  }
+  await expect(page.getByText('Something went wrong')).toHaveCount(0)
+  expect(errors).toEqual([])
+})

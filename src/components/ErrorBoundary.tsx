@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
+import { trNow } from '../lib/i18n'
 import { captureError } from '../lib/errors'
 
 // จับ error ระหว่าง render ไม่ให้จอขาวทั้งแอป — บันทึกรายงานแล้วให้กดโหลดใหม่ได้
@@ -19,10 +20,10 @@ export class ErrorBoundary extends Component<{ children: ReactNode; fallback?: R
     if (this.props.fallback !== undefined) return this.props.fallback
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center gap-3 p-6 text-center">
-        <h1 className="text-xl font-bold">มีบางอย่างผิดพลาด</h1>
-        <p className="max-w-sm text-sm text-muted">บันทึกรายงานปัญหาไว้แล้ว ข้อมูลของคุณไม่หาย ลองโหลดใหม่อีกครั้ง</p>
+        <h1 className="text-xl font-bold">{trNow('มีบางอย่างผิดพลาด', 'Something went wrong')}</h1>
+        <p className="max-w-sm text-sm text-muted">{trNow('บันทึกรายงานปัญหาไว้แล้ว ข้อมูลของคุณไม่หาย ลองโหลดใหม่อีกครั้ง', 'The problem was logged and your data is safe. Try reloading.')}</p>
         <code className="max-w-sm break-all rounded-xl bg-raised p-2 text-xs text-muted">{this.state.error.message}</code>
-        <button onClick={() => location.reload()} className="rounded-full bg-accent-fill px-5 py-2.5 font-semibold text-white">โหลดใหม่</button>
+        <button onClick={() => location.reload()} className="rounded-full bg-accent-fill px-5 py-2.5 font-semibold text-white">{trNow('โหลดใหม่', 'Reload')}</button>
       </div>
     )
   }

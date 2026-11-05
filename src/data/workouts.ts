@@ -207,6 +207,12 @@ export const phases = [
   { weeks: '9', name: 'Deload', text: 'ลดจำนวนเซ็ตลงครึ่งหนึ่ง น้ำหนักเท่าเดิม ให้ร่างกายฟื้นตัว' },
   { weeks: '10–12', name: 'ทดสอบ & ต่อยอด', text: 'กลับไปความหนักเต็มที่ ทดสอบสถิติ (pull-up สูงสุด, วิ่ง 5 กม.) ถ่ายรูปเทียบกับสัปดาห์ที่ 1 แล้ววางแผนรอบต่อไป' },
 ]
+export const phasesEn = [
+  { name: 'Base', text: 'Learn good form, leave 2–3 reps in the tank (RIR 2–3); ~12–15 km/week running' },
+  { name: 'Build', text: 'Push closer to failure (RIR 1–2), add load/reps each week, more interval reps; ~15–18 km running' },
+  { name: 'Deload', text: 'Half the sets, same weights, let the body recover' },
+  { name: 'Test & extend', text: 'Back to full intensity, test (max pull-ups, 5 km run), compare photos with week 1, plan the next cycle' },
+]
 
 export const principles = [
   { title: 'Double progression', text: 'เมื่อทำได้ครบจำนวนครั้งสูงสุดทุกเซ็ต (เช่น 3×8) ให้เพิ่มน้ำหนักเล็กน้อยแล้วเริ่มนับใหม่ที่ช่วงล่าง (3×6) — นี่คือ progressive overload ซึ่งเป็นหลักสำคัญของการเพิ่มกล้าม' },
@@ -214,4 +220,11 @@ export const principles = [
   { title: 'ช่วงบน 2 ครั้ง ขา 1 ครั้ง/สัปดาห์', text: 'ถ้าปริมาณเซ็ตรวมต่อสัปดาห์เท่ากัน ความถี่ไม่ได้มีผลต่อการโตของกล้ามมากนัก (Schoenfeld 2019) วันขาจึงรวมไว้วันเดียว และขายังได้ฝึกจากการวิ่ง' },
   { title: 'วิ่งไม่ขัดกล้าม ถ้าไม่มากไป', text: 'วิ่งเบาเป็นหลัก (โซน E) วิ่งหนักแค่ 1 ครั้ง/สัปดาห์ และไม่วิ่งหนักในวันถัดจากวันเล่นขา' },
   { title: 'นอนและเดิน', text: 'นอน 7–9 ชม. ช่วยเรื่องการฟื้นตัวและความอยากอาหาร เดินวันละ 7,000+ ก้าวช่วยเผาผลาญโดยไม่กระทบการฟื้นตัว' },
+]
+export const principlesEn = [
+  { title: 'Double progression', text: 'Once every set hits the top of the rep range (e.g. 3×8), add a little weight and restart at the bottom (3×6) — progressive overload, the key driver of muscle gain' },
+  { title: 'Enough volume', text: 'Meta-analyses find ~10+ hard sets per muscle per week beat lower volumes; this plan gives ~9–14 sets per major muscle' },
+  { title: 'Upper body twice, legs once a week', text: 'With equal weekly sets, frequency matters little for growth (Schoenfeld 2019), so legs get one day — and running trains them too' },
+  { title: 'Running doesn’t kill gains if it isn’t too much', text: 'Mostly easy running (zone E), one hard run a week, never a hard run the day after legs' },
+  { title: 'Sleep and walk', text: '7–9 h of sleep helps recovery and appetite control; 7,000+ steps a day burns energy without hurting recovery' },
 ]

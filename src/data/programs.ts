@@ -115,6 +115,8 @@ const fullWeeks: RunWeek[] = [
 // วิ่งนานเกิน ~75–90 นาที ควรเติมคาร์บระหว่างวิ่ง 30–60 ก./ชม. (ACSM 2016, Jeukendrup 2014)
 // มือใหม่วิ่งมินิราว 1.5–2 ชม. — วิ่งยาวช่วงท้าย (~70–85 นาที) ใช้ซ้อมดื่ม/กินแบบวันแข่ง (Jeukendrup 2017: ลำไส้ฝึกได้)
 const gutNote = 'ซ้อมดื่มน้ำ/เกลือแร่ (และเจล ถ้าจะใช้วันแข่ง) ระหว่างวิ่งยาวนี้ แบบเดียวกับที่จะทำวันแข่ง — ท้องปรับตัวได้ด้วยการซ้อม วันแข่งไม่ใช้ของใหม่'
+// สัปดาห์ 7–8 ของมินิ: ซ้อมใหญ่วันแข่ง (ข้อแนะนำเชิงปฏิบัติ "วันแข่งไม่ใช้ของใหม่")
+const rehearsalNote = 'ซ้อมใหญ่วันแข่ง: ใส่รองเท้า/ชุดที่จะใช้จริง ออกตัวด้วยเพซที่ตั้งใจใช้วันแข่ง (ไม่เร็วกว่านั้น) และลองจังหวะวิ่ง 8 นาที / เดิน 1 นาทีเหมือนแผนวันแข่ง'
 const fuelNote = 'วิ่งนานเกิน ~75 นาที: พกเจล/เครื่องดื่มเกลือแร่ เติมคาร์บ 30–60 ก./ชม. (เจล 1 ซองทุก 30–40 นาที) และซ้อมกินแบบนี้ก่อนวันแข่ง'
 const runDay = (key: string, day: string, title: string, km: number, runKind: Day['runKind'], how: string, note?: string, guide?: Step[]): Day => ({
   key, day, title, type: 'run', duration: `${km} กม.`, targetKm: km, runKind, guide,
@@ -306,6 +308,7 @@ function miniWeek(mode: Venue, week: number): Day[] {
   const last = week >= n
   const [a, b] = runnerStrength[mode]
   const light = (list: Exercise[]) => list.map(e => ({ ...e, sets: '2' }))
+  const longNote = week === 7 || week === 8 ? `${gutNote} · ${rehearsalNote}` : week >= 6 ? gutNote : undefined
   const note = 'มือใหม่: ท่าละ 2 เซ็ต เหลือแรง 3–4 ครั้ง ไม่มีท่ากระโดด'
   const ratio = w.walk ? `วิ่ง ${w.run} นาที / เดิน ${w.walk} นาที` : ''
   const easy = (key: string, day: string, km: number): Day => w.walk
@@ -323,8 +326,8 @@ function miniWeek(mode: Venue, week: number): Day[] {
     last
       ? runDay('long', 'อาทิตย์', 'วันแข่ง มินิมาราธอน 10.5 กม.', w.long, 'race', 'วิ่ง 8 นาที เดิน 1 นาทีตั้งแต่ต้น ออกตัวช้ากว่าที่รู้สึกว่าไหว ดื่มน้ำทุกจุด', w.note)
       : w.walk
-        ? runDay('long', 'อาทิตย์', `วิ่งยาวสลับเดิน ${w.long} กม.`, w.long, 'long', `${ratio} จนครบระยะ — เน้นเวลาบนขา ไม่เน้นความเร็ว`, week >= 6 ? gutNote : undefined, guides.runWalk(w.long, w.run, w.walk))
-        : runDay('long', 'อาทิตย์', 'วิ่งยาว (Long run)', w.long, 'long', 'ช้าระดับพูดคุยได้ (โซน E) — เดินพักได้', week >= 6 ? gutNote : undefined),
+        ? runDay('long', 'อาทิตย์', `วิ่งยาวสลับเดิน ${w.long} กม.`, w.long, 'long', `${ratio} จนครบระยะ — เน้นเวลาบนขา ไม่เน้นความเร็ว`, longNote, guides.runWalk(w.long, w.run, w.walk))
+        : runDay('long', 'อาทิตย์', 'วิ่งยาว (Long run)', w.long, 'long', 'ช้าระดับพูดคุยได้ (โซน E) — เดินพักได้', longNote),
   ]
 }
 
@@ -418,11 +421,11 @@ export function weekKm(program: ProgramId, week: number) {
 
 export const programLength = (id: ProgramId) => (programs[id].ongoing ? `วนรอบ ${programs[id].weeks} สัปดาห์` : `${programs[id].weeks} สัปดาห์`)
 
-export const locationInfo: Record<LocationPref, { label: string; text: string }> = {
-  gym: { label: 'ยิมทุกวัน', text: 'เพิ่มน้ำหนักได้ละเอียด เห็นผลเรื่องกล้ามเร็วที่สุด โดยเฉพาะขา' },
-  mix: { label: 'ผสม (แนะนำถ้ามีสมาชิกยิม)', text: 'วันที่มีขา/ท่าหนักไปยิม วันเวทวันสุดท้ายของสัปดาห์ไปสวน (บอดี้เวทแบบ Tom Holland)' },
-  home: { label: 'ที่บ้าน/ในห้อง', text: 'ไม่ต้องมีอุปกรณ์ — ท่าที่ต้องใช้บาร์เปลี่ยนเป็น Table Row, Chair Dips, Lying Leg Raise ขาใช้ท่าขาเดียวและจังหวะลงช้า' },
-  park: { label: 'สวนทุกวัน', text: 'ฟรี ใกล้บ้าน ดีมากสำหรับดึงข้อ/ดิป/วิดพื้น แต่ขาเพิ่มความหนักยาก ใช้ท่าขาเดียวและจังหวะลงช้าแทน' },
+export const locationInfo: Record<LocationPref, { label: string; text: string; labelEn: string; textEn: string }> = {
+  gym: { label: 'ยิมทุกวัน', text: 'เพิ่มน้ำหนักได้ละเอียด เห็นผลเรื่องกล้ามเร็วที่สุด โดยเฉพาะขา', labelEn: 'Gym every day', textEn: 'Fine-grained loading — fastest muscle gains, especially legs' },
+  mix: { label: 'ผสม (แนะนำถ้ามีสมาชิกยิม)', text: 'วันที่มีขา/ท่าหนักไปยิม วันเวทวันสุดท้ายของสัปดาห์ไปสวน (บอดี้เวทแบบ Tom Holland)', labelEn: 'Mixed (best with a gym membership)', textEn: 'Leg/heavy days at the gym, the week’s last strength day at the park (Tom Holland-style bodyweight)' },
+  home: { label: 'ที่บ้าน/ในห้อง', text: 'ไม่ต้องมีอุปกรณ์ — ท่าที่ต้องใช้บาร์เปลี่ยนเป็น Table Row, Chair Dips, Lying Leg Raise ขาใช้ท่าขาเดียวและจังหวะลงช้า', labelEn: 'Home / indoors', textEn: 'No equipment — bar moves become Table Row, Chair Dips, Lying Leg Raise; legs use single-leg moves and slow lowering' },
+  park: { label: 'สวนทุกวัน', text: 'ฟรี ใกล้บ้าน ดีมากสำหรับดึงข้อ/ดิป/วิดพื้น แต่ขาเพิ่มความหนักยาก ใช้ท่าขาเดียวและจังหวะลงช้าแทน', labelEn: 'Park every day', textEn: 'Free and close by — great for pull-ups/dips/push-ups, but legs are hard to load; use single-leg moves and slow lowering' },
 }
 
 export const weekNote = (program: ProgramId, week: number) =>

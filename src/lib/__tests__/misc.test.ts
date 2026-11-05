@@ -173,12 +173,17 @@ describe('route compaction', () => {
 
 describe('niceDate', () => {
   it('relative and Thai formats', async () => {
-    const { niceDate, monthLabel } = await import('../date')
+    const { niceDate, monthLabel, setDateLang } = await import('../date')
     expect(niceDate('2026-10-25', '2026-10-25')).toBe('วันนี้')
     expect(niceDate('2026-10-24', '2026-10-25')).toBe('เมื่อวาน')
     expect(niceDate('2026-10-19', '2026-10-25')).toBe('จ. 19 ต.ค.')
     expect(niceDate('2025-12-31', '2026-10-25')).toBe('พ. 31 ธ.ค. 2568')
     expect(monthLabel('2026-10')).toBe('ตุลาคม 2569')
+    setDateLang('en')
+    expect(niceDate('2026-10-19', '2026-10-25')).toBe('Mon 19 Oct')
+    expect(niceDate('2025-12-31', '2026-10-25')).toBe('Wed 31 Dec 2025')
+    expect(monthLabel('2026-10')).toBe('October 2026')
+    setDateLang('th')
   })
 })
 

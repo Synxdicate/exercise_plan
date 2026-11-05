@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { CalendarDays, ChevronDown, Minus, Plus } from 'lucide-react'
+import { trNow } from '../lib/i18n'
 import { cx } from '../lib/cx'
 
 // ช่องกรอกทั้งแอปใช้ชุดนี้ — กรอบเดียวกัน, เรืองแสงตอนโฟกัส, มีหน่วยกำกับ
@@ -44,11 +45,11 @@ export function NumberInput({ label, hint, className, value, onChange, unit, ste
   return (
     <Label label={label} hint={hint} className={className}>
       <span className={shell}>
-        {stepper && <button type="button" aria-label="ลด" className={btn} onClick={() => bump(-step)}><Minus size={16} /></button>}
+        {stepper && <button type="button" aria-label={trNow('ลด', 'Decrease')} className={btn} onClick={() => bump(-step)}><Minus size={16} /></button>}
         <input className={cx(bare, 'tabular-nums', stepper && 'px-0 text-center font-semibold')} type="number" inputMode="decimal" step={step} min={min}
           value={value} placeholder={placeholder} onChange={e => onChange(e.target.value)} />
         {unit && <span className={cx('shrink-0 text-sm text-muted', stepper ? 'pr-1' : 'pr-3.5')}>{unit}</span>}
-        {stepper && <button type="button" aria-label="เพิ่ม" className={btn} onClick={() => bump(step)}><Plus size={16} /></button>}
+        {stepper && <button type="button" aria-label={trNow('เพิ่ม', 'Increase')} className={btn} onClick={() => bump(step)}><Plus size={16} /></button>}
       </span>
     </Label>
   )

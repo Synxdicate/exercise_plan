@@ -17,10 +17,10 @@ export function clearance(s: Screening): Clearance {
   return 'clear'
 }
 
-export const clearanceText: Record<Clearance, { title: string; text: string }> = {
-  'clear': { title: 'เริ่มได้เลย', text: 'ไม่มีข้อห้าม เริ่มจากเบาไปหนักตามแผน' },
-  'moderate-only': { title: 'ออกกำลังกายระดับปานกลางได้', text: 'ควรให้แพทย์ประเมินก่อนเพิ่มเป็นการฝึกหนัก (วิ่ง tempo/interval, ซ้อมมาราธอน)' },
-  'see-doctor': { title: 'ควรพบแพทย์ก่อนเริ่ม', text: 'อาการ/โรคที่ตอบมาควรได้รับการประเมินจากแพทย์ก่อนเริ่มโปรแกรม เพื่อความปลอดภัยของหัวใจ' },
+export const clearanceText: Record<Clearance, { title: string; text: string; titleEn: string; textEn: string }> = {
+  'clear': { title: 'เริ่มได้เลย', text: 'ไม่มีข้อห้าม เริ่มจากเบาไปหนักตามแผน', titleEn: 'Good to go', textEn: 'No red flags — build from easy to hard as planned' },
+  'moderate-only': { title: 'ออกกำลังกายระดับปานกลางได้', text: 'ควรให้แพทย์ประเมินก่อนเพิ่มเป็นการฝึกหนัก (วิ่ง tempo/interval, ซ้อมมาราธอน)', titleEn: 'Moderate exercise is fine', textEn: 'Get a doctor’s OK before vigorous training (tempo/intervals, marathon training)' },
+  'see-doctor': { title: 'ควรพบแพทย์ก่อนเริ่ม', text: 'อาการ/โรคที่ตอบมาควรได้รับการประเมินจากแพทย์ก่อนเริ่มโปรแกรม เพื่อความปลอดภัยของหัวใจ', titleEn: 'See a doctor before starting', textEn: 'What you reported should be checked by a doctor before starting the program, for heart safety' },
 }
 
 export const emptyScreening: Screening = { exercising: true, disease: false, symptoms: false, joint: false }

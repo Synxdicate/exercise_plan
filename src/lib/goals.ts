@@ -57,6 +57,14 @@ export const BADGES: (BadgeDef & { earned: (c: Ctx) => boolean })[] = [
   { id: 'month-goal', title: 'ทำตามเป้าเดือน', text: 'วิ่งครบเป้าหมายรายเดือน', icon: 'target', earned: c => c.goalKm > 0 && [...new Set(runsOnly(c.runs).map(r => monthOf(r.date)))].some(m => periodStats(c.runs, [], m).km >= c.goalKm) },
 ]
 
+export const BADGES_EN: Record<string, [string, string]> = {
+  'first-run': ['First step', 'Logged your first run'], 'first-workout': ['First lift', 'First strength workout'],
+  'run-5k': ['5K', 'Ran 5 km continuously'], 'run-10k': ['10K', 'Ran 10 km continuously'],
+  'run-half': ['Half marathon', 'Ran 21.1 km'], 'run-full': ['Marathon', 'Ran 42.2 km'],
+  'sub30-5k': ['Sub-30 5K', 'Fastest 5 km segment under 30:00'], 'km-100': ['100 km', '100 km total'], 'km-500': ['500 km', '500 km total'],
+  'workouts-25': ['25 workouts', '25 strength workouts'], 'streak-4': ['4-week streak', '≥3 sessions/week for 4 weeks in a row'],
+  'streak-12': ['12-week streak', '≥3 sessions/week for 12 weeks in a row'], 'month-goal': ['Monthly goal', 'Hit your monthly distance goal'],
+}
 export const earnedBadges = (c: Ctx) => BADGES.filter(b => b.earned(c)).map(b => b.id)
 
 /** เป้าเริ่มต้นจากระยะต่อสัปดาห์ของโปรแกรม (~4.3 สัปดาห์/เดือน) ปัดเป็น 5 กม. */
@@ -66,6 +74,7 @@ export const defaultMonthGoal = (weekKm: number) => Math.max(10, Math.round((wee
 export type RaceKey = 'fiveK' | 'tenK' | 'half' | 'full'
 export const raceKm: Record<RaceKey, number> = { fiveK: 5, tenK: 10, half: 21.0975, full: 42.195 }
 export const raceLabel: Record<RaceKey, string> = { fiveK: '5K', tenK: '10K', half: 'ฮาล์ฟ', full: 'ฟูล' }
+export const raceLabelEn: Record<RaceKey, string> = { fiveK: '5K', tenK: '10K', half: 'Half', full: 'Marathon' }
 
 /** "1:59:59", "55:00", "55" (นาที) → วินาที; อ่านไม่ได้ → null */
 export function parseDuration(text: string): number | null {

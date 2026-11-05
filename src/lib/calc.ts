@@ -16,15 +16,15 @@ export const defaultProfile: Profile = {
 }
 
 export const activityLevels = [
-  { value: 1.375, label: 'ออกกำลังกาย 1–3 วัน/สัปดาห์' },
-  { value: 1.55, label: 'ออกกำลังกาย 4–5 วัน/สัปดาห์ (แผนนี้)' },
-  { value: 1.725, label: 'ออกกำลังกายหนัก 6–7 วัน/สัปดาห์' },
+  { value: 1.375, label: 'ออกกำลังกาย 1–3 วัน/สัปดาห์', labelEn: 'Exercise 1–3 days/week' },
+  { value: 1.55, label: 'ออกกำลังกาย 4–5 วัน/สัปดาห์ (แผนนี้)', labelEn: 'Exercise 4–5 days/week (this plan)' },
+  { value: 1.725, label: 'ออกกำลังกายหนัก 6–7 วัน/สัปดาห์', labelEn: 'Hard exercise 6–7 days/week' },
 ]
 
 export const goals = {
-  cut: { label: 'ลดไขมันให้เห็นซิกแพค', delta: -400 },
-  recomp: { label: 'Recomp (ลดไขมัน + เพิ่มกล้ามช้า ๆ)', delta: -250 },
-  'lean-bulk': { label: 'เพิ่มกล้าม (Lean bulk)', delta: 250 },
+  cut: { label: 'ลดไขมันให้เห็นซิกแพค', labelEn: 'Cut (visible abs)', delta: -400 },
+  recomp: { label: 'Recomp (ลดไขมัน + เพิ่มกล้ามช้า ๆ)', labelEn: 'Recomp (lose fat + slowly gain muscle)', delta: -250 },
+  'lean-bulk': { label: 'เพิ่มกล้าม (Lean bulk)', labelEn: 'Lean bulk (gain muscle)', delta: 250 },
 } as const
 
 export const bmi = (p: Profile) => p.weightKg / (p.heightCm / 100) ** 2

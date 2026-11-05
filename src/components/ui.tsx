@@ -3,6 +3,7 @@ import { ChevronDown, X } from 'lucide-react'
 import { createPortal } from 'react-dom'
 
 import { cx } from '../lib/cx'
+import { trNow } from '../lib/i18n'
 import { useBackClose } from '../lib/back'
 
 export function Card({ children, className, title, action }: { children: ReactNode; className?: string; title?: ReactNode; action?: ReactNode }) {
@@ -126,7 +127,7 @@ export function Sheet({ onClose, children, title }: { onClose: () => void; child
           <div className="mx-auto mb-1 h-1.5 w-10 rounded-full bg-line sm:hidden" />
           <div className="flex min-h-10 items-center gap-2 pb-2">
             <div className="min-w-0 flex-1 text-lg font-bold">{title}</div>
-            <button onClick={onClose} onPointerDown={e => e.stopPropagation()} aria-label="ปิด" className="grid size-9 shrink-0 place-items-center rounded-full bg-raised text-muted"><X size={18} /></button>
+            <button onClick={onClose} onPointerDown={e => e.stopPropagation()} aria-label={trNow('ปิด', 'Close')} className="grid size-9 shrink-0 place-items-center rounded-full bg-raised text-muted"><X size={18} /></button>
           </div>
         </div>
         <div className="min-h-0 overflow-y-auto overscroll-contain px-4 pb-[calc(var(--sab)+1rem)]">{children}</div>

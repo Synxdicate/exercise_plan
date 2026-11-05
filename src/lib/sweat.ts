@@ -28,11 +28,12 @@ export function drinkPlan(rateLph: number, weightKg: number, minutes: number) {
 export const useSweatTests = () => usePersisted<SweatTest[]>('sweatTests', [])
 
 /** บรรทัดแผนดื่มน้ำในแผนวันแข่ง */
-export function useRaceDrink(minutes: number) {
+export function useRaceDrink(minutes: number, en = false) {
   const [tests] = useSweatTests()
   const [profile] = usePersisted<Profile>('profile', defaultProfile)
   const last = tests.at(-1)
   if (!last) return null
   const p = drinkPlan(sweatRate(last).rateLph, last.preKg || profile.weightKg, minutes)
+  if (en) return p.needMlph ? `From your sweat test: drink ~${p.per20} ml every 20 min${p.sodium ? ' + electrolytes' : ''}` : 'From your sweat test: no need to drink much at this distance — sip at aid stations'
   return p.needMlph ? `จากผลทดสอบเหงื่อ: ดื่ม ~${p.per20} มล. ทุก 20 นาที${p.sodium ? ' + เกลือแร่' : ''}` : 'จากผลทดสอบเหงื่อ: ระยะนี้ไม่จำเป็นต้องดื่มมาก จิบตามจุดให้น้ำพอ'
 }

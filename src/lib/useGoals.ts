@@ -1,9 +1,10 @@
 import { useEffect, useMemo } from 'react'
-import { BADGES, defaultMonthGoal, earnedBadges, type RaceKey } from './goals'
+import { BADGES, BADGES_EN, defaultMonthGoal, earnedBadges, type RaceKey } from './goals'
 import { useRuns, useSessions } from './log'
 import { usePersisted } from './storage'
 import { useProgram } from './program'
 import { notify } from './dialog'
+import { trNow } from './i18n'
 
 export function useMonthGoal() {
   const p = useProgram()
@@ -25,7 +26,7 @@ export function useBadgeWatcher() {
     if (seen === null) return setSeen(earned)
     const fresh = earned.filter(id => !seen.includes(id))
     if (!fresh.length) return
-    for (const id of fresh) notify(`ได้เหรียญใหม่: ${BADGES.find(b => b.id === id)?.title}`, 'good')
+    for (const id of fresh) notify(trNow(`ได้เหรียญใหม่: ${BADGES.find(b => b.id === id)?.title}`, `New badge: ${BADGES_EN[id]?.[0] ?? id}`), 'good')
     setSeen([...seen, ...fresh])
   }, [earned, seen, setSeen])
 }

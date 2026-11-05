@@ -15,6 +15,8 @@ import { useRemovePhotosFor } from '../lib/photos'
 import { ask } from '../lib/dialog'
 import { LegTestCard } from './LegTests'
 import { useT } from '../lib/i18n'
+import { trNow } from '../lib/i18n'
+import { titleEn } from '../lib/dayText'
 
 type Entry = { date: string; weight: number; waist?: number }
 
@@ -35,6 +37,7 @@ export function Progress() {
 }
 
 function BodyLog() {
+  const tr = useT()
   const [log, setLog] = usePersisted<Entry[]>('log', [])
   const [date, setDate] = useState(today())
   const [weight, setWeight] = useState('')
@@ -57,38 +60,38 @@ function BodyLog() {
     <>
       {latest && (
         <div className="grid grid-cols-3 gap-2">
-          <Stat label="ล่าสุด" value={latest.weight} sub="กก." accent />
-          <Stat label="เปลี่ยนแปลง" value={`${latest.weight - first.weight > 0 ? '+' : ''}${(latest.weight - first.weight).toFixed(1)}`} sub="กก. จากครั้งแรก" />
-          <Stat label="รอบเอว" value={latest.waist ?? '-'} sub="ซม." />
+          <Stat label={tr('ล่าสุด', 'Latest')} value={latest.weight} sub={tr('กก.', 'kg')} accent />
+          <Stat label={tr('เปลี่ยนแปลง', 'Change')} value={`${latest.weight - first.weight > 0 ? '+' : ''}${(latest.weight - first.weight).toFixed(1)}`} sub={tr('กก. จากครั้งแรก', 'kg since first')} />
+          <Stat label={tr('รอบเอว', 'Waist')} value={latest.waist ?? '-'} sub={tr('ซม.', 'cm')} />
         </div>
       )}
 
-      <Card title="บันทึกน้ำหนัก">
+      <Card title={tr('บันทึกน้ำหนัก', 'Log weight')}>
         <div className="grid grid-cols-2 gap-2">
-          <DateInput label="วันที่" className="col-span-2" value={date} onChange={setDate} />
-          <NumberInput label="น้ำหนัก" unit="กก." step={0.1} stepper value={weight} placeholder={String(log.at(-1)?.weight ?? '')} onChange={setWeight} />
-          <NumberInput label="รอบเอว (ไม่บังคับ)" unit="ซม." step={0.5} stepper value={waist} placeholder={String(log.at(-1)?.waist ?? '')} onChange={setWaist} />
-          <Button className="col-span-2" onClick={add}>บันทึก</Button>
+          <DateInput label={tr('วันที่', 'Date')} className="col-span-2" value={date} onChange={setDate} />
+          <NumberInput label={tr('น้ำหนัก', 'Weight')} unit={tr('กก.', 'kg')} step={0.1} stepper value={weight} placeholder={String(log.at(-1)?.weight ?? '')} onChange={setWeight} />
+          <NumberInput label={tr('รอบเอว (ไม่บังคับ)', 'Waist (optional)')} unit={tr('ซม.', 'cm')} step={0.5} stepper value={waist} placeholder={String(log.at(-1)?.waist ?? '')} onChange={setWaist} />
+          <Button className="col-span-2" onClick={add}>{tr('บันทึก', 'Save')}</Button>
         </div>
-        <p className="mt-2 text-xs text-muted">ชั่งตอนเช้าหลังเข้าห้องน้ำ วัดเอวระดับสะดือ — น้ำหนักนิ่งแต่เอวลดก็คือไปถูกทาง</p>
+        <p className="mt-2 text-xs text-muted">{tr('ชั่งตอนเช้าหลังเข้าห้องน้ำ วัดเอวระดับสะดือ — น้ำหนักนิ่งแต่เอวลดก็คือไปถูกทาง', 'Weigh in the morning after the toilet, measure waist at the navel — steady weight with a shrinking waist means it’s working')}</p>
       </Card>
 
-      <Card title="รูปความคืบหน้า"><ProgressPhotos /></Card>
+      <Card title={tr('รูปความคืบหน้า', 'Progress photos')}><ProgressPhotos /></Card>
 
       {weeks.length > 1 && (
-        <Card title="น้ำหนักเฉลี่ยรายสัปดาห์">
-          <TrendChart unit="กก." points={weeks.map(w => ({ label: shortDate(w.start), value: w.avg }))} />
+        <Card title={tr('น้ำหนักเฉลี่ยรายสัปดาห์', 'Weekly average weight')}>
+          <TrendChart unit={tr('กก.', 'kg')} points={weeks.map(w => ({ label: shortDate(w.start), value: w.avg }))} />
         </Card>
       )}
 
       {log.length > 0 && (
-        <Card title="ทั้งหมด">
+        <Card title={tr('ทั้งหมด', 'All entries')}>
           <ul className="divide-y divide-line">
             {[...log].reverse().map(e => (
               <li key={e.date} className="flex items-center justify-between gap-2 py-2.5 text-sm">
                 <span className="text-muted">{e.date}</span>
-                <span className="font-semibold tabular-nums">{e.weight} กก.{e.waist ? ` · เอว ${e.waist}` : ''}</span>
-                <button aria-label="ลบ" className="text-muted" onClick={() => setLog(prev => prev.filter(x => x.date !== e.date))}><Trash2 size={16} /></button>
+                <span className="font-semibold tabular-nums">{e.weight} {tr('กก.', 'kg')}{e.waist ? ` · ${tr('เอว', 'waist')} ${e.waist}` : ''}</span>
+                <button aria-label={tr('ลบ', 'Delete')} className="text-muted" onClick={() => setLog(prev => prev.filter(x => x.date !== e.date))}><Trash2 size={16} /></button>
               </li>
             ))}
           </ul>
@@ -99,6 +102,7 @@ function BodyLog() {
 }
 
 function TrendChart({ points, unit }: { points: { label: string; value: number }[]; unit: string }) {
+  const tr = useT()
   const [hover, setHover] = useState<number | null>(null)
   const W = 320, H = 120, padX = 12, padY = 14
   const vals = points.map(p => p.value)
@@ -109,7 +113,7 @@ function TrendChart({ points, unit }: { points: { label: string; value: number }
   return (
     <div>
       <div className="mb-1 h-5 text-right text-sm tabular-nums">{hover !== null ? `${points[hover].label}: ${points[hover].value.toFixed(1)} ${unit}` : ''}</div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="block w-full" role="img" aria-label="กราฟน้ำหนักรายสัปดาห์">
+      <svg viewBox={`0 0 ${W} ${H}`} className="block w-full" role="img" aria-label={tr('กราฟน้ำหนักรายสัปดาห์', 'Weekly weight chart')}>
         <path d={d} fill="none" className="stroke-accent" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
         {points.map((p, i) => (
           <g key={i} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} onClick={() => setHover(i)}>
@@ -123,6 +127,7 @@ function TrendChart({ points, unit }: { points: { label: string; value: number }
 }
 
 function WorkoutHistory() {
+  const tr = useT()
   const [sessions, setSessions] = useSessions()
   const [open, setOpen] = useState<string | null>(null)
   const [editing, setEditing] = useState<string | null>(null)
@@ -130,7 +135,7 @@ function WorkoutHistory() {
   const [months, setMonths] = useState(3)
 
   if (sessions.length === 0)
-    return <Card><p className="py-6 text-center text-sm text-muted">ยังไม่มีบันทึก — ไปที่แท็บ "ฝึก" แล้วกด "เริ่มฝึก" ในวันเวท</p></Card>
+    return <Card><p className="py-6 text-center text-sm text-muted">{tr('ยังไม่มีบันทึก — ไปที่แท็บ "ฝึก" แล้วกด "เริ่มฝึก" ในวันเวท', 'Nothing logged yet — open the plan tab and tap "Start workout" on a strength day')}</p></Card>
 
   // แสดงทีละ 3 เดือน มีหัวเดือนพร้อมจำนวนครั้ง
   const sorted = [...sessions].sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id))
@@ -145,7 +150,7 @@ function WorkoutHistory() {
         const header_ = header && (
           <div className="flex items-baseline justify-between px-1 pt-1">
             <span className="text-sm font-bold">{monthLabel(ym)}</span>
-            <span className="text-xs text-muted">{sorted.filter(x => x.date.startsWith(ym)).length} ครั้ง</span>
+            <span className="text-xs text-muted">{sorted.filter(x => x.date.startsWith(ym)).length} {tr('ครั้ง', 'sessions')}</span>
           </div>
         )
         const totalSets = s.entries.reduce((n, e) => n + e.sets.length, 0)
@@ -159,8 +164,8 @@ function WorkoutHistory() {
             <button className="flex w-full items-center gap-3 text-left" onClick={() => setOpen(isOpen ? null : s.id)}>
               <div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-accent-soft text-accent"><Dumbbell size={22} /></div>
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2"><b className="truncate">{s.title}</b><Badge tone="muted">{s.mode === 'gym' ? 'ยิม' : 'สวน'}</Badge>{prs.length > 0 && <Badge tone="good"><Trophy size={11} /> PR {prs.length}</Badge>}</div>
-                <div className="text-xs text-muted">{niceDate(s.date)} · {totalSets} เซ็ต{volume ? ` · ${Math.round(volume).toLocaleString()} กก.` : ''}</div>
+                <div className="flex items-center gap-2"><b className="truncate">{tr(s.title, titleEn(s.title))}</b><Badge tone="muted">{s.mode === 'gym' ? tr('ยิม', 'Gym') : s.mode === 'home' ? tr('บ้าน', 'Home') : tr('สวน', 'Park')}</Badge>{prs.length > 0 && <Badge tone="good"><Trophy size={11} /> PR {prs.length}</Badge>}</div>
+                <div className="text-xs text-muted">{niceDate(s.date)} · {totalSets} {tr('เซ็ต', 'sets')}{volume ? ` · ${Math.round(volume).toLocaleString()} ${tr('กก.', 'kg')}` : ''}</div>
               </div>
               <ChevronDown size={18} className={cx('shrink-0 text-muted transition', isOpen && 'rotate-180')} />
             </button>
@@ -178,11 +183,11 @@ function WorkoutHistory() {
                     </li>
                   ))}
                 </ul>
-                <div className="mt-3"><PhotoStrip kind="workout" refId={s.id} date={s.date} label="รูปการฝึก" /></div>
+                <div className="mt-3"><PhotoStrip kind="workout" refId={s.id} date={s.date} label={trNow('รูปการฝึก', 'Workout photos')} /></div>
                 <div className="mt-2 flex gap-2">
-                  <Button variant="soft" size="sm" onClick={() => setEditing(s.id)}><Pencil size={14} /> แก้ไข</Button>
-                  <Button variant="danger" size="sm" onClick={async () => (await ask('ลบบันทึกการฝึกนี้?', { ok: 'ลบ', danger: true })) && (setSessions(prev => prev.filter(x => x.id !== s.id)), removePhotos(s.id))}>
-                    <Trash2 size={14} /> ลบ
+                  <Button variant="soft" size="sm" onClick={() => setEditing(s.id)}><Pencil size={14} /> {tr('แก้ไข', 'Edit')}</Button>
+                  <Button variant="danger" size="sm" onClick={async () => (await ask(tr('ลบบันทึกการฝึกนี้?', 'Delete this workout?'), { ok: tr('ลบ', 'Delete'), danger: true })) && (setSessions(prev => prev.filter(x => x.id !== s.id)), removePhotos(s.id))}>
+                    <Trash2 size={14} /> {tr('ลบ', 'Delete')}
                   </Button>
                 </div>
               </>
@@ -192,7 +197,7 @@ function WorkoutHistory() {
         )
       })}
       {allMonths.length > months && (
-        <button onClick={() => setMonths(m => m + 3)} className="w-full rounded-full py-2 text-sm font-semibold text-run ring-1 ring-line">ดูเดือนก่อนหน้า ({allMonths.length - months} เดือน)</button>
+        <button onClick={() => setMonths(m => m + 3)} className="w-full rounded-full py-2 text-sm font-semibold text-run ring-1 ring-line">{tr(`ดูเดือนก่อนหน้า (${allMonths.length - months} เดือน)`, `Show earlier months (${allMonths.length - months})`)}</button>
       )}
     </div>
   )
@@ -208,13 +213,14 @@ function weeklyAverages(log: Entry[]) {
 }
 
 function StrengthStats() {
+  const tr = useT()
   const [sessions] = useSessions()
   const names = allExercises(sessions)
   const [picked, setPicked] = useState<string | null>(null)
   const name = picked ?? names[0]
 
   if (!names.length)
-    return <Card><p className="py-6 text-center text-sm text-muted">บันทึกการฝึกสัก 2–3 ครั้ง แล้วกราฟความแข็งแรงจะขึ้นที่นี่</p></Card>
+    return <Card><p className="py-6 text-center text-sm text-muted">{tr('บันทึกการฝึกสัก 2–3 ครั้ง แล้วกราฟความแข็งแรงจะขึ้นที่นี่', 'Log 2–3 workouts and your strength chart appears here')}</p></Card>
 
   const hist = exerciseHistory(sessions, name)
   const bodyweight = hist.every(p => p.kg === 0)
@@ -233,27 +239,28 @@ function StrengthStats() {
         ))}
       </div>
       <div className="grid grid-cols-3 gap-2">
-        <Stat label={bodyweight ? 'ครั้งสูงสุด' : 'ประมาณ 1RM'} value={bodyweight ? best.value : best.value.toFixed(1)} sub={bodyweight ? 'ครั้ง/เซ็ต' : 'กก.'} accent />
-        <Stat label="เซ็ตที่ดีที่สุด" value={best.kg ? `${best.kg}×${best.reps}` : `${best.reps}`} sub={best.date} />
-        <Stat label="ดีขึ้น" value={`${change > 0 ? '+' : ''}${change}%`} sub={`จาก ${hist.length} ครั้ง`} />
+        <Stat label={bodyweight ? tr('ครั้งสูงสุด', 'Max reps') : tr('ประมาณ 1RM', 'Est. 1RM')} value={bodyweight ? best.value : best.value.toFixed(1)} sub={bodyweight ? tr('ครั้ง/เซ็ต', 'reps/set') : tr('กก.', 'kg')} accent />
+        <Stat label={tr('เซ็ตที่ดีที่สุด', 'Best set')} value={best.kg ? `${best.kg}×${best.reps}` : `${best.reps}`} sub={best.date} />
+        <Stat label={tr('ดีขึ้น', 'Change')} value={`${change > 0 ? '+' : ''}${change}%`} sub={tr(`จาก ${hist.length} ครั้ง`, `over ${hist.length} sessions`)} />
       </div>
       <Card title={<span className="flex items-center gap-2"><Trophy size={18} className="text-warn" /> {name}</span>}>
         {hist.length > 1
-          ? <TrendChart unit={bodyweight ? 'ครั้ง' : 'กก. (1RM โดยประมาณ)'} points={hist.map(p => ({ label: shortDate(p.date), value: p.value }))} />
-          : <p className="py-4 text-center text-sm text-muted">ต้องมีอย่างน้อย 2 ครั้งถึงจะเห็นเส้นกราฟ</p>}
-        <p className="mt-2 text-xs text-muted">{bodyweight ? 'ท่าบอดี้เวทใช้จำนวนครั้งสูงสุดต่อเซ็ต' : '1RM ประมาณจากเซ็ตที่ดีที่สุดของวัน (สูตร Epley) ไว้ดูแนวโน้ม ไม่ต้องลองยกจริง'}</p>
+          ? <TrendChart unit={bodyweight ? tr('ครั้ง', 'reps') : tr('กก. (1RM โดยประมาณ)', 'kg (est. 1RM)')} points={hist.map(p => ({ label: shortDate(p.date), value: p.value }))} />
+          : <p className="py-4 text-center text-sm text-muted">{tr('ต้องมีอย่างน้อย 2 ครั้งถึงจะเห็นเส้นกราฟ', 'Needs at least 2 sessions to draw a line')}</p>}
+        <p className="mt-2 text-xs text-muted">{bodyweight ? tr('ท่าบอดี้เวทใช้จำนวนครั้งสูงสุดต่อเซ็ต', 'Bodyweight moves use max reps per set') : tr('1RM ประมาณจากเซ็ตที่ดีที่สุดของวัน (สูตร Epley) ไว้ดูแนวโน้ม ไม่ต้องลองยกจริง', '1RM estimated from the day’s best set (Epley) for trends — no need to test a real max')}</p>
       </Card>
     </>
   )
 }
 
 function Fitness() {
+  const tr = useT()
   const [sessions] = useSessions()
   const [cross] = useCross()
   const [runs] = useRuns()
   const days = trainingLoad(runs, [...sessions, ...cross.map(crossAsSession)], today())
   if (days.length < 7)
-    return <Card><p className="py-6 text-center text-sm text-muted">บันทึกการฝึกครบ 1 สัปดาห์ กราฟจะขึ้นที่นี่</p></Card>
+    return <Card><p className="py-6 text-center text-sm text-muted">{tr('บันทึกการฝึกครบ 1 สัปดาห์ กราฟจะขึ้นที่นี่', 'Log a full week and the chart appears here')}</p></Card>
   const cur = days.at(-1)!
   const f = formLabel(cur.form, cur.fitness, cur.day)
   const tones = { good: 'bg-good/15 text-good', run: 'bg-run/15 text-run', warn: 'bg-warn/15 text-warn', bad: 'bg-bad/15 text-bad', muted: 'bg-raised text-muted' }
@@ -262,22 +269,22 @@ function Fitness() {
   return (
     <>
       <div className={cx('rounded-2xl px-3.5 py-3', tones[f.tone])}>
-        <div className="text-sm font-bold">ฟอร์มตอนนี้: {f.label}</div>
-        <div className="text-xs opacity-90">{f.text}</div>
+        <div className="text-sm font-bold">{tr('ฟอร์มตอนนี้:', 'Form now:')} {tr(f.label, f.labelEn)}</div>
+        <div className="text-xs opacity-90">{tr(f.text, f.textEn)}</div>
       </div>
-      <Card title="ความฟิต · ความล้า · ฟอร์ม (12 สัปดาห์)">
+      <Card title={tr('ความฟิต · ความล้า · ฟอร์ม (12 สัปดาห์)', 'Fitness · fatigue · form (12 weeks)')}>
         <FitnessChart days={days} />
       </Card>
       <div className="grid grid-cols-2 gap-2">
-        <Stat label="ภาระ 7 วันล่าสุด" value={Math.round(week)} sub="หน่วย (RPE × นาที)" />
-        <Stat label="เทียบสัปดาห์ก่อน" value={prev ? `${week >= prev ? '+' : ''}${Math.round((week / prev - 1) * 100)}%` : '-'} sub="ภาระรวม" />
+        <Stat label={tr('ภาระ 7 วันล่าสุด', 'Load, last 7 days')} value={Math.round(week)} sub={tr('หน่วย (RPE × นาที)', 'units (RPE × min)')} />
+        <Stat label={tr('เทียบสัปดาห์ก่อน', 'vs last week')} value={prev ? `${week >= prev ? '+' : ''}${Math.round((week / prev - 1) * 100)}%` : '-'} sub={tr('ภาระรวม', 'total load')} />
       </div>
-      <Card title="อ่านกราฟยังไง">
+      <Card title={tr('อ่านกราฟยังไง', 'How to read it')}>
         <ul className="list-disc space-y-1 pl-5 text-xs text-muted">
-          <li><b className="text-ink">ภาระ</b> ของแต่ละครั้ง = ความเหนื่อยที่ให้คะแนนหลังจบ (1–10) × นาที (session-RPE, Foster 2001) ถ้าไม่ได้ให้คะแนน แอปจะประมาณจากชนิดการฝึก</li>
-          <li><b className="text-ink">ฟิต</b> = ภาระเฉลี่ยระยะยาว (~6 สัปดาห์) ค่อย ๆ ขึ้นเมื่อฝึกสม่ำเสมอ · <b className="text-ink">ล้า</b> = ภาระเฉลี่ย ~1 สัปดาห์ ขึ้นลงเร็ว</li>
-          <li><b className="text-ink">ฟอร์ม</b> = ฟิต − ล้า: ติดลบตอนกำลังเพิ่มการฝึกเป็นเรื่องปกติ ก่อนแข่งควรกลับมาเป็นบวกจากการ taper</li>
-          <li>เป็นโมเดลดูแนวโน้ม (แนวคิดของ Banister) ไม่ใช่ตัวทำนายการบาดเจ็บ — งานวิจัยยังไม่สนับสนุนการใช้อัตราส่วนภาระเพื่อทำนายการบาดเจ็บ</li>
+          <li><b className="text-ink">{tr('ภาระ', 'Load')}</b> {tr('ของแต่ละครั้ง = ความเหนื่อยที่ให้คะแนนหลังจบ (1–10) × นาที (session-RPE, Foster 2001) ถ้าไม่ได้ให้คะแนน แอปจะประมาณจากชนิดการฝึก', 'per session = effort rated afterwards (1–10) × minutes (session-RPE, Foster 2001); without a rating the app estimates from the session type')}</li>
+          <li><b className="text-ink">{tr('ฟิต', 'Fitness')}</b> {tr('= ภาระเฉลี่ยระยะยาว (~6 สัปดาห์) ค่อย ๆ ขึ้นเมื่อฝึกสม่ำเสมอ', '= long-term average load (~6 weeks), rises slowly with consistent training')} · <b className="text-ink">{tr('ล้า', 'Fatigue')}</b> {tr('= ภาระเฉลี่ย ~1 สัปดาห์ ขึ้นลงเร็ว', '= ~1-week average load, moves quickly')}</li>
+          <li><b className="text-ink">{tr('ฟอร์ม', 'Form')}</b> {tr('= ฟิต − ล้า: ติดลบตอนกำลังเพิ่มการฝึกเป็นเรื่องปกติ ก่อนแข่งควรกลับมาเป็นบวกจากการ taper', '= fitness − fatigue: negative while building is normal; the taper should make it positive before a race')}</li>
+          <li>{tr('เป็นโมเดลดูแนวโน้ม (แนวคิดของ Banister) ไม่ใช่ตัวทำนายการบาดเจ็บ — งานวิจัยยังไม่สนับสนุนการใช้อัตราส่วนภาระเพื่อทำนายการบาดเจ็บ', 'A trend model (Banister’s idea), not an injury predictor — research doesn’t support load ratios for predicting injury')}</li>
         </ul>
       </Card>
     </>
@@ -286,13 +293,14 @@ function Fitness() {
 
 // แก้น้ำหนัก/จำนวนครั้งที่กรอกผิด หรือวันที่
 function EditSession({ session, onSave, onCancel }: { session: Session; onSave: (patch: Partial<Session>) => void; onCancel: () => void }) {
+  const tr = useT()
   const [date, setDate] = useState(session.date)
   const [entries, setEntries] = useState(session.entries.map(e => ({ ...e, sets: e.sets.map(x => ({ kg: String(x.kg), reps: String(x.reps) })) })))
   const setField = (ei: number, si: number, k: 'kg' | 'reps', v: string) =>
     setEntries(prev => prev.map((e, i) => (i !== ei ? e : { ...e, sets: e.sets.map((x, j) => (j === si ? { ...x, [k]: v } : x)) })))
   return (
     <div className="mt-3 space-y-3 rounded-2xl bg-raised p-3">
-      <DateInput label="วันที่" value={date} onChange={setDate} />
+      <DateInput label={tr('วันที่', 'Date')} value={date} onChange={setDate} />
       {entries.map((e, ei) => (
         <div key={e.name}>
           <div className="mb-1 text-sm font-semibold">{e.name}</div>
@@ -300,16 +308,16 @@ function EditSession({ session, onSave, onCancel }: { session: Session; onSave: 
             {e.sets.map((x, si) => (
               <div key={si} className="grid grid-cols-[1.5rem_1fr_1fr] items-center gap-2">
                 <span className="text-center text-xs text-muted">{si + 1}</span>
-                <NumberInput unit="กก." step={2.5} value={x.kg} onChange={v => setField(ei, si, 'kg', v)} />
-                <NumberInput unit="ครั้ง" value={x.reps} onChange={v => setField(ei, si, 'reps', v)} />
+                <NumberInput unit={tr('กก.', 'kg')} step={2.5} value={x.kg} onChange={v => setField(ei, si, 'kg', v)} />
+                <NumberInput unit={tr('ครั้ง', 'reps')} value={x.reps} onChange={v => setField(ei, si, 'reps', v)} />
               </div>
             ))}
           </div>
         </div>
       ))}
       <div className="flex gap-2">
-        <Button className="flex-1" onClick={() => onSave({ date, entries: entries.map(e => ({ name: e.name, sets: e.sets.map(x => ({ kg: parseFloat(x.kg) || 0, reps: parseInt(x.reps, 10) || 0 })) })) })}>บันทึกการแก้ไข</Button>
-        <Button variant="soft" onClick={onCancel}>ยกเลิก</Button>
+        <Button className="flex-1" onClick={() => onSave({ date, entries: entries.map(e => ({ name: e.name, sets: e.sets.map(x => ({ kg: parseFloat(x.kg) || 0, reps: parseInt(x.reps, 10) || 0 })) })) })}>{tr('บันทึกการแก้ไข', 'Save changes')}</Button>
+        <Button variant="soft" onClick={onCancel}>{tr('ยกเลิก', 'Cancel')}</Button>
       </div>
     </div>
   )

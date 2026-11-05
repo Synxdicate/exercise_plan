@@ -9,6 +9,7 @@ import { usePersisted } from '../lib/storage'
 import { today } from '../lib/date'
 import { activeRecovery } from '../lib/recovery'
 import { cx } from '../lib/cx'
+import { useLang, useT } from '../lib/i18n'
 import { Button } from './ui'
 import { ScreeningSheet } from './Screening'
 
@@ -18,6 +19,11 @@ export function Alerts() {
   const [sessions] = useSessions()
   const [runs] = useRuns()
   const p = useProgram()
+  const t = useT()
+  const [lang] = useLang()
+  const en = lang === 'en'
+  const area = (a: keyof typeof PAIN_AREAS) => en ? PAIN_AREAS[a].labelEn : PAIN_AREAS[a].label
+  const avoid = (a: keyof typeof PAIN_AREAS) => en ? PAIN_AREAS[a].avoidEn : PAIN_AREAS[a].avoid
   const [dismissed, setDismissed] = usePersisted('comebackDismissed', '')
   const [open, setOpen] = useState(false)
   const [readiness] = usePersisted<Record<string, Readiness>>('readiness', {})
@@ -37,38 +43,38 @@ export function Alerts() {
   return (
     <>
       {result && result !== 'clear' && (
-        <Banner tone="bad" icon={<HeartPulse size={20} />} title={clearanceText[result].title} text={clearanceText[result].text}
-          action={<Button size="sm" variant="soft" onClick={() => setOpen(true)}>ตอบใหม่</Button>} />
+        <Banner tone="bad" icon={<HeartPulse size={20} />} title={en ? clearanceText[result].titleEn : clearanceText[result].title} text={en ? clearanceText[result].textEn : clearanceText[result].text}
+          action={<Button size="sm" variant="soft" onClick={() => setOpen(true)}>{t('ตอบใหม่', 'Answer again')}</Button>} />
       )}
       {showComeback && (
-        <Banner tone="warn" icon={<History size={20} />} title={`ห่างการฝึกไป ${cb.days} วัน`} text={cb.text}
+        <Banner tone="warn" icon={<History size={20} />} title={t(`ห่างการฝึกไป ${cb.days} วัน`, `${cb.days} days since your last workout`)} text={en ? cb.textEn : cb.text}
           action={
             <div className="flex gap-2">
               {cb.weeksBack > 0 && !p.autoWeek && p.currentWeek > 1 && (
                 <Button size="sm" onClick={() => { p.setWeek(Math.max(1, p.currentWeek - cb.weeksBack)); setDismissed(lastActivity) }}>
-                  ย้อน {Math.min(cb.weeksBack, p.currentWeek - 1)} สัปดาห์
+                  {t(`ย้อน ${Math.min(cb.weeksBack, p.currentWeek - 1)} สัปดาห์`, `Go back ${Math.min(cb.weeksBack, p.currentWeek - 1)} wk`)}
                 </Button>
               )}
-              <Button size="sm" variant="soft" onClick={() => setDismissed(lastActivity)}>รับทราบ</Button>
+              <Button size="sm" variant="soft" onClick={() => setDismissed(lastActivity)}>{t('รับทราบ', 'Got it')}</Button>
             </div>
           } />
       )}
       {rec && recSeen !== rec.race.id && (
-        <Banner tone="warn" icon={<History size={20} />} title={`ช่วงฟื้นตัวหลังแข่ง ${rec.race.km} กม. — อีก ${rec.left} วัน`}
-          text={`วิ่งเบาหรือพักจนถึง ${rec.until} งดวิ่งหนัก/วิ่งยาว (แข่งหนึ่งครั้งต้องฟื้นตัว ${rec.days} วัน — เหตุผลที่ไม่ควรลงแข่งเพิ่มระหว่างโปรแกรม)`}
-          action={<Button size="sm" variant="soft" onClick={() => setRecSeen(rec.race.id)}>รับทราบ</Button>} />
+        <Banner tone="warn" icon={<History size={20} />} title={t(`ช่วงฟื้นตัวหลังแข่ง ${rec.race.km} กม. — อีก ${rec.left} วัน`, `Recovering from a ${rec.race.km} km race — ${rec.left} days left`)}
+          text={t(`วิ่งเบาหรือพักจนถึง ${rec.until} งดวิ่งหนัก/วิ่งยาว (แข่งหนึ่งครั้งต้องฟื้นตัว ${rec.days} วัน — เหตุผลที่ไม่ควรลงแข่งเพิ่มระหว่างโปรแกรม)`, `Easy running or rest until ${rec.until}; no hard or long runs (a race needs ${rec.days} days of recovery — why extra races mid-program are a bad idea)`)}
+          action={<Button size="sm" variant="soft" onClick={() => setRecSeen(rec.race.id)}>{t('รับทราบ', 'Got it')}</Button>} />
       )}
       {showPain && (
         <Banner tone="bad" icon={<Bandage size={20} />}
-          title={areas.length ? `เจ็บ${areas.map(a => PAIN_AREAS[a].label).join(', ')} ซ้ำใน 7 วัน` : `เจ็บ ${pain.length} วันใน 7 วันที่ผ่านมา`}
-          text={[...areas.map(a => `${PAIN_AREAS[a].label}: ${PAIN_AREAS[a].avoid}`),
-            'งดวิ่งหนักและวิ่งยาว 3–5 วัน แล้วกลับมาที่ระดับต่ำกว่าเดิม 1 สัปดาห์ ถ้าเจ็บเกิน 1 สัปดาห์ เดินกะเผลก หรือบวม ควรพบแพทย์/นักกายภาพ'].join(' · ')}
+          title={areas.length ? t(`เจ็บ${areas.map(area).join(', ')} ซ้ำใน 7 วัน`, `Repeated ${areas.map(area).join(', ')} pain in 7 days`) : t(`เจ็บ ${pain.length} วันใน 7 วันที่ผ่านมา`, `Pain on ${pain.length} of the last 7 days`)}
+          text={[...areas.map(a => `${area(a)}: ${avoid(a)}`),
+            t('งดวิ่งหนักและวิ่งยาว 3–5 วัน แล้วกลับมาที่ระดับต่ำกว่าเดิม 1 สัปดาห์ ถ้าเจ็บเกิน 1 สัปดาห์ เดินกะเผลก หรือบวม ควรพบแพทย์/นักกายภาพ', 'No hard or long runs for 3–5 days, then resume one week lower. Pain over a week, limping or swelling: see a doctor/physio')].join(' · ')}
           action={
             <div className="flex gap-2">
               {!p.autoWeek && p.currentWeek > 1 && (
-                <Button size="sm" onClick={() => { p.setWeek(p.currentWeek - 1); setPainSeen(pain.at(-1)!) }}>ย้อน 1 สัปดาห์</Button>
+                <Button size="sm" onClick={() => { p.setWeek(p.currentWeek - 1); setPainSeen(pain.at(-1)!) }}>{t('ย้อน 1 สัปดาห์', 'Go back 1 wk')}</Button>
               )}
-              <Button size="sm" variant="soft" onClick={() => setPainSeen(pain.at(-1)!)}>รับทราบ</Button>
+              <Button size="sm" variant="soft" onClick={() => setPainSeen(pain.at(-1)!)}>{t('รับทราบ', 'Got it')}</Button>
             </div>
           } />
       )}

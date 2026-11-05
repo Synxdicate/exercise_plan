@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { GuideRunner, guides, stepAnnouncement, type Step } from '../guide'
+import { GuideRunner, guides, stepAnnouncement, stepLabelEn, type Step } from '../guide'
 import { weekPlan, programs, type ProgramId } from '../../data/programs'
 
 describe('guide builders', () => {
@@ -14,6 +14,13 @@ describe('guide builders', () => {
         }
       }
     }
+  })
+  it('every step label has English', () => {
+    for (const id of Object.keys(programs) as ProgramId[])
+      for (let w = 1; w <= programs[id].weeks; w++)
+        for (const d of weekPlan(id, w, () => 'gym'))
+          for (const s of d.guide ?? []) expect(stepLabelEn(s), `${id} w${w}`).not.toMatch(/[\u0E00-\u0E7F]/)
+    for (const s of [...guides.timeTrial(), ...guides.runWalk(3, 3, 1)]) expect(stepLabelEn(s)).not.toMatch(/[\u0E00-\u0E7F]/)
   })
   it('reps by distance and minutes', () => {
     const a = guides.reps('5 × 800 ม. / จ็อก 2 นาที')

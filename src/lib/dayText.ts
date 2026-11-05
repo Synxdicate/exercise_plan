@@ -14,6 +14,7 @@ const TITLE_EN: [RegExp, string][] = [
   [/^Calisthenics — ขา \+ Core$/, 'Calisthenics — legs + core'],
   [/^ขา B — ขาเดียวและต้นขาหลัง \(สวน\)$/, 'Legs B — single-leg & hamstrings (park)'],
   [/^เวท ([AB]) — ทั้งตัว$/, 'Strength $1 — full body'],
+  [/^เซอร์กิตแกนกลาง\/สะโพก$/, 'Core/hip circuit'],
   [/^พัก \/ เดินเบา ๆ$/, 'Rest / easy walk'],
   [/^พัก$/, 'Rest'],
   [/^วิ่ง Easy$/, 'Easy run'],

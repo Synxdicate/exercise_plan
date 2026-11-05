@@ -1,7 +1,8 @@
 import { Directory, Filesystem } from '@capacitor/filesystem'
 import { Share } from '@capacitor/share'
 import { Media } from '@capacitor-community/media'
-import { formatDuration, formatPace, runKinds, type Run } from './log'
+import { formatDuration, formatPace, runKinds, runKindsEn, type Run } from './log'
+import { trNow } from './i18n'
 import { isNative } from './native'
 import { projectRoute } from './geo'
 
@@ -12,7 +13,7 @@ const FONT = "'Noto Sans Thai', ui-sans-serif, system-ui, sans-serif"
 const thMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.']
 const thaiDate = (s: string) => {
   const [y, m, d] = s.split('-').map(Number)
-  return `${d} ${thMonths[m - 1]} ${y + 543}`
+  return trNow(`${d} ${thMonths[m - 1]} ${y + 543}`, `${d} ${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][m - 1]} ${y}`)
 }
 
 export type CardStyle = 'card' | 'white' | 'black'
@@ -65,7 +66,7 @@ export async function renderRunCard(run: Run, style: CardStyle = 'card'): Promis
   g.fillStyle = '#fff'
   g.textBaseline = 'alphabetic'
   g.font = `600 44px ${FONT}`
-  g.fillText(`วิ่ง ${runKinds[run.kind]}`, 90, 150)
+  g.fillText(trNow(`วิ่ง ${runKinds[run.kind]}`, `${runKindsEn[run.kind]} run`), 90, 150)
   g.globalAlpha = 0.8
   g.font = `400 38px ${FONT}`
   g.fillText(thaiDate(run.date), 90, 210)
@@ -77,9 +78,9 @@ export async function renderRunCard(run: Run, style: CardStyle = 'card'): Promis
   g.fillText(km, 80, yKm)
   const kmW = g.measureText(km).width
   g.font = `600 64px ${FONT}`
-  g.fillText('กม.', 100 + kmW, yKm)
+  g.fillText(trNow('กม.', 'km'), 100 + kmW, yKm)
 
-  const stats = [['เวลา', formatDuration(run.seconds)], ['เพซเฉลี่ย', `${formatPace(run.seconds, run.km)} /กม.`]]
+  const stats = [[trNow('เวลา', 'Time'), formatDuration(run.seconds)], [trNow('เพซเฉลี่ย', 'Avg pace'), `${formatPace(run.seconds, run.km)} ${trNow('/กม.', '/km')}`]]
   stats.forEach(([label, value], i) => {
     const x = 90 + i * 470
     g.globalAlpha = 0.8
@@ -108,9 +109,9 @@ function drawSticker(g: CanvasRenderingContext2D, c: HTMLCanvasElement, run: Run
   g.textAlign = 'center'
   g.textBaseline = 'alphabetic'
   const stats: [string, string][] = [
-    ['ระยะทาง', `${run.km.toFixed(2)} กม.`],
-    ['เพซ', `${formatPace(run.seconds, run.km)} /กม.`],
-    ['เวลา', formatDuration(run.seconds)],
+    [trNow('ระยะทาง', 'Distance'), `${run.km.toFixed(2)} ${trNow('กม.', 'km')}`],
+    [trNow('เพซ', 'Pace'), `${formatPace(run.seconds, run.km)} ${trNow('/กม.', '/km')}`],
+    [trNow('เวลา', 'Time'), formatDuration(run.seconds)],
   ]
   let y = hasRoute ? 150 : 330
   for (const [label, value] of stats) {
@@ -136,15 +137,15 @@ const fileName = (run: Run, style: CardStyle = 'card') => `run-${run.date}-${run
 
 /** แชร์รูป: แอปใช้หน้าต่างแชร์ของ Android, เว็บใช้ Web Share ถ้ารองรับ ไม่งั้นดาวน์โหลด */
 export async function shareRunImage(run: Run, canvas: HTMLCanvasElement, style: CardStyle = 'card') {
-  const text = `วิ่ง ${run.km.toFixed(2)} กม. · ${formatDuration(run.seconds)} · เพซ ${formatPace(run.seconds, run.km)} /กม.`
+  const text = trNow(`วิ่ง ${run.km.toFixed(2)} กม. · ${formatDuration(run.seconds)} · เพซ ${formatPace(run.seconds, run.km)} /กม.`, `Ran ${run.km.toFixed(2)} km · ${formatDuration(run.seconds)} · pace ${formatPace(run.seconds, run.km)} /km`)
   if (isNative) {
     const data = canvas.toDataURL('image/png').split(',')[1]
     const { uri } = await Filesystem.writeFile({ path: fileName(run, style), data, directory: Directory.Cache })
-    await Share.share({ files: [uri], text, dialogTitle: 'แชร์การวิ่ง' })
+    await Share.share({ files: [uri], text, dialogTitle: trNow('แชร์การวิ่ง', 'Share run') })
     return
   }
   const blob = await new Promise<Blob | null>(r => canvas.toBlob(r, 'image/png'))
-  if (!blob) throw new Error('สร้างรูปไม่สำเร็จ')
+  if (!blob) throw new Error(trNow('สร้างรูปไม่สำเร็จ', 'Couldn’t create the image'))
   const file = new File([blob], fileName(run, style), { type: 'image/png' })
   if (navigator.canShare?.({ files: [file] })) {
     await navigator.share({ files: [file], text }).catch(e => { if ((e as Error).name !== 'AbortError') throw e })

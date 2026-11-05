@@ -3,10 +3,12 @@ import { Repeat, Trophy } from 'lucide-react'
 import { matchedRuns } from '../lib/matched'
 import { formatDuration, formatPace, type Run } from '../lib/log'
 import { niceDate } from '../lib/date'
+import { useT } from '../lib/i18n'
 import { cx } from '../lib/cx'
 
 /** เทียบกับครั้งอื่นบนเส้นทางเดียวกัน (Matched runs) */
 export function MatchedRuns({ run, runs }: { run: Run; runs: Run[] }) {
+  const t = useT()
   const list = useMemo(() => matchedRuns(run, runs), [run, runs])
   if (list.length < 2) return null
   const best = list.reduce((b, r) => (r.seconds / r.km < b.seconds / b.km ? r : b))
@@ -19,11 +21,11 @@ export function MatchedRuns({ run, runs }: { run: Run; runs: Run[] }) {
 
   return (
     <div className="mt-3 rounded-2xl bg-raised p-3">
-      <div className="flex items-center gap-2 text-sm font-bold"><Repeat size={16} className="text-run" /> เส้นทางนี้วิ่งมาแล้ว {list.length} ครั้ง</div>
+      <div className="flex items-center gap-2 text-sm font-bold"><Repeat size={16} className="text-run" /> {t(`เส้นทางนี้วิ่งมาแล้ว ${list.length} ครั้ง`, `Run this route ${list.length} times`)}</div>
       {prev && Math.abs(diff) >= 1 && (
         <p className={cx('mt-0.5 text-xs font-semibold', diff < 0 ? 'text-good' : 'text-warn')}>
-          ครั้งนี้{diff < 0 ? 'เร็วกว่า' : 'ช้ากว่า'}ครั้งก่อน {formatDuration(Math.abs(diff))} /กม.
-          {run.id === best.id && ' — ดีที่สุดของเส้นทางนี้'}
+          {t(`ครั้งนี้${diff < 0 ? 'เร็วกว่า' : 'ช้ากว่า'}ครั้งก่อน ${formatDuration(Math.abs(diff))} /กม.`, `${formatDuration(Math.abs(diff))} /km ${diff < 0 ? 'faster' : 'slower'} than last time`)}
+          {run.id === best.id && t(' — ดีที่สุดของเส้นทางนี้', ' — best on this route')}
         </p>
       )}
       <ul className="mt-2 space-y-1.5">

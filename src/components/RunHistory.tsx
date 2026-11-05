@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react'
 import { ChevronRight, Footprints } from 'lucide-react'
-import { formatDuration, formatPace, runKinds, type Run } from '../lib/log'
+import { formatDuration, formatPace, runKinds, runKindsEn, type Run } from '../lib/log'
 import { runsOnly } from '../lib/walk'
 import { projectRoute } from '../lib/geo'
 import { monthLabel, niceDate } from '../lib/date'
 import { cx } from '../lib/cx'
+import { useT } from '../lib/i18n'
 import { Badge } from './ui'
 
 /** เส้นทางย่อแบบภาพตัวอย่าง (แทนไอคอน) — การวิ่งที่ไม่มีเส้นทางใช้ไอคอนเดิม */
@@ -32,6 +33,8 @@ const PAGE = 3 // จำนวนเดือนที่แสดงต่อ�
 /** ประวัติการวิ่งแบ่งตามเดือน พร้อมยอดรวมรายเดือนและตัวกรองชนิด */
 export function RunHistory({ runs, onOpen }: { runs: Run[]; onOpen: (id: string) => void }) {
   const [kind, setKind] = useState<Run['kind'] | 'all'>('all')
+  const tr = useT()
+  const kindName = (k: Run['kind']) => tr(runKinds[k], runKindsEn[k])
   const [months, setMonths] = useState(PAGE)
   const kinds = useMemo(() => [...new Set(runs.map(r => r.kind))], [runs])
   const groups = useMemo(() => {
@@ -41,7 +44,7 @@ export function RunHistory({ runs, onOpen }: { runs: Run[]; onOpen: (id: string)
     return [...map]
   }, [runs, kind])
 
-  if (!runs.length) return <p className="py-6 text-center text-sm text-muted">ยังไม่มีการวิ่ง — กด "เริ่มวิ่ง" ที่แท็บวิ่ง</p>
+  if (!runs.length) return <p className="py-6 text-center text-sm text-muted">{tr('ยังไม่มีการวิ่ง — กด "เริ่มวิ่ง" ที่แท็บวิ่ง', 'No runs yet — tap "Start run" in the runs tab')}</p>
 
   return (
     <div>
@@ -50,7 +53,7 @@ export function RunHistory({ runs, onOpen }: { runs: Run[]; onOpen: (id: string)
           {(['all', ...kinds] as const).map(k => (
             <button key={k} onClick={() => { setKind(k); setMonths(PAGE) }}
               className={cx('shrink-0 rounded-full px-3 py-1 text-xs font-semibold ring-1', kind === k ? 'bg-run-fill text-white ring-run' : 'bg-raised ring-line')}>
-              {k === 'all' ? 'ทั้งหมด' : runKinds[k]}
+              {k === 'all' ? tr('ทั้งหมด', 'All') : kindName(k)}
             </button>
           ))}
         </div>
@@ -59,7 +62,7 @@ export function RunHistory({ runs, onOpen }: { runs: Run[]; onOpen: (id: string)
         <section key={ym} className="mb-1">
           <div className="sticky top-[calc(var(--sat)+4.25rem)] z-10 -mx-1 flex items-baseline justify-between bg-card/95 px-1 py-1.5 backdrop-blur">
             <span className="text-sm font-bold">{monthLabel(ym)}</span>
-            <span className="text-xs tabular-nums text-muted">{list.length} ครั้ง · {runsOnly(list).reduce((a, r) => a + r.km, 0).toFixed(1)} กม.</span>
+            <span className="text-xs tabular-nums text-muted">{list.length} {tr('ครั้ง', 'runs')} · {runsOnly(list).reduce((a, r) => a + r.km, 0).toFixed(1)} {tr('กม.', 'km')}</span>
           </div>
           <ul className="divide-y divide-line">
             {list.map(r => (
@@ -67,8 +70,8 @@ export function RunHistory({ runs, onOpen }: { runs: Run[]; onOpen: (id: string)
                 <button onClick={() => onOpen(r.id)} className="flex w-full items-center gap-3 py-2.5 text-left">
                   <RoutePreview run={r} />
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2"><b className="tabular-nums">{r.km.toFixed(2)} กม.</b><Badge tone="run">{runKinds[r.kind]}</Badge></div>
-                    <div className="text-xs text-muted">{niceDate(r.date)} · {formatDuration(r.seconds)} · {formatPace(r.seconds, r.km)} /กม.</div>
+                    <div className="flex items-center gap-2"><b className="tabular-nums">{r.km.toFixed(2)} {tr('กม.', 'km')}</b><Badge tone="run">{kindName(r.kind)}</Badge></div>
+                    <div className="text-xs text-muted">{niceDate(r.date)} · {formatDuration(r.seconds)} · {formatPace(r.seconds, r.km)} {tr('/กม.', '/km')}</div>
                   </div>
                   <ChevronRight size={18} className="text-muted" />
                 </button>
@@ -79,7 +82,7 @@ export function RunHistory({ runs, onOpen }: { runs: Run[]; onOpen: (id: string)
       ))}
       {groups.length > months && (
         <button onClick={() => setMonths(m => m + PAGE)} className="mt-1 w-full rounded-full py-2 text-sm font-semibold text-run ring-1 ring-line">
-          ดูเดือนก่อนหน้า ({groups.length - months} เดือน)
+          {tr(`ดูเดือนก่อนหน้า (${groups.length - months} เดือน)`, `Show earlier months (${groups.length - months})`)}
         </button>
       )}
     </div>

@@ -129,6 +129,15 @@ export const sampleDays: MealPlan[] = [
   },
 ]
 
+export const nutritionRulesEn = [
+  'Protein at every meal, ~30–40 g (1–1.5 palm-sized portions), hitting the daily target above',
+  'Vegetables at least 2 meals a day — ask for extra veg or add blanched veg anywhere',
+  'Drink ~2.5–3 L water a day (Thailand is hot; more on run days)',
+  'Sweet drinks are a top goal-wrecker — choose 0–25% sugar',
+  'Weigh in the morning after the toilet 3–4 days a week; watch the weekly average, not daily',
+  'If the weekly average doesn’t drop for 2–3 weeks, cut ~150–200 kcal (e.g. one less scoop of rice a day)',
+  'Well-supported supplement: creatine monohydrate 3–5 g/day (optional) — most others aren’t needed',
+]
 export const nutritionRules = [
   'โปรตีนทุกมื้อ ~30–40 ก. (ฝ่ามือ 1–1.5 ชิ้น) รวมทั้งวันตามเป้าด้านบน',
   'ผักอย่างน้อย 2 มื้อ/วัน — สั่ง "ผักเยอะ" หรือเพิ่มผักลวกได้ทุกร้าน',

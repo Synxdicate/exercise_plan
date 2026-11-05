@@ -5,6 +5,7 @@ import { useDayDone } from '../lib/dayDone'
 import { usePersisted } from '../lib/storage'
 import { cx } from '../lib/cx'
 import { Button } from './ui'
+import { useT } from '../lib/i18n'
 
 type Feel = 'easy' | 'ok' | 'hard'
 const FEEL: Record<Feel, { label: string; reply: string }> = {
@@ -12,10 +13,17 @@ const FEEL: Record<Feel, { label: string; reply: string }> = {
   ok: { label: 'พอดี', reply: 'กำลังดี ไปต่อตามแผน' },
   hard: { label: 'หนักไป', reply: 'ทำสัปดาห์นี้ซ้ำอีกรอบดีกว่าฝืน — ร่างกายปรับตัวทันแล้วค่อยไปต่อ' },
 }
+const FEEL_EN: Record<Feel, { label: string; reply: string }> = {
+  easy: { label: 'Easy', reply: 'Carry on with the plan — if it feels very easy two weeks running, you can skip ahead one week' },
+  ok: { label: 'About right', reply: 'Just right — carry on with the plan' },
+  hard: { label: 'Too hard', reply: 'Better to repeat this week than force it — move on once your body has caught up' },
+}
 
 /** ท้ายสัปดาห์ถามว่าหนักไปไหม — หนักไปเสนอให้ทำสัปดาห์เดิมซ้ำ (มือใหม่มักฝืนไปต่อแล้วเจ็บ) */
 export function WeekCheckCard() {
   const p = useProgram()
+  const t = useT()
+  const feel = t('th', 'en') === 'en' ? FEEL_EN : FEEL
   const dayDone = useDayDone()
   const [answers, setAnswers] = usePersisted<Record<string, Feel | true>>('weekCheck', {})
   const todayIdx = useTodayIdx() // 0 = จันทร์ — เปลี่ยนเองเมื่อข้ามวัน
@@ -34,23 +42,23 @@ export function WeekCheckCard() {
 
   return (
     <section className="animate-fade-up rounded-2xl bg-card p-3.5 shadow-sm ring-1 ring-line">
-      <div className="flex items-center gap-2 font-bold"><CalendarCheck size={18} className="text-run" /> สัปดาห์ที่ {p.currentWeek} เป็นยังไงบ้าง</div>
+      <div className="flex items-center gap-2 font-bold"><CalendarCheck size={18} className="text-run" /> {t(`สัปดาห์ที่ ${p.currentWeek} เป็นยังไงบ้าง`, `How was week ${p.currentWeek}?`)}</div>
       {!answer ? (
         <div className="mt-2 flex gap-2">
           {(Object.keys(FEEL) as Feel[]).map(f => (
             <button key={f} onClick={() => setAnswers(a => ({ ...a, [key]: f }))}
               className={cx('flex-1 rounded-xl py-2 text-sm font-semibold ring-1', f === 'hard' ? 'bg-warn/10 text-warn ring-warn/30' : 'bg-raised ring-line')}>
-              {FEEL[f].label}
+              {feel[f].label}
             </button>
           ))}
         </div>
       ) : (
         <>
-          <p className="mt-1 text-sm">{FEEL[answer].reply}</p>
+          <p className="mt-1 text-sm">{feel[answer].reply}</p>
           <div className="mt-2 flex gap-2">
-            {answer === 'hard' && !p.autoWeek && !last && <Button size="sm" onClick={() => { p.repeatWeek(); close() }}>ทำสัปดาห์ {p.currentWeek} ซ้ำ</Button>}
-            {answer === 'hard' && p.autoWeek && <span className="text-xs text-muted">มีวันแข่งแล้ว: ลดระยะสัปดาห์หน้าลง ~20% แทนการทำซ้ำ</span>}
-            <Button size="sm" variant="soft" onClick={close}>{answer === 'hard' ? 'ไปต่อตามแผน' : 'รับทราบ'}</Button>
+            {answer === 'hard' && !p.autoWeek && !last && <Button size="sm" onClick={() => { p.repeatWeek(); close() }}>{t(`ทำสัปดาห์ ${p.currentWeek} ซ้ำ`, `Repeat week ${p.currentWeek}`)}</Button>}
+            {answer === 'hard' && p.autoWeek && <span className="text-xs text-muted">{t('มีวันแข่งแล้ว: ลดระยะสัปดาห์หน้าลง ~20% แทนการทำซ้ำ', 'You have a race date: cut next week’s distance ~20% instead of repeating')}</span>}
+            <Button size="sm" variant="soft" onClick={close}>{answer === 'hard' ? t('ไปต่อตามแผน', 'Continue with the plan') : t('รับทราบ', 'Got it')}</Button>
           </div>
         </>
       )}

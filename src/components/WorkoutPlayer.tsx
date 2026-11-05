@@ -15,6 +15,7 @@ import { useBackClose } from '../lib/back'
 import { ExerciseDemo } from './ExerciseDemo'
 import { ask } from '../lib/dialog'
 import { buzz, speak } from '../lib/voice'
+import { useT } from '../lib/i18n'
 
 type SetRow = { kg: string; reps: string; done: boolean }
 type Active = { key: string; startedAt: number; idx: number; rows: Record<string, SetRow[]> }
@@ -31,6 +32,7 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
   day: Day; sessionKey: string; mode: 'gym' | 'park' | 'home'; light?: boolean; onClose: () => void; onSaved: () => void
 }) {
   const dt = useDayText()
+  const tr = useT()
   const [sessions, setSessions] = useSessions()
   const [active, setActive] = usePersisted<Active | null>('activeWorkout', null)
   const [rest, setRest] = useState<{ end: number; total: number } | null>(null)
@@ -132,10 +134,10 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
   // ปุ่มหลักปุ่มเดียว: บอกสิ่งที่ต้องทำต่อ (แบบแอปพาออกกำลังกาย)
   const allDone = doneCount === total
   const exDone = currentSet < 0
-  const cta = allDone ? { label: 'จบและบันทึก', icon: Check, run: () => void finish() }
-    : exDone ? { label: 'ท่าถัดไป', icon: ChevronRight, run: () => update(s => ({ ...s, idx: day.exercises.findIndex(e => state.rows[e.name].some(r => !r.done)) })) }
-    : h ? { label: `จับเวลา ${h.sec} วิ${h.sides > 1 ? ' / ข้าง' : ''} · เซ็ต ${currentSet + 1}/${rows.length}`, icon: Timer, run: startHold }
-    : { label: `เสร็จเซ็ต ${currentSet + 1}/${rows.length}${targetReps(ex) ? ` (${rows[currentSet].reps || targetReps(ex)} ครั้ง)` : ''}`, icon: Check, run: () => completeSet(currentSet) }
+  const cta = allDone ? { label: tr('จบและบันทึก', 'Finish & save'), icon: Check, run: () => void finish() }
+    : exDone ? { label: tr('ท่าถัดไป', 'Next exercise'), icon: ChevronRight, run: () => update(s => ({ ...s, idx: day.exercises.findIndex(e => state.rows[e.name].some(r => !r.done)) })) }
+    : h ? { label: tr(`จับเวลา ${h.sec} วิ${h.sides > 1 ? ' / ข้าง' : ''} · เซ็ต ${currentSet + 1}/${rows.length}`, `Hold ${h.sec} s${h.sides > 1 ? ' / side' : ''} · set ${currentSet + 1}/${rows.length}`), icon: Timer, run: startHold }
+    : { label: tr(`เสร็จเซ็ต ${currentSet + 1}/${rows.length}${targetReps(ex) ? ` (${rows[currentSet].reps || targetReps(ex)} ครั้ง)` : ''}`, `Done set ${currentSet + 1}/${rows.length}${targetReps(ex) ? ` (${rows[currentSet].reps || targetReps(ex)} reps)` : ''}`), icon: Check, run: () => completeSet(currentSet) }
 
   const [rating, setRating] = useState(false)
 
@@ -145,7 +147,7 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
 
   const finish = async () => {
     if (!doneEntries().length) {
-      if (await ask('ยังไม่ได้ทำเซ็ตไหนเลย', { title: 'ออกโดยไม่บันทึก?', ok: 'ออก', danger: true })) { setActive(null); onClose() }
+      if (await ask(tr('ยังไม่ได้ทำเซ็ตไหนเลย', 'No sets done yet'), { title: tr('ออกโดยไม่บันทึก?', 'Leave without saving?'), ok: tr('ออก', 'Leave'), danger: true })) { setActive(null); onClose() }
       return
     }
     setRating(true)
@@ -160,7 +162,7 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
   }
 
   const quit = async () => {
-    if (doneCount === 0 || (await ask('ความคืบหน้าจะถูกเก็บไว้ กลับมาทำต่อได้', { title: 'ออกจากการฝึก?', ok: 'ออก' }))) onClose()
+    if (doneCount === 0 || (await ask(tr('ความคืบหน้าจะถูกเก็บไว้ กลับมาทำต่อได้', 'Your progress is kept — you can come back to it'), { title: tr('ออกจากการฝึก?', 'Leave the workout?'), ok: tr('ออก', 'Leave') }))) onClose()
   }
   useBackClose(() => void quit())
 
@@ -169,12 +171,12 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
     <div className="fixed inset-0 z-50 animate-sheet-up overflow-y-auto bg-bg">
       <div className="mx-auto flex min-h-full max-w-lg flex-col gap-4 p-4 pb-[calc(var(--sab)+1rem)] pt-[calc(var(--sat)+1rem)]">
         <div className="flex items-center gap-3">
-          <button onClick={quit} aria-label="ปิด" className="grid size-10 place-items-center rounded-full bg-card ring-1 ring-line"><X size={18} /></button>
+          <button onClick={quit} aria-label={tr('ปิด', 'Close')} className="grid size-10 place-items-center rounded-full bg-card ring-1 ring-line"><X size={18} /></button>
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-bold">{dt.title(day)}</div>
-            <div className="text-xs text-muted tabular-nums">{formatDuration((now - state.startedAt) / 1000)} · {doneCount}/{total} เซ็ต{light && ' · โหมดเบา'}</div>
+            <div className="text-xs text-muted tabular-nums">{formatDuration((now - state.startedAt) / 1000)} · {doneCount}/{total} {tr('เซ็ต', 'sets')}{light && tr(' · โหมดเบา', ' · light mode')}</div>
           </div>
-          <Button size="sm" variant="success" onClick={finish}><Check size={16} /> จบ</Button>
+          <Button size="sm" variant="success" onClick={finish}><Check size={16} /> {tr('จบ', 'Finish')}</Button>
         </div>
         <div className="h-1.5 overflow-hidden rounded-full bg-body">
           <div className="h-full rounded-full bg-good-fill transition-all duration-500" style={{ width: `${(doneCount / total) * 100}%` }} />
@@ -197,26 +199,26 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
         <section key={ex.name} className="animate-fade-up rounded-3xl bg-card p-4 shadow-sm ring-1 ring-line">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <div className="text-xs font-semibold text-muted">ท่าที่ {state.idx + 1} จาก {day.exercises.length}</div>
+              <div className="text-xs font-semibold text-muted">{tr(`ท่าที่ ${state.idx + 1} จาก ${day.exercises.length}`, `Exercise ${state.idx + 1} of ${day.exercises.length}`)}</div>
               <h2 className="text-2xl font-extrabold leading-tight">{ex.name}</h2>
               <div className="text-sm text-muted">{ex.th}</div>
             </div>
-            <a href={yt(ex.video)} target="_blank" rel="noreferrer" aria-label="ดูวิดีโอ" className="grid size-11 shrink-0 place-items-center rounded-full bg-accent-fill text-white! shadow-sm"><Play size={18} fill="currentColor" /></a>
+            <a href={yt(ex.video)} target="_blank" rel="noreferrer" aria-label={tr('ดูวิดีโอ', 'Watch video')} className="grid size-11 shrink-0 place-items-center rounded-full bg-accent-fill text-white! shadow-sm"><Play size={18} fill="currentColor" /></a>
           </div>
           <div className="mt-2 flex flex-wrap gap-1.5">
             <Badge tone="muted"><b className="text-ink">{ex.sets} × {ex.reps}</b></Badge>
-            <Badge tone="muted">พัก {ex.rest}</Badge>
+            <Badge tone="muted">{tr('พัก', 'Rest')} {dt.reps(ex.rest)}</Badge>
           </div>
           <ExerciseDemo key={ex.name} name={ex.name} className="mt-3" />
           <p className="mt-2 text-sm text-muted">{ex.cue}</p>
-          {prev && <p className="mt-1 text-xs text-muted">ครั้งก่อน ({prev.date}): {prev.sets.map(s => (s.kg ? `${s.kg}×${s.reps}` : `${s.reps}`)).join(' · ')}</p>}
+          {prev && <p className="mt-1 text-xs text-muted">{tr('ครั้งก่อน', 'Last time')} ({prev.date}): {prev.sets.map(s => (s.kg ? `${s.kg}×${s.reps}` : `${s.reps}`)).join(' · ')}</p>}
           {(() => {
             const sg = suggest(ex, prev?.sets)
             // ไม่มีน้ำหนัก (บอดี้เวท): คำแนะนำเรื่องเลือกน้ำหนักไม่ตรง — เพิ่มความยากด้วยจังหวะ/ท่าแทน
-            if (!kgCol && !sg.up && /น้ำหนัก/.test(sg.text)) sg.text = `ทำ ${ex.reps} ให้ท่าถูก เหลือแรงอีก 2–3 ครั้ง — ทำครบช่วงบนได้ทุกเซ็ตแล้วค่อยเพิ่มความยาก (ลงช้าลง หรือท่ายากขึ้น)`
+            if (!kgCol && !sg.up && /น้ำหนัก/.test(sg.text)) { sg.text = `ทำ ${ex.reps} ให้ท่าถูก เหลือแรงอีก 2–3 ครั้ง — ทำครบช่วงบนได้ทุกเซ็ตแล้วค่อยเพิ่มความยาก (ลงช้าลง หรือท่ายากขึ้น)`; sg.textEn = `Do ${dt.reps(ex.reps)} with good form and 2–3 reps left — once every set hits the top of the range, make it harder (slower lowering or a harder variation)` }
             return (
               <p className={cx('mt-2 flex gap-2 rounded-xl p-2 text-sm', sg.up ? 'bg-good/15 text-good' : 'bg-raised text-ink')}>
-                <TrendingUp size={16} className="mt-0.5 shrink-0" /><span>{sg.text}</span>
+                <TrendingUp size={16} className="mt-0.5 shrink-0" /><span>{tr(sg.text, sg.textEn)}</span>
               </p>
             )
           })()}
@@ -225,7 +227,7 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
 
           <div className="mt-4 space-y-2">
             <div className={cx('grid gap-2 px-1 text-xs text-muted', kgCol ? 'grid-cols-[2rem_1fr_1fr_3rem]' : 'grid-cols-[2rem_1fr_3rem]')}>
-              <span>เซ็ต</span>{kgCol && <span className="text-center">{mode !== 'gym' ? '+กก.' : 'กก.'}</span>}<span className="text-center">{h ? 'วินาที' : 'ครั้ง'}</span><span />
+              <span>{tr('เซ็ต', 'Set')}</span>{kgCol && <span className="text-center">{mode !== 'gym' ? tr('+กก.', '+kg') : tr('กก.', 'kg')}</span>}<span className="text-center">{h ? tr('วินาที', 'sec') : tr('ครั้ง', 'reps')}</span><span />
             </div>
             {rows.map((r, i) => (
               <div key={i} className={cx('grid items-center gap-2 rounded-2xl p-1 transition-colors', kgCol ? 'grid-cols-[2rem_1fr_1fr_3rem]' : 'grid-cols-[2rem_1fr_3rem]',
@@ -233,19 +235,19 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
                 <span className="text-center font-bold text-muted">{i + 1}</span>
                 {kgCol && <Stepper value={r.kg} placeholder={prev?.sets[i]?.kg ? String(prev.sets[i].kg) : '0'} step={mode !== 'gym' ? 1 : 2.5} onChange={v => setRow(i, { kg: v })} />}
                 <Stepper value={r.reps} placeholder={targetReps(ex) || '-'} step={1} onChange={v => setRow(i, { reps: v })} />
-                <button onClick={() => completeSet(i)} aria-label={r.done ? 'ยกเลิกเซ็ตนี้' : 'ทำเซ็ตนี้เสร็จ'}
+                <button onClick={() => completeSet(i)} aria-label={r.done ? tr('ยกเลิกเซ็ตนี้', 'Undo this set') : tr('ทำเซ็ตนี้เสร็จ', 'Complete this set')}
                   className={cx('grid size-11 place-items-center justify-self-end rounded-full transition', r.done ? 'animate-pop bg-good-fill text-white' : 'bg-raised text-muted ring-1 ring-line')}>
                   <Check size={20} strokeWidth={3} />
                 </button>
               </div>
             ))}
-            {mode !== 'gym' && <button onClick={() => setShowKg(!showKg)} className="px-1 text-xs font-semibold text-run">{showKg ? 'ซ่อนช่องน้ำหนัก' : '+ ใส่น้ำหนักเพิ่ม (เช่น เป้/ขวดน้ำ)'}</button>}
+            {mode !== 'gym' && <button onClick={() => setShowKg(!showKg)} className="px-1 text-xs font-semibold text-run">{showKg ? tr('ซ่อนช่องน้ำหนัก', 'Hide weight column') : tr('+ ใส่น้ำหนักเพิ่ม (เช่น เป้/ขวดน้ำ)', '+ Add load (e.g. backpack/bottles)')}</button>}
           </div>
         </section>
 
         <div className="flex gap-2">
-          <Button variant="soft" className="flex-1" disabled={state.idx === 0} onClick={() => update(s => ({ ...s, idx: s.idx - 1 }))}><ChevronLeft size={18} /> ท่าก่อน</Button>
-          <Button variant="soft" className="flex-1" disabled={state.idx === day.exercises.length - 1} onClick={() => update(s => ({ ...s, idx: s.idx + 1 }))}>ท่าถัดไป <ChevronRight size={18} /></Button>
+          <Button variant="soft" className="flex-1" disabled={state.idx === 0} onClick={() => update(s => ({ ...s, idx: s.idx - 1 }))}><ChevronLeft size={18} /> {tr('ท่าก่อน', 'Previous')}</Button>
+          <Button variant="soft" className="flex-1" disabled={state.idx === day.exercises.length - 1} onClick={() => update(s => ({ ...s, idx: s.idx + 1 }))}>{tr('ท่าถัดไป', 'Next')} <ChevronRight size={18} /></Button>
         </div>
         {/* ปุ่มหลักติดขอบล่าง กดได้ด้วยนิ้วโป้งข้างเดียว */}
         <div className="sticky bottom-0 -mx-4 mt-auto bg-gradient-to-t from-bg via-bg to-bg/0 px-4 pb-[calc(var(--sab)+0.5rem)] pt-4">
@@ -256,23 +258,23 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
       {rating && (
         <div className="fixed inset-0 z-[60] flex animate-fade-in items-end justify-center bg-black/50 sm:items-center">
           <div className="w-full max-w-lg animate-sheet-up space-y-4 rounded-t-3xl bg-card p-5 pb-[calc(var(--sab)+1.25rem)] sm:rounded-3xl">
-            <div className="text-lg font-bold">เยี่ยมมาก! จบการฝึกแล้ว</div>
+            <div className="text-lg font-bold">{tr('เยี่ยมมาก! จบการฝึกแล้ว', 'Great work! Workout done')}</div>
             <RpePicker onPick={save} />
-            <button className="w-full py-2 text-sm text-muted" onClick={() => save()}>ข้าม</button>
+            <button className="w-full py-2 text-sm text-muted" onClick={() => save()}>{tr('ข้าม', 'Skip')}</button>
           </div>
         </div>
       )}
       {hold && (
         <div className="fixed inset-0 z-[60] flex animate-fade-in flex-col items-center justify-center gap-5 bg-bg/95 p-6 backdrop-blur">
-          <div className="text-sm font-semibold uppercase tracking-wider text-muted">{ex.name}{h && h.sides > 1 ? ` · ข้างที่ ${hold.side}/${h.sides}` : ''}</div>
+          <div className="text-sm font-semibold uppercase tracking-wider text-muted">{ex.name}{h && h.sides > 1 ? tr(` · ข้างที่ ${hold.side}/${h.sides}`, ` · side ${hold.side}/${h.sides}`) : ''}</div>
           <div className="text-8xl font-extrabold tabular-nums">{holdLeft > (h?.sec ?? 0) ? holdLeft - (h?.sec ?? 0) : Math.max(0, holdLeft)}</div>
-          <div className="text-sm text-muted">{holdLeft > (h?.sec ?? 0) ? 'เตรียมตัว…' : 'ค้างไว้'}</div>
+          <div className="text-sm text-muted">{holdLeft > (h?.sec ?? 0) ? tr('เตรียมตัว…', 'Get ready…') : tr('ค้างไว้', 'Hold')}</div>
           <ExerciseDemo key={ex.name} name={ex.name} className="w-full max-w-60" />
-          <Button variant="soft" size="lg" onClick={() => setHold(null)}><X size={18} /> หยุด</Button>
+          <Button variant="soft" size="lg" onClick={() => setHold(null)}><X size={18} /> {tr('หยุด', 'Stop')}</Button>
         </div>
       )}
       {rest && restLeft > 0 && (
-        <RestOverlay left={restLeft} total={rest.total} next={currentSet >= 0 ? `${ex.name} เซ็ต ${currentSet + 1}` : undefined} nextName={currentSet >= 0 ? ex.name : undefined}
+        <RestOverlay left={restLeft} total={rest.total} next={currentSet >= 0 ? `${ex.name} ${tr('เซ็ต', 'set')} ${currentSet + 1}` : undefined} nextName={currentSet >= 0 ? ex.name : undefined}
           onAdd={() => setRest(r => {
             if (!r) return r
             void scheduleRestEnd(new Date(r.end + 15000))
@@ -286,27 +288,29 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
 }
 
 function Stepper({ value, placeholder, step, onChange }: { value: string; placeholder: string; step: number; onChange: (v: string) => void }) {
+  const tr = useT()
   const bump = (d: number) => {
     const n = Math.max(0, (parseFloat(value || placeholder) || 0) + d)
     onChange(String(Math.round(n * 10) / 10))
   }
   return (
     <div className="flex items-center rounded-xl bg-raised ring-1 ring-line">
-      <button onClick={() => bump(-step)} aria-label="ลด" className="grid h-11 w-8 place-items-center text-muted"><Minus size={14} /></button>
+      <button onClick={() => bump(-step)} aria-label={tr('ลด', 'Decrease')} className="grid h-11 w-8 place-items-center text-muted"><Minus size={14} /></button>
       <input value={value} placeholder={placeholder} inputMode="decimal" onChange={e => onChange(e.target.value)}
         className="bare h-11 w-full min-w-0 border-0 bg-transparent p-0 text-center text-lg font-bold tabular-nums ring-0 focus:border-0" />
-      <button onClick={() => bump(step)} aria-label="เพิ่ม" className="grid h-11 w-8 place-items-center text-muted"><Plus size={14} /></button>
+      <button onClick={() => bump(step)} aria-label={tr('เพิ่ม', 'Increase')} className="grid h-11 w-8 place-items-center text-muted"><Plus size={14} /></button>
     </div>
   )
 }
 
 function RestOverlay({ left, total, next, nextName, onAdd, onSkip }: { left: number; total: number; next?: string; nextName?: string; onAdd: () => void; onSkip: () => void }) {
+  const tr = useT()
   const r = 88
   const c = 2 * Math.PI * r
   const pct = Math.min(1, left / Math.max(total, left))
   return (
     <div className="fixed inset-0 z-[60] flex animate-fade-in flex-col items-center justify-center gap-6 bg-bg/95 p-6 backdrop-blur">
-      <div className="text-sm font-semibold uppercase tracking-wider text-muted">พัก</div>
+      <div className="text-sm font-semibold uppercase tracking-wider text-muted">{tr('พัก', 'Rest')}</div>
       <div className="relative size-56">
         <svg viewBox="0 0 200 200" className="size-full -rotate-90">
           <circle cx="100" cy="100" r={r} fill="none" strokeWidth="12" className="stroke-body" />
@@ -315,42 +319,43 @@ function RestOverlay({ left, total, next, nextName, onAdd, onSkip }: { left: num
         </svg>
         <div className="absolute inset-0 grid place-items-center text-6xl font-extrabold tabular-nums">{formatDuration(left)}</div>
       </div>
-      {next && <div className="text-center text-sm text-muted">ถัดไป: <b className="text-ink">{next}</b></div>}
+      {next && <div className="text-center text-sm text-muted">{tr('ถัดไป:', 'Next:')} <b className="text-ink">{next}</b></div>}
       {nextName && <ExerciseDemo key={nextName} name={nextName} className="w-full max-w-60" />}
       <div className="flex gap-3">
-        <Button variant="soft" size="lg" onClick={onAdd}><Plus size={18} /> 15 วิ</Button>
-        <Button size="lg" onClick={onSkip}><SkipForward size={18} /> ข้ามการพัก</Button>
+        <Button variant="soft" size="lg" onClick={onAdd}><Plus size={18} /> {tr('15 วิ', '15 s')}</Button>
+        <Button size="lg" onClick={onSkip}><SkipForward size={18} /> {tr('ข้ามการพัก', 'Skip rest')}</Button>
       </div>
     </div>
   )
 }
 
-const plateText = (kg: number) => {
+const plateText = (kg: number, en: boolean) => {
   const { plates } = platesPerSide(kg)
-  return plates.length ? `${plates.join(' + ')} ต่อข้าง` : 'บาร์เปล่า'
+  return plates.length ? `${plates.join(' + ')} ${en ? 'per side' : 'ต่อข้าง'}` : en ? 'Empty bar' : 'บาร์เปล่า'
 }
 
 /** เซ็ตวอร์มอัพไล่น้ำหนัก + แผ่นที่ต้องใส่ต่อข้าง (บาร์ 20 กก.) */
 function WarmupPlates({ workKg }: { workKg: number }) {
+  const tr = useT()
   const [open, setOpen] = useState(false)
   if (workKg <= 0) return null
   const warm = warmupSets(workKg)
   return (
     <div className="mt-3 rounded-2xl bg-raised p-3 text-sm">
       <button onClick={() => setOpen(!open)} className="flex w-full items-center justify-between text-left active:scale-100">
-        <span><b>เซ็ตจริง {workKg} กก.</b> <span className="text-muted">· {plateText(workKg)}</span></span>
+        <span><b>{tr(`เซ็ตจริง ${workKg} กก.`, `Work sets ${workKg} kg`)}</b> <span className="text-muted">· {plateText(workKg, tr('', 'en') === 'en')}</span></span>
         <span className="text-xs font-semibold text-run">{open ? 'ซ่อน' : `วอร์มอัพ ${warm.length} เซ็ต`}</span>
       </button>
       <Collapse open={open}>
         <ul className="mt-2 space-y-1">
           {warm.map((w, i) => (
             <li key={i} className="flex justify-between gap-2 text-xs">
-              <span className="tabular-nums"><b>{w.kg} กก. × {w.reps}</b></span>
-              <span className="text-muted">{plateText(w.kg)}</span>
+              <span className="tabular-nums"><b>{w.kg} {tr('กก.', 'kg')} × {w.reps}</b></span>
+              <span className="text-muted">{plateText(w.kg, tr('', 'en') === 'en')}</span>
             </li>
           ))}
         </ul>
-        <p className="mt-2 text-[11px] text-muted">พักสั้น ๆ ระหว่างเซ็ตวอร์มอัพ ไม่ต้องบันทึก</p>
+        <p className="mt-2 text-[11px] text-muted">{tr('พักสั้น ๆ ระหว่างเซ็ตวอร์มอัพ ไม่ต้องบันทึก', 'Short rests between warm-up sets; no need to log them')}</p>
       </Collapse>
     </div>
   )

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Bike, Check, ChevronLeft, ChevronRight, Dumbbell, Footprints } from 'lucide-react'
 import { monthGrid, shiftMonth } from '../lib/calendar'
-import { crossKinds, useCross, useRuns, useSessions, formatDuration, runKinds } from '../lib/log'
+import { crossKinds, useCross, useRuns, useSessions, formatDuration, runKinds, crossKindsEn, runKindsEn } from '../lib/log'
 import { isWalk } from '../lib/walk'
 import { useProgram } from '../lib/program'
 import { daysBetween, monthLabel, niceDate, today, weekStart } from '../lib/date'
@@ -11,8 +11,10 @@ import { usePersisted } from '../lib/storage'
 import { Card } from './ui'
 import { useT } from '../lib/i18n'
 import { useDayText } from '../lib/dayText'
+import { titleEn } from '../lib/dayText'
 
 const DAYS = ['จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส', 'อา']
+const DAYS_EN = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
 /** ปฏิทินรายเดือน: วันที่วิ่ง/เวทจริง เทียบกับแผน (วันที่ผ่านไปแล้วแต่ไม่ได้ทำตามแผน = วงเทา) */
 export function TrainingCalendar() {
@@ -71,15 +73,15 @@ export function TrainingCalendar() {
   return (
     <Card>
       <div className="mb-2 flex items-center justify-between">
-        <button onClick={() => { setYm(shiftMonth(ym, -1)); setPicked(null) }} aria-label="เดือนก่อน" className="grid size-8 place-items-center rounded-full ring-1 ring-line"><ChevronLeft size={16} /></button>
+        <button onClick={() => { setYm(shiftMonth(ym, -1)); setPicked(null) }} aria-label={t('เดือนก่อน', 'Previous month')} className="grid size-8 place-items-center rounded-full ring-1 ring-line"><ChevronLeft size={16} /></button>
         <div className="text-center">
-          <div className="text-sm font-bold">{monthLabel(ym)}{ym !== now.slice(0, 7) && <button onClick={() => { setYm(now.slice(0, 7)); setPicked(null) }} className="ml-2 rounded-full bg-raised px-2 py-0.5 text-[11px] font-semibold text-run">เดือนนี้</button>}</div>
-          <div className="text-[11px] tabular-nums text-muted">ออกกำลังกาย {totals.active} วัน · วิ่ง {totals.km.toFixed(1)} กม. · เวท {totals.sessions} ครั้ง</div>
+          <div className="text-sm font-bold">{monthLabel(ym)}{ym !== now.slice(0, 7) && <button onClick={() => { setYm(now.slice(0, 7)); setPicked(null) }} className="ml-2 rounded-full bg-raised px-2 py-0.5 text-[11px] font-semibold text-run">{t('เดือนนี้', 'This month')}</button>}</div>
+          <div className="text-[11px] tabular-nums text-muted">{t(`ออกกำลังกาย ${totals.active} วัน · วิ่ง ${totals.km.toFixed(1)} กม. · เวท ${totals.sessions} ครั้ง`, `Active ${totals.active} days · ran ${totals.km.toFixed(1)} km · ${totals.sessions} strength sessions`)}</div>
         </div>
-        <button onClick={() => { setYm(shiftMonth(ym, 1)); setPicked(null) }} disabled={ym >= lastYm} aria-label="เดือนถัดไป"
+        <button onClick={() => { setYm(shiftMonth(ym, 1)); setPicked(null) }} disabled={ym >= lastYm} aria-label={t('เดือนถัดไป', 'Next month')}
           className="grid size-8 place-items-center rounded-full ring-1 ring-line disabled:opacity-30"><ChevronRight size={16} /></button>
       </div>
-      <div className="grid grid-cols-7 gap-1 text-center text-[10px] text-muted">{DAYS.map(d => <span key={d}>{d}</span>)}</div>
+      <div className="grid grid-cols-7 gap-1 text-center text-[10px] text-muted">{(t('th', 'en') === 'en' ? DAYS_EN : DAYS).map((d, i) => <span key={i}>{d}</span>)}</div>
       <div className="mt-1 space-y-1">
         {grid.map((row, i) => (
           <div key={i} className="grid grid-cols-7 gap-1">
@@ -110,22 +112,22 @@ export function TrainingCalendar() {
         ))}
       </div>
       <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted">
-        <span className="flex items-center gap-1"><span className="size-2.5 rounded bg-run/30" /> วิ่ง (กม.)</span>
-        <span className="flex items-center gap-1"><span className="size-2.5 rounded bg-accent-soft" /> เวท</span>
-        <span className="flex items-center gap-1"><Check size={10} strokeWidth={3} className="text-good" /> ติ๊กทำแล้ว</span>
-        <span className="flex items-center gap-1"><span className="size-2.5 rounded border border-dashed border-muted/60" /> ตามแผนแต่ไม่ได้ทำ</span>
-        <span className="flex items-center gap-1"><span className="size-1.5 rounded-full bg-run-fill" /> แผนวันข้างหน้า</span>
+        <span className="flex items-center gap-1"><span className="size-2.5 rounded bg-run/30" /> {t('วิ่ง (กม.)', 'Run (km)')}</span>
+        <span className="flex items-center gap-1"><span className="size-2.5 rounded bg-accent-soft" /> {t('เวท', 'Strength')}</span>
+        <span className="flex items-center gap-1"><Check size={10} strokeWidth={3} className="text-good" /> {t('ติ๊กทำแล้ว', 'Ticked done')}</span>
+        <span className="flex items-center gap-1"><span className="size-2.5 rounded border border-dashed border-muted/60" /> {t('ตามแผนแต่ไม่ได้ทำ', 'Planned, not done')}</span>
+        <span className="flex items-center gap-1"><span className="size-1.5 rounded-full bg-run-fill" /> {t('แผนวันข้างหน้า', 'Upcoming plan')}</span>
       </div>
       {picked && (
         <div className="mt-3 animate-fade-up rounded-xl bg-raised p-3 text-sm">
           <div className="font-bold">{niceDate(picked)}</div>
           {selPlan && selPlan.type !== 'rest' && <div className="text-xs text-muted">{t('แผน', 'Plan')} ({dt.program(p.program).short}): {dt.title(selPlan)}{selPlan.targetKm ? ` · ${selPlan.targetKm} กม.` : ''}</div>}
-          {picked && tickedOn(picked) && !sel?.runs.length && !sel?.sessions.length && <div className="mt-1 flex items-center gap-1.5 text-xs text-good"><Check size={13} /> ทำแล้ว</div>}
-          {!sel?.runs.length && !sel?.walks.length && !sel?.sessions.length && !sel?.cross.length && !(picked && tickedOn(picked)) && <div className="mt-1 text-xs text-muted">ไม่มีบันทึก</div>}
-          {sel?.cross.map(c => <div key={c.id} className="mt-1 flex items-center gap-1.5"><Bike size={13} className="text-run" /> {crossKinds[c.kind]} · {c.minutes} นาที</div>)}
-          {sel?.walks.map(r => <div key={r.id} className="mt-1 flex items-center gap-1.5"><Footprints size={13} className="text-muted" /> เดิน {r.km.toFixed(2)} กม. · {formatDuration(r.seconds)}</div>)}
-          {sel?.runs.map(r => <div key={r.id} className="mt-1 flex items-center gap-1.5"><Footprints size={13} className="text-run" /> {runKinds[r.kind]} {r.km.toFixed(2)} กม. · {formatDuration(r.seconds)}</div>)}
-          {sel?.sessions.map(s => <div key={s.id} className="mt-1 flex items-center gap-1.5"><Dumbbell size={13} className="text-accent" /> {s.title} · {s.entries.reduce((n, e) => n + e.sets.length, 0)} เซ็ต</div>)}
+          {picked && tickedOn(picked) && !sel?.runs.length && !sel?.sessions.length && <div className="mt-1 flex items-center gap-1.5 text-xs text-good"><Check size={13} /> {t('ทำแล้ว', 'Done')}</div>}
+          {!sel?.runs.length && !sel?.walks.length && !sel?.sessions.length && !sel?.cross.length && !(picked && tickedOn(picked)) && <div className="mt-1 text-xs text-muted">{t('ไม่มีบันทึก', 'Nothing logged')}</div>}
+          {sel?.cross.map(c => <div key={c.id} className="mt-1 flex items-center gap-1.5"><Bike size={13} className="text-run" /> {t(crossKinds[c.kind], crossKindsEn[c.kind])} · {c.minutes} {t('นาที', 'min')}</div>)}
+          {sel?.walks.map(r => <div key={r.id} className="mt-1 flex items-center gap-1.5"><Footprints size={13} className="text-muted" /> {t('เดิน', 'Walk')} {r.km.toFixed(2)} {t('กม.', 'km')} · {formatDuration(r.seconds)}</div>)}
+          {sel?.runs.map(r => <div key={r.id} className="mt-1 flex items-center gap-1.5"><Footprints size={13} className="text-run" /> {t(runKinds[r.kind], runKindsEn[r.kind])} {r.km.toFixed(2)} {t('กม.', 'km')} · {formatDuration(r.seconds)}</div>)}
+          {sel?.sessions.map(s => <div key={s.id} className="mt-1 flex items-center gap-1.5"><Dumbbell size={13} className="text-accent" /> {t(s.title, titleEn(s.title))} · {s.entries.reduce((n, e) => n + e.sets.length, 0)} {t('เซ็ต', 'sets')}</div>)}
         </div>
       )}
     </Card>

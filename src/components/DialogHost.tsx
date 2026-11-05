@@ -3,6 +3,7 @@ import { CircleCheck, CircleAlert, Info } from 'lucide-react'
 import { answer, getAsk, getToasts, subscribeDialogs } from '../lib/dialog'
 import { cx } from '../lib/cx'
 import { useBackClose } from '../lib/back'
+import { trNow } from '../lib/i18n'
 import { Button, Portal } from './ui'
 
 /** แสดงกล่องยืนยันและ toast ของทั้งแอป — วางไว้ครั้งเดียวที่ราก */
@@ -18,9 +19,9 @@ export function DialogHost() {
             {pending.opts.title && <div className="mb-1 text-lg font-bold">{pending.opts.title}</div>}
             <p className="text-sm text-ink/80">{pending.message}</p>
             <div className="mt-5 flex gap-2">
-              <Button variant="soft" className="flex-1" onClick={() => answer(false)}>{pending.opts.cancel ?? 'ยกเลิก'}</Button>
+              <Button variant="soft" className="flex-1" onClick={() => answer(false)}>{pending.opts.cancel ?? trNow('ยกเลิก', 'Cancel')}</Button>
               <Button variant={pending.opts.danger ? 'primary' : 'run'} className={cx('flex-1', pending.opts.danger && 'bg-bad-fill')} onClick={() => answer(true)}>
-                {pending.opts.ok ?? 'ตกลง'}
+                {pending.opts.ok ?? trNow('ตกลง', 'OK')}
               </Button>
             </div>
           </div>

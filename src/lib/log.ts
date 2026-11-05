@@ -51,6 +51,7 @@ export const useSessions = () => usePersisted<Session[]>('sessions', [])
 export type CrossKind = 'bike' | 'aquajog' | 'swim' | 'elliptical' | 'other'
 export type CrossSession = { id: string; date: string; kind: CrossKind; minutes: number; rpe?: number }
 export const crossKinds: Record<CrossKind, string> = { bike: 'ปั่นจักรยาน', aquajog: 'วิ่งในน้ำ', swim: 'ว่ายน้ำ', elliptical: 'เครื่องเดินวงรี', other: 'คาร์ดิโออื่น ๆ' }
+export const crossKindsEn: Record<CrossKind, string> = { bike: 'Cycling', aquajog: 'Deep-water running', swim: 'Swimming', elliptical: 'Elliptical', other: 'Other cardio' }
 export const useCross = () => usePersisted<CrossSession[]>('cross', [])
 /** ให้ภาระการฝึก (ความฟิต/ความล้า) นับคาร์ดิโอทดแทนเหมือนเซสชันหนึ่ง: RPE × นาที */
 export const crossAsSession = (c: CrossSession): Session => ({ id: c.id, date: c.date, mode: 'gym', dayKey: 'cross', title: crossKinds[c.kind], entries: [], rpe: c.rpe ?? 5, minutes: c.minutes })

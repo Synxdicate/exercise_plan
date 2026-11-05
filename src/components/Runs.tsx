@@ -4,7 +4,7 @@ import { GOOD_ACCURACY_M, useRunTracker, type Point } from '../lib/gps'
 import { useDayText } from '../lib/dayText'
 import { useTodayIdx } from '../lib/useToday'
 import { formatDuration, formatPace, runKinds, runKindsEn, uid, useRuns, type Run } from '../lib/log'
-import { useT } from '../lib/i18n'
+import { trNow, useT } from '../lib/i18n'
 import { looksLikeWalk, runsOnly } from '../lib/walk'
 import { criticalSpeed, estimate, paceHint, predictionTrend, type Estimate } from '../lib/pace'
 import { useProgram } from '../lib/program'
@@ -44,9 +44,9 @@ import { CrossTrainingCard } from './CrossTraining'
 import { heatmapRoutes } from '../lib/matched'
 import { useRaceGoals } from '../lib/useGoals'
 import { useCountUp } from '../lib/useCountUp'
-import { ghostLead, ghostMeters, ghostText, raceGhost, trialGhost, type Ghost as GhostTarget } from '../lib/ghost'
+import { ghostLead, ghostMeters, ghostText, ghostTextEn, raceGhost, trialGhost, type Ghost as GhostTarget } from '../lib/ghost'
 import { raceKeyOf } from '../lib/racePlan'
-import { parseDuration, raceKm, raceLabel, type RaceKey } from '../lib/goals'
+import { parseDuration, raceKm, raceLabel, raceLabelEn, type RaceKey } from '../lib/goals'
 import { DateInput, NumberInput, SelectInput, TextInput } from './Form'
 import { cx } from '../lib/cx'
 import { ask, notify } from '../lib/dialog'
@@ -62,7 +62,7 @@ const RouteHeatmap = lazy(() => import('./RouteHeatmap'))
 
 function Map(props: { route: Point[]; position?: Point | null; follow?: boolean; className?: string; interactive?: boolean }) {
   return (
-    <ErrorBoundary fallback={<div className={cx('grid w-full place-items-center rounded-2xl bg-raised text-sm text-muted', props.className ?? 'h-64')}>แสดงแผนที่ไม่ได้</div>}>
+    <ErrorBoundary fallback={<div className={cx('grid w-full place-items-center rounded-2xl bg-raised text-sm text-muted', props.className ?? 'h-64')}>{trNow('แสดงแผนที่ไม่ได้', 'Couldn’t show the map')}</div>}>
       <Suspense fallback={<div className={cx('w-full animate-pulse rounded-2xl bg-raised', props.className ?? 'h-64')} />}>
         <RunMap {...props} />
       </Suspense>
@@ -174,10 +174,10 @@ export function Runs() {
   const finish = () => {
     const done = guide.runner ? guideResult(guide.runner.steps, guide.runner.state) : null
     guide.reset()
-    if (ghostNow && ghostOn) notify(ghostNow.lead >= 0 ? `ชนะเงา ${Math.round(ghostNow.lead)} วินาที` : `ช้ากว่าเงา ${Math.round(-ghostNow.lead)} วินาที — ครั้งหน้าเอาใหม่`, ghostNow.lead >= 0 ? 'good' : 'info')
+    if (ghostNow && ghostOn) notify(ghostNow.lead >= 0 ? tr(`ชนะเงา ${Math.round(ghostNow.lead)} วินาที`, `Beat the ghost by ${Math.round(ghostNow.lead)} s`) : tr(`ช้ากว่าเงา ${Math.round(-ghostNow.lead)} วินาที — ครั้งหน้าเอาใหม่`, `${Math.round(-ghostNow.lead)} s behind the ghost — next time`), ghostNow.lead >= 0 ? 'good' : 'info')
     resetGhost()
     const r = t.finish()
-    if (r.km < 0.05) return notify('ระยะสั้นเกินไป ไม่ได้บันทึก', 'bad')
+    if (r.km < 0.05) return notify(tr('ระยะสั้นเกินไป ไม่ได้บันทึก', 'Too short — not saved'), 'bad')
     const run: Run = { id: uid(), date: today(), kind, source: 'gps', ...r, ...(done && { guide: done }) }
     save(run)
     setCooldown(run)
@@ -186,12 +186,12 @@ export function Runs() {
   const importGpx = async (file: File) => {
     try {
       const g = parseGpx(await file.text())
-      if (!g.seconds && !(await ask('ไฟล์นี้ไม่มีข้อมูลเวลา จะบันทึกแค่ระยะและเส้นทาง', { title: 'นำเข้าต่อไหม?', ok: 'นำเข้า' }))) return
+      if (!g.seconds && !(await ask(tr('ไฟล์นี้ไม่มีข้อมูลเวลา จะบันทึกแค่ระยะและเส้นทาง', 'This file has no timing data — only distance and route will be saved'), { title: tr('นำเข้าต่อไหม?', 'Import anyway?'), ok: tr('นำเข้า', 'Import') }))) return
       const run: Run = { id: uid(), date: g.date ?? today(), km: g.km, seconds: g.seconds, elapsedSeconds: g.elapsedSeconds, splits: g.splits, route: g.route, times: g.times, kind, source: 'gpx' }
       save(run)
       setDetail(run.id)
     } catch (e) {
-      notify(e instanceof Error ? e.message : 'อ่านไฟล์ไม่ได้', 'bad')
+      notify(e instanceof Error ? e.message : tr('อ่านไฟล์ไม่ได้', 'Couldn’t read the file'), 'bad')
     }
   }
 
@@ -379,7 +379,7 @@ function ActiveRun({ t, kind, target, fiveK, voice, setVoice, coachOn, setCoachO
           <div className="flex animate-fade-up items-start gap-2 rounded-2xl bg-warn/15 p-3 text-sm text-warn">
             <TriangleAlert size={18} className="mt-0.5 shrink-0" />
             <span className="flex-1">{tr('ปิดจอไป', 'Screen was off for')} <b>{formatDuration(t.lastGap)}</b> — {tr('ช่วงนั้นนับระยะเป็นเส้นตรง (อาจน้อยกว่าจริง)', 'that stretch is counted as a straight line (may be short)')}</span>
-            <button onClick={t.dismissGap} aria-label="ปิด" className="shrink-0"><X size={16} /></button>
+            <button onClick={t.dismissGap} aria-label={tr('ปิด', 'Close')} className="shrink-0"><X size={16} /></button>
           </div>
         )}
         {t.splits.length > 0 && <Splits splits={t.splits} fiveK={fiveK} />}
@@ -423,15 +423,16 @@ function ActiveRun({ t, kind, target, fiveK, voice, setVoice, coachOn, setCoachO
 }
 
 function Splits({ splits, fiveK }: { splits: number[]; fiveK?: number }) {
+  const tr = useT()
   const fastest = Math.min(...splits)
   const slowest = Math.max(...splits)
   return (
     <div className="rounded-2xl bg-raised p-3">
-      <div className="mb-2 flex justify-between text-xs text-muted"><span>เพซรายกิโล</span><span>นาที/กม.</span></div>
+      <div className="mb-2 flex justify-between text-xs text-muted"><span>{tr('เพซรายกิโล', 'Pace per km')}</span><span>{tr('นาที/กม.', 'min/km')}</span></div>
       <ul className="space-y-1.5">
         {splits.map((s, i) => (
           <li key={i} className="grid grid-cols-[3rem_1fr_1.25rem_3rem] items-center gap-2 text-sm">
-            <span className="text-muted">กม. {i + 1}</span>
+            <span className="text-muted">{tr('กม.', 'km')} {i + 1}</span>
             <span className="h-2.5 overflow-hidden rounded-full bg-body">
               {/* แท่งยาว = เร็ว, สี = โซนเพซ */}
               <span className={cx('block h-full rounded-full', !fiveK && (s === fastest ? 'bg-good-fill' : 'bg-run-fill'))}
@@ -461,10 +462,10 @@ function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { run: Run
   const saText = sa && {
     // เร็วขึ้นเกิน 10% มักแปลว่าช่วงแรกเดิน/วอร์มอัพ มากกว่าการคุมแรง
     negative: sa.diffPct < -10
-      ? { t: 'ครึ่งหลังเร็วขึ้นมาก', c: 'text-run', d: `เร็วขึ้น ${Math.abs(sa.diffPct).toFixed(1)}% — ช่วงแรกน่าจะเป็นการวอร์มอัพหรือเดิน` }
-      : { t: 'Negative split', c: 'text-good', d: `ครึ่งหลังเร็วกว่าครึ่งแรก ${Math.abs(sa.diffPct).toFixed(1)}% — คุมแรงได้ดี` },
-    even: { t: 'Even split', c: 'text-run', d: 'สองครึ่งเพซใกล้กัน — สม่ำเสมอดี' },
-    positive: { t: 'Positive split', c: 'text-warn', d: `ครึ่งหลังช้าลง ${sa.diffPct.toFixed(1)}% — ลองออกตัวช้าลงอีกนิด` },
+      ? { t: tr('ครึ่งหลังเร็วขึ้นมาก', 'Much faster second half'), c: 'text-run', d: tr(`เร็วขึ้น ${Math.abs(sa.diffPct).toFixed(1)}% — ช่วงแรกน่าจะเป็นการวอร์มอัพหรือเดิน`, `${Math.abs(sa.diffPct).toFixed(1)}% faster — the start was probably a warm-up or walk`) }
+      : { t: 'Negative split', c: 'text-good', d: tr(`ครึ่งหลังเร็วกว่าครึ่งแรก ${Math.abs(sa.diffPct).toFixed(1)}% — คุมแรงได้ดี`, `Second half ${Math.abs(sa.diffPct).toFixed(1)}% faster — well paced`) },
+    even: { t: 'Even split', c: 'text-run', d: tr('สองครึ่งเพซใกล้กัน — สม่ำเสมอดี', 'Both halves at a similar pace — nicely even') },
+    positive: { t: 'Positive split', c: 'text-warn', d: tr(`ครึ่งหลังช้าลง ${sa.diffPct.toFixed(1)}% — ลองออกตัวช้าลงอีกนิด`, `Second half ${sa.diffPct.toFixed(1)}% slower — try starting a bit easier`) },
   }[sa.kind]
   return (
     <Portal>
@@ -477,7 +478,7 @@ function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { run: Run
           </div>
           <span className="flex gap-2">
             {run.route && run.route.length > 1 && (
-              <button onClick={() => void saveGpx(run).catch(() => notify('ส่งออกไม่สำเร็จ', 'bad'))} aria-label="ส่งออก GPX (Strava)" title="ส่งออก GPX (Strava)" className="grid size-9 place-items-center rounded-full bg-raised"><FileDown size={17} /></button>
+              <button onClick={() => void saveGpx(run).catch(() => notify(tr('ส่งออกไม่สำเร็จ', 'Export failed'), 'bad'))} aria-label={tr('ส่งออก GPX (Strava)', 'Export GPX (Strava)')} title={tr('ส่งออก GPX (Strava)', 'Export GPX (Strava)')} className="grid size-9 place-items-center rounded-full bg-raised"><FileDown size={17} /></button>
             )}
             <button onClick={() => setSharing(true)} aria-label={tr('แชร์เป็นรูป', 'Share as image')} className="grid size-9 place-items-center rounded-full bg-raised"><Share2 size={17} /></button>
             <button onClick={onClose} aria-label={tr('ปิด', 'Close')} className="grid size-9 place-items-center rounded-full bg-raised"><X size={18} /></button>
@@ -497,12 +498,12 @@ function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { run: Run
           </p>
         )}
         {tooFast && (
-          <p className="mb-3 rounded-xl bg-warn/15 p-2.5 text-sm text-warn">วิ่งเบาเร็วกว่าโซนเบา ~{tooFast} วิ/กม. — วันเบาควรเบาจริง วันวิ่งเร็วจะได้มีแรง ("หลงความเร็ว" เป็นสาเหตุเจ็บที่พบบ่อย)</p>
+          <p className="mb-3 rounded-xl bg-warn/15 p-2.5 text-sm text-warn">{tr(`วิ่งเบาเร็วกว่าโซนเบา ~${tooFast} วิ/กม. — วันเบาควรเบาจริง วันวิ่งเร็วจะได้มีแรง ("หลงความเร็ว" เป็นสาเหตุเจ็บที่พบบ่อย)`, `Easy run ~${tooFast} s/km faster than the easy zone — keep easy days easy so fast days have quality (chasing pace is a common injury cause)`)}</p>
         )}
         {fix && (
           <div className="mb-3 rounded-xl bg-warn/15 p-3 text-sm text-warn">
-            <p>ระยะตามเส้นทางคือ <b>{fix.km.toFixed(2)} กม.</b> แต่บันทึกไว้ {run.km.toFixed(2)} กม. — แอปก่อน v2.26 นับช่วงเดินขาด</p>
-            <Button size="sm" className="mt-2" onClick={() => onUpdate({ km: fix.km, splits: fix.splits })}>ใช้ระยะตามเส้นทาง</Button>
+            <p>{tr(`ระยะตามเส้นทางคือ ${fix.km.toFixed(2)} กม. แต่บันทึกไว้ ${run.km.toFixed(2)} กม. — แอปก่อน v2.26 นับช่วงเดินขาด`, `The route measures ${fix.km.toFixed(2)} km but ${run.km.toFixed(2)} km was saved — versions before v2.26 missed walking sections`)}</p>
+            <Button size="sm" className="mt-2" onClick={() => onUpdate({ km: fix.km, splits: fix.splits })}>{tr('ใช้ระยะตามเส้นทาง', 'Use route distance')}</Button>
           </div>
         )}
         {/* วัดระยะใหม่ก่อน — ระยะที่ขาดทำให้เพซดูช้าเหมือนเดิน */}
@@ -512,7 +513,7 @@ function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { run: Run
             <Button size="sm" className="mt-2" onClick={() => onUpdate({ kind: 'walk' })}>{tr('เปลี่ยนเป็นเดิน', 'Mark as walk')}</Button>
           </div>
         )}
-        {run.gapSeconds ? <p className="mb-3 rounded-xl bg-warn/15 p-2 text-xs text-warn">ปิดจอรวม {formatDuration(run.gapSeconds)} — ระยะช่วงนั้นเป็นค่าประมาณ</p> : null}
+        {run.gapSeconds ? <p className="mb-3 rounded-xl bg-warn/15 p-2 text-xs text-warn">{tr(`ปิดจอรวม ${formatDuration(run.gapSeconds)} — ระยะช่วงนั้นเป็นค่าประมาณ`, `Screen off for ${formatDuration(run.gapSeconds)} — distance there is estimated`)}</p> : null}
         {series.length > 2 && (
           <div className="mb-3 space-y-3 rounded-2xl bg-raised p-3">
             <PaceChart series={series} avg={run.seconds / run.km} fiveK={fiveK} />
@@ -526,15 +527,15 @@ function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { run: Run
               <div className="text-[11px] leading-snug text-muted">{saText.d}</div>
             </div>
             <div className="rounded-xl bg-raised px-3 py-2">
-              <div className="text-sm font-bold">ความสม่ำเสมอ {sa.cv < 3 ? 'ดีมาก' : sa.cv < 6 ? 'ดี' : 'แกว่ง'}</div>
-              <div className="text-[11px] leading-snug text-muted">เพซรายกิโลต่างกันเฉลี่ย {sa.cv.toFixed(1)}% · เร็วสุด กม. {sa.fastest + 1}</div>
+              <div className="text-sm font-bold">{tr('ความสม่ำเสมอ', 'Consistency')} {sa.cv < 3 ? tr('ดีมาก', 'great') : sa.cv < 6 ? tr('ดี', 'good') : tr('แกว่ง', 'uneven')}</div>
+              <div className="text-[11px] leading-snug text-muted">{tr(`เพซรายกิโลต่างกันเฉลี่ย ${sa.cv.toFixed(1)}% · เร็วสุด กม. ${sa.fastest + 1}`, `Km paces vary ${sa.cv.toFixed(1)}% on average · fastest km ${sa.fastest + 1}`)}</div>
             </div>
           </div>
         )}
         {run.splits && run.splits.length > 0 && <Splits splits={run.splits} fiveK={fiveK} />}
         <MatchedRuns run={run} runs={runs} />
         <div className="mt-3 rounded-2xl bg-raised p-3"><RpePicker value={run.rpe} onPick={rpe => onUpdate({ rpe })} /></div>
-        <div className="mt-3"><PhotoStrip kind="run" refId={run.id} date={run.date} label="รูปการวิ่ง" /></div>
+        <div className="mt-3"><PhotoStrip kind="run" refId={run.id} date={run.date} label={tr('รูปการวิ่ง', 'Run photos')} /></div>
         <Collapse open={editing}>
           <EditRun run={run} onSave={patch => { onUpdate(patch); setEditing(false) }} />
         </Collapse>
@@ -549,6 +550,7 @@ function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { run: Run
 }
 
 function ManualEntry({ onSave }: { onSave: (r: Run) => void }) {
+  const tr = useT()
   const [date, setDate] = useState(today())
   const [km, setKm] = useState('')
   const [min, setMin] = useState('')
@@ -563,16 +565,17 @@ function ManualEntry({ onSave }: { onSave: (r: Run) => void }) {
 
   return (
     <div className="mb-3 grid grid-cols-2 gap-2 rounded-2xl bg-raised p-3">
-      <DateInput label="วันที่" value={date} onChange={setDate} />
-      <SelectInput label="ประเภท" value={kind} onChange={setKind} options={Object.entries(runKinds).map(([k, v]) => ({ value: k as Run['kind'], label: v }))} />
-      <NumberInput label="ระยะ" unit="กม." step={0.1} value={km} onChange={setKm} placeholder="5.0" />
-      <NumberInput label="เวลา" unit="นาที" step={1} value={min} onChange={setMin} placeholder="30" />
-      <Button className="col-span-2" onClick={add}>บันทึก</Button>
+      <DateInput label={tr('วันที่', 'Date')} value={date} onChange={setDate} />
+      <SelectInput label={tr('ประเภท', 'Type')} value={kind} onChange={setKind} options={Object.entries(runKinds).map(([k, v]) => ({ value: k as Run['kind'], label: tr(v, runKindsEn[k as Run['kind']]) }))} />
+      <NumberInput label={tr('ระยะ', 'Distance')} unit={tr('กม.', 'km')} step={0.1} value={km} onChange={setKm} placeholder="5.0" />
+      <NumberInput label={tr('เวลา', 'Time')} unit={tr('นาที', 'min')} step={1} value={min} onChange={setMin} placeholder="30" />
+      <Button className="col-span-2" onClick={add}>{tr('บันทึก', 'Save')}</Button>
     </div>
   )
 }
 
 function WeeklyBars({ runs, target }: { runs: Run[]; target: number }) {
+  const tr = useT()
   const [hover, setHover] = useState<number | null>(null)
   const current = weekStart(today())
   const weeks = Array.from({ length: 8 }, (_, i) => addDays(current, (i - 7) * 7))
@@ -583,12 +586,12 @@ function WeeklyBars({ runs, target }: { runs: Run[]; target: number }) {
 
   return (
     <div>
-      <div className="mb-1 h-5 text-right text-sm tabular-nums">{hover !== null ? `สัปดาห์ ${shortDate(weeks[hover])}: ${totals[hover].toFixed(1)} กม.` : ''}</div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="block w-full" role="img" aria-label="กราฟระยะวิ่งรายสัปดาห์">
+      <div className="mb-1 h-5 text-right text-sm tabular-nums">{hover !== null ? tr(`สัปดาห์ ${shortDate(weeks[hover])}: ${totals[hover].toFixed(1)} กม.`, `Week of ${shortDate(weeks[hover])}: ${totals[hover].toFixed(1)} km`) : ''}</div>
+      <svg viewBox={`0 0 ${W} ${H}`} className="block w-full" role="img" aria-label={tr('กราฟระยะวิ่งรายสัปดาห์', 'Weekly running distance chart')}>
         {target > 0 && (
           <g>
             <line x1={pad} x2={W} y1={y(target)} y2={y(target)} className="stroke-muted" strokeDasharray="4 4" />
-            <text x={W - 2} y={y(target) - 4} textAnchor="end" className="fill-muted text-[9px]">เป้า {target}</text>
+            <text x={W - 2} y={y(target) - 4} textAnchor="end" className="fill-muted text-[9px]">{tr('เป้า', 'Goal')} {target}</text>
           </g>
         )}
         <line x1={pad} x2={W} y1={H - pad} y2={H - pad} className="stroke-line" />
@@ -614,6 +617,7 @@ const roundedTop = (x: number, y: number, w: number, h: number) => {
 }
 
 function PaceCard({ est, runs, onTrial }: { est: Estimate | null; runs: Run[]; onTrial: () => void }) {
+  const tr = useT()
   const trend = useMemo(() => predictionTrend(runs, 12), [runs])
   const cs = useMemo(() => criticalSpeed(runs), [runs])
   const [pick, setPick] = useState<RaceKey>('tenK')
@@ -621,8 +625,8 @@ function PaceCard({ est, runs, onTrial }: { est: Estimate | null; runs: Run[]; o
   const [draft, setDraft] = useState('')
   if (!est)
     return (
-      <Card title={<span className="flex items-center gap-2"><Gauge size={18} className="text-run" /> เพซแนะนำ</span>}>
-        <p className="text-sm text-muted">เวลาคาดการณ์ 5K–มาราธอนและโซนเพซต้องใช้การวิ่ง<b>ต่อเนื่อง</b> ≥3 กม. ที่เพซเร็วกว่า 10:00/กม. (วิ่งสลับเดินและวิ่งช้ากว่านี้ไม่นับ เพราะจะคำนวณผิด) — ระหว่างนี้ดูเวลาจบงานแข่งโดยประมาณด้านบน</p>
+      <Card title={<span className="flex items-center gap-2"><Gauge size={18} className="text-run" /> {tr('เพซแนะนำ', 'Suggested paces')}</span>}>
+        <p className="text-sm text-muted">{tr('เวลาคาดการณ์ 5K–มาราธอนและโซนเพซต้องใช้การวิ่งต่อเนื่อง ≥3 กม. ที่เพซเร็วกว่า 10:00/กม. (วิ่งสลับเดินและวิ่งช้ากว่านี้ไม่นับ เพราะจะคำนวณผิด) — ระหว่างนี้ดูเวลาจบงานแข่งโดยประมาณด้านบน', '5K–marathon predictions and pace zones need a continuous run of ≥3 km faster than 10:00/km (run-walk and slower runs would give wrong numbers) — meanwhile see the estimated race finish above')}</p>
       </Card>
     )
   // เทียบกับ 4 สัปดาห์ก่อน: ติดลบ = เร็วขึ้น
@@ -630,18 +634,18 @@ function PaceCard({ est, runs, onTrial }: { est: Estimate | null; runs: Run[]; o
   const goal = goals[pick]
   const saveGoal = () => { setGoal(pick, parseDuration(draft)); setDraft('') }
   return (
-    <Card title={<span className="flex items-center gap-2"><Gauge size={18} className="text-run" /> เวลาคาดการณ์ & โซนเพซ</span>}>
+    <Card title={<span className="flex items-center gap-2"><Gauge size={18} className="text-run" /> {tr('เวลาคาดการณ์ & โซนเพซ', 'Predictions & pace zones')}</span>}>
       {/* ยังไม่มีผลวิ่งเต็มที่: ตัวเลขคิดจากวิ่งเบา (ช้ากว่าจริง) — บอกก่อน และไม่แสดงโซน/ความเร็ววิกฤตที่จะผิด */}
       {est.from.easy && (
         <div className="mb-3 flex items-center gap-2 rounded-xl bg-warn/10 p-3 text-sm text-warn">
-          <span className="flex-1">ยังไม่มีผลวิ่งเต็มที่ — เวลาด้านล่างคิดจากวิ่งเบา เวลาจริงน่าจะเร็วกว่านี้ วิ่งทดสอบ 5K เมื่อวิ่งต่อเนื่องได้แล้ว</span>
-          <Button size="sm" variant="soft" onClick={onTrial}>ทดสอบ 5K</Button>
+          <span className="flex-1">{tr('ยังไม่มีผลวิ่งเต็มที่ — เวลาด้านล่างคิดจากวิ่งเบา เวลาจริงน่าจะเร็วกว่านี้ วิ่งทดสอบ 5K เมื่อวิ่งต่อเนื่องได้แล้ว', 'No all-out run yet — times below come from an easy run, so you’re probably faster. Do a 5K test once you can run continuously')}</span>
+          <Button size="sm" variant="soft" onClick={onTrial}>{tr('ทดสอบ 5K', '5K test')}</Button>
         </div>
       )}
       {!est.from.easy && daysBetween(est.from.date, today()) > 42 && (
         <div className="mb-3 flex items-center gap-2 rounded-xl bg-run/10 p-3 text-sm text-run">
-          <span className="flex-1">ผลที่ใช้คำนวณเก่าเกิน 6 สัปดาห์ — วิ่งทดสอบ 5K เพื่ออัปเดตโซนและเวลาคาดการณ์</span>
-          <Button size="sm" variant="run" onClick={onTrial}>ทดสอบ 5K</Button>
+          <span className="flex-1">{tr('ผลที่ใช้คำนวณเก่าเกิน 6 สัปดาห์ — วิ่งทดสอบ 5K เพื่ออัปเดตโซนและเวลาคาดการณ์', 'The source result is over 6 weeks old — run a 5K test to update zones and predictions')}</span>
+          <Button size="sm" variant="run" onClick={onTrial}>{tr('ทดสอบ 5K', '5K test')}</Button>
         </div>
       )}
       <div className="grid grid-cols-2 gap-2">
@@ -652,15 +656,15 @@ function PaceCard({ est, runs, onTrial }: { est: Estimate | null; runs: Run[]; o
           return (
             <button key={k} onClick={() => setPick(k)}
               className={cx('rounded-xl px-3 py-2 text-left ring-1 transition-colors', pick === k ? 'bg-run/10 ring-run/40' : 'bg-raised ring-transparent')}>
-              <div className="text-xs text-muted">{raceLabel[k]}{k === 'full' && !est.fullReliable && ' (ค่าคร่าว ๆ)'}</div>
+              <div className="text-xs text-muted">{tr(raceLabel[k], raceLabelEn[k])}{k === 'full' && !est.fullReliable && tr(' (ค่าคร่าว ๆ)', ' (rough)')}</div>
               <div className="text-lg font-bold tabular-nums">{formatDuration(est[k])}</div>
               {g ? (
                 <div className={cx('text-[11px] font-semibold tabular-nums', est[k] <= g ? 'text-good' : 'text-warn')}>
-                  {est[k] <= g ? `ถึงเป้า ${formatDuration(g)} แล้ว` : `ขาดอีก ${formatDuration(est[k] - g)} ถึงเป้า`}
+                  {est[k] <= g ? tr(`ถึงเป้า ${formatDuration(g)} แล้ว`, `Goal ${formatDuration(g)} reached`) : tr(`ขาดอีก ${formatDuration(est[k] - g)} ถึงเป้า`, `${formatDuration(est[k] - g)} off the goal`)}
                 </div>
               ) : Math.abs(diff) >= 1 && (
                 <div className={cx('text-[11px] font-semibold tabular-nums', diff < 0 ? 'text-good' : 'text-warn')}>
-                  {diff < 0 ? 'เร็วขึ้น' : 'ช้าลง'} {formatDuration(Math.abs(diff))} ใน 4 สัปดาห์
+                  {tr(`${diff < 0 ? 'เร็วขึ้น' : 'ช้าลง'} ${formatDuration(Math.abs(diff))} ใน 4 สัปดาห์`, `${formatDuration(Math.abs(diff))} ${diff < 0 ? 'faster' : 'slower'} in 4 weeks`)}
                 </div>
               )}
             </button>
@@ -669,41 +673,41 @@ function PaceCard({ est, runs, onTrial }: { est: Estimate | null; runs: Run[]; o
       </div>
       <TrendLine points={trend.map(t => ({ date: t.date, v: t[pick] }))} goal={goal} />
       <div className="mt-3 rounded-xl bg-raised p-3">
-        <div className="text-xs font-semibold text-muted">เป้าหมาย {raceLabel[pick]}</div>
+        <div className="text-xs font-semibold text-muted">{tr('เป้าหมาย', 'Goal')} {tr(raceLabel[pick], raceLabelEn[pick])}</div>
         {goal ? (
           <div className="mt-1 flex items-center justify-between gap-2 text-sm">
-            <span><b className="tabular-nums">{formatDuration(goal)}</b> · ต้องวิ่งเพซ <b className="tabular-nums">{formatPace(goal, raceKm[pick])}</b> /กม.</span>
-            <button onClick={() => setGoal(pick, null)} className="text-xs font-semibold text-muted">ลบเป้า</button>
+            <span><b className="tabular-nums">{formatDuration(goal)}</b> · {tr('ต้องวิ่งเพซ', 'needs')} <b className="tabular-nums">{formatPace(goal, raceKm[pick])}</b> {tr('/กม.', '/km')}</span>
+            <button onClick={() => setGoal(pick, null)} className="text-xs font-semibold text-muted">{tr('ลบเป้า', 'Remove goal')}</button>
           </div>
         ) : (
           <div className="mt-1.5 flex items-end gap-2">
-            <TextInput className="flex-1" value={draft} onChange={setDraft} placeholder={pick === 'half' || pick === 'full' ? 'เช่น 1:59:59' : 'เช่น 55:00'} />
-            <Button disabled={!parseDuration(draft)} onClick={saveGoal}>ตั้งเป้า</Button>
+            <TextInput className="flex-1" value={draft} onChange={setDraft} placeholder={pick === 'half' || pick === 'full' ? tr('เช่น 1:59:59', 'e.g. 1:59:59') : tr('เช่น 55:00', 'e.g. 55:00')} />
+            <Button disabled={!parseDuration(draft)} onClick={saveGoal}>{tr('ตั้งเป้า', 'Set goal')}</Button>
           </div>
         )}
       </div>
       {cs && !est.from.easy && (
         <div className="mt-3 rounded-xl bg-raised p-3 text-sm">
           <div className="flex items-baseline justify-between gap-2">
-            <span className="font-semibold">ความเร็ววิกฤต (Critical Speed)</span>
-            <b className="tabular-nums">{formatPace(cs.pace, 1)} /กม.</b>
+            <span className="font-semibold">{tr('ความเร็ววิกฤต (Critical Speed)', 'Critical Speed')}</span>
+            <b className="tabular-nums">{formatPace(cs.pace, 1)} {tr('/กม.', '/km')}</b>
           </div>
           <p className="mt-1 text-xs text-muted">
-            เพดานที่ร่างกายยังวิ่งแบบ "คงที่" ได้ (≈ ขอบบนของโซนแอโรบิก) คำนวณจากช่วงที่เร็วที่สุด {cs.points} ระยะใน 90 วัน ·
-            มาราธอน: ครึ่งแรกอย่าเร็วกว่า ~{formatPace(cs.marathonFirstHalfPace, 1)} /กม. (94% ของ CS)
+            {tr(`เพดานที่ร่างกายยังวิ่งแบบ "คงที่" ได้ (≈ ขอบบนของโซนแอโรบิก) คำนวณจากช่วงที่เร็วที่สุด ${cs.points} ระยะใน 90 วัน · มาราธอน: ครึ่งแรกอย่าเร็วกว่า ~${formatPace(cs.marathonFirstHalfPace, 1)} /กม. (94% ของ CS)`,
+              `The fastest pace you can hold in a "steady state" (≈ top of the aerobic zone), from your best efforts at ${cs.points} distances in 90 days · marathon: first half no faster than ~${formatPace(cs.marathonFirstHalfPace, 1)} /km (94% of CS)`)}
           </p>
         </div>
       )}
       {!est.from.easy && (
         <>
-          <div className="mt-3 text-xs font-semibold text-muted">โซนเพซของคุณ (นาที/กม.)</div>
+          <div className="mt-3 text-xs font-semibold text-muted">{tr('โซนเพซของคุณ (นาที/กม.)', 'Your pace zones (min/km)')}</div>
           <div className="mt-1.5"><ZoneLegend fiveK={est.paces.interval} /></div>
         </>
       )}
       <p className="mt-2 text-xs text-muted">
-        จาก{est.from.segment ? `ช่วง ${est.from.km} กม. ที่เร็วที่สุดในการวิ่ง` : `การวิ่ง ${est.from.km} กม.`} วันที่ {shortDate(est.from.date)}
-        {est.stale && ' (เกิน 2 เดือนแล้ว — วิ่งเต็มที่สักครั้งเพื่ออัปเดต)'}
-        {est.from.easy && ' (เป็นวิ่งเบา เวลาจริงน่าจะเร็วกว่านี้ — วิ่งทดสอบ 5K เพื่อให้แม่นขึ้น)'} · ฟูลคิดจากระยะซ้อม ~{Math.round(est.weeklyKm)} กม./สัปดาห์ด้วย
+        {tr(`จาก${est.from.segment ? `ช่วง ${est.from.km} กม. ที่เร็วที่สุดในการวิ่ง` : `การวิ่ง ${est.from.km} กม.`} วันที่ ${shortDate(est.from.date)}`, `From ${est.from.segment ? `your fastest ${est.from.km} km inside a run` : `a ${est.from.km} km run`} on ${shortDate(est.from.date)}`)}
+        {est.stale && tr(' (เกิน 2 เดือนแล้ว — วิ่งเต็มที่สักครั้งเพื่ออัปเดต)', ' (over 2 months old — do one hard run to update)')}
+        {est.from.easy && tr(' (เป็นวิ่งเบา เวลาจริงน่าจะเร็วกว่านี้ — วิ่งทดสอบ 5K เพื่อให้แม่นขึ้น)', ' (an easy run — you’re probably faster; a 5K test makes it accurate)')} · {tr(`ฟูลคิดจากระยะซ้อม ~${Math.round(est.weeklyKm)} กม./สัปดาห์ด้วย`, `marathon also uses your ~${Math.round(est.weeklyKm)} km/week`)}
       </p>
     </Card>
   )
@@ -711,6 +715,7 @@ function PaceCard({ est, runs, onTrial }: { est: Estimate | null; runs: Run[]; o
 
 /** เส้นแนวโน้มเวลาคาดการณ์ 12 สัปดาห์ (ต่ำลง = เร็วขึ้น จึงกลับแกนให้ดีขึ้นอยู่ด้านบน) */
 function TrendLine({ points, goal }: { points: { date: string; v: number | null }[]; goal?: number }) {
+  const tr = useT()
   const pts = points.filter((p): p is { date: string; v: number } => p.v !== null)
   if (pts.length < 2) return null
   const W = 320, H = 70, pad = 6
@@ -723,12 +728,12 @@ function TrendLine({ points, goal }: { points: { date: string; v: number | null 
   const last = pts.at(-1)!
   return (
     <div className="mt-3">
-      <div className="mb-1 flex justify-between text-[11px] text-muted"><span>12 สัปดาห์ก่อน</span><span>วันนี้</span></div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="block w-full" role="img" aria-label="แนวโน้มเวลาคาดการณ์">
+      <div className="mb-1 flex justify-between text-[11px] text-muted"><span>{tr('12 สัปดาห์ก่อน', '12 weeks ago')}</span><span>{tr('วันนี้', 'Today')}</span></div>
+      <svg viewBox={`0 0 ${W} ${H}`} className="block w-full" role="img" aria-label={tr('แนวโน้มเวลาคาดการณ์', 'Prediction trend')}>
         {goal ? (
           <g>
             <line x1={0} x2={W} y1={y(goal)} y2={y(goal)} className="stroke-good" strokeDasharray="5 4" strokeWidth={1.5} />
-            <text x={W - 2} y={y(goal) - 4} textAnchor="end" className="fill-good text-[9px] font-semibold">เป้า</text>
+            <text x={W - 2} y={y(goal) - 4} textAnchor="end" className="fill-good text-[9px] font-semibold">{tr('เป้า', 'Goal')}</text>
           </g>
         ) : <line x1={0} x2={W} y1={H / 2} y2={H / 2} className="stroke-line" strokeDasharray="3 4" />}
         <path d={path} fill="none" className="stroke-run" strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
@@ -739,34 +744,36 @@ function TrendLine({ points, goal }: { points: { date: string; v: number | null 
 }
 
 function BestEfforts({ runs }: { runs: Run[] }) {
+  const tr = useT()
   if (!runs.length) return null
   const pbs = personalBests(runs).filter(p => p.best)
   const longest = runsOnly(runs).reduce((m, r) => Math.max(m, r.km), 0)
   return (
-    <Card title={<span className="flex items-center gap-2"><Trophy size={18} className="text-warn" /> สถิติของฉัน</span>}>
+    <Card title={<span className="flex items-center gap-2"><Trophy size={18} className="text-warn" /> {tr('สถิติของฉัน', 'My stats')}</span>}>
       <div className="grid grid-cols-3 gap-2 text-center">
-        <Stat label="ระยะรวม" value={runsOnly(runs).reduce((s, r) => s + r.km, 0).toFixed(1)} sub="กม." />
-        <Stat label="จำนวนครั้ง" value={runs.length} sub="ครั้ง" />
-        <Stat label="ไกลสุด" value={longest.toFixed(1)} sub="กม." />
+        <Stat label={tr('ระยะรวม', 'Total')} value={runsOnly(runs).reduce((s, r) => s + r.km, 0).toFixed(1)} sub={tr('กม.', 'km')} />
+        <Stat label={tr('จำนวนครั้ง', 'Runs')} value={runs.length} sub={tr('ครั้ง', 'times')} />
+        <Stat label={tr('ไกลสุด', 'Longest')} value={longest.toFixed(1)} sub={tr('กม.', 'km')} />
       </div>
-      {pbs.length > 0 && <div className="mt-3 text-xs font-semibold text-muted">เวลาเร็วสุดแต่ละระยะ</div>}
+      {pbs.length > 0 && <div className="mt-3 text-xs font-semibold text-muted">{tr('เวลาเร็วสุดแต่ละระยะ', 'Best efforts')}</div>}
       <ul className="divide-y divide-line text-sm">
         {pbs.map(p => (
           <li key={p.label} className="flex items-center justify-between gap-2 py-2">
             <span className="w-12 font-bold">{p.label}</span>
             <span className="flex-1 text-xs text-muted">{p.best!.date}</span>
-            <span className="tabular-nums text-muted">{formatPace(p.best!.seconds, p.km)} /กม.</span>
+            <span className="tabular-nums text-muted">{formatPace(p.best!.seconds, p.km)} {tr('/กม.', '/km')}</span>
             <span className="w-16 text-right font-bold tabular-nums">{formatDuration(p.best!.seconds)}</span>
           </li>
         ))}
       </ul>
-      <p className="mt-1 text-[11px] text-muted">ช่วงที่เร็วที่สุดจากทุกการวิ่ง ไม่ต้องวิ่งระยะนั้นพอดี</p>
+      <p className="mt-1 text-[11px] text-muted">{tr('ช่วงที่เร็วที่สุดจากทุกการวิ่ง ไม่ต้องวิ่งระยะนั้นพอดี', 'Fastest segments from any run — no need to run that exact distance')}</p>
     </Card>
   )
 }
 
 // แก้ไขข้อมูลการวิ่ง — ระยะ/เวลาแก้ได้เฉพาะที่กรอกเอง (การวิ่งที่มีเส้นทางคำนวณจาก GPS อยู่แล้ว)
 function EditRun({ run, onSave }: { run: Run; onSave: (patch: Partial<Run>) => void }) {
+  const tr = useT()
   const [date, setDate] = useState(run.date)
   const [kind, setKind] = useState(run.kind)
   const [km, setKm] = useState(String(run.km))
@@ -776,23 +783,24 @@ function EditRun({ run, onSave }: { run: Run; onSave: (patch: Partial<Run>) => v
   const manual = run.source === 'manual'
   return (
     <div className="mt-3 grid grid-cols-2 gap-2 rounded-2xl bg-raised p-3">
-      <DateInput label="วันที่" value={date} onChange={setDate} />
-      <SelectInput label="ประเภท" value={kind} onChange={setKind} options={Object.entries(runKinds).map(([k, v]) => ({ value: k as Run['kind'], label: v }))} />
-      {manual && <NumberInput label="ระยะ" unit="กม." step={0.1} value={km} onChange={setKm} />}
-      {manual && <NumberInput label="เวลา" unit="นาที" value={min} onChange={setMin} />}
+      <DateInput label={tr('วันที่', 'Date')} value={date} onChange={setDate} />
+      <SelectInput label={tr('ประเภท', 'Type')} value={kind} onChange={setKind} options={Object.entries(runKinds).map(([k, v]) => ({ value: k as Run['kind'], label: tr(v, runKindsEn[k as Run['kind']]) }))} />
+      {manual && <NumberInput label={tr('ระยะ', 'Distance')} unit={tr('กม.', 'km')} step={0.1} value={km} onChange={setKm} />}
+      {manual && <NumberInput label={tr('เวลา', 'Time')} unit={tr('นาที', 'min')} value={min} onChange={setMin} />}
       {shoes.length > 0 && (
-        <SelectInput label="รองเท้า" className="col-span-2" value={shoeId} onChange={setShoeId}
-          options={[{ value: '', label: 'ไม่ระบุ' }, ...shoes.map(s => ({ value: s.id, label: s.name + (s.retired ? ' (เลิกใช้)' : '') }))]} />
+        <SelectInput label={tr('รองเท้า', 'Shoes')} className="col-span-2" value={shoeId} onChange={setShoeId}
+          options={[{ value: '', label: tr('ไม่ระบุ', 'None') }, ...shoes.map(s => ({ value: s.id, label: s.name + (s.retired ? tr(' (เลิกใช้)', ' (retired)') : '') }))]} />
       )}
       <Button className="col-span-2" onClick={() => onSave({
         date, kind, shoeId: shoeId || undefined,
         ...(manual && +km > 0 && +min > 0 ? { km: +km, seconds: Math.round(+min * 60) } : {}),
-      })}>บันทึกการแก้ไข</Button>
+      })}>{tr('บันทึกการแก้ไข', 'Save changes')}</Button>
     </div>
   )
 }
 
 function ShoesCard({ runs }: { runs: Run[] }) {
+  const tr = useT()
   const [shoes, setShoes] = useShoes()
   const [adding, setAdding] = useState(false)
   const [name, setName] = useState('')
@@ -809,17 +817,17 @@ function ShoesCard({ runs }: { runs: Run[] }) {
   }
   const tone = { good: 'bg-good-fill', warn: 'bg-warn', bad: 'bg-bad-fill' }
   return (
-    <Card title={<span className="flex items-center gap-2"><Footprints size={18} className="text-run" /> รองเท้าวิ่ง</span>}
-      action={<Button variant="soft" size="sm" onClick={() => setAdding(!adding)}><Plus size={14} /> เพิ่ม</Button>}>
+    <Card title={<span className="flex items-center gap-2"><Footprints size={18} className="text-run" /> {tr('รองเท้าวิ่ง', 'Running shoes')}</span>}
+      action={<Button variant="soft" size="sm" onClick={() => setAdding(!adding)}><Plus size={14} /> {tr('เพิ่ม', 'Add')}</Button>}>
       <Collapse open={adding}>
         <div className="mb-3 grid grid-cols-2 gap-2 rounded-2xl bg-raised p-3">
-          <TextInput label="ชื่อรองเท้า" className="col-span-2" value={name} onChange={setName} placeholder="เช่น Nike Pegasus 41" />
-          <NumberInput label="วิ่งมาแล้ว" unit="กม." value={start} onChange={setStart} />
-          <NumberInput label="ควรเปลี่ยนที่" unit="กม." step={50} value={limit} onChange={setLimit} />
-          <Button className="col-span-2" onClick={add}>บันทึกรองเท้า</Button>
+          <TextInput label={tr('ชื่อรองเท้า', 'Shoe name')} className="col-span-2" value={name} onChange={setName} placeholder={tr('เช่น Nike Pegasus 41', 'e.g. Nike Pegasus 41')} />
+          <NumberInput label={tr('วิ่งมาแล้ว', 'Already run')} unit={tr('กม.', 'km')} value={start} onChange={setStart} />
+          <NumberInput label={tr('ควรเปลี่ยนที่', 'Replace at')} unit={tr('กม.', 'km')} step={50} value={limit} onChange={setLimit} />
+          <Button className="col-span-2" onClick={add}>{tr('บันทึกรองเท้า', 'Save shoes')}</Button>
         </div>
       </Collapse>
-      {active.length === 0 && !adding && <p className="text-sm text-muted">เพิ่มรองเท้า แอปจะนับระยะและเตือนเมื่อควรเปลี่ยน</p>}
+      {active.length === 0 && !adding && <p className="text-sm text-muted">{tr('เพิ่มรองเท้า แอปจะนับระยะและเตือนเมื่อควรเปลี่ยน', 'Add shoes and the app tracks distance and tells you when to replace them')}</p>}
       <ul className="space-y-3">
         {active.map(s => {
           const km = shoeKm(s, runs)
@@ -827,16 +835,16 @@ function ShoesCard({ runs }: { runs: Run[] }) {
           return (
             <li key={s.id}>
               <div className="flex items-center justify-between gap-2 text-sm">
-                <span className="min-w-0 truncate font-semibold">{s.name}{s.id === def?.id && <Badge tone="run">คู่หลัก</Badge>}</span>
-                <span className="shrink-0 tabular-nums text-muted">{Math.round(km)} / {s.limitKm} กม.</span>
+                <span className="min-w-0 truncate font-semibold">{s.name}{s.id === def?.id && <Badge tone="run">{tr('คู่หลัก', 'Main')}</Badge>}</span>
+                <span className="shrink-0 tabular-nums text-muted">{Math.round(km)} / {s.limitKm} {tr('กม.', 'km')}</span>
               </div>
               <div className="mt-1 h-2 overflow-hidden rounded-full bg-body">
                 <div className={cx('h-full rounded-full', tone[st])} style={{ width: `${Math.min(100, (km / s.limitKm) * 100)}%` }} />
               </div>
-              {st !== 'good' && <p className={cx('mt-1 text-xs', st === 'bad' ? 'text-bad' : 'text-warn')}>{st === 'bad' ? 'ถึงระยะที่ควรเปลี่ยนแล้ว — ดูพื้นรองเท้าและความรู้สึกตอนวิ่งประกอบ' : 'ใกล้ถึงระยะเปลี่ยน เริ่มมองหาคู่ใหม่'}</p>}
+              {st !== 'good' && <p className={cx('mt-1 text-xs', st === 'bad' ? 'text-bad' : 'text-warn')}>{st === 'bad' ? tr('ถึงระยะที่ควรเปลี่ยนแล้ว — ดูพื้นรองเท้าและความรู้สึกตอนวิ่งประกอบ', 'Replacement distance reached — check the soles and how they feel') : tr('ใกล้ถึงระยะเปลี่ยน เริ่มมองหาคู่ใหม่', 'Nearly due — start looking for a new pair')}</p>}
               <div className="mt-1 flex gap-3 text-xs">
-                {s.id !== def?.id && <button className="font-semibold text-run" onClick={() => setShoes(prev => prev.map(x => ({ ...x, isDefault: x.id === s.id })))}>ตั้งเป็นคู่หลัก</button>}
-                <button className="text-muted" onClick={() => update(s.id, { retired: true, isDefault: false })}>เลิกใช้</button>
+                {s.id !== def?.id && <button className="font-semibold text-run" onClick={() => setShoes(prev => prev.map(x => ({ ...x, isDefault: x.id === s.id })))}>{tr('ตั้งเป็นคู่หลัก', 'Make main')}</button>}
+                <button className="text-muted" onClick={() => update(s.id, { retired: true, isDefault: false })}>{tr('เลิกใช้', 'Retire')}</button>
               </div>
             </li>
           )
@@ -848,20 +856,22 @@ function ShoesCard({ runs }: { runs: Run[] }) {
 
 /** แผนที่รวมทุกการวิ่ง — ทางที่วิ่งบ่อยเข้มขึ้น */
 function HeatmapCard({ runs }: { runs: Run[] }) {
+  const tr = useT()
   const { routes, hidden } = useMemo(() => heatmapRoutes(runs), [runs])
   if (routes.length < 2) return null
   return (
-    <Card title={<span className="flex items-center gap-2"><MapIcon size={18} className="text-run" /> แผนที่การวิ่งทั้งหมด</span>}>
+    <Card title={<span className="flex items-center gap-2"><MapIcon size={18} className="text-run" /> {tr('แผนที่การวิ่งทั้งหมด', 'All-runs map')}</span>}>
       <Suspense fallback={<div className="h-72 w-full animate-pulse rounded-2xl bg-raised" />}>
         <RouteHeatmap routes={routes} />
       </Suspense>
-      <p className="mt-2 text-xs text-muted">{routes.length} เส้นทาง — ทางที่วิ่งบ่อยเส้นจะเข้มขึ้น{hidden ? ` (ไม่รวม ${hidden} ครั้งที่วิ่งที่อื่น)` : ''}</p>
+      <p className="mt-2 text-xs text-muted">{tr(`${routes.length} เส้นทาง — ทางที่วิ่งบ่อยเส้นจะเข้มขึ้น`, `${routes.length} routes — frequent paths are darker`)}{hidden ? tr(` (ไม่รวม ${hidden} ครั้งที่วิ่งที่อื่น)`, ` (excluding ${hidden} runs elsewhere)`) : ''}</p>
     </Card>
   )
 }
 
 /** นักวิ่งเงา: ตำแหน่งเราเทียบเงาบนเส้นระยะ + นำ/ตามหลังกี่วินาที */
 function GhostCard({ ghost, now, on, setOn }: { ghost: GhostTarget; now: { lead: number; m: number; ghostM: number } | null; on: boolean; setOn: (v: boolean) => void }) {
+  const tr = useT()
   const total = ghost.km * 1000
   const pos = (m: number) => `${Math.min(100, Math.max(0, (m / total) * 100))}%`
   const ahead = now && now.lead >= 2
@@ -870,23 +880,23 @@ function GhostCard({ ghost, now, on, setOn }: { ghost: GhostTarget; now: { lead:
     <div className="rounded-2xl bg-card p-3 ring-1 ring-line">
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0">
-          <div className="flex items-center gap-1.5 text-sm font-bold"><Ghost size={15} className="text-accent" /> นักวิ่งเงา</div>
-          <div className="truncate text-xs text-muted">{ghost.label}</div>
+          <div className="flex items-center gap-1.5 text-sm font-bold"><Ghost size={15} className="text-accent" /> {tr('นักวิ่งเงา', 'Ghost runner')}</div>
+          <div className="truncate text-xs text-muted">{tr(ghost.label, ghost.labelEn ?? ghost.label)}</div>
         </div>
         <label className="flex shrink-0 items-center gap-1.5 text-xs text-muted">
-          <input type="checkbox" className="size-4 accent-accent" checked={on} onChange={e => setOn(e.target.checked)} /> แข่ง
+          <input type="checkbox" className="size-4 accent-accent" checked={on} onChange={e => setOn(e.target.checked)} /> {tr('แข่ง', 'Race')}
         </label>
       </div>
       {on && (
         <>
           <div className={cx('mt-2 text-center text-2xl font-extrabold tabular-nums', ahead ? 'text-good' : behind ? 'text-bad' : 'text-ink')}>
-            {now ? ghostText(now.lead) : 'เริ่มเมื่อถึงช่วงวัดเวลา'}
+            {now ? tr(ghostText(now.lead), ghostTextEn(now.lead)) : tr('เริ่มเมื่อถึงช่วงวัดเวลา', 'Starts with the timed section')}
           </div>
           <div className="relative mt-3 h-2 rounded-full bg-raised">
             {now && <span className="absolute top-1/2 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-muted/60 ring-2 ring-card transition-[left] duration-1000 ease-linear" style={{ left: pos(now.ghostM) }} />}
             {now && <span className="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent-fill ring-2 ring-card transition-[left] duration-1000 ease-linear" style={{ left: pos(now.m) }} />}
           </div>
-          <div className="mt-1 flex justify-between text-[10px] text-muted"><span>0</span><span>{ghost.km} กม.</span></div>
+          <div className="mt-1 flex justify-between text-[10px] text-muted"><span>0</span><span>{ghost.km} {tr('กม.', 'km')}</span></div>
         </>
       )}
     </div>

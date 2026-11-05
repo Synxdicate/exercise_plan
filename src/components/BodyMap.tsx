@@ -3,6 +3,7 @@ import { type Muscle } from '../data/muscles'
 import { useT } from '../lib/i18n'
 import { useDayText } from '../lib/dayText'
 import { heat } from '../lib/heat'
+import { trNow } from '../lib/i18n'
 
 // ทุก path วาดเฉพาะซีกซ้าย (x ≤ 100) แล้ว mirror ด้วย transform — ยกเว้น center: true
 type Shape = { m: Muscle; d: string; center?: boolean }
@@ -79,7 +80,7 @@ export function BodyMap({ intensity, label: labelProp, size = 'md' }: Props) {
 
   const figure = (shapes: Shape[], name: string) => (
     <figure className={`m-0 flex-1 text-center ${size === 'sm' ? 'max-w-28' : 'max-w-40'}`}>
-      <svg viewBox="30 6 140 386" role="img" aria-label={`กล้ามเนื้อ${name}`} className="block h-auto w-full">
+      <svg viewBox="30 6 140 386" role="img" aria-label={trNow(`กล้ามเนื้อ${name}`, `Muscles: ${name}`)} className="block h-auto w-full">
         {/* เงาขอบบาง ๆ ให้เห็นรูปร่างชัดบนพื้นการ์ด (วาดทั้งสองซีกในกลุ่มเดียว จะได้ไม่มีเส้นกลางลำตัว) */}
         <g style={{ filter: 'drop-shadow(0 0 0.6px var(--c-body-line)) drop-shadow(0 1.5px 1.5px rgb(0 0 0 / 0.06))' }}>
           <path d={SILHOUETTE} fill="var(--c-body)" />

@@ -2,12 +2,12 @@
 // ขอบเขตเป็นค่าประมาณ: E ช้ากว่าเพซ 5K ≥20%, M 10–20%, T 4–10%, I ±3–4%, R เร็วกว่าเพซ 5K
 export type ZoneId = 'E' | 'M' | 'T' | 'I' | 'R'
 
-export const ZONES: { id: ZoneId; label: string; desc: string; color: string }[] = [
-  { id: 'E', label: 'Easy', desc: 'เบา พูดคุยได้', color: 'var(--z-e)' },
-  { id: 'M', label: 'Marathon', desc: 'เพซมาราธอน', color: 'var(--z-m)' },
-  { id: 'T', label: 'Threshold', desc: 'Tempo เหนื่อยแต่คุมได้', color: 'var(--z-t)' },
-  { id: 'I', label: 'Interval', desc: 'ใกล้เพซ 5K', color: 'var(--z-i)' },
-  { id: 'R', label: 'Speed', desc: 'เร็วกว่าเพซ 5K', color: 'var(--z-r)' },
+export const ZONES: { id: ZoneId; label: string; desc: string; descEn: string; color: string }[] = [
+  { id: 'E', label: 'Easy', desc: 'เบา พูดคุยได้', descEn: 'Easy, conversational', color: 'var(--z-e)' },
+  { id: 'M', label: 'Marathon', desc: 'เพซมาราธอน', descEn: 'Marathon pace', color: 'var(--z-m)' },
+  { id: 'T', label: 'Threshold', desc: 'Tempo เหนื่อยแต่คุมได้', descEn: 'Tempo — hard but controlled', color: 'var(--z-t)' },
+  { id: 'I', label: 'Interval', desc: 'ใกล้เพซ 5K', descEn: 'Near 5K pace', color: 'var(--z-i)' },
+  { id: 'R', label: 'Speed', desc: 'เร็วกว่าเพซ 5K', descEn: 'Faster than 5K pace', color: 'var(--z-r)' },
 ]
 
 // ขอบล่างของแต่ละโซน (สัดส่วนของเพซ 5K) — เพซมากกว่า = ช้ากว่า

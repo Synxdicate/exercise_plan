@@ -4,11 +4,13 @@ import { formatPace } from '../lib/log'
 import { shortDate } from '../lib/date'
 import { cx } from '../lib/cx'
 import { distanceByZone, zoneInfo, zoneOf, ZONES, type ZoneId } from '../lib/zones'
+import { useT } from '../lib/i18n'
 
 const W = 320
 
 /** เพซตามระยะทาง — แกนตั้งกลับด้าน (เร็ว = สูง) เส้นเป็นสีตามโซนเพซ พร้อมเส้นเพซเฉลี่ย */
 export function PaceChart({ series, avg, fiveK }: { series: { km: number; pace: number }[]; avg: number; fiveK?: number }) {
+  const tr = useT()
   const [hover, setHover] = useState<number | null>(null)
   if (series.length < 3) return null
   const H = 130, padL = 34, padB = 18, padT = 8
@@ -43,10 +45,10 @@ export function PaceChart({ series, avg, fiveK }: { series: { km: number; pace: 
   return (
     <div>
       <div className="mb-1 flex h-5 items-center justify-between text-xs">
-        <span className="text-muted">เพซตลอดเส้นทาง (นาที/กม.)</span>
-        <span className="tabular-nums">{h ? `กม. ${h.km.toFixed(2)} · ${formatPace(h.pace, 1)}${hz ? ` · ${hz.id} ${hz.label}` : ''}` : `เฉลี่ย ${formatPace(avg, 1)}`}</span>
+        <span className="text-muted">{tr('เพซตลอดเส้นทาง (นาที/กม.)', 'Pace along the route (min/km)')}</span>
+        <span className="tabular-nums">{h ? `${tr('กม.', 'km')} ${h.km.toFixed(2)} · ${formatPace(h.pace, 1)}${hz ? ` · ${hz.id} ${hz.label}` : ''}` : `${tr('เฉลี่ย', 'avg')} ${formatPace(avg, 1)}`}</span>
       </div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="block w-full touch-none" role="img" aria-label="กราฟเพซตามระยะทาง"
+      <svg viewBox={`0 0 ${W} ${H}`} className="block w-full touch-none" role="img" aria-label={tr('กราฟเพซตามระยะทาง', 'Pace by distance chart')}
         onPointerMove={onMove} onPointerDown={onMove} onPointerLeave={() => setHover(null)}>
         {[lo + 10, (lo + hi) / 2, hi - 10].map(v => (
           <g key={v}>
@@ -74,6 +76,7 @@ export function PaceChart({ series, avg, fiveK }: { series: { km: number; pace: 
 
 /** Fitness (ฟ้า) / Fatigue (ชมพู) เป็นเส้น, Form เป็นแท่ง (เขียว = สด, ส้ม = ล้า) */
 export function FitnessChart({ days }: { days: LoadDay[] }) {
+  const tr = useT()
   const [hover, setHover] = useState<number | null>(null)
   if (days.length < 2) return null
   const H = 170, padL = 26, padB = 18, padT = 8, formH = 36
@@ -96,12 +99,12 @@ export function FitnessChart({ days }: { days: LoadDay[] }) {
   return (
     <div>
       <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-        <span className="font-semibold">{hover !== null ? shortDate(h.date) : 'วันนี้'}</span>
-        <Legend swatch="bg-run-fill" label="ฟิต" value={h.fitness} />
-        <Legend swatch="bg-accent-fill" label="ล้า" value={h.fatigue} />
-        <Legend swatch={h.form >= 0 ? 'bg-good-fill' : 'bg-warn'} label="ฟอร์ม" value={h.form} signed />
+        <span className="font-semibold">{hover !== null ? shortDate(h.date) : tr('วันนี้', 'Today')}</span>
+        <Legend swatch="bg-run-fill" label={tr('ฟิต', 'Fitness')} value={h.fitness} />
+        <Legend swatch="bg-accent-fill" label={tr('ล้า', 'Fatigue')} value={h.fatigue} />
+        <Legend swatch={h.form >= 0 ? 'bg-good-fill' : 'bg-warn'} label={tr('ฟอร์ม', 'Form')} value={h.form} signed />
       </div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="block w-full touch-none" role="img" aria-label="กราฟความฟิต ความล้า และฟอร์ม"
+      <svg viewBox={`0 0 ${W} ${H}`} className="block w-full touch-none" role="img" aria-label={tr('กราฟความฟิต ความล้า และฟอร์ม', 'Fitness, fatigue and form chart')}
         onPointerMove={onMove} onPointerDown={onMove} onPointerLeave={() => setHover(null)}>
         <line x1={padL} x2={W} y1={top} y2={top} className="stroke-line" />
         <text x={padL - 4} y={y(max / 1.1) + 3} textAnchor="end" className="fill-muted text-[9px]">{Math.round(max / 1.1)}</text>
@@ -133,10 +136,11 @@ function Legend({ swatch, label, value, signed }: { swatch: string; label: strin
 
 /** แถบสัดส่วนระยะทางในแต่ละโซน + คำอธิบายสี (ระบุด้วยตัวอักษร ไม่พึ่งสีอย่างเดียว) */
 export function ZoneBar({ series, fiveK }: { series: { km: number; pace: number }[]; fiveK: number }) {
+  const tr = useT()
   const zones = distanceByZone(series, fiveK)
   return (
     <div>
-      <div className="mb-1.5 text-xs text-muted">ระยะในแต่ละโซนเพซ</div>
+      <div className="mb-1.5 text-xs text-muted">{tr('ระยะในแต่ละโซนเพซ', 'Distance per pace zone')}</div>
       <div className="flex h-3 gap-0.5 overflow-hidden rounded-full">
         {zones.filter(z => z.pct > 0.005).map(z => (
           <span key={z.id} title={`${z.id} ${z.label}: ${Math.round(z.pct * 100)}%`} style={{ width: `${z.pct * 100}%`, background: z.color }} />
@@ -156,6 +160,7 @@ export function ZoneBar({ series, fiveK }: { series: { km: number; pace: number 
 }
 
 export function ZoneLegend({ fiveK }: { fiveK: number }) {
+  const tr = useT()
   const fmt = (s: number) => formatPace(s, 1)
   const bounds = [fiveK * 1.2, fiveK * 1.1, fiveK * 1.04, fiveK * 0.97]
   return (
@@ -164,8 +169,8 @@ export function ZoneLegend({ fiveK }: { fiveK: number }) {
         <li key={z.id} className="flex items-center gap-2">
           <span className="grid size-5 shrink-0 place-items-center rounded-md text-[10px] font-bold text-white" style={{ background: z.color }}>{z.id}</span>
           <span className="w-16 font-semibold">{z.label}</span>
-          <span className="flex-1 text-muted">{z.desc}</span>
-          <span className="tabular-nums">{i === 0 ? `ช้ากว่า ${fmt(bounds[0])}` : i === 4 ? `เร็วกว่า ${fmt(bounds[3])}` : `${fmt(bounds[i])}–${fmt(bounds[i - 1])}`}</span>
+          <span className="flex-1 text-muted">{tr(z.desc, z.descEn)}</span>
+          <span className="tabular-nums">{i === 0 ? `${tr('ช้ากว่า', 'slower than')} ${fmt(bounds[0])}` : i === 4 ? `${tr('เร็วกว่า', 'faster than')} ${fmt(bounds[3])}` : `${fmt(bounds[i])}–${fmt(bounds[i - 1])}`}</span>
         </li>
       ))}
     </ul>

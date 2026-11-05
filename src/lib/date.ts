@@ -39,14 +39,25 @@ const TH_MONTHS_SHORT = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', '
 const TH_MONTHS = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม']
 
 /** วันที่อ่านง่าย: "วันนี้", "เมื่อวาน", "จ. 18 ส.ค." (ปีอื่นต่อท้ายด้วยปี พ.ศ.) */
+// ภาษาของวันที่ — useLang() ตั้งค่าให้ (date.ts เป็นโมดูลบริสุทธิ์ ไม่อ่าน storage เอง)
+let dateLang: 'th' | 'en' = 'th'
+export const setDateLang = (l: 'th' | 'en') => { dateLang = l }
+const EN_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const EN_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+
 export function niceDate(s: string, now = today()) {
   const diff = daysBetween(s, now)
-  if (diff === 0) return 'วันนี้'
-  if (diff === 1) return 'เมื่อวาน'
+  const en = dateLang === 'en'
+  if (diff === 0) return en ? 'Today' : 'วันนี้'
+  if (diff === 1) return en ? 'Yesterday' : 'เมื่อวาน'
   const d = parse(s)
+  if (en) {
+    const base = `${EN_DAYS[d.getDay()]} ${d.getDate()} ${EN_MONTHS[d.getMonth()].slice(0, 3)}`
+    return s.slice(0, 4) === now.slice(0, 4) ? base : `${base} ${d.getFullYear()}`
+  }
   const base = `${TH_DAYS[d.getDay()]} ${d.getDate()} ${TH_MONTHS_SHORT[d.getMonth()]}`
   return s.slice(0, 4) === now.slice(0, 4) ? base : `${base} ${d.getFullYear() + 543}`
 }
 
 /** "2026-10" → "ตุลาคม 2569" */
-export const monthLabel = (ym: string) => `${TH_MONTHS[+ym.slice(5, 7) - 1]} ${+ym.slice(0, 4) + 543}`
+export const monthLabel = (ym: string) => dateLang === 'en' ? `${EN_MONTHS[+ym.slice(5, 7) - 1]} ${ym.slice(0, 4)}` : `${TH_MONTHS[+ym.slice(5, 7) - 1]} ${+ym.slice(0, 4) + 543}`

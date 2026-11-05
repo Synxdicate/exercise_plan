@@ -1,17 +1,17 @@
 // เซอร์กิตแกนกลาง/สะโพกสำหรับนักวิ่ง: ทำท่าละ 30 วิ พัก 15 วิ วน 2 รอบ (~12 นาที) — ใช้ร่างกายอย่างเดียว ทำที่ไหนก็ได้
 // โมดูลล้วน: ตารางขั้นตอน + หาว่าตอนนี้อยู่ขั้นไหนจากเวลาที่ผ่านไป
-export type Station = { name: string; th: string }
+export type Station = { name: string; th: string; en?: string }
 export type CircuitStep = { kind: 'work' | 'rest'; sec: number; station: Station; round: number }
 
 export const coreCircuit: Station[] = [
   { name: 'Plank', th: 'แพลงก์' },
-  { name: 'Side Plank', th: 'แพลงก์ด้านข้าง (ซ้าย)' },
-  { name: 'Side Plank', th: 'แพลงก์ด้านข้าง (ขวา)' },
+  { name: 'Side Plank', th: 'แพลงก์ด้านข้าง (ซ้าย)', en: 'Side Plank (left)' },
+  { name: 'Side Plank', th: 'แพลงก์ด้านข้าง (ขวา)', en: 'Side Plank (right)' },
   { name: 'Dead Bug', th: 'นอนหงายยืดแขนขาสลับ' },
-  { name: 'Single-leg Glute Bridge', th: 'ยกสะโพกขาเดียว (ซ้าย)' },
-  { name: 'Single-leg Glute Bridge', th: 'ยกสะโพกขาเดียว (ขวา)' },
+  { name: 'Single-leg Glute Bridge', th: 'ยกสะโพกขาเดียว (ซ้าย)', en: 'Single-leg Glute Bridge (left)' },
+  { name: 'Single-leg Glute Bridge', th: 'ยกสะโพกขาเดียว (ขวา)', en: 'Single-leg Glute Bridge (right)' },
   { name: 'Hollow Body Hold', th: 'นอนเกร็งท้องทรงเรือ' },
-  { name: 'Single-leg Calf Raise', th: 'เขย่งน่องขาเดียว (สลับข้างทุก 15 วิ)' },
+  { name: 'Single-leg Calf Raise', th: 'เขย่งน่องขาเดียว (สลับข้างทุก 15 วิ)', en: 'Single-leg Calf Raise (switch every 15 s)' },
 ]
 
 export function buildCircuit(stations: Station[], work = 30, rest = 15, rounds = 2): CircuitStep[] {

@@ -162,9 +162,9 @@ export function trainingLoad(runs: Run[], sessions: Session[], today: string, da
 export function formLabel(form: number, fitness: number, historyDays = Infinity) {
   // ช่วงอิงสัดส่วนของ fitness (แนวทางโค้ช ไม่ใช่เกณฑ์จากงานวิจัย)
   const r = fitness > 0 ? form / fitness : 0
-  if (fitness < 5 || historyDays < 28) return { label: 'เริ่มต้น', tone: 'muted' as const, text: 'ข้อมูลยังน้อย บันทึกต่อเนื่อง 2–3 สัปดาห์เพื่อเห็นแนวโน้ม' }
-  if (r > 0.15) return { label: 'สดชื่น', tone: 'good' as const, text: 'พร้อมสำหรับวิ่งหนัก/แข่ง — ถ้าสดนานเกินไปความฟิตจะเริ่มลด' }
-  if (r > -0.1) return { label: 'สมดุล', tone: 'run' as const, text: 'ฝึกตามแผนได้ตามปกติ' }
-  if (r > -0.3) return { label: 'กำลังสร้างความฟิต', tone: 'warn' as const, text: 'ล้าจากการฝึก ซึ่งปกติในช่วงเพิ่มปริมาณ — นอนและกินให้พอ' }
-  return { label: 'ล้าสะสมมาก', tone: 'bad' as const, text: 'ภาระสูงกว่าปกติมาก พิจารณาวันพักหรือสัปดาห์เบา' }
+  if (fitness < 5 || historyDays < 28) return { label: 'เริ่มต้น', tone: 'muted' as const, text: 'ข้อมูลยังน้อย บันทึกต่อเนื่อง 2–3 สัปดาห์เพื่อเห็นแนวโน้ม', labelEn: 'Starting out', textEn: 'Not much data yet — log for 2–3 weeks to see a trend' }
+  if (r > 0.15) return { label: 'สดชื่น', tone: 'good' as const, text: 'พร้อมสำหรับวิ่งหนัก/แข่ง — ถ้าสดนานเกินไปความฟิตจะเริ่มลด', labelEn: 'Fresh', textEn: 'Ready for a hard run/race — stay fresh too long and fitness starts to drop' }
+  if (r > -0.1) return { label: 'สมดุล', tone: 'run' as const, text: 'ฝึกตามแผนได้ตามปกติ', labelEn: 'Balanced', textEn: 'Train as planned' }
+  if (r > -0.3) return { label: 'กำลังสร้างความฟิต', tone: 'warn' as const, text: 'ล้าจากการฝึก ซึ่งปกติในช่วงเพิ่มปริมาณ — นอนและกินให้พอ', labelEn: 'Building', textEn: 'Tired from training, normal while volume rises — sleep and eat enough' }
+  return { label: 'ล้าสะสมมาก', tone: 'bad' as const, text: 'ภาระสูงกว่าปกติมาก พิจารณาวันพักหรือสัปดาห์เบา', labelEn: 'Very fatigued', textEn: 'Load far above normal — consider a rest day or an easy week' }
 }

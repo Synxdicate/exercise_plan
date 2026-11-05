@@ -65,6 +65,7 @@ export function CircuitCard() {
 }
 
 function CircuitPlayer({ steps: STEPS, rounds, onClose }: { steps: CircuitStep[]; rounds: number; onClose: () => void }) {
+  const tr = useT()
   const [, setSessions] = useSessions()
   const [running, setRunning] = useState(true)
   const [elapsed, setElapsed] = useState(0)
@@ -101,7 +102,7 @@ function CircuitPlayer({ steps: STEPS, rounds, onClose }: { steps: CircuitStep[]
 
   const finish = () => {
     setSessions(prev => [...prev, { id: uid(), date: today(), mode: 'park', dayKey: 'circuit', title: 'เซอร์กิตแกนกลาง/สะโพก', entries: [], rpe: 5, minutes: Math.max(1, Math.round(elapsed / 60)) }])
-    notify('บันทึกเซอร์กิตแล้ว', 'good')
+    notify(tr('บันทึกเซอร์กิตแล้ว', 'Circuit saved'), 'good')
     onClose()
   }
   const skip = () => {
@@ -116,20 +117,20 @@ function CircuitPlayer({ steps: STEPS, rounds, onClose }: { steps: CircuitStep[]
       <div className="fixed inset-0 z-50 animate-sheet-up overflow-y-auto bg-bg">
         <div className="mx-auto flex min-h-full max-w-lg flex-col gap-4 p-4 pb-[calc(var(--sab)+1rem)] pt-[calc(var(--sat)+1rem)]">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-muted">รอบ {at.step.round}/{rounds} · ขั้น {Math.min(at.index + 1, STEPS.length)}/{STEPS.length}</span>
-            <button onClick={onClose} aria-label="ปิด" className="grid size-9 place-items-center rounded-full bg-raised"><X size={18} /></button>
+            <span className="text-sm font-semibold text-muted">{tr('รอบ', 'Round')} {at.step.round}/{rounds} · {tr('ขั้น', 'step')} {Math.min(at.index + 1, STEPS.length)}/{STEPS.length}</span>
+            <button onClick={onClose} aria-label={tr('ปิด', 'Close')} className="grid size-9 place-items-center rounded-full bg-raised"><X size={18} /></button>
           </div>
           {at.done ? (
             <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
-              <div className="text-2xl font-extrabold">จบเซอร์กิตแล้ว</div>
-              <p className="text-sm text-muted">{Math.round(elapsed / 60)} นาที — บันทึกไว้ในประวัติการฝึกได้เลย</p>
-              <Button size="lg" onClick={finish}>บันทึก</Button>
+              <div className="text-2xl font-extrabold">{tr('จบเซอร์กิตแล้ว', 'Circuit done')}</div>
+              <p className="text-sm text-muted">{tr(`${Math.round(elapsed / 60)} นาที — บันทึกไว้ในประวัติการฝึกได้เลย`, `${Math.round(elapsed / 60)} min — save it to your workout history`)}</p>
+              <Button size="lg" onClick={finish}>{tr('บันทึก', 'Save')}</Button>
             </div>
           ) : (
             <>
               <div className={cx('rounded-3xl p-5 text-center', work ? 'bg-accent-fill text-white' : 'bg-raised')}>
-                <div className="text-sm font-semibold opacity-80">{work ? 'ทำท่า' : 'พัก — ต่อไป'}</div>
-                <div className="text-xl font-bold">{at.step.station.th}</div>
+                <div className="text-sm font-semibold opacity-80">{work ? tr('ทำท่า', 'Go') : tr('พัก — ต่อไป', 'Rest — next')}</div>
+                <div className="text-xl font-bold">{tr(at.step.station.th, at.step.station.en ?? at.step.station.name)}</div>
                 <div className="mt-2 text-7xl font-extrabold tabular-nums">{Math.ceil(at.left)}</div>
                 <div className="mx-auto mt-3 h-2 max-w-60 overflow-hidden rounded-full bg-black/15">
                   <div className={cx('h-full rounded-full', work ? 'bg-white' : 'bg-accent-fill')} style={{ width: `${pct * 100}%` }} />
@@ -137,10 +138,10 @@ function CircuitPlayer({ steps: STEPS, rounds, onClose }: { steps: CircuitStep[]
               </div>
               <ExerciseDemo key={at.step.station.name} name={at.step.station.name} />
               <div className="mt-auto flex items-center justify-center gap-4">
-                <button onClick={() => setRunning(!running)} aria-label={running ? 'หยุด' : 'ทำต่อ'} className="grid size-16 place-items-center rounded-full bg-accent-fill text-white shadow-lg">
+                <button onClick={() => setRunning(!running)} aria-label={running ? tr('หยุด', 'Pause') : tr('ทำต่อ', 'Resume')} className="grid size-16 place-items-center rounded-full bg-accent-fill text-white shadow-lg">
                   {running ? <Pause size={28} fill="currentColor" /> : <Play size={28} fill="currentColor" />}
                 </button>
-                <button onClick={skip} aria-label="ข้าม" className="grid size-12 place-items-center rounded-full bg-raised"><SkipForward size={20} /></button>
+                <button onClick={skip} aria-label={tr('ข้าม', 'Skip')} className="grid size-12 place-items-center rounded-full bg-raised"><SkipForward size={20} /></button>
               </div>
             </>
           )}

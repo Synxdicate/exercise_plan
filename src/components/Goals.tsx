@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { Award, Dumbbell, Flame, Footprints, Medal, Mountain, Pencil, Target, Trophy, Zap, type LucideIcon } from 'lucide-react'
-import { BADGES, earnedBadges, monthOf, periodStats, type BadgeIcon } from '../lib/goals'
+import { BADGES, BADGES_EN, earnedBadges, monthOf, periodStats, type BadgeIcon } from '../lib/goals'
 import { useT } from '../lib/i18n'
 import { useMonthGoal } from '../lib/useGoals'
 import { formatDuration, useRuns, useSessions } from '../lib/log'
-import { today } from '../lib/date'
+import { monthLabel, today } from '../lib/date'
 import { cx } from '../lib/cx'
 import { Button, Card, Collapse, Sheet } from './ui'
 import { NumberInput } from './Form'
@@ -55,6 +55,7 @@ export function MonthGoalCard() {
 }
 
 function BadgesSheet({ earned, onClose }: { earned: string[]; onClose: () => void }) {
+  const t = useT()
   const [runs] = useRuns()
   const [sessions] = useSessions()
   const year = today().slice(0, 4)
@@ -62,7 +63,7 @@ function BadgesSheet({ earned, onClose }: { earned: string[]; onClose: () => voi
   const months = Array.from({ length: 12 }, (_, i) => periodStats(runs, sessions, `${year}-${String(i + 1).padStart(2, '0')}`).km)
   const max = Math.max(1, ...months)
   return (
-    <Sheet onClose={onClose} title="เหรียญรางวัล">
+    <Sheet onClose={onClose} title={t('เหรียญรางวัล', 'Badges')}>
       <ul className="grid grid-cols-3 gap-2">
         {BADGES.map(b => {
           const on = earned.includes(b.id)
@@ -70,23 +71,23 @@ function BadgesSheet({ earned, onClose }: { earned: string[]; onClose: () => voi
           return (
             <li key={b.id} className={cx('flex flex-col items-center rounded-2xl p-2.5 text-center ring-1', on ? 'bg-accent-soft/60 ring-accent/30' : 'bg-raised ring-line')}>
               <span className={cx('grid size-11 place-items-center rounded-full', on ? 'bg-accent-fill text-white' : 'bg-body text-muted/50')}><Icon size={20} /></span>
-              <span className={cx('mt-1.5 text-xs font-bold leading-tight', !on && 'text-muted')}>{b.title}</span>
-              <span className="mt-0.5 text-[10px] leading-tight text-muted">{b.text}</span>
+              <span className={cx('mt-1.5 text-xs font-bold leading-tight', !on && 'text-muted')}>{t(b.title, BADGES_EN[b.id]?.[0] ?? b.title)}</span>
+              <span className="mt-0.5 text-[10px] leading-tight text-muted">{t(b.text, BADGES_EN[b.id]?.[1] ?? b.text)}</span>
             </li>
           )
         })}
       </ul>
 
-      <div className="mt-5 text-lg font-bold">สรุปปี {+year + 543}</div>
+      <div className="mt-5 text-lg font-bold">{t(`สรุปปี ${+year + 543}`, `${year} summary`)}</div>
       <div className="mt-2 grid grid-cols-3 gap-2 text-center">
-        {[['วิ่ง', `${y.km.toFixed(0)} กม.`], ['เวลาวิ่ง', formatDuration(y.seconds)], ['ฝึกเวท', `${y.workouts} ครั้ง`]].map(([l, v]) => (
+        {[[t('วิ่ง', 'Run'), `${y.km.toFixed(0)} ${t('กม.', 'km')}`], [t('เวลาวิ่ง', 'Run time'), formatDuration(y.seconds)], [t('ฝึกเวท', 'Strength'), `${y.workouts} ${t('ครั้ง', 'sessions')}`]].map(([l, v]) => (
           <div key={l} className="rounded-xl bg-raised px-2 py-2"><div className="text-[11px] text-muted">{l}</div><div className="font-bold tabular-nums">{v}</div></div>
         ))}
       </div>
-      <div className="mt-3 flex h-24 items-end gap-1" role="img" aria-label="ระยะวิ่งรายเดือน">
+      <div className="mt-3 flex h-24 items-end gap-1" role="img" aria-label={t('ระยะวิ่งรายเดือน', 'Monthly running distance')}>
         {months.map((km, i) => (
           <div key={i} className="flex flex-1 flex-col items-center gap-1">
-            <div className="w-full rounded-t-md bg-run-fill" style={{ height: `${(km / max) * 72}px`, minHeight: km ? 2 : 0 }} title={`${thMonths[i]}: ${km.toFixed(1)} กม.`} />
+            <div className="w-full rounded-t-md bg-run-fill" style={{ height: `${(km / max) * 72}px`, minHeight: km ? 2 : 0 }} title={t(`${thMonths[i]}: ${km.toFixed(1)} กม.`, `${monthLabel(`${year}-${String(i + 1).padStart(2, '0')}`).split(' ')[0]}: ${km.toFixed(1)} km`)} />
             <span className="text-[9px] text-muted">{i + 1}</span>
           </div>
         ))}

@@ -1,18 +1,19 @@
 import { SkipForward, Volume2 } from 'lucide-react'
-import { stepLabel, type GuideRunner, type Paces, type Step, type StepKind } from '../lib/guide'
+import { stepLabel, stepLabel as stepLabelTh, stepLabelEn, type GuideRunner, type Paces, type Step, type StepKind } from '../lib/guide'
 import { formatDuration, formatPace } from '../lib/log'
 import { cx } from '../lib/cx'
+import { useLang } from '../lib/i18n'
 
 const tone: Record<StepKind, string> = { warm: 'bg-muted', easy: 'bg-muted', work: 'bg-run-fill', recover: 'bg-good-fill', cool: 'bg-muted' }
 
-const amount = (s: Step) => (s.sec ? formatDuration(s.sec) : s.m! >= 1000 ? `${+(s.m! / 1000).toFixed(1)} กม.` : `${s.m} ม.`)
-const left = (v: number, unit: 'sec' | 'm') => (unit === 'sec' ? formatDuration(Math.ceil(v)) : v >= 1000 ? `${(v / 1000).toFixed(2)} กม.` : `${Math.ceil(v)} ม.`)
+const amount = (s: Step, en: boolean) => (s.sec ? formatDuration(s.sec) : s.m! >= 1000 ? `${+(s.m! / 1000).toFixed(1)} ${en ? 'km' : 'กม.'}` : `${s.m} ${en ? 'm' : 'ม.'}`)
+const left = (v: number, unit: 'sec' | 'm', en: boolean) => (unit === 'sec' ? formatDuration(Math.ceil(v)) : v >= 1000 ? `${(v / 1000).toFixed(2)} ${en ? 'km' : 'กม.'}` : `${Math.ceil(v)} ${en ? 'm' : 'ม.'}`)
 
-function targetPace(s: Step, p?: Paces) {
+function targetPace(s: Step, en: boolean, p?: Paces) {
   if (!p || s.kind !== 'work') return null
-  if (s.pace === 'stride') return 'เร่งลื่น ๆ ไม่สุดแรง'
+  if (s.pace === 'stride') return en ? 'Smooth and quick, not all-out' : 'เร่งลื่น ๆ ไม่สุดแรง'
   const v = s.pace && s.pace !== 'easy' ? p[s.pace] : null
-  return v ? `เป้า ${formatPace(v, 1)} /กม.` : null
+  return v ? (en ? `Target ${formatPace(v, 1)} /km` : `เป้า ${formatPace(v, 1)} /กม.`) : null
 }
 
 /** การ์ดชุดซ้อมระหว่างวิ่ง: ขั้นตอนนี้ เหลืออีกเท่าไร ขั้นถัดไป */
@@ -20,9 +21,11 @@ export function GuideCard({ steps, runner, meters, paces, on, setOn, onSkip }: {
   steps: Step[]; runner: GuideRunner | null; meters: number; paces?: Paces
   on: boolean; setOn: (v: boolean) => void; onSkip: () => void
 }) {
+  const en = useLang()[0] === 'en'
+  const label = en ? stepLabelEn : stepLabel
   const toggle = (
     <label className="flex items-center gap-2 text-xs text-muted">
-      <input type="checkbox" className="size-4 accent-accent" checked={on} onChange={e => setOn(e.target.checked)} /> เสียงนำชุดซ้อม
+      <input type="checkbox" className="size-4 accent-accent" checked={on} onChange={e => setOn(e.target.checked)} /> {en ? 'Workout voice guide' : 'เสียงนำชุดซ้อม'}
     </label>
   )
   if (!on || !runner) return <div className="flex justify-center">{toggle}</div>
@@ -41,41 +44,41 @@ export function GuideCard({ steps, runner, meters, paces, on, setOn, onSkip }: {
     return (
       <div className="rounded-2xl bg-card p-3 ring-1 ring-line">
         <div className="mb-2 flex items-center justify-between">
-          <span className="flex items-center gap-1.5 text-sm font-semibold"><Volume2 size={15} className="text-run" /> ชุดซ้อมวันนี้</span>
+          <span className="flex items-center gap-1.5 text-sm font-semibold"><Volume2 size={15} className="text-run" /> {en ? 'Today’s workout' : 'ชุดซ้อมวันนี้'}</span>
           {toggle}
         </div>
         {bar}
-        <p className="mt-2 text-xs text-muted">{compact(steps)} — เริ่มจับเวลาแล้วแอปจะบอกทุกขั้น</p>
+        <p className="mt-2 text-xs text-muted">{compact(steps, en)} — {en ? 'start the timer and the app calls out every step' : 'เริ่มจับเวลาแล้วแอปจะบอกทุกขั้น'}</p>
       </div>
     )
   }
 
   const pr = runner.progress(meters)
   const next = steps[idx + 1]
-  const tp = targetPace(pr.step, paces)
+  const tp = targetPace(pr.step, en, paces)
   return (
     <div className={cx('rounded-2xl p-3 ring-1', pr.step.kind === 'work' ? 'bg-run/10 ring-run/30' : 'bg-card ring-line')}>
       {runner.state.done ? (
-        <div className="text-center text-sm font-semibold text-good">จบชุดซ้อมแล้ว — วิ่งเบา ๆ ต่อ หรือกดพักแล้วจบได้เลย</div>
+        <div className="text-center text-sm font-semibold text-good">{en ? 'Workout done — keep jogging easy, or pause and finish' : 'จบชุดซ้อมแล้ว — วิ่งเบา ๆ ต่อ หรือกดพักแล้วจบได้เลย'}</div>
       ) : (
         <>
           <div className="flex items-start justify-between gap-2">
             <div>
               <div className={cx('text-sm font-bold', pr.step.kind === 'work' ? 'text-run' : '')}>
-                {stepLabel(pr.step)} {pr.step.kind === 'work' && <span className="font-normal text-muted">{workNo(steps, idx)}</span>}
+                {label(pr.step)} {pr.step.kind === 'work' && <span className="font-normal text-muted">{workNo(steps, idx)}</span>}
               </div>
-              <div className="text-3xl font-extrabold tabular-nums leading-tight">{left(pr.left, pr.unit)}</div>
+              <div className="text-3xl font-extrabold tabular-nums leading-tight">{left(pr.left, pr.unit, en)}</div>
               {tp && <div className="text-xs font-semibold text-run">{tp}</div>}
             </div>
             <button onClick={onSkip} className="flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold text-muted ring-1 ring-line">
-              <SkipForward size={14} /> ข้าม
+              <SkipForward size={14} /> {en ? 'Skip' : 'ข้าม'}
             </button>
           </div>
           <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-body">
             <div className={cx('h-full rounded-full transition-[width] duration-700', tone[pr.step.kind])} style={{ width: `${pr.pct * 100}%` }} />
           </div>
           <div className="mt-2 flex items-center justify-between text-xs text-muted">
-            <span>{next ? `ต่อไป: ${stepLabel(next)} ${amount(next)}` : 'ขั้นสุดท้าย'}</span>
+            <span>{next ? (en ? `Next: ${label(next)} ${amount(next, en)}` : `ต่อไป: ${label(next)} ${amount(next, en)}`) : en ? 'Last step' : 'ขั้นสุดท้าย'}</span>
             <span>{idx + 1}/{steps.length}</span>
           </div>
         </>
@@ -92,9 +95,11 @@ const workNo = (steps: Step[], idx: number) => {
 }
 
 // "วอร์มอัพ 2 กม. · ช่วงเร็ว 800 ม. ×5 · คูลดาวน์ 5:00"
-function compact(steps: Step[]) {
+function compact(steps: Step[], en: boolean) {
+  const stepLabel = en ? stepLabelEn : stepLabelTh
+  const amt = (s: Step) => amount(s, en)
   const works = steps.filter(s => s.kind === 'work')
-  const parts = steps.filter(s => s.kind !== 'work' && s.kind !== 'recover').map(s => `${stepLabel(s)} ${amount(s)}`)
-  if (works.length) parts.splice(steps[0].kind === 'work' ? 0 : 1, 0, `${stepLabel(works[0])} ${amount(works[0])}${works.length > 1 ? ` ×${works.length}` : ''}`)
+  const parts = steps.filter(s => s.kind !== 'work' && s.kind !== 'recover').map(s => `${stepLabel(s)} ${amt(s)}`)
+  if (works.length) parts.splice(steps[0].kind === 'work' ? 0 : 1, 0, `${stepLabel(works[0])} ${amt(works[0])}${works.length > 1 ? ` ×${works.length}` : ''}`)
   return parts.join(' · ')
 }

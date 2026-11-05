@@ -14,6 +14,12 @@ export const patternNames: Record<Pattern, string> = {
   side: 'ไหล่ข้าง', rear: 'ไหล่หลัง', biceps: 'หน้าแขน', triceps: 'หลังแขน', calf: 'น่อง', core: 'แกนกลาง',
   hip: 'สะโพกด้านข้าง', plyo: 'กระโดด (พลัยโอเมตริก)',
 }
+export const patternNamesEn: Record<Pattern, string> = {
+  squat: 'Squat', single: 'Single-leg / lunge', hinge: 'Hip hinge (glutes/hamstrings)', hams: 'Hamstrings', quads: 'Quads',
+  hpush: 'Horizontal push (chest)', dip: 'Dip', vpush: 'Overhead push (shoulders)', hpull: 'Horizontal pull (upper back)', vpull: 'Vertical pull (lats)',
+  side: 'Side delts', rear: 'Rear delts', biceps: 'Biceps', triceps: 'Triceps', calf: 'Calves', core: 'Core',
+  hip: 'Lateral hip', plyo: 'Jumps (plyometrics)',
+}
 
 export type LibEx = {
   name: string
@@ -155,10 +161,10 @@ export const allLibrary = all
 
 // ท่าที่บาร์อยู่เหนือหน้า/บนหลัง — ถ้าหมดแรงกลางเซ็ตแล้วไม่มีคนช่วย (spotter) อาจโดนบาร์ทับ
 // โหมด "ฝึกคนเดียว" จะสลับเป็นท่าที่ปล่อยน้ำหนักได้ปลอดภัย (ดัมเบล/เครื่อง) — กล้ามโตไม่ต่างกัน (Haugen 2023)
-export const needsSpotter: Record<string, { alt: string; note: string }> = {
-  'Bench Press': { alt: 'DB Bench Press', note: 'ดัมเบลวางลงข้างตัวได้ถ้าหมดแรง' },
-  'Back Squat': { alt: 'Leg Press', note: 'เครื่องมีตัวล็อก หรือใช้ squat rack ที่ตั้งเหล็กกันตก (safety bar) ต่ำกว่าจุดลึกสุดเล็กน้อย' },
-  'Front Squat': { alt: 'Goblet Squat', note: 'ถือดัมเบลที่อก ปล่อยลงพื้นได้' },
+export const needsSpotter: Record<string, { alt: string; note: string; noteEn: string }> = {
+  'Bench Press': { alt: 'DB Bench Press', note: 'ดัมเบลวางลงข้างตัวได้ถ้าหมดแรง', noteEn: 'dumbbells can be dropped to the side if you fail' },
+  'Back Squat': { alt: 'Leg Press', note: 'เครื่องมีตัวล็อก หรือใช้ squat rack ที่ตั้งเหล็กกันตก (safety bar) ต่ำกว่าจุดลึกสุดเล็กน้อย', noteEn: 'the machine has stops, or use a rack with safety bars set just below your lowest point' },
+  'Front Squat': { alt: 'Goblet Squat', note: 'ถือดัมเบลที่อก ปล่อยลงพื้นได้', noteEn: 'hold a dumbbell at the chest; you can drop it to the floor' },
 }
 
 /** ท่าที่สลับแทนได้ (กลุ่มเดียวกัน ไม่รวมตัวเอง) — ท่าที่ทำได้ในที่นั้นขึ้นก่อน */

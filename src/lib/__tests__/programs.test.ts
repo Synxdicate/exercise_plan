@@ -236,3 +236,26 @@ describe('home (in-room) variant', () => {
         }
   })
 })
+
+describe('mini race rehearsal', () => {
+  it('long runs in weeks 7–8 rehearse race-day kit, pace and run-walk ratio; taper/race week do not', () => {
+    const long = (w: number) => weekPlan('mini', w, () => 'gym').find(d => d.key === 'long')!
+    for (const w of [7, 8]) expect(long(w).note, `w${w}`).toMatch(/ซ้อมใหญ่วันแข่ง/)
+    for (const w of [6, 9, 10]) expect(long(w).note ?? '', `w${w}`).not.toMatch(/ซ้อมใหญ่วันแข่ง/)
+  })
+})
+
+describe('English content', () => {
+  const thai = /[฀-๿]/
+  it('every reference, channel, category and location has English text', async () => {
+    const { references, channels, catEn } = await import('../../data/sources')
+    const { locationInfo } = await import('../../data/programs')
+    for (const r of references) {
+      expect(r.usedEn, r.title).toBeTruthy()
+      expect(r.usedEn, r.title).not.toMatch(thai)
+      expect(catEn[r.cat], r.cat).toBeTruthy()
+    }
+    for (const c of channels) expect(c.whyEn, c.name).not.toMatch(thai)
+    for (const l of Object.values(locationInfo)) expect(l.labelEn + l.textEn).not.toMatch(thai)
+  })
+})

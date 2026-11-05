@@ -7,12 +7,14 @@ import { isNative } from '../lib/native'
 import { notify } from '../lib/dialog'
 import { cx } from '../lib/cx'
 import { Button, Segmented, Sheet } from './ui'
+import { useT } from '../lib/i18n'
 
 // ตารางหมากรุกบอกว่าพื้นหลังโปร่ง (เหมือนโปรแกรมแต่งรูป)
 const checker = { backgroundImage: 'repeating-conic-gradient(#9ca3af 0% 25%, #e5e7eb 0% 50%)', backgroundSize: '20px 20px' }
 
 /** พรีวิวรูปการวิ่ง แล้วแชร์/บันทึก — การ์ดสี หรือสติกเกอร์ PNG พื้นหลังโปร่ง */
 export function ShareRunSheet({ run, onClose }: { run: Run; onClose: () => void }) {
+  const tr = useT()
   // จำแบบที่เลือกล่าสุด — เริ่มที่สติกเกอร์โปร่งใส (ใช้วางบนรูปตัวเองในโซเชียล)
   const [style, setStyle] = usePersisted<CardStyle>('shareStyle', 'white')
   const [result, setResult] = useState<{ style: CardStyle; canvas: HTMLCanvasElement; url: string } | null>(null)
@@ -29,9 +31,9 @@ export function ShareRunSheet({ run, onClose }: { run: Run; onClose: () => void 
     setBusy(true)
     try {
       await saveImage(run, ready.canvas, style)
-      if (isNative) notify('บันทึกลงแกลเลอรีแล้ว (อัลบั้ม Kao)', 'good')
+      if (isNative) notify(tr('บันทึกลงแกลเลอรีแล้ว (อัลบั้ม Kao)', 'Saved to gallery (Kao album)'), 'good')
     } catch (e) {
-      notify(e instanceof Error ? e.message : 'บันทึกรูปไม่สำเร็จ', 'bad')
+      notify(e instanceof Error ? e.message : tr('บันทึกรูปไม่สำเร็จ', 'Couldn’t save the image'), 'bad')
     } finally {
       setBusy(false)
     }
@@ -43,27 +45,27 @@ export function ShareRunSheet({ run, onClose }: { run: Run; onClose: () => void 
     try {
       await shareRunImage(run, ready.canvas, style)
     } catch (e) {
-      notify(e instanceof Error ? e.message : 'แชร์ไม่สำเร็จ', 'bad')
+      notify(e instanceof Error ? e.message : tr('แชร์ไม่สำเร็จ', 'Share failed'), 'bad')
     } finally {
       setBusy(false)
     }
   }
 
   return (
-    <Sheet onClose={onClose} title="แชร์การวิ่ง">
+    <Sheet onClose={onClose} title={tr('แชร์การวิ่ง', 'Share run')}>
       <Segmented value={style} onChange={setStyle} options={[
-        { value: 'white', label: 'โปร่งใส · ขาว' },
-        { value: 'black', label: 'โปร่งใส · ดำ' },
-        { value: 'card', label: 'การ์ดสี' },
+        { value: 'white', label: tr('โปร่งใส · ขาว', 'Transparent · white') },
+        { value: 'black', label: tr('โปร่งใส · ดำ', 'Transparent · black') },
+        { value: 'card', label: tr('การ์ดสี', 'Color card') },
       ]} />
       <div className={cx('mx-auto mt-3 aspect-[4/5] w-full max-w-xs overflow-hidden rounded-2xl ring-1 ring-line', style === 'card' && 'bg-raised')}
         style={style === 'card' ? undefined : checker}>
-        {ready && <img src={ready.url} alt="รูปสรุปการวิ่ง" className="size-full animate-fade-in" />}
+        {ready && <img src={ready.url} alt={tr('รูปสรุปการวิ่ง', 'Run summary image')} className="size-full animate-fade-in" />}
       </div>
-      {style !== 'card' && <p className="mt-2 text-center text-xs text-muted">PNG พื้นหลังโปร่งใส ใช้เป็นสติกเกอร์ใน IG Story ได้</p>}
+      {style !== 'card' && <p className="mt-2 text-center text-xs text-muted">{tr('PNG พื้นหลังโปร่งใส ใช้เป็นสติกเกอร์ใน IG Story ได้', 'Transparent PNG — use it as a sticker in an IG Story')}</p>}
       <div className="mt-4 flex gap-2">
-        <Button variant="soft" className="flex-1" disabled={!ready || busy} onClick={save}><Download size={16} /> บันทึกรูป</Button>
-        <Button className="flex-1" disabled={!ready || busy} onClick={share}><Share2 size={16} /> แชร์</Button>
+        <Button variant="soft" className="flex-1" disabled={!ready || busy} onClick={save}><Download size={16} /> {tr('บันทึกรูป', 'Save image')}</Button>
+        <Button className="flex-1" disabled={!ready || busy} onClick={share}><Share2 size={16} /> {tr('แชร์', 'Share')}</Button>
       </div>
     </Sheet>
   )

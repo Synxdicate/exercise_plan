@@ -6,12 +6,14 @@ import { uid } from '../lib/log'
 import { addDays, today } from '../lib/date'
 import { Card } from './ui'
 import { NumberInput, TextInput } from './Form'
+import { useT } from '../lib/i18n'
 
 type Item = { id: string; name: string; protein: number; kcal: number }
 type MealSet = { id: string; name: string; items: Omit<Item, 'id'>[] }
 
 /** บันทึกโปรตีน/แคลอรี่วันนี้ — ค้นหาเมนู หรือแตะจากรายการที่กินล่าสุด */
 export function FoodLog({ proteinTarget, kcalTarget }: { proteinTarget: number; kcalTarget: number }) {
+  const tr = useT()
   const [log, setLog] = usePersisted<Record<string, Item[]>>('foodLog', {})
   const [q, setQ] = useState('')
   const [custom, setCustom] = useState(false)
@@ -49,7 +51,7 @@ export function FoodLog({ proteinTarget, kcalTarget }: { proteinTarget: number; 
   const add = (i: Omit<Item, 'id'>) => addMany([i])
   const saveSet = () => {
     if (!items.length) return
-    setSets(prev => [...prev, { id: uid(), name: setName_.trim() || `ชุดที่ ${prev.length + 1}`, items: items.map(({ name, protein, kcal }) => ({ name, protein, kcal })) }])
+    setSets(prev => [...prev, { id: uid(), name: setName_.trim() || tr(`ชุดที่ ${prev.length + 1}`, `Set ${prev.length + 1}`), items: items.map(({ name, protein, kcal }) => ({ name, protein, kcal })) }])
     setSetName('')
     setNaming(false)
   }
@@ -57,13 +59,13 @@ export function FoodLog({ proteinTarget, kcalTarget }: { proteinTarget: number; 
   const openCustom = () => { setName(q.trim()); setCustom(true); setQ('') }
 
   return (
-    <Card title="วันนี้กินไปแล้ว">
+    <Card title={tr('วันนี้กินไปแล้ว', 'Eaten today')}>
       <div className="grid grid-cols-2 gap-3">
-        <Bar label="โปรตีน" value={p} max={proteinTarget} unit="ก." tone="bg-accent-fill" />
-        <Bar label="พลังงาน" value={k} max={kcalTarget} unit="kcal" tone="bg-run-fill" />
+        <Bar label={tr('โปรตีน', 'Protein')} value={p} max={proteinTarget} unit={tr('ก.', 'g')} tone="bg-accent-fill" />
+        <Bar label={tr('พลังงาน', 'Energy')} value={k} max={kcalTarget} unit="kcal" tone="bg-run-fill" />
       </div>
 
-      <TextInput className="mt-3" value={q} onChange={setQ} placeholder="ค้นหาเมนู เช่น กะเพรา, ไข่, ลาบ" icon={<Search size={16} />} />
+      <TextInput className="mt-3" value={q} onChange={setQ} placeholder={tr('ค้นหาเมนู เช่น กะเพรา, ไข่, ลาบ', 'Search food e.g. kaprao, egg, larb')} icon={<Search size={16} />} />
 
       {q.trim() ? (
         <ul className="mt-2 divide-y divide-line">
@@ -74,30 +76,30 @@ export function FoodLog({ proteinTarget, kcalTarget }: { proteinTarget: number; 
                   <span className="block truncate text-sm font-semibold">{f.name}</span>
                   {f.detail && <span className="block text-xs text-muted">{f.detail}</span>}
                 </span>
-                <span className="shrink-0 text-xs tabular-nums text-muted"><b className="text-accent">{f.protein} ก.</b> · {f.kcal} kcal</span>
+                <span className="shrink-0 text-xs tabular-nums text-muted"><b className="text-accent">{f.protein} {tr('ก.', 'g')}</b> · {f.kcal} kcal</span>
                 <Plus size={16} className="shrink-0 text-run" />
               </button>
             </li>
           ))}
           <li>
             <button onClick={openCustom} className="flex w-full items-center gap-2 py-2.5 text-sm font-semibold text-run">
-              <Plus size={14} /> {results.length ? 'ไม่เจอ? กรอกเอง' : `ไม่พบ "${q.trim()}" — กรอกเอง`}
+              <Plus size={14} /> {results.length ? tr('ไม่เจอ? กรอกเอง', 'Not found? Enter manually') : tr(`ไม่พบ "${q.trim()}" — กรอกเอง`, `No "${q.trim()}" — enter manually`)}
             </button>
           </li>
         </ul>
       ) : (
         <>
-          <div className="mt-3 text-xs text-muted">{recent.length ? 'กินล่าสุด — แตะเพื่อเพิ่ม' : 'แตะเพื่อเพิ่ม'}</div>
+          <div className="mt-3 text-xs text-muted">{recent.length ? tr('กินล่าสุด — แตะเพื่อเพิ่ม', 'Recently eaten — tap to add') : tr('แตะเพื่อเพิ่ม', 'Tap to add')}</div>
           <div className="-mx-4 mt-1.5 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
             {chips.map(f => (
               <button key={f.name} onClick={() => add({ name: f.name, protein: f.protein, kcal: f.kcal })}
                 className="flex shrink-0 flex-col items-start rounded-2xl bg-raised px-3 py-2 text-left ring-1 ring-line">
                 <span className="text-sm font-semibold">{f.name}</span>
-                <span className="text-xs text-muted"><b className="text-accent">{f.protein} ก.</b> · {f.kcal} kcal</span>
+                <span className="text-xs text-muted"><b className="text-accent">{f.protein} {tr('ก.', 'g')}</b> · {f.kcal} kcal</span>
               </button>
             ))}
             <button onClick={() => setCustom(!custom)} className="flex shrink-0 items-center gap-1 rounded-2xl px-3 py-2 text-sm font-semibold text-run ring-1 ring-line">
-              <Plus size={14} /> กรอกเอง
+              <Plus size={14} /> {tr('กรอกเอง', 'Enter manually')}
             </button>
           </div>
         </>
@@ -107,15 +109,15 @@ export function FoodLog({ proteinTarget, kcalTarget }: { proteinTarget: number; 
         <div className="mt-2 flex flex-wrap gap-2">
           {!items.length && yesterday.length > 0 && (
             <button onClick={() => addMany(yesterday)} className="flex items-center gap-1.5 rounded-full bg-raised px-3 py-1.5 text-xs font-semibold ring-1 ring-line">
-              <Copy size={13} /> เหมือนเมื่อวาน ({yesterday.length})
+              <Copy size={13} /> {tr('เหมือนเมื่อวาน', 'Same as yesterday')} ({yesterday.length})
             </button>
           )}
           {sets.map(st => (
             <span key={st.id} className="flex items-center rounded-full bg-accent-soft/60 text-xs font-semibold ring-1 ring-accent/30">
               <button onClick={() => addMany(st.items)} className="flex items-center gap-1.5 py-1.5 pl-3 pr-1">
-                <Layers size={13} className="text-accent" /> {st.name} <span className="font-normal text-muted">{st.items.reduce((a, i) => a + i.protein, 0)} ก.</span>
+                <Layers size={13} className="text-accent" /> {st.name} <span className="font-normal text-muted">{st.items.reduce((a, i) => a + i.protein, 0)} {tr('ก.', 'g')}</span>
               </button>
-              <button aria-label={`ลบชุด ${st.name}`} onClick={() => setSets(prev => prev.filter(x => x.id !== st.id))} className="grid size-7 place-items-center text-muted"><X size={12} /></button>
+              <button aria-label={tr(`ลบชุด ${st.name}`, `Delete set ${st.name}`)} onClick={() => setSets(prev => prev.filter(x => x.id !== st.id))} className="grid size-7 place-items-center text-muted"><X size={12} /></button>
             </span>
           ))}
         </div>
@@ -123,12 +125,12 @@ export function FoodLog({ proteinTarget, kcalTarget }: { proteinTarget: number; 
 
       {custom && (
         <div className="mt-3 grid animate-fade-up grid-cols-2 gap-2 rounded-2xl bg-raised p-3">
-          <TextInput className="col-span-2" label="ชื่ออาหาร" value={name} onChange={setName} placeholder="เช่น สเต๊กอกไก่" />
-          <NumberInput label="โปรตีน" unit="ก." value={protein} onChange={setProtein} />
-          <NumberInput label="พลังงาน" unit="kcal" value={kcal} onChange={setKcal} step={10} />
+          <TextInput className="col-span-2" label={tr('ชื่ออาหาร', 'Food name')} value={name} onChange={setName} placeholder={tr('เช่น สเต๊กอกไก่', 'e.g. chicken breast steak')} />
+          <NumberInput label={tr('โปรตีน', 'Protein')} unit={tr('ก.', 'g')} value={protein} onChange={setProtein} />
+          <NumberInput label={tr('พลังงาน', 'Energy')} unit="kcal" value={kcal} onChange={setKcal} step={10} />
           <button className="col-span-2 rounded-full bg-accent-fill py-2.5 font-semibold text-white disabled:opacity-50" disabled={!protein}
-            onClick={() => { add({ name: name || 'อาหาร', protein: +protein || 0, kcal: +kcal || 0 }); setName(''); setProtein(''); setKcal(''); setCustom(false) }}>
-            เพิ่ม
+            onClick={() => { add({ name: name || tr('อาหาร', 'Food'), protein: +protein || 0, kcal: +kcal || 0 }); setName(''); setProtein(''); setKcal(''); setCustom(false) }}>
+            {tr('เพิ่ม', 'Add')}
           </button>
         </div>
       )}
@@ -138,8 +140,8 @@ export function FoodLog({ proteinTarget, kcalTarget }: { proteinTarget: number; 
           {items.map(i => (
             <li key={i.id} className="flex animate-fade-up items-center gap-2 py-2 text-sm">
               <span className="min-w-0 flex-1 truncate">{i.name}</span>
-              <span className="tabular-nums text-muted">{i.protein} ก. · {i.kcal}</span>
-              <button aria-label="ลบ" onClick={() => remove(i.id)} className="grid size-7 place-items-center rounded-full text-muted hover:bg-raised"><X size={14} /></button>
+              <span className="tabular-nums text-muted">{i.protein} {tr('ก.', 'g')} · {i.kcal}</span>
+              <button aria-label={tr('ลบ', 'Delete')} onClick={() => remove(i.id)} className="grid size-7 place-items-center rounded-full text-muted hover:bg-raised"><X size={14} /></button>
             </li>
           ))}
         </ul>
@@ -147,11 +149,11 @@ export function FoodLog({ proteinTarget, kcalTarget }: { proteinTarget: number; 
       {items.length > 1 && (
         naming ? (
           <div className="mt-2 flex animate-fade-up items-end gap-2">
-            <TextInput className="flex-1" value={setName_} onChange={setSetName} placeholder="ชื่อชุด เช่น มื้อเช้าปกติ" />
-            <button onClick={saveSet} className="h-12 rounded-full bg-accent-fill px-4 font-semibold text-white">บันทึก</button>
+            <TextInput className="flex-1" value={setName_} onChange={setSetName} placeholder={tr('ชื่อชุด เช่น มื้อเช้าปกติ', 'Set name e.g. usual breakfast')} />
+            <button onClick={saveSet} className="h-12 rounded-full bg-accent-fill px-4 font-semibold text-white">{tr('บันทึก', 'Save')}</button>
           </div>
         ) : (
-          <button onClick={() => setNaming(true)} className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-run"><Save size={13} /> บันทึกรายการวันนี้เป็นชุด</button>
+          <button onClick={() => setNaming(true)} className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-run"><Save size={13} /> {tr('บันทึกรายการวันนี้เป็นชุด', 'Save today’s items as a set')}</button>
         )
       )}
     </Card>
@@ -159,10 +161,11 @@ export function FoodLog({ proteinTarget, kcalTarget }: { proteinTarget: number; 
 }
 
 function Bar({ label, value, max, unit, tone }: { label: string; value: number; max: number; unit: string; tone: string }) {
+  const tr = useT()
   const pct = Math.min(100, (value / max) * 100)
   return (
     <div>
-      <div className="flex items-baseline justify-between text-xs text-muted"><span>{label}</span><span>เป้า {max}</span></div>
+      <div className="flex items-baseline justify-between text-xs text-muted"><span>{label}</span><span>{tr('เป้า', 'Goal')} {max}</span></div>
       <div className="text-xl font-bold tabular-nums">{Math.round(value)}<span className="ml-1 text-xs font-normal text-muted">{unit}</span></div>
       <div className="mt-1 h-2 overflow-hidden rounded-full bg-body">
         <div className={`h-full rounded-full transition-[width] duration-500 ${value >= max ? 'bg-good-fill' : tone}`} style={{ width: `${pct}%` }} />

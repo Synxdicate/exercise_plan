@@ -2,6 +2,7 @@ import { useId, useState } from 'react'
 import { ChevronDown, Heart, MessageCircle, Target } from 'lucide-react'
 import type { Run } from '../lib/log'
 import { cx } from '../lib/cx'
+import { useLang, useT } from '../lib/i18n'
 
 type Info = {
   name: string
@@ -77,6 +78,14 @@ const runTypeInfo: Partial<Record<Run['kind'], Info>> = {
   },
 }
 
+const runTypeEn: Partial<Record<Run['kind'], Pick<Info, 'name' | 'talk' | 'why' | 'share'>>> = {
+  easy: { name: 'Easy run', talk: 'You can speak in long sentences comfortably', why: 'Builds the aerobic base and a strong heart, recovers from hard days, adapts joints to running', share: '~80% of your weekly running should be like this' },
+  tempo: { name: 'Tempo run', talk: 'Only a word or two at a time', why: 'Raises your threshold so you can run faster for longer — good for half/full prep' },
+  interval: { name: 'Interval', talk: 'Can’t talk during the fast parts — breathing hard', why: 'Boosts VO₂max and speed with short fast reps and easy jog recoveries' },
+  long: { name: 'Long run', talk: 'Conversational most of the way, may get harder near the end', why: 'Endurance, durable legs, better glycogen storage — and the day to practise drinks/gels before a race' },
+  race: { name: 'Race day', talk: 'Start a little slower than goal pace, speed up near the end', why: 'Use everything you trained — pace control, drink at every station' },
+}
+
 const W = 300, H = 110, PAD = 8
 const px = ([t, e]: [number, number]) => [PAD + t * (W - PAD * 2), H - PAD - e * (H - PAD * 2)] as const
 
@@ -96,7 +105,10 @@ const reduceMotion = () => typeof matchMedia !== 'undefined' && matchMedia('(pre
 
 /** อธิบายประเภทการวิ่งด้วยกราฟความหนักที่วาดขึ้นมา + หัวใจเต้นตามความหนัก */
 export function RunTypeCard({ kind, compact, defaultOpen = false }: { kind: Run['kind']; compact?: boolean; defaultOpen?: boolean }) {
-  const info = runTypeInfo[kind]
+  const tr = useT()
+  const en = useLang()[0] === 'en'
+  const base = runTypeInfo[kind]
+  const info = base && en ? { ...base, ...runTypeEn[kind] } : base
   const id = useId().replace(/:/g, '')
   const [open, setOpen] = useState(defaultOpen || !!compact)
   if (!info) return null
@@ -110,7 +122,7 @@ export function RunTypeCard({ kind, compact, defaultOpen = false }: { kind: Run[
     <div key={kind} className={cx('animate-fade-up', !compact && 'rounded-2xl bg-card p-3.5 shadow-sm ring-1 ring-line')}>
       {!compact && (
         <button onClick={() => setOpen(!open)} aria-expanded={open} className="flex w-full items-center gap-2 text-left active:scale-100">
-          <span className="min-w-0 flex-1 text-[15px] font-bold">{info.name} คืออะไร?</span>
+          <span className="min-w-0 flex-1 text-[15px] font-bold">{tr(`${info.name} คืออะไร?`, `What is a ${info.name.toLowerCase()}?`)}</span>
           <span className="flex items-center gap-1 text-xs font-semibold text-accent">
             <Heart size={16} fill="currentColor" style={motion ? { animation: `beat ${info.beat}s ease-in-out infinite` } : undefined} />
             RPE {info.rpe[0]}–{info.rpe[1]}
@@ -122,7 +134,7 @@ export function RunTypeCard({ kind, compact, defaultOpen = false }: { kind: Run[
       {open && <div className={cx('animate-fade-up', !compact && 'mt-2')}>
 
       <div className="relative">
-        <svg viewBox={`0 0 ${W} ${H}`} className="block w-full overflow-visible" role="img" aria-label={`กราฟความหนักของ ${info.name}`}>
+        <svg viewBox={`0 0 ${W} ${H}`} className="block w-full overflow-visible" role="img" aria-label={tr(`กราฟความหนักของ ${info.name}`, `${info.name} intensity profile`)}>
           <defs>
             {/* สูง = หนัก (แดง), ต่ำ = เบา (ฟ้า) */}
             <linearGradient id={`g${id}`} gradientUnits="userSpaceOnUse" x1="0" y1={PAD} x2="0" y2={H - PAD}>
@@ -147,14 +159,14 @@ export function RunTypeCard({ kind, compact, defaultOpen = false }: { kind: Run[
               <animateMotion dur={`${info.lap}s`} repeatCount="indefinite" path={line} begin="1.2s" />
             </circle>
           )}
-          <text x={PAD} y={10} className="fill-muted text-[9px]">หนัก</text>
-          <text x={PAD} y={H - 1} className="fill-muted text-[9px]">เบา</text>
-          <text x={W - PAD} y={H - 1} textAnchor="end" className="fill-muted text-[9px]">เวลา →</text>
+          <text x={PAD} y={10} className="fill-muted text-[9px]">{tr('หนัก', 'Hard')}</text>
+          <text x={PAD} y={H - 1} className="fill-muted text-[9px]">{tr('เบา', 'Easy')}</text>
+          <text x={W - PAD} y={H - 1} textAnchor="end" className="fill-muted text-[9px]">{tr('เวลา →', 'Time →')}</text>
         </svg>
       </div>
 
       {/* ระดับความเหนื่อย 1–10 */}
-      <div className="mt-2 flex gap-1" aria-label={`ความเหนื่อย ${info.rpe[0]}–${info.rpe[1]} จาก 10`}>
+      <div className="mt-2 flex gap-1" aria-label={tr(`ความเหนื่อย ${info.rpe[0]}–${info.rpe[1]} จาก 10`, `Effort ${info.rpe[0]}–${info.rpe[1]} of 10`)}>
         {Array.from({ length: 10 }, (_, i) => (
           <span key={i} className={cx('h-1.5 flex-1 rounded-full', i < info.rpe[1] ? (i < 4 ? 'bg-run-fill' : i < 7 ? 'bg-warn' : 'bg-accent-fill') : 'bg-body')}
             style={motion ? { animation: `fade-in .3s ${0.4 + i * 0.06}s both` } : undefined} />
