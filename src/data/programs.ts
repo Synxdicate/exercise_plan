@@ -377,7 +377,21 @@ export function variants(program: ProgramId, week: number): Record<Mode, Day[]> 
     : program === 'start' ? { gym: startWeek('gym', week), park: startWeek('park', week) }
     : program === 'mini' ? { gym: miniWeek('gym', week), park: miniWeek('park', week) }
     : { gym: raceWeek(program, 'gym', week), park: raceWeek(program, 'park', week) }
-  return { ...v, home: homeWeek(v.park) }
+  const dh = downhillWeek(program, week)
+  const out = dh ? { gym: withDownhill(v.gym), park: withDownhill(v.park) } : v
+  return { ...out, home: homeWeek(out.park) }
+}
+
+// ซ้อมลงเนินเบา ๆ 3–4 สัปดาห์ก่อนแข่ง: วิ่งลงเนินครั้งเดียวช่วยให้การลงเนินครั้งถัดไปปวด/กล้ามเสียหายน้อยลง
+// อยู่ได้ถึง ~6 สัปดาห์ (Byrnes 1985; Tallis 2024 ซ้ำห่าง 3 สัปดาห์) — งานวิจัยใช้ลงเนินชัน 10–15% นาน 15–30 นาที
+// แอปให้แบบเบากว่ามาก (มือใหม่) และอยู่ก่อน taper เพื่อให้ขาหายปวดก่อนวันแข่ง
+export const downhillNote = 'ถ้าเส้นทางแข่งมีช่วงลงเนิน: วิ่งรอบนี้ในเส้นทางที่มีทางลาดลงเล็กน้อย (สะพาน/ถนนลาด) วิ่งลงช้า ๆ 4 × 1 นาที ก้าวสั้นและถี่ ลำตัวตั้ง ไม่เบรกด้วยส้นเท้า เดินขึ้นกลับ — ครั้งแรกน่องและต้นขาหน้าอาจปวด 1–2 วัน เป็นเรื่องปกติ ครั้งต่อไป (รวมวันแข่ง) จะปวดน้อยลง'
+const downhillWeek = (program: ProgramId, week: number) =>
+  !!programs[program].raceKm && !programs[program].ongoing && (week === programs[program].weeks - 4 || week === programs[program].weeks - 3)
+function withDownhill(days: Day[]): Day[] {
+  const i = days.findIndex(d => d.runKind === 'easy' && !/เนิน|Stride/i.test(d.title))
+  if (i < 0) return days
+  return days.map((d, j) => (j === i ? { ...d, note: [d.note, downhillNote].filter(Boolean).join(' · ') } : d))
 }
 
 /**

@@ -259,3 +259,18 @@ describe('English content', () => {
     for (const l of Object.values(locationInfo)) expect(l.labelEn + l.textEn).not.toMatch(thai)
   })
 })
+
+describe('downhill practice before races (Byrnes 1985)', () => {
+  it('one easy run 3–4 weeks before race week, never in taper or non-race programs', async () => {
+    const { downhillNote } = await import('../../data/programs')
+    for (const id of Object.keys(programs) as (keyof typeof programs)[]) {
+      const n = programs[id].weeks
+      for (let w = 1; w <= n; w++) {
+        const days = weekPlan(id, w, () => 'park').filter(d => d.note?.includes(downhillNote))
+        const want = !!programs[id].raceKm && !programs[id].ongoing && (w === n - 4 || w === n - 3)
+        expect(days.length, `${id} w${w}`).toBe(want ? 1 : 0)
+        if (want) expect(days[0].runKind, `${id} w${w}`).toBe('easy')
+      }
+    }
+  })
+})
