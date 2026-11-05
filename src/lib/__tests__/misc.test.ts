@@ -569,3 +569,12 @@ describe('routes stored apart from runs', () => {
     expect(s3.routes.a).toBe(s.routes.a)
   })
 })
+
+describe('first-login merge keeps local routes', () => {
+  it('unions routes by run id (local wins)', async () => {
+    const { mergeValues } = await import('../merge')
+    const server = { a: { route: [[1, 1]] }, b: { route: [[2, 2]] } }
+    const local = { b: { route: [[9, 9]] }, c: { route: [[3, 3]] } }
+    expect(mergeValues('routes', local, server)).toEqual({ a: { route: [[1, 1]] }, b: { route: [[9, 9]] }, c: { route: [[3, 3]] } })
+  })
+})

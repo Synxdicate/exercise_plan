@@ -19,6 +19,8 @@ export type Run = {
   shoeId?: string
   startedAt?: number // เวลาเริ่ม (ms) — ใช้ส่งออก GPX
   guide?: { work: number; total: number; finished: boolean } // ทำชุดซ้อม (เสียงนำ) ได้กี่ช่วงหลัก
+  elev?: { gain: number; loss: number; max: number; min: number } // จากแผนที่ความสูง (elevation.ts)
+  elevProfile?: number[] // ความสูง ~100 จุดเท่า ๆ กันตามระยะ — เก็บใน routes
 }
 
 export type SetEntry = { kg: number; reps: number }
@@ -36,7 +38,7 @@ export type Session = {
 
 // เส้นทาง (route/times) เก็บแยกใน key 'routes' (id → เส้นทาง) — แก้ข้อมูลรอบวิ่ง (RPE ชนิด รองเท้า)
 // จะได้ไม่ต้องส่งเส้นทางทุกรอบขึ้น server ใหม่ทั้งก้อน · useRuns() รวมให้เหมือนเดิม คอมโพเนนต์ไม่ต้องรู้
-export type RouteData = { route: Point[]; times?: number[] }
+export type RouteData = { route: Point[]; times?: number[]; elevProfile?: number[] }
 type Routes = Record<string, RouteData>
 
 /** รวมรอบวิ่งกับเส้นทาง (เส้นทางที่ยังค้างอยู่ใน runs จากแอปเวอร์ชันเก่ามาก่อน) */
@@ -53,10 +55,10 @@ export function splitRuns(next: Run[], prev: Routes): { runs: Run[]; routes: Rou
       if (prev[r.id]) routes[r.id] = prev[r.id] // ไม่มีเส้นทางมากับรอบนี้ = ไม่ได้แก้ เก็บของเดิมไว้
       return r
     }
-    const { route, times, ...rest } = r
+    const { route, times, elevProfile, ...rest } = r
     const old = prev[r.id]
-    if (old && old.route === route && old.times === times) routes[r.id] = old
-    else { routes[r.id] = times ? { route, times } : { route }; changed = true }
+    if (old && old.route === route && old.times === times && old.elevProfile === elevProfile) routes[r.id] = old
+    else { routes[r.id] = { route, ...(times && { times }), ...(elevProfile && { elevProfile }) }; changed = true }
     return rest
   })
   if (Object.keys(prev).some(id => !routes[id])) changed = true

@@ -51,6 +51,7 @@ import { DateInput, NumberInput, SelectInput, TextInput } from './Form'
 import { cx } from '../lib/cx'
 import { ask, notify } from '../lib/dialog'
 import { ErrorBoundary } from './ErrorBoundary'
+import { ElevationCard, RunAchievements, TrainingLog } from './RunExtras'
 
 // วิ่งทดสอบ 5K (เลือกชนิด "แข่ง" ในวันที่ไม่ใช่วันแข่ง)
 const TRIAL = guides.timeTrial()
@@ -289,6 +290,7 @@ export function Runs() {
           <FinishCard />
           <PaceCard est={est} runs={runs} onTrial={() => { setKind('race'); setView('start'); window.scrollTo({ top: 0, behavior: 'smooth' }) }} />
           <BestEfforts runs={runs} />
+          <Card title={tr('บันทึกรายสัปดาห์', 'Training log')}><TrainingLog runs={runs} /></Card>
           <Card title={tr('8 สัปดาห์ล่าสุด', 'Last 8 weeks')}>
             <WeeklyBars runs={runs} target={target} />
           </Card>
@@ -514,6 +516,7 @@ function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { run: Run
           </div>
         )}
         {run.gapSeconds ? <p className="mb-3 rounded-xl bg-warn/15 p-2 text-xs text-warn">{tr(`ปิดจอรวม ${formatDuration(run.gapSeconds)} — ระยะช่วงนั้นเป็นค่าประมาณ`, `Screen off for ${formatDuration(run.gapSeconds)} — distance there is estimated`)}</p> : null}
+        <RunAchievements run={run} runs={runs} />
         {series.length > 2 && (
           <div className="mb-3 space-y-3 rounded-2xl bg-raised p-3">
             <PaceChart series={series} avg={run.seconds / run.km} fiveK={fiveK} />
@@ -533,6 +536,7 @@ function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { run: Run
           </div>
         )}
         {run.splits && run.splits.length > 0 && <Splits splits={run.splits} fiveK={fiveK} />}
+        <div className="mt-3"><ElevationCard run={run} onUpdate={onUpdate} /></div>
         <MatchedRuns run={run} runs={runs} />
         <div className="mt-3 rounded-2xl bg-raised p-3"><RpePicker value={run.rpe} onPick={rpe => onUpdate({ rpe })} /></div>
         <div className="mt-3"><PhotoStrip kind="run" refId={run.id} date={run.date} label={tr('รูปการวิ่ง', 'Run photos')} /></div>
@@ -745,6 +749,7 @@ function TrendLine({ points, goal }: { points: { date: string; v: number | null 
 
 function BestEfforts({ runs }: { runs: Run[] }) {
   const tr = useT()
+  const [openPb, setOpenPb] = useState<string | null>(null)
   if (!runs.length) return null
   const pbs = personalBests(runs).filter(p => p.best)
   const longest = runsOnly(runs).reduce((m, r) => Math.max(m, r.km), 0)
@@ -752,17 +757,30 @@ function BestEfforts({ runs }: { runs: Run[] }) {
     <Card title={<span className="flex items-center gap-2"><Trophy size={18} className="text-warn" /> {tr('สถิติของฉัน', 'My stats')}</span>}>
       <div className="grid grid-cols-3 gap-2 text-center">
         <Stat label={tr('ระยะรวม', 'Total')} value={runsOnly(runs).reduce((s, r) => s + r.km, 0).toFixed(1)} sub={tr('กม.', 'km')} />
-        <Stat label={tr('จำนวนครั้ง', 'Runs')} value={runs.length} sub={tr('ครั้ง', 'times')} />
+        <Stat label={tr('จำนวนครั้ง', 'Runs')} value={runsOnly(runs).length} sub={tr('ครั้ง', 'times')} />
         <Stat label={tr('ไกลสุด', 'Longest')} value={longest.toFixed(1)} sub={tr('กม.', 'km')} />
       </div>
       {pbs.length > 0 && <div className="mt-3 text-xs font-semibold text-muted">{tr('เวลาเร็วสุดแต่ละระยะ', 'Best efforts')}</div>}
       <ul className="divide-y divide-line text-sm">
         {pbs.map(p => (
-          <li key={p.label} className="flex items-center justify-between gap-2 py-2">
-            <span className="w-12 font-bold">{p.label}</span>
-            <span className="flex-1 text-xs text-muted">{p.best!.date}</span>
-            <span className="tabular-nums text-muted">{formatPace(p.best!.seconds, p.km)} {tr('/กม.', '/km')}</span>
-            <span className="w-16 text-right font-bold tabular-nums">{formatDuration(p.best!.seconds)}</span>
+          <li key={p.label} className="py-2">
+            <button onClick={() => setOpenPb(openPb === p.label ? null : p.label)} aria-expanded={openPb === p.label} className="flex w-full items-center justify-between gap-2 text-left">
+              <span className="w-12 font-bold">{p.label}</span>
+              <span className="flex-1 text-xs text-muted">{shortDate(p.best!.date)}{p.top.length > 1 && <span className="ml-1 text-run">{tr(`· ดู ${p.top.length} อันดับ`, `· top ${p.top.length}`)}</span>}</span>
+              <span className="tabular-nums text-muted">{formatPace(p.best!.seconds, p.km)} {tr('/กม.', '/km')}</span>
+              <span className="w-16 text-right font-bold tabular-nums">{formatDuration(p.best!.seconds)}</span>
+            </button>
+            {openPb === p.label && (
+              <ol className="mt-1.5 space-y-1 rounded-xl bg-raised p-2 text-xs">
+                {p.top.map((x, i) => (
+                  <li key={x.id} className="flex items-center gap-2">
+                    <span className={cx('grid size-5 place-items-center rounded-full text-[10px] font-bold', i === 0 ? 'bg-warn text-white' : 'bg-body')}>{i + 1}</span>
+                    <span className="flex-1 text-muted">{shortDate(x.date)}</span>
+                    <span className="font-semibold tabular-nums">{formatDuration(x.seconds)}</span>
+                  </li>
+                ))}
+              </ol>
+            )}
           </li>
         ))}
       </ul>

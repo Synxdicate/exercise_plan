@@ -105,7 +105,9 @@ test('แชร์การวิ่ง: การ์ดทึบ และส�
   await page.getByRole('button', { name: 'ประวัติ' }).click()
   await page.locator('main li button', { hasText: '3.02' }).click()
   await page.getByRole('button', { name: 'แชร์เป็นรูป' }).click()
-  const alpha = () => page.locator('img[alt="รูปสรุปการวิ่ง"]').evaluate(async (img: HTMLImageElement) => {
+  // ตารางพรีวิว: การ์ดสี + สติกเกอร์ 4 แบบ (รอบนี้ไม่มีเพซรายกิโล จึงไม่มีแบบ splits)
+  await expect(page.locator('[role=radio] img')).toHaveCount(5)
+  const alpha = () => page.locator('[role=radio][aria-checked=true] img').evaluate(async (img: HTMLImageElement) => {
     await img.decode()
     const c = document.createElement('canvas')
     c.width = img.naturalWidth
@@ -116,9 +118,9 @@ test('แชร์การวิ่ง: การ์ดทึบ และส�
   })
   // ค่าเริ่มต้นคือสติกเกอร์โปร่งใส
   await expect.poll(alpha).toEqual({ w: 1080, a: 0 })
-  await page.getByRole('button', { name: 'การ์ดสี' }).click()
+  await page.getByRole('radio', { name: 'การ์ดสี' }).click()
   await expect.poll(alpha).toEqual({ w: 1080, a: 255 })
-  await page.getByRole('button', { name: 'โปร่งใส · ขาว' }).click()
+  await page.getByRole('radio', { name: 'ตั๋ววันวิ่ง' }).click()
   await expect.poll(alpha).toEqual({ w: 1080, a: 0 })
   const download = page.waitForEvent('download')
   await page.getByRole('button', { name: 'บันทึกรูป' }).click()
@@ -562,4 +564,17 @@ test('เส้นทางแข่งมีเนิน: ติ๊กในต
   await expect.poll(() => idb(page, 'raceHills')).toBe(true)
   await nav(page, 'ฝึก')
   await expect(page.getByText(/คุมความเหนื่อย ไม่ใช่เพซ/).first()).toBeVisible()
+})
+
+test('รายละเอียดรอบวิ่ง: ความสำเร็จ (อันดับเวลา) และความสูงเส้นทาง', async ({ page }) => {
+  await seed(page, { runs: [{ id: 'g', date: ymd(1), km: 3.4, seconds: 1800, kind: 'easy', source: 'gps', ...loopRoute() }] })
+  await nav(page, 'วิ่ง')
+  await page.getByRole('button', { name: 'ประวัติ' }).click()
+  await page.locator('main li button', { hasText: '3.40' }).click()
+  await expect(page.getByText('ความสำเร็จรอบนี้')).toBeVisible()
+  await expect(page.getByText('1K เร็วที่สุดของคุณ')).toBeVisible()
+  await expect(page.getByText('ความสูงเส้นทาง')).toBeVisible()
+  await expect(page.getByText('20 ม.').first()).toBeVisible()
+  await expect.poll(async () => ((await idb(page, 'runs')) as { elev?: { gain: number } }[])[0].elev?.gain).toBe(20)
+  await expect.poll(async () => ((await idb(page, 'routes')) as Record<string, { elevProfile?: number[] }>).g.elevProfile?.length).toBeGreaterThan(10)
 })

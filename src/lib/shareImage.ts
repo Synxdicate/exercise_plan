@@ -17,6 +17,12 @@ const thaiDate = (s: string) => {
 }
 
 export type CardStyle = 'card' | 'white' | 'black'
+/** แบบของสติกเกอร์ (พื้นโปร่ง): stats = ตัวเลขเรียงลง + เส้นทาง, row = เส้นทางใหญ่ + ตัวเลขแถวเดียว,
+ *  route = เส้นทางอย่างเดียว, splits = เพซรายกิโล, ticket = ตั๋ววันวิ่ง */
+export type ShareLayout = 'stats' | 'row' | 'route' | 'splits' | 'ticket'
+export const SHARE_LAYOUTS: ShareLayout[] = ['stats', 'row', 'route', 'splits', 'ticket']
+const WEEKDAY_TH = ['วันอาทิตย์', 'วันจันทร์', 'วันอังคาร', 'วันพุธ', 'วันพฤหัสบดี', 'วันศุกร์', 'วันเสาร์']
+const WEEKDAY_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
 /** วาดเส้นทางพร้อมจุดเริ่ม/จบ */
 function drawRoute(g: CanvasRenderingContext2D, run: Run, box: { x: number; y: number; w: number; h: number }, color: string, width: number) {
@@ -40,14 +46,28 @@ function drawRoute(g: CanvasRenderingContext2D, run: Run, box: { x: number; y: n
  * card = การ์ดพื้นไล่สี, white/black = สติกเกอร์ PNG พื้นหลังโปร่ง (ไว้วางบนรูปอื่นในโซเชียล)
  * สติกเกอร์มีเงาจาง ๆ รอบตัวอักษร/เส้นทาง ให้อ่านออกทั้งบนรูปสว่างและมืด
  */
-export async function renderRunCard(run: Run, style: CardStyle = 'card'): Promise<HTMLCanvasElement> {
+export async function renderRunCard(run: Run, style: CardStyle = 'card', layout: ShareLayout = 'stats'): Promise<HTMLCanvasElement> {
   await document.fonts?.load(`700 40px ${FONT}`).catch(() => {})
   const c = document.createElement('canvas')
   c.width = W
   c.height = H
   const g = c.getContext('2d')!
   const hasRoute = (run.route?.length ?? 0) > 1
-  if (style !== 'card') return drawSticker(g, c, run, style, hasRoute)
+  if (style !== 'card') {
+    const ink = style === 'white' ? '#ffffff' : '#111111'
+    g.shadowColor = style === 'white' ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.55)'
+    g.shadowBlur = 14
+    g.fillStyle = ink
+    g.textBaseline = 'alphabetic'
+    if (layout === 'row') drawRow(g, run, ink, hasRoute)
+    else if (layout === 'route' && hasRoute) drawRouteOnly(g, run, ink)
+    else if (layout === 'splits' && (run.splits?.length ?? 0) > 0) drawSplits(g, run, ink)
+    else if (layout === 'ticket') drawTicket(g, run, ink)
+    else return drawSticker(g, c, run, style, hasRoute)
+    g.shadowBlur = 0
+    g.textAlign = 'left'
+    return c
+  }
 
   const bg = g.createLinearGradient(0, 0, W, H)
   bg.addColorStop(0, '#E11D48')
@@ -134,6 +154,109 @@ function drawSticker(g: CanvasRenderingContext2D, c: HTMLCanvasElement, run: Run
 }
 
 const fileName = (run: Run, style: CardStyle = 'card') => `run-${run.date}-${run.id.slice(0, 6)}${style === 'card' ? '' : '-sticker'}.png`
+
+const statList = (run: Run): [string, string][] => [
+  [trNow('ระยะทาง', 'Distance'), `${run.km.toFixed(2)} ${trNow('กม.', 'km')}`],
+  [trNow('เพซ', 'Pace'), `${formatPace(run.seconds, run.km)} ${trNow('/กม.', '/km')}`],
+  [trNow('เวลา', 'Time'), formatDuration(run.seconds)],
+  ...(run.elev && run.elev.gain > 0 ? [[trNow('ขึ้นสะสม', 'Elev gain'), `${run.elev.gain} ${trNow('ม.', 'm')}`] as [string, string]] : []),
+]
+
+const footer = (g: CanvasRenderingContext2D, run: Run, y = H - 40) => {
+  g.textAlign = 'center'
+  g.globalAlpha = 0.8
+  g.font = `600 32px ${FONT}`
+  g.fillText(`Kao · ${thaiDate(run.date)}`, W / 2, y)
+  g.globalAlpha = 1
+}
+
+// เส้นทางใหญ่ด้านบน + ตัวเลขแถวเดียว (สูงสุด 4 ช่อง)
+function drawRow(g: CanvasRenderingContext2D, run: Run, ink: string, hasRoute: boolean) {
+  if (hasRoute) drawRoute(g, run, { x: 220, y: 260, w: W - 440, h: 640 }, ink, 12)
+  const stats = statList(run)
+  const colW = (W - 120) / stats.length
+  g.textAlign = 'center'
+  stats.forEach(([label, value], i) => {
+    const x = 60 + colW * (i + 0.5)
+    g.globalAlpha = 0.85
+    g.font = `500 32px ${FONT}`
+    g.fillText(label, x, hasRoute ? 1010 : 640)
+    g.globalAlpha = 1
+    g.font = `800 ${stats.length > 3 ? 54 : 64}px ${FONT}`
+    g.fillText(value, x, hasRoute ? 1085 : 715)
+  })
+  footer(g, run)
+}
+
+// เส้นทางอย่างเดียว ตัวใหญ่ + ชื่อแอปเล็ก ๆ
+function drawRouteOnly(g: CanvasRenderingContext2D, run: Run, ink: string) {
+  drawRoute(g, run, { x: 160, y: 180, w: W - 320, h: H - 420 }, ink, 14)
+  footer(g, run, H - 110)
+}
+
+// เพซรายกิโลเป็นแถบ (ยาว = เร็ว) — splits มีเฉพาะกิโลที่ครบ (addSplits)
+function drawSplits(g: CanvasRenderingContext2D, run: Run, ink: string) {
+  const sp = run.splits!.slice(0, 14)
+  const fastest = Math.min(...sp), slowest = Math.max(...sp)
+  const rowH = Math.min(70, 760 / sp.length)
+  const top = (H - rowH * sp.length) / 2 + 40
+  g.textAlign = 'left'
+  g.font = `800 56px ${FONT}`
+  g.fillText(trNow('เพซรายกิโล', 'KM splits'), 100, top - 70)
+  sp.forEach((s, i) => {
+    const y = top + i * rowH
+    const frac = slowest === fastest ? 1 : 0.55 + (0.45 * (slowest - s)) / (slowest - fastest)
+    g.globalAlpha = 0.9
+    g.font = `600 30px ${FONT}`
+    g.textAlign = 'left'
+    g.fillText(String(i + 1), 100, y + rowH * 0.62)
+    g.globalAlpha = 1
+    g.fillStyle = '#E11D48'
+    const bw = (W - 420) * frac
+    g.beginPath()
+    g.roundRect(170, y + rowH * 0.25, bw, rowH * 0.5, rowH * 0.25)
+    g.fill()
+    g.fillStyle = ink
+    g.textAlign = 'right'
+    g.font = `700 32px ${FONT}`
+    g.fillText(formatPace(s, 1), W - 100, y + rowH * 0.62)
+  })
+  footer(g, run, top + rowH * sp.length + 90)
+}
+
+// ตั๋ววันวิ่ง: กรอบ + ชื่อวัน + ระยะใหญ่ ขอบล่างหยัก
+function drawTicket(g: CanvasRenderingContext2D, run: Run, ink: string) {
+  const [y0, m0, d0] = run.date.split('-').map(Number)
+  const day = new Date(y0, m0 - 1, d0).getDay()
+  const bx = 240, by = 330, bw = W - 480, bh = 640
+  g.strokeStyle = ink
+  g.lineWidth = 4
+  g.beginPath()
+  g.moveTo(bx, by + bh)
+  g.lineTo(bx, by)
+  g.lineTo(bx + bw, by)
+  g.lineTo(bx + bw, by + bh)
+  const teeth = 14
+  const step = bw / teeth
+  for (let i = 1; i <= teeth; i++) {
+    g.lineTo(bx + bw - step * (i - 0.5), by + bh + 22)
+    g.lineTo(bx + bw - step * i, by + bh)
+  }
+  g.stroke()
+  g.textAlign = 'center'
+  g.font = `800 48px ${FONT}`
+  g.fillText('Kao', W / 2, by + 100)
+  g.font = `800 150px ${FONT}`
+  g.fillText(run.km.toFixed(2), W / 2, by + 320)
+  g.font = `600 44px ${FONT}`
+  g.fillText(trNow('กม.', 'km'), W / 2, by + 380)
+  g.font = `800 64px ${FONT}`
+  g.fillText(trNow(WEEKDAY_TH[day], WEEKDAY_EN[day]), W / 2, by + 500)
+  g.globalAlpha = 0.85
+  g.font = `500 36px ${FONT}`
+  g.fillText(`${thaiDate(run.date)} · ${formatDuration(run.seconds)}`, W / 2, by + 565)
+  g.globalAlpha = 1
+}
 
 /** แชร์รูป: แอปใช้หน้าต่างแชร์ของ Android, เว็บใช้ Web Share ถ้ารองรับ ไม่งั้นดาวน์โหลด */
 export async function shareRunImage(run: Run, canvas: HTMLCanvasElement, style: CardStyle = 'card') {

@@ -103,3 +103,16 @@ describe('remeasure from stored route', () => {
     expect(remeasure({ km: 2.45, route, times })).toBeNull()
   })
 })
+
+describe('top-3 efforts and achievements', () => {
+  it('ranks distinct runs and reports this run’s place', async () => {
+    const { personalBests, runAchievements } = await import('../analysis')
+    const mk = (id: string, sec: number, date: string): Run => ({ id, date, km: 5, seconds: sec, kind: 'easy', source: 'manual' })
+    const runs = [mk('a', 1800, '2026-11-01'), mk('b', 1700, '2026-11-02'), mk('c', 1900, '2026-11-03'), mk('d', 2000, '2026-11-04')]
+    const five = personalBests(runs).find(p => p.km === 5)!
+    expect(five.top.map(t => t.id)).toEqual(['b', 'a', 'c'])
+    expect(five.best!.id).toBe('b')
+    expect(runAchievements(runs[0], runs)).toEqual([{ label: '5K', km: 5, rank: 2, seconds: 1800 }])
+    expect(runAchievements(runs[3], runs)).toEqual([])
+  })
+})

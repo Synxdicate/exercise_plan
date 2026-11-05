@@ -5,6 +5,11 @@ export const ymd = (daysAgo = 0) => new Intl.DateTimeFormat('en-CA', { timeZone:
 
 /** เริ่มแอปในโหมดไม่ล็อกอิน พร้อมข้อมูลตั้งต้น (เขียนลง localStorage แล้วให้แอปย้ายเข้า IndexedDB เอง) */
 export async function seed(page: Page, data: Record<string, unknown> = {}) {
+  // แผนที่ความสูง: ตอบค่าคงที่ (เนินขึ้น 20 ม. แล้วลง) ไม่พึ่งเน็ตจริง
+  await page.route('**/api.open-meteo.com/v1/elevation**', route => {
+    const n = new URL(route.request().url()).searchParams.get('latitude')!.split(',').length
+    return route.fulfill({ json: { elevation: Array.from({ length: n }, (_, i) => 150 + Math.round(20 * Math.sin((Math.PI * i) / Math.max(1, n - 1)))) } })
+  })
   await page.goto('/')
   await page.evaluate(d => {
     localStorage.setItem('localMode', '1')

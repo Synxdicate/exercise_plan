@@ -110,16 +110,28 @@ export function bestEffort(route: Point[], times: number[], km: number): number 
 }
 
 // สถิติดีที่สุดของแต่ละระยะจากทุกการวิ่ง — การวิ่งที่ไม่มีเส้นทาง (กรอกเอง) นับเฉพาะเมื่อระยะใกล้เคียง (±2%)
+export type Effort = { seconds: number; date: string; id: string }
+
+/** เวลาเร็วสุดของแต่ละระยะ: best = อันดับ 1, top = 3 อันดับแรก (คนละรอบวิ่ง) */
 export function personalBests(runs: Run[]) {
   return EFFORTS.map(e => {
-    let best: { seconds: number; date: string; id: string } | null = null
+    const all: Effort[] = []
     for (const r of runsOnly(runs)) {
       let t: number | null = null
       if (r.route && r.times && r.times.length === r.route.length) t = bestEffort(r.route, r.times, e.km)
       else if (r.seconds > 0 && Math.abs(r.km - e.km) / e.km <= 0.02) t = Math.round((r.seconds * e.km) / r.km)
-      if (t && (!best || t < best.seconds)) best = { seconds: t, date: r.date, id: r.id }
+      if (t) all.push({ seconds: t, date: r.date, id: r.id })
     }
-    return { ...e, best }
+    const top = all.sort((a, b) => a.seconds - b.seconds || a.date.localeCompare(b.date)).slice(0, 3)
+    return { ...e, best: top[0] ?? null, top }
+  })
+}
+
+/** ความสำเร็จของรอบนี้ (แบบ Strava): ระยะที่รอบนี้ติด 3 อันดับเร็วสุด — rank 1 = PR */
+export function runAchievements(run: Run, runs: Run[]) {
+  return personalBests(runs).flatMap(p => {
+    const i = p.top.findIndex(t => t.id === run.id)
+    return i < 0 ? [] : [{ label: p.label, km: p.km, rank: i + 1, seconds: p.top[i].seconds }]
   })
 }
 
