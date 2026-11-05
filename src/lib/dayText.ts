@@ -3,6 +3,7 @@ import type { Day } from '../data/workouts'
 import { programs, type ProgramId } from '../data/programs'
 import { WEEKDAYS_EN, WEEKDAYS_TH } from './date'
 import { useLang } from './i18n'
+import { cueToEn, noteToEn } from '../data/contentEn'
 import { muscleNames, muscleNamesEn, type Muscle } from '../data/muscles'
 
 // ชื่อวันฝึกในแผนสร้างจากรูปแบบไม่กี่แบบ (programs.ts) — แปลด้วยวลีตามลำดับ แล้วค่อยแปลหน่วย
@@ -63,6 +64,9 @@ export function useDayText() {
     duration: useCallback((d: Pick<Day, 'duration'>) => (en ? durationEn(d.duration) : d.duration), [en]),
     program: useCallback((id: ProgramId) => (en ? PROGRAMS_EN[id] : programs[id]), [en]),
     reps: useCallback((s: string) => (en ? repsEn(s) : s), [en]),
+    /** โน้ตของวัน/สัปดาห์ และคำอธิบายท่า/ชุดซ้อม (src/data/contentEn.ts) */
+    note: useCallback((s: string) => (en ? noteToEn(s) : s), [en]),
+    cue: useCallback((s: string) => (en ? cueToEn(s) ?? s : s), [en]),
     muscle: useCallback((m: Muscle) => (en ? muscleNamesEn : muscleNames)[m], [en]),
     en,
   }

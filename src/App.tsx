@@ -13,7 +13,7 @@ import { useReminderSchedule, useReminderSetting } from './lib/reminders'
 import { useBadgeWatcher } from './lib/useGoals'
 import { useCompactRuns, useRuns, useSessions } from './lib/log'
 import { isNative } from './lib/native'
-import { APP_VERSION, downloadUpdate, useUpdateAvailable } from './lib/update'
+import { APP_VERSION, downloadUpdate, reloadOnChunkError, useUpdateAvailable } from './lib/update'
 import { useBackButton, useBackClose } from './lib/back'
 import { supabase } from './lib/supabase'
 import { clearSyncedData, getSyncStatus, stopSync, subscribeSyncStatus } from './lib/sync'
@@ -27,6 +27,7 @@ import { lastBackup, setLocalMode } from './lib/localMode'
 import { daysBetween, today } from './lib/date'
 import { Overview } from './components/Overview'
 // แท็บอื่นนอกจากหน้าหลักโหลดแยกไฟล์ — เปิดแอปเร็วขึ้น แล้วค่อยโหลดล่วงหน้าตอนว่าง (สลับแท็บไม่ต้องรอ)
+reloadOnChunkError()
 const loadPlan = () => import('./components/Plan')
 const loadRuns = () => import('./components/Runs')
 const loadNutrition = () => import('./components/Nutrition')
@@ -125,7 +126,7 @@ function Main({ session }: { session: Session | null }) {
         <div className="mx-4 mb-2 flex animate-fade-up items-center gap-2 rounded-2xl bg-run/10 px-3.5 py-2.5 text-sm text-run ring-1 ring-run/30">
           <Download size={16} className="shrink-0" />
           <span className="flex-1">{t('มีแอปเวอร์ชันใหม่', 'New version available')} v{update}</span>
-          <button onClick={() => void downloadUpdate()} className="shrink-0 rounded-full bg-run-fill px-3 py-1 text-xs font-semibold text-white">{t('ดาวน์โหลด', 'Download')}</button>
+          <button onClick={() => void downloadUpdate()} className="shrink-0 rounded-full bg-run-fill px-3 py-1 text-xs font-semibold text-white">{isNative ? t('ดาวน์โหลด', 'Download') : t('โหลดใหม่', 'Reload')}</button>
           <button onClick={() => setDismissed(update)} aria-label={t('ปิด', 'Close')} className="shrink-0 text-xs font-semibold">{t('ปิด', 'Close')}</button>
         </div>
       )}

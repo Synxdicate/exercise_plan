@@ -170,7 +170,7 @@ function PlanBody() {
             <button onClick={() => p.clearMoves(week)} className="font-semibold text-run">{t('คืนลำดับเดิม', 'Reset order')}</button>
           </div>
         )}
-        {note && <p className="mt-2 px-1 text-xs text-muted">{note}</p>}
+        {note && <p className="mt-2 px-1 text-xs text-muted">{dt.note(note)}</p>}
         {!isThisWeek && (
           <div className="mt-2 flex flex-wrap gap-2 px-1">
             <Button size="sm" variant="soft" onClick={() => setViewWeek(p.currentWeek)}>{t('กลับไปสัปดาห์นี้', 'Back to this week')} ({p.currentWeek})</Button>
@@ -312,7 +312,7 @@ function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slo
           <ArrowLeftRight size={15} /> {t('ทำวันนี้แทน (สลับกับแผนวันนี้)', "Do it today (swap with today's plan)")}
         </Button>
       )}
-      {day.note && day.note !== weekNoteText && <p className="mt-3 text-sm text-muted">{day.note}</p>}
+      {day.note && day.note !== weekNoteText && <p className="mt-3 text-sm text-muted">{dt.note(day.note)}</p>}
 
       {day.type === 'strength' && (
         <>
@@ -342,7 +342,7 @@ function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slo
       {day.type === 'run' && (
         <div className="mt-3 space-y-2">
           <div className="rounded-2xl bg-raised p-3 text-sm">
-            <p>{day.exercises[0]?.cue}</p>
+            <p>{dt.cue(day.exercises[0]?.cue ?? '')}</p>
             {hint && <p className="mt-1 font-semibold text-run">{hint}</p>}
           </div>
           {!done && <CapNote day={day} date={date} />}
@@ -385,7 +385,7 @@ function ExerciseRow({ e, n, onSwap, onRemove }: { e: Exercise; n: number; onSwa
           <ExerciseDemo name={e.name} />
           {e.solo && e.swappedFrom && needsSpotter[e.swappedFrom] && <p className="text-xs text-run">{t(`ไปคนเดียว: ใช้ท่านี้แทน ${e.swappedFrom} — ${needsSpotter[e.swappedFrom].note}`, `Training solo: this replaces ${e.swappedFrom} — ${needsSpotter[e.swappedFrom].noteEn}`)}</p>}
           {!e.swappedFrom && needsSpotter[e.name] && <p className="text-xs text-warn">{t(`ท่านี้ควรมีคนช่วยจับบาร์ (${needsSpotter[e.name].note}) — ไปคนเดียวติ๊ก "ไปคนเดียว" ด้านบนได้`, `This lift needs a spotter (${needsSpotter[e.name].noteEn}) — training alone? tick "Solo" above`)}</p>}
-          <p className="text-muted">{e.cue}</p>
+          <p className="text-muted">{dt.cue(e.cue)}</p>
           {(e.easier || e.harder) && (
             <div className="flex flex-wrap gap-3 text-xs text-run">
               {e.easier && <span className="inline-flex items-center gap-1"><ArrowDown size={12} /> {e.easier}</span>}

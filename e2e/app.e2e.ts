@@ -578,3 +578,10 @@ test('รายละเอียดรอบวิ่ง: ความสำเ
   await expect.poll(async () => ((await idb(page, 'runs')) as { elev?: { gain: number } }[])[0].elev?.gain).toBe(20)
   await expect.poll(async () => ((await idb(page, 'routes')) as Record<string, { elevProfile?: number[] }>).g.elevProfile?.length).toBeGreaterThan(10)
 })
+
+test('เว็บ: มีเวอร์ชันใหม่บน server → ป้ายให้โหลดใหม่', async ({ page }) => {
+  await page.route('**/version.json', r => r.fulfill({ json: { version: '99.0.0' } }))
+  await seed(page)
+  await expect(page.getByText('มีแอปเวอร์ชันใหม่')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'โหลดใหม่' })).toBeVisible()
+})

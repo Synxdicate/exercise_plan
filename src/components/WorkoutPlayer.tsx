@@ -210,7 +210,7 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
             <Badge tone="muted">{tr('พัก', 'Rest')} {dt.reps(ex.rest)}</Badge>
           </div>
           <ExerciseDemo key={ex.name} name={ex.name} className="mt-3" />
-          <p className="mt-2 text-sm text-muted">{ex.cue}</p>
+          <p className="mt-2 text-sm text-muted">{dt.cue(ex.cue)}</p>
           {prev && <p className="mt-1 text-xs text-muted">{tr('ครั้งก่อน', 'Last time')} ({prev.date}): {prev.sets.map(s => (s.kg ? `${s.kg}×${s.reps}` : `${s.reps}`)).join(' · ')}</p>}
           {(() => {
             const sg = suggest(ex, prev?.sets)

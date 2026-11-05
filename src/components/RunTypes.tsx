@@ -122,7 +122,7 @@ export function RunTypeCard({ kind, compact, defaultOpen = false }: { kind: Run[
     <div key={kind} className={cx('animate-fade-up', !compact && 'rounded-2xl bg-card p-3.5 shadow-sm ring-1 ring-line')}>
       {!compact && (
         <button onClick={() => setOpen(!open)} aria-expanded={open} className="flex w-full items-center gap-2 text-left active:scale-100">
-          <span className="min-w-0 flex-1 text-[15px] font-bold">{tr(`${info.name} คืออะไร?`, `What is a ${info.name.toLowerCase()}?`)}</span>
+          <span className="min-w-0 flex-1 text-[15px] font-bold">{tr(`${info.name} คืออะไร?`, `What is ${/^[aeiou]/i.test(info.name) ? 'an' : 'a'} ${info.name.toLowerCase()}?`)}</span>
           <span className="flex items-center gap-1 text-xs font-semibold text-accent">
             <Heart size={16} fill="currentColor" style={motion ? { animation: `beat ${info.beat}s ease-in-out infinite` } : undefined} />
             RPE {info.rpe[0]}–{info.rpe[1]}

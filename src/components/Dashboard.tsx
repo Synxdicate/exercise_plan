@@ -54,6 +54,9 @@ export function Dashboard() {
   const sessionsThisWeek = logged.length + tickedOnly
   const kmThisWeek = runsOnly(runs).filter(r => weekStart(r.date) === thisWeek).reduce((s, r) => s + r.km, 0)
   const kmTarget = p.finished ? 0 : p.kmTarget()
+  // จำนวนรอบวิ่งเทียบแผน (แบบ Weekly Run Goal ของ Strava) — นับวันที่วิ่ง ไม่นับรอบเดิน
+  const runDaysThisWeek = new Set(runsOnly(runs).filter(r => weekStart(r.date) === thisWeek).map(r => r.date)).size
+  const runTarget = p.finished ? 0 : plan.filter(d => d.type === 'run').length
   const streak = weekStreak(sessions.map(s => s.date), runs.map(r => r.date))
   const activeThisWeek = [...sessions, ...runs].filter(x => weekStart(x.date) === thisWeek).length
   const todayIdx = useTodayIdx() // 0 = จันทร์ — เปลี่ยนเองเมื่อข้ามวัน
@@ -95,7 +98,8 @@ export function Dashboard() {
             {form && <button onClick={() => nav('progress')} className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">{t('ฟอร์ม', 'Form')}: {t(form.label, form.labelEn)}</button>}
           </div>
         </div>
-        <div className="mt-3 grid grid-cols-2 gap-2">
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          <Ring value={runDaysThisWeek} max={runTarget} label={t('วันวิ่ง', 'Run days')} text={runTarget ? `${runDaysThisWeek}/${runTarget}` : String(runDaysThisWeek)} />
           <Ring value={sessionsThisWeek} max={strengthTarget} label={t('เวท', 'Strength')} text={strengthTarget ? `${sessionsThisWeek}/${strengthTarget}` : String(sessionsThisWeek)} />
           <Ring value={kmThisWeek} max={kmTarget} label={t('วิ่ง (กม.)', 'Run (km)')} text={kmTarget ? `${kmThisWeek.toFixed(1)}/${kmTarget}` : kmThisWeek.toFixed(1)} />
         </div>
@@ -112,7 +116,7 @@ export function Dashboard() {
               <div className="text-xs text-muted">{t(`วันนี้ (${todayPlan.day})`, `Today (${dt.weekday(todayPlan)})`)}</div>
               <div className="font-bold">{dt.title(todayPlan)}</div>
               {/* ชื่อบอกระยะอยู่แล้ว (เช่น "วิ่งสลับเดิน 3 กม.") ไม่ต้องซ้ำ */}
-              {!todayPlan.title.includes(todayPlan.duration) && <div className="text-xs text-muted">{todayPlan.duration !== '-' ? dt.duration(todayPlan) : todayPlan.note}</div>}
+              {!todayPlan.title.includes(todayPlan.duration) && <div className="text-xs text-muted">{todayPlan.duration !== '-' ? dt.duration(todayPlan) : dt.note(todayPlan.note ?? '')}</div>}
               {hint && <div className="text-xs font-semibold text-run">{hint}</div>}
             </div>
             {todayDone && <span className="grid size-9 shrink-0 animate-pop place-items-center rounded-full bg-good-fill text-white"><Check size={18} strokeWidth={3} /></span>}
@@ -158,14 +162,14 @@ function Ring({ value, max, label, text }: { value: number; max: number; label: 
   const c = 2 * Math.PI * r
   const pct = Math.min(1, max ? value / max : 0)
   return (
-    <div className="flex items-center gap-2.5 rounded-xl bg-white/10 p-2.5">
-      <svg viewBox="0 0 72 72" className="size-12 shrink-0" aria-hidden>
+    <div className="flex flex-col items-center gap-1 rounded-xl bg-white/10 p-2.5 text-center">
+      <svg viewBox="0 0 72 72" className="size-11 shrink-0" aria-hidden>
         <circle cx="36" cy="36" r={r} fill="none" stroke="rgb(255 255 255 / .25)" strokeWidth="8" />
         {pct > 0 && <circle cx="36" cy="36" r={r} fill="none" stroke="white" strokeWidth="8" strokeLinecap="round"
           strokeDasharray={`${c * pct} ${c}`} transform="rotate(-90 36 36)" className="animate-ring" />}
       </svg>
       <div>
-        <div className="text-xl font-extrabold tabular-nums">{text}</div>
+        <div className="text-base font-extrabold tabular-nums">{text}</div>
         <div className="text-xs opacity-80">{label}</div>
       </div>
     </div>
