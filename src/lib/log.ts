@@ -1,6 +1,6 @@
 import type { Point } from './gps'
-import { useEffect } from 'react'
-import { usePersisted } from './storage'
+import { useCallback, useEffect, useMemo } from 'react'
+import { readStored, usePersisted } from './storage'
 import { isCompact, roundPoint } from './geo'
 
 export type Run = {
@@ -34,15 +34,62 @@ export type Session = {
   minutes?: number
 }
 
-export const useRuns = () => usePersisted<Run[]>('runs', [])
+// เส้นทาง (route/times) เก็บแยกใน key 'routes' (id → เส้นทาง) — แก้ข้อมูลรอบวิ่ง (RPE ชนิด รองเท้า)
+// จะได้ไม่ต้องส่งเส้นทางทุกรอบขึ้น server ใหม่ทั้งก้อน · useRuns() รวมให้เหมือนเดิม คอมโพเนนต์ไม่ต้องรู้
+export type RouteData = { route: Point[]; times?: number[] }
+type Routes = Record<string, RouteData>
 
-/** ย่อเส้นทางของการวิ่งเก่า (ก่อน v1.4) ที่เก็บพิกัดเต็มทศนิยม ให้เหลือ 5 ตำแหน่ง — เรียกครั้งเดียวที่ราก */
+/** รวมรอบวิ่งกับเส้นทาง (เส้นทางที่ยังค้างอยู่ใน runs จากแอปเวอร์ชันเก่ามาก่อน) */
+export function joinRuns(runs: Run[], routes: Routes): Run[] {
+  return runs.map(r => (r.route || !routes[r.id] ? r : { ...r, ...routes[r.id] }))
+}
+
+/** แยกกลับ: runs ไม่มีเส้นทาง + routes ใหม่ (คงวัตถุเดิมถ้าไม่เปลี่ยน, ลบของรอบที่ถูกลบ) */
+export function splitRuns(next: Run[], prev: Routes): { runs: Run[]; routes: Routes; changed: boolean } {
+  const routes: Routes = {}
+  let changed = false
+  const runs = next.map(r => {
+    if (!r.route) {
+      if (prev[r.id]) routes[r.id] = prev[r.id] // ไม่มีเส้นทางมากับรอบนี้ = ไม่ได้แก้ เก็บของเดิมไว้
+      return r
+    }
+    const { route, times, ...rest } = r
+    const old = prev[r.id]
+    if (old && old.route === route && old.times === times) routes[r.id] = old
+    else { routes[r.id] = times ? { route, times } : { route }; changed = true }
+    return rest
+  })
+  if (Object.keys(prev).some(id => !routes[id])) changed = true
+  return { runs, routes, changed }
+}
+
+const useRawRuns = () => usePersisted<Run[]>('runs', [])
+const useRoutes = () => usePersisted<Routes>('routes', {})
+const stored = () => ({ runs: (readStored('runs') as Run[] | undefined) ?? [], routes: (readStored('routes') as Routes | undefined) ?? {} })
+
+export function useRuns() {
+  const [raw, setRaw] = useRawRuns()
+  const [routes, setRoutes] = useRoutes()
+  const runs = useMemo(() => joinRuns(raw, routes), [raw, routes])
+  const set = useCallback((next: Run[] | ((prev: Run[]) => Run[])) => {
+    const cur = stored()
+    const value = typeof next === 'function' ? next(joinRuns(cur.runs, cur.routes)) : next
+    const s = splitRuns(value, cur.routes)
+    if (s.changed) setRoutes(s.routes) // เส้นทางก่อน — ตอน runs เปลี่ยนจะได้รวมเจอเส้นทางแล้ว
+    setRaw(s.runs)
+  }, [setRaw, setRoutes])
+  return [runs, set] as const
+}
+
+/** เรียกครั้งเดียวที่ราก: ย้ายเส้นทางที่ยังอยู่ใน runs (ข้อมูลเก่า/อุปกรณ์ที่ยังใช้เวอร์ชันเก่า) ไป routes
+ *  และย่อพิกัดเต็มทศนิยม (ก่อน v1.4) ให้เหลือ 5 ตำแหน่ง */
 export function useCompactRuns() {
-  const [runs, setRuns] = useRuns()
+  const [raw] = useRawRuns()
+  const [, setRuns] = useRuns()
   useEffect(() => {
-    if (!runs.some(r => r.route && !isCompact(r.route))) return
+    if (!raw.some(r => r.route)) return
     setRuns(prev => prev.map(r => (r.route && !isCompact(r.route) ? { ...r, route: r.route.map(roundPoint) } : r)))
-  }, [runs, setRuns])
+  }, [raw, setRuns])
 }
 export const useSessions = () => usePersisted<Session[]>('sessions', [])
 

@@ -271,7 +271,9 @@ test('การวิ่งเก่าที่ระยะขาด: แก้
   await page.locator('main li button', { hasText: '2.00' }).click()
   await page.getByRole('button', { name: 'ใช้ระยะตามเส้นทาง' }).click()
   await expect.poll(async () => ((await idb(page, 'runs')) as { km: number }[])[0].km).toBeGreaterThan(3)
-  await expect(page.getByRole('button', { name: 'ใช้ระยะตามเส้นทาง' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'ใช้ระยะตามเส้นทาง' })).toHaveCount(0)  // เส้นทางเก่าที่อยู่ใน runs ถูกย้ายไปเก็บแยกใน routes (v2.44)
+  expect(((await idb(page, 'runs')) as { route?: unknown }[])[0].route).toBeUndefined()
+  expect(((await idb(page, 'routes')) as Record<string, { route: unknown[] }>).g.route.length).toBeGreaterThan(10)
 })
 
 test('รายละเอียดการวิ่ง: ผลชุดซ้อม และส่งออก GPX', async ({ page }) => {

@@ -2,7 +2,7 @@
 export type Point = [lat: number, lon: number]
 
 // เก็บพิกัด 5 ตำแหน่ง (~1 ม.) — ละเอียดพอสำหรับ GPS มือถือ (±3–10 ม.) และเล็กกว่าเลขทศนิยมเต็มราวครึ่งหนึ่ง
-// สำคัญเพราะเส้นทางทุกการวิ่งอยู่ใน key 'runs' เดียว และ localStorage จุได้ ~5 MB
+// ลดขนาดข้อมูลเส้นทาง (key 'routes') ที่ต้องเก็บและซิงก์
 const round5 = (v: number) => Math.round(v * 1e5) / 1e5
 export const roundPoint = ([lat, lon]: Point): Point => [round5(lat), round5(lon)]
 export const isCompact = (route: Point[]) => route.every(([lat, lon]) => lat === round5(lat) && lon === round5(lon))

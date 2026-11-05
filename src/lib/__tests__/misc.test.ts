@@ -544,3 +544,28 @@ describe('post-race recovery & easy-pace discipline', () => {
     expect(easyTooFast(run('2026-10-30', 5, 'easy', 5 * 330), undefined)).toBeNull()
   })
 })
+
+describe('routes stored apart from runs', () => {
+  it('splits, joins and keeps unchanged route objects', async () => {
+    const { joinRuns, splitRuns } = await import('../log')
+    const route = [[13.7, 100.5], [13.71, 100.51]] as [number, number][]
+    const old = { id: 'a', date: '2026-11-01', km: 3, seconds: 1200, kind: 'easy' as const, source: 'gps' as const, route, times: [0, 60] }
+    // ข้อมูลเก่า: เส้นทางอยู่ใน runs → ย้ายไป routes
+    const s = splitRuns(joinRuns([old], {}), {})
+    expect(s.runs[0]).not.toHaveProperty('route')
+    expect(s.routes.a).toEqual({ route, times: [0, 60] })
+    expect(s.changed).toBe(true)
+    // แก้ RPE: routes ไม่เปลี่ยน (ไม่ต้องส่งขึ้น server)
+    const joined = joinRuns(s.runs, s.routes)
+    expect(joined[0].route).toBe(route)
+    const s2 = splitRuns(joined.map(r => ({ ...r, rpe: 4 })), s.routes)
+    expect(s2.changed).toBe(false)
+    expect(s2.routes.a).toBe(s.routes.a)
+    expect(s2.runs[0].rpe).toBe(4)
+    // ลบรอบ → ลบเส้นทาง
+    expect(splitRuns([], s.routes)).toEqual({ runs: [], routes: {}, changed: true })
+    // รอบที่ไม่มีเส้นทางติดมา (เช่นจากอุปกรณ์อื่น) ไม่ทำให้เส้นทางเดิมหาย
+    const s3 = splitRuns(s.runs, s.routes)
+    expect(s3.routes.a).toBe(s.routes.a)
+  })
+})
