@@ -290,3 +290,10 @@ describe('hilly race course (raceHills)', () => {
     expect(withHills(base, 'base', 2)).toEqual(base)
   })
 })
+
+describe('unknown location from newer synced data', () => {
+  it('falls back to the gym plan instead of crashing', () => {
+    const days = weekPlan('mini', 3, () => 'pool' as never)
+    expect(days.every(d => d.type !== 'strength' || (d.location === 'gym' && d.exercises?.length))).toBe(true)
+  })
+})

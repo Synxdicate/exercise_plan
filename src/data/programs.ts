@@ -440,7 +440,9 @@ export function weekPlan(program: ProgramId, week: number, pick: (i: number) => 
   const v = variants(program, week)
   return v.gym.map((g, i) => {
     if (g.type !== 'strength') return g
-    const where = pick(i)
+    // สถานที่ที่แอปไม่รู้จัก (ข้อมูลซิงก์จากเวอร์ชันใหม่กว่า) → ยิม แทนที่จะพังทั้งแอป
+    const picked = pick(i)
+    const where: Mode = picked in v ? picked : 'gym'
     return { ...v[where][i], location: where }
   })
 }
