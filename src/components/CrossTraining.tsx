@@ -4,6 +4,7 @@ import { crossKinds, crossKindsEn, uid, useCross, type CrossKind } from '../lib/
 import { niceDate, today, weekStart } from '../lib/date'
 import { Button, Card, Collapse, Segmented } from './ui'
 import { useLang, useT } from '../lib/i18n'
+import { useDateField } from '../lib/useToday'
 import { DateInput, NumberInput, SelectInput } from './Form'
 
 /** คาร์ดิโอทดแทนการวิ่ง: ปั่นจักรยาน วิ่งในน้ำ ว่ายน้ำ — นับในความฟิต/ความล้า (RPE × นาที) */
@@ -12,7 +13,7 @@ export function CrossTrainingCard() {
   const kinds = useLang()[0] === 'en' ? crossKindsEn : crossKinds
   const [cross, setCross] = useCross()
   const [open, setOpen] = useState(false)
-  const [date, setDate] = useState(today())
+  const [date, setDate] = useDateField()
   const [kind, setKind] = useState<CrossKind>('bike')
   const [minutes, setMinutes] = useState('40')
   const [rpe, setRpe] = useState<'3' | '5' | '7'>('5')

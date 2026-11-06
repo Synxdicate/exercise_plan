@@ -26,3 +26,10 @@ export function useTodayIdx() {
   const date = useToday()
   return daysBetween(weekStart(date), date)
 }
+
+/** ช่องวันที่ในฟอร์มบันทึก: ใช้วันนี้ (เลื่อนตามเมื่อข้ามวัน) จนกว่าผู้ใช้จะเลือกวันเอง */
+export function useDateField() {
+  const now = useToday()
+  const [picked, setPicked] = useState<string | null>(null)
+  return [picked ?? now, setPicked] as const
+}

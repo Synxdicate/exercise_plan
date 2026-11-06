@@ -139,7 +139,7 @@ export function runAchievements(run: Run, runs: Run[]) {
 
 // session-RPE (Foster 2001): ภาระ = ความเหนื่อย (0–10) × นาที — ถ้าไม่ได้ให้คะแนนไว้ ใช้ค่าประมาณตามชนิดการวิ่ง
 const defaultRpe: Record<Run['kind'], number> = { easy: 3, long: 4, tempo: 6, interval: 8, race: 9, other: 4, walk: 2 }
-export const runLoad = (r: Run) => (r.rpe ?? defaultRpe[r.kind]) * (r.seconds / 60)
+export const runLoad = (r: Run) => (r.rpe ?? defaultRpe[r.kind] ?? 5) * (r.seconds / 60)
 export const sessionLoad = (s: Session) => (s.rpe ?? 6) * (s.minutes ?? 50)
 
 export type LoadDay = { date: string; load: number; fitness: number; fatigue: number; form: number; day: number }

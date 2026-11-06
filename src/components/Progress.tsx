@@ -14,6 +14,7 @@ import { TrainingCalendar } from './TrainingCalendar'
 import { useRemovePhotosFor } from '../lib/photos'
 import { ask } from '../lib/dialog'
 import { LegTestCard } from './LegTests'
+import { useDateField } from '../lib/useToday'
 import { useT } from '../lib/i18n'
 import { trNow } from '../lib/i18n'
 import { titleEn } from '../lib/dayText'
@@ -40,7 +41,7 @@ export function Progress() {
 function BodyLog() {
   const tr = useT()
   const [log, setLog] = usePersisted<Entry[]>('log', [])
-  const [date, setDate] = useState(today())
+  const [date, setDate] = useDateField()
   const [weight, setWeight] = useState('')
   const [waist, setWaist] = useState('')
 

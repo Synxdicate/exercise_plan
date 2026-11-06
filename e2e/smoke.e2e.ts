@@ -42,3 +42,34 @@ test('smoke English', async ({ page }) => {
   await expect(page.getByText('Something went wrong')).toHaveCount(0)
   expect(errors).toEqual([])
 })
+
+// ค่าตั้งแบบใช้งานจริง (ผสมยิม/สวน, ตั้งบ้านบางวัน, สลับวัน, สลับท่า, เส้นทางมีเนิน, ระยะงานจริง) — ทุกสัปดาห์ทุกวันในแท็บฝึกต้องไม่พัง
+const realistic = {
+  program: 'mini', programStart: '2026-11-02', raceDate: '2027-01-10', mode: 'mix', raceHills: true, raceKm: 11.55, raceCutoff: 120, soloMode: true,
+  dayLocation: { 'mini-w1-d1': 'home', 'mini-w1-d4': 'park', 'mini-w2-d4': 'home', 'mini-w5-d0': 'home' },
+  dayMoves: { '2026-11-02': [[1, 0]], '2026-11-16': [[4, 3], [0, 6]] },
+  exerciseSwaps: { 'Table Row': 'Australian Row', 'Hollow Body Hold': 'Ab Wheel Rollout', 'Seated Cable Row': 'Australian Row' },
+  done: { 'mini-w1-d0': true, 'mini-w2-d4': false },
+}
+for (const at of ['2026-11-06', '2026-11-18', '2027-01-08', '2027-01-10T06:00', '2027-01-15']) test(`smoke realistic settings @ ${at}`, async ({ page }) => {
+  const errors: string[] = []
+  page.on('pageerror', e => errors.push(e.message))
+  await page.clock.install({ time: new Date(`${at.length > 10 ? at : `${at}T08:00`}:00+07:00`) })
+  await seed(page, { ...realistic, runs: runs.filter(r => r.date <= at.slice(0, 10)) })
+  for (const i of [0, 2, 3, 4]) {
+    await page.locator('nav button').nth(i).click()
+    await expect(page.locator('[data-tab-loading]')).toHaveCount(0)
+  }
+  await page.locator('nav button').nth(1).click()
+  await expect(page.locator('[data-tab-loading]')).toHaveCount(0)
+  const weeks = page.locator('main .snap-start')
+  const n = await weeks.count()
+  expect(n).toBeGreaterThanOrEqual(10)
+  for (let w = 0; w < n; w++) {
+    await weeks.nth(w).click()
+    const days = page.locator('main .grid-cols-7 button[aria-pressed]')
+    for (let d = 0; d < 7; d++) await days.nth(d).click()
+  }
+  await expect(page.getByText('มีบางอย่างผิดพลาด')).toHaveCount(0)
+  expect(errors).toEqual([])
+})

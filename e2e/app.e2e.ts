@@ -585,3 +585,15 @@ test('เว็บ: มีเวอร์ชันใหม่บน server → 
   await expect(page.getByText('มีแอปเวอร์ชันใหม่')).toBeVisible()
   await expect(page.getByRole('button', { name: 'โหลดใหม่' })).toBeVisible()
 })
+
+test('สลับวันแล้วเปลี่ยนสถานที่ของวันที่สลับมา → เปลี่ยนวันนั้นจริง', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-11-03T08:00:00+07:00') })
+  // สัปดาห์ 1: เวท A (จันทร์) สลับไปวันอังคาร
+  await seed(page, { program: 'mini', programStart: '2026-11-02', raceDate: '2027-01-10', mode: 'gym', dayMoves: { '2026-11-02': [[1, 0]] } })
+  await nav(page, 'ฝึก')
+  await page.locator('main .grid-cols-7 button[aria-pressed]').nth(1).click()
+  await expect(page.getByText('สลับมาจากวันจันทร์')).toBeVisible()
+  await page.getByRole('button', { name: 'ที่บ้าน' }).click()
+  await expect.poll(() => idb(page, 'dayLocation')).toEqual({ 'mini-w1-d0': 'home' })
+  await expect(page.getByRole('button', { name: 'ที่บ้าน' })).toHaveAttribute('aria-pressed', 'true')
+})

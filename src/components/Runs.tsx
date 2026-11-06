@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { CalendarCheck, Check, CircleCheck, FileUp, Gauge, Ghost, History, Pause, Play, Plus, Satellite, TriangleAlert, Volume2, VolumeX, X } from 'lucide-react'
 import { GOOD_ACCURACY_M, useRunTracker } from '../lib/gps'
 import { useDayText } from '../lib/dayText'
-import { useTodayIdx } from '../lib/useToday'
+import { useTodayIdx, useDateField } from '../lib/useToday'
 import { formatDuration, formatPace, runKinds, runKindsEn, uid, useRuns, type Run } from '../lib/log'
 import { useT } from '../lib/i18n'
 import { runsOnly } from '../lib/walk'
@@ -403,7 +403,7 @@ function ActiveRun({ t, kind, target, fiveK, voice, setVoice, coachOn, setCoachO
 
 function ManualEntry({ onSave }: { onSave: (r: Run) => void }) {
   const tr = useT()
-  const [date, setDate] = useState(today())
+  const [date, setDate] = useDateField()
   const [km, setKm] = useState('')
   const [min, setMin] = useState('')
   const [kind, setKind] = useState<Run['kind']>('easy')

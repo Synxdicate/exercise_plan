@@ -69,7 +69,7 @@ export function Segmented<T extends string>({ value, options, onChange }: { valu
   return (
     <div data-segmented className="flex rounded-full bg-raised p-1 ring-1 ring-line">
       {options.map(o => (
-        <button key={o.value} onClick={() => onChange(o.value)}
+        <button key={o.value} onClick={() => onChange(o.value)} aria-pressed={value === o.value}
           className={cx('flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition',
             value === o.value ? 'bg-card text-accent shadow-sm' : 'text-muted')}>
           {o.label}
