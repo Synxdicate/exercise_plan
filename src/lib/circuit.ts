@@ -1,6 +1,6 @@
 // เซอร์กิตแกนกลาง/สะโพกสำหรับนักวิ่ง: ทำท่าละ 30 วิ พัก 15 วิ วน 2 รอบ (~12 นาที) — ใช้ร่างกายอย่างเดียว ทำที่ไหนก็ได้
 // โมดูลล้วน: ตารางขั้นตอน + หาว่าตอนนี้อยู่ขั้นไหนจากเวลาที่ผ่านไป
-export type Station = { name: string; th: string; en?: string }
+export type Station = { name: string; th: string; en?: string; sec?: number; how?: string; howEn?: string } // sec: เวลาเฉพาะท่านี้ (ไม่ใส่ = ใช้ work), how: วิธีทำ
 export type CircuitStep = { kind: 'work' | 'rest'; sec: number; station: Station; round: number }
 
 export const coreCircuit: Station[] = [
@@ -18,7 +18,7 @@ export function buildCircuit(stations: Station[], work = 30, rest = 15, rounds =
   const out: CircuitStep[] = []
   for (let r = 1; r <= rounds; r++)
     stations.forEach((station, i) => {
-      out.push({ kind: 'work', sec: work, station, round: r })
+      out.push({ kind: 'work', sec: station.sec ?? work, station, round: r })
       const last = r === rounds && i === stations.length - 1
       if (!last) out.push({ kind: 'rest', sec: rest, station: stations[(i + 1) % stations.length], round: r })
     })

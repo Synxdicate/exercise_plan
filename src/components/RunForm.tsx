@@ -8,7 +8,7 @@ const tips: [string, string][] = [
   ['ไม่ต้องฝืนลงหน้าเท้า', 'วิ่งช้า ลงส้นแล้วกลิ้งเท้าเป็นเรื่องปกติ ยิ่งเร็วจะลงกลางเท้าเอง — งานวิจัยไม่พบว่าการเปลี่ยนการลงเท้าช่วยให้ประหยัดแรงหรือเจ็บน้อยลง'],
   ['ลำตัวนิ่ง แขนผ่อน', 'มองตรงไปข้างหน้า ไหล่ไม่ยก แกว่งแขนจากหัวไหล่ไม่ข้ามลำตัว กำมือหลวม ๆ เกร็งท้องพอให้ตัวไม่โยกซ้ายขวา'],
   ['ท่าไม่ได้ทำให้เจ็บ ไม่ต้องรื้อ', 'รูปร่างแต่ละคนต่างกัน — ถ้าจะปรับ ปรับทีละอย่างช้า ๆ ระหว่างวิ่งเบา'],
-  ['วอร์มอัพก่อนวันวิ่งเร็ว', 'จ็อก 10 นาที แล้วทำยกเข่า เอสคิป เตะก้น ลันจ์ ท่าละ ~20 ม. (แอปมีขั้นนี้ในชุดซ้อมแล้ว)'],
+  ['วอร์มอัพก่อนวันวิ่งเร็ว', 'จ็อก 10 นาที แล้วทำดริลล์ท่าละ ~20 ม. — ดูการ์ด "ดริลล์ก่อนวิ่ง" ด้านบน (มีเสียงนำ)'],
 ]
 
 const tipsEn: [string, string][] = [
@@ -16,7 +16,7 @@ const tipsEn: [string, string][] = [
   ['No need to force a forefoot strike', 'At slow paces a heel strike and roll-through is normal; you’ll land more midfoot as you speed up — research hasn’t found that changing foot strike improves economy or injury rates'],
   ['Steady trunk, relaxed arms', 'Look ahead, shoulders down, swing arms from the shoulder without crossing your body, loose hands, enough core tension to stop side-to-side sway'],
   ['If your form isn’t causing pain, don’t overhaul it', 'Everyone’s build differs — if you change anything, change one thing slowly during easy runs'],
-  ['Warm up before fast days', 'Jog 10 min, then high knees, A-skips, butt kicks and lunges ~20 m each (already a step in the app’s workouts)'],
+  ['Warm up before fast days', 'Jog 10 min, then drills ~20 m each — see the "Pre-run drills" card above (voice-guided)'],
 ]
 
 export function RunFormTips() {

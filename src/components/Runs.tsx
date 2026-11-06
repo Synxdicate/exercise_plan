@@ -21,6 +21,7 @@ import { App } from '@capacitor/app'
 import { GuideCard } from './Guide'
 import { usePersisted } from '../lib/storage'
 import { RunFormTips } from './RunForm'
+import { DrillsCard } from './Drills'
 import { SweatCard } from './Sweat'
 import { CooldownSheet } from './Cooldown'
 import { CapNote } from './MissedRun'
@@ -240,6 +241,7 @@ export function Runs() {
       {view === 'start' && (
         <>
           <HeatCard />
+          {kind !== 'walk' && <DrillsCard kind={kind} />}
           <RunFormTips />
         </>
       )}

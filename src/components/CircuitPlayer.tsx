@@ -64,7 +64,8 @@ export function CircuitCard() {
   )
 }
 
-function CircuitPlayer({ steps: STEPS, rounds, onClose }: { steps: CircuitStep[]; rounds: number; onClose: () => void }) {
+/** ตัวจับเวลาทีละท่า (เสียงนำ, จอไม่ดับ) — ใช้กับเซอร์กิต (บันทึกเป็นการฝึก) และดริลล์ก่อนวิ่ง (ไม่บันทึก จบแล้วไปวิ่งต่อ) */
+export function CircuitPlayer({ steps: STEPS, rounds, onClose, drills = false }: { steps: CircuitStep[]; rounds: number; onClose: () => void; drills?: boolean }) {
   const tr = useT()
   const [, setSessions] = useSessions()
   const [running, setRunning] = useState(true)
@@ -96,9 +97,9 @@ function CircuitPlayer({ steps: STEPS, rounds, onClose }: { steps: CircuitStep[]
   useEffect(() => {
     if (at.index === spokenIdx.current) return
     spokenIdx.current = at.index
-    if (at.done) { void speak('จบเซอร์กิตแล้ว เยี่ยมมาก'); return }
+    if (at.done) { void speak(drills ? 'ดริลล์เสร็จแล้ว ไปวิ่งได้เลย' : 'จบเซอร์กิตแล้ว เยี่ยมมาก'); return }
     void speak(at.step.kind === 'work' ? `เริ่ม ${at.step.station.th}` : `พัก ต่อไป ${at.step.station.th}`)
-  }, [at])
+  }, [at, drills])
 
   const finish = () => {
     setSessions(prev => [...prev, { id: uid(), date: today(), mode: 'park', dayKey: 'circuit', title: 'เซอร์กิตแกนกลาง/สะโพก', entries: [], rpe: 5, minutes: Math.max(1, Math.round(elapsed / 60)) }])
@@ -117,14 +118,23 @@ function CircuitPlayer({ steps: STEPS, rounds, onClose }: { steps: CircuitStep[]
       <div className="fixed inset-0 z-50 animate-sheet-up overflow-y-auto bg-bg">
         <div className="mx-auto flex min-h-full max-w-lg flex-col gap-4 p-4 pb-[calc(var(--sab)+1rem)] pt-[calc(var(--sat)+1rem)]">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-muted">{tr('รอบ', 'Round')} {at.step.round}/{rounds} · {tr('ขั้น', 'step')} {Math.min(at.index + 1, STEPS.length)}/{STEPS.length}</span>
+            <span className="text-sm font-semibold text-muted">{drills ? tr('ดริลล์ก่อนวิ่ง', 'Pre-run drills') : <>{tr('รอบ', 'Round')} {at.step.round}/{rounds}</>} · {tr('ขั้น', 'step')} {Math.min(at.index + 1, STEPS.length)}/{STEPS.length}</span>
             <button onClick={onClose} aria-label={tr('ปิด', 'Close')} className="grid size-9 place-items-center rounded-full bg-raised"><X size={18} /></button>
           </div>
           {at.done ? (
             <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
-              <div className="text-2xl font-extrabold">{tr('จบเซอร์กิตแล้ว', 'Circuit done')}</div>
-              <p className="text-sm text-muted">{tr(`${Math.round(elapsed / 60)} นาที — บันทึกไว้ในประวัติการฝึกได้เลย`, `${Math.round(elapsed / 60)} min — save it to your workout history`)}</p>
-              <Button size="lg" onClick={finish}>{tr('บันทึก', 'Save')}</Button>
+              <div className="text-2xl font-extrabold">{drills ? tr('ดริลล์เสร็จแล้ว', 'Drills done') : tr('จบเซอร์กิตแล้ว', 'Circuit done')}</div>
+              {drills ? (
+                <>
+                  <p className="text-sm text-muted">{tr('ร่างกายอุ่นแล้ว — เริ่มวิ่งภายในไม่กี่นาที อย่าพักนานจนตัวเย็น', 'You’re warm — start running within a few minutes, before you cool down')}</p>
+                  <Button size="lg" onClick={onClose}>{tr('ไปเริ่มวิ่ง', 'Go run')}</Button>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-muted">{tr(`${Math.round(elapsed / 60)} นาที — บันทึกไว้ในประวัติการฝึกได้เลย`, `${Math.round(elapsed / 60)} min — save it to your workout history`)}</p>
+                  <Button size="lg" onClick={finish}>{tr('บันทึก', 'Save')}</Button>
+                </>
+              )}
             </div>
           ) : (
             <>
@@ -137,6 +147,7 @@ function CircuitPlayer({ steps: STEPS, rounds, onClose }: { steps: CircuitStep[]
                 </div>
               </div>
               <ExerciseDemo key={at.step.station.name} name={at.step.station.name} />
+              {at.step.station.how && <p className="text-sm text-muted">{tr(at.step.station.how, at.step.station.howEn ?? at.step.station.how)}</p>}
               <div className="mt-auto flex items-center justify-center gap-4">
                 <button onClick={() => setRunning(!running)} aria-label={running ? tr('หยุด', 'Pause') : tr('ทำต่อ', 'Resume')} className="grid size-16 place-items-center rounded-full bg-accent-fill text-white shadow-lg">
                   {running ? <Pause size={28} fill="currentColor" /> : <Play size={28} fill="currentColor" />}

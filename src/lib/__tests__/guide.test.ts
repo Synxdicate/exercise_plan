@@ -59,7 +59,7 @@ describe('GuideRunner', () => {
     const s = guides.reps('5 × 800 ม. / จ็อก 2 นาที')
     expect(stepAnnouncement(s, 4, { interval: 310 })).toBe('ช่วงเร็ว ครั้งที่ 2 จาก 5. 800 เมตร. เพซ 5 นาที 10 วินาที ต่อกิโล')
     expect(stepAnnouncement(s, 0)).toBe('วอร์มอัพ. 2 กิโลเมตร')
-    expect(stepAnnouncement(s, 1)).toBe('ท่าวอร์มอัพ ยกเข่า เอสคิป เตะก้น ลันจ์ ท่าละ 20 เมตร. 4 นาที')
+    expect(stepAnnouncement(s, 1)).toBe('ดริลล์ แองค์ลิง ยกเข่า เตะก้น เอสคิป สเตรตเลกบาวด์ ท่าละ 20 เมตร. 4 นาที')
   })
 })
 

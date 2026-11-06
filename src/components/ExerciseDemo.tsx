@@ -49,6 +49,12 @@ function StickFigure({ demo, frame, name, className }: { demo: StickDemo; frame:
           {demo.props.map((pr, i) => pr.kind === 'floor'
             ? <line key={i} x1={0} y1={72.5} x2={120} y2={72.5} className="stroke-line" strokeWidth={1.5} />
             : <rect key={i} x={pr.x - 4} y={0} width={4} height={72} className="fill-line" />)}
+          {(p.knee2 || p.elbow2) && (
+            <g className="stroke-muted" strokeWidth={3.2} strokeLinecap="round" fill="none" opacity={0.6}>
+              {p.elbow2 && <>{line(p.shoulder, p.elbow2)}{p.hand2 && line(p.elbow2, p.hand2)}</>}
+              {p.knee2 && <>{line(p.hip, p.knee2)}{p.foot2 && line(p.knee2, p.foot2)}</>}
+            </g>
+          )}
           <g className="stroke-ink" strokeWidth={3.2} strokeLinecap="round" fill="none">
             {line(p.shoulder, p.hip)}
             {line(p.shoulder, p.elbow)}

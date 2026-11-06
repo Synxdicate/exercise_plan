@@ -9,7 +9,7 @@ export type Step = { kind: StepKind; sec?: number; m?: number; pace?: PaceKey; l
 const warm = (m = 2000): Step => ({ kind: 'warm', m, pace: 'easy' })
 const cool = (sec = 300): Step => ({ kind: 'cool', sec, pace: 'easy' })
 // วอร์มอัพไดนามิกก่อนช่วงเร็ว (วิ่งเร็ว/เนิน/ทดสอบ) — ท่าฝึกการประสานกล้ามเนื้อ (อ.เอกวิทย์, โค้ชใบพัน) · วอร์มอัพช่วยประสิทธิภาพ (Fradkin 2010)
-const drills: Step = { kind: 'warm', sec: 240, label: 'ท่าวอร์มอัพ ยกเข่า เอสคิป เตะก้น ลันจ์ ท่าละ 20 เมตร' }
+const drills: Step = { kind: 'warm', sec: 240, label: 'ดริลล์ แองค์ลิง ยกเข่า เตะก้น เอสคิป สเตรตเลกบาวด์ ท่าละ 20 เมตร' }
 const repeat = (n: number, work: Step, rec: Step): Step[] =>
   Array.from({ length: n }, (_, i) => (i < n - 1 ? [work, rec] : [work])).flat()
 
@@ -67,7 +67,7 @@ export const stepLabel = (s: Step) => s.label ?? (s.pace === 'stride' ? 'เร�
 const KIND_LABEL_EN: Record<StepKind, string> = { warm: 'Warm-up', work: 'Fast', recover: 'Recover', cool: 'Cool-down', easy: 'Easy run' }
 const LABEL_EN: Record<string, string> = {
   'ขึ้นเนิน': 'Uphill', 'เดิน': 'Walk', 'เดินคูลดาวน์': 'Cool-down walk', 'เดินเร็ววอร์มอัพ': 'Brisk-walk warm-up', 'ทดสอบ 5K': '5K test',
-  'ท่าวอร์มอัพ ยกเข่า เอสคิป เตะก้น ลันจ์ ท่าละ 20 เมตร': 'Drills: high knees, A-skips, butt kicks, lunges — 20 m each', 'วิ่งเบา': 'Easy run',
+  'ดริลล์ แองค์ลิง ยกเข่า เตะก้น เอสคิป สเตรตเลกบาวด์ ท่าละ 20 เมตร': 'Drills: ankling, A-march, butt kicks, A-skips, straight-leg bounds — 20 m each', 'วิ่งเบา': 'Easy run',
 }
 export const stepLabelEn = (s: Step) => (s.label ? LABEL_EN[s.label] ?? s.label : s.pace === 'stride' ? 'Stride' : s.kind === 'recover' && !s.pace ? 'Walk back' : KIND_LABEL_EN[s.kind])
 

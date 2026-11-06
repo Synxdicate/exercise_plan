@@ -1,11 +1,61 @@
 // ภาพลายเส้นท่าที่ไม่มีรูปถ่ายที่ตรงพอ — มุมมองด้านข้าง viewBox 120×80, พื้นที่ y = 72
 // แต่ละท่ามี 2 ท่วงท่า (เริ่ม/จบ) ระบุตำแหน่งข้อต่อ: หัว ไหล่ ศอก มือ สะโพก เข่า เท้า
 export type Pt = [number, number]
-export type Pose = { head: Pt; shoulder: Pt; elbow: Pt; hand: Pt; hip: Pt; knee: Pt; foot: Pt }
+export type Pose = { head: Pt; shoulder: Pt; elbow: Pt; hand: Pt; hip: Pt; knee: Pt; foot: Pt; elbow2?: Pt; hand2?: Pt; knee2?: Pt; foot2?: Pt } // *2 = แขน/ขาข้างไกล (วาดจาง)
 export type Prop = { kind: 'wall'; x: number } | { kind: 'floor' }
 export type StickDemo = { poses: [Pose, Pose]; props: Prop[] }
 
 export const stickDemos: Record<string, StickDemo> = {
+  // ดริลล์ก่อนวิ่ง (หันขวา) — ขาข้างไกลวาดจาง
+  'Leg Swing': {
+    props: [{ kind: 'wall', x: 82 }, { kind: 'floor' }],
+    poses: [
+      { head: [60, 12], shoulder: [60, 21], elbow: [68, 25], hand: [77, 27], hip: [60, 44], knee: [50, 54], foot: [42, 64], knee2: [60, 58], foot2: [60, 72] },
+      { head: [59, 12], shoulder: [59, 21], elbow: [67, 25], hand: [77, 27], hip: [60, 44], knee: [70, 54], foot: [80, 63], knee2: [60, 58], foot2: [60, 72] },
+    ],
+  },
+  'Lateral Leg Swing': {
+    props: [{ kind: 'floor' }],
+    poses: [
+      { head: [60, 12], shoulder: [60, 21], elbow: [52, 30], hand: [47, 38], hip: [60, 44], knee: [71, 55], foot: [81, 66], knee2: [57, 58], foot2: [56, 72], elbow2: [68, 30], hand2: [73, 38] },
+      { head: [60, 12], shoulder: [60, 21], elbow: [52, 30], hand: [47, 38], hip: [60, 44], knee: [53, 57], foot: [46, 69], knee2: [57, 58], foot2: [56, 72], elbow2: [68, 30], hand2: [73, 38] },
+    ],
+  },
+  Ankling: {
+    props: [{ kind: 'floor' }],
+    poses: [
+      { head: [61, 12], shoulder: [61, 21], elbow: [57, 31], hand: [62, 38], hip: [60, 44], knee: [64, 58], foot: [66, 71], knee2: [57, 58], foot2: [55, 72], elbow2: [65, 31], hand2: [70, 36] },
+      { head: [61, 11], shoulder: [61, 20], elbow: [65, 30], hand: [70, 35], hip: [60, 43], knee: [65, 56], foot: [64, 66], knee2: [60, 57], foot2: [60, 72], elbow2: [56, 30], hand2: [60, 38] },
+    ],
+  },
+  'A-March': {
+    props: [{ kind: 'floor' }],
+    poses: [
+      { head: [60, 12], shoulder: [60, 21], elbow: [55, 31], hand: [62, 37], hip: [60, 44], knee: [60, 58], foot: [60, 72], knee2: [73, 44], foot2: [73, 58], elbow2: [66, 31], hand2: [73, 25] },
+      { head: [60, 12], shoulder: [60, 21], elbow: [66, 31], hand: [73, 25], hip: [60, 44], knee: [73, 44], foot: [73, 58], knee2: [60, 58], foot2: [60, 72], elbow2: [55, 31], hand2: [62, 37] },
+    ],
+  },
+  'Butt Kicks': {
+    props: [{ kind: 'floor' }],
+    poses: [
+      { head: [61, 12], shoulder: [61, 21], elbow: [56, 31], hand: [62, 37], hip: [60, 44], knee: [61, 58], foot: [52, 47], knee2: [61, 58], foot2: [61, 72], elbow2: [66, 31], hand2: [72, 26] },
+      { head: [61, 12], shoulder: [61, 21], elbow: [66, 31], hand: [72, 26], hip: [60, 44], knee: [61, 58], foot: [61, 72], knee2: [61, 58], foot2: [52, 47], elbow2: [56, 31], hand2: [62, 37] },
+    ],
+  },
+  'A-Skip': {
+    props: [{ kind: 'floor' }],
+    poses: [
+      { head: [60, 8], shoulder: [60, 17], elbow: [55, 27], hand: [62, 33], hip: [60, 40], knee: [61, 54], foot: [62, 67], knee2: [73, 40], foot2: [73, 54], elbow2: [66, 27], hand2: [73, 21] },
+      { head: [60, 12], shoulder: [60, 21], elbow: [66, 31], hand: [73, 25], hip: [60, 44], knee: [73, 44], foot: [73, 58], knee2: [60, 58], foot2: [60, 72], elbow2: [55, 31], hand2: [62, 37] },
+    ],
+  },
+  'Straight-Leg Bound': {
+    props: [{ kind: 'floor' }],
+    poses: [
+      { head: [60, 9], shoulder: [60, 18], elbow: [53, 27], hand: [49, 36], hip: [60, 41], knee: [68, 52], foot: [76, 63], knee2: [53, 53], foot2: [47, 65], elbow2: [67, 27], hand2: [72, 36] },
+      { head: [60, 12], shoulder: [60, 21], elbow: [67, 30], hand: [72, 39], hip: [60, 44], knee: [62, 58], foot: [63, 72], knee2: [66, 56], foot2: [72, 67], elbow2: [53, 30], hand2: [49, 39] },
+    ],
+  },
   'Wall Sit': {
     props: [{ kind: 'wall', x: 30 }, { kind: 'floor' }],
     poses: [
