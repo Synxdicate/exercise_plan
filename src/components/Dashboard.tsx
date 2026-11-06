@@ -58,7 +58,6 @@ export function Dashboard() {
   const runDaysThisWeek = new Set(runsOnly(runs).filter(r => weekStart(r.date) === thisWeek).map(r => r.date)).size
   const runTarget = p.finished ? 0 : plan.filter(d => d.type === 'run').length
   const streak = weekStreak(sessions.map(s => s.date), runs.map(r => r.date))
-  const activeThisWeek = [...sessions, ...runs].filter(x => weekStart(x.date) === thisWeek).length
   const todayIdx = useTodayIdx() // 0 = จันทร์ — เปลี่ยนเองเมื่อข้ามวัน
   // ผ่านวันแข่งแล้ว: ไม่มีแผนวันนี้ (การ์ดขั้นต่อไปด้านบนพาไปเลือกโปรแกรมใหม่)
   const todayPlan = p.finished ? undefined : plan[todayIdx]
@@ -91,10 +90,12 @@ export function Dashboard() {
             )}
           </div>
           <div className="flex flex-col items-end gap-1">
-            <div className="flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm font-semibold">
-              {/* streak นับสัปดาห์ที่ฝึก ≥3 ครั้ง — ยังเป็น 0 ให้บอกว่าสัปดาห์นี้ได้กี่ครั้งแล้ว แทนการขึ้น "0 สัปดาห์" */}
-              <Flame size={16} /> {streak ? t(`ต่อเนื่อง ${streak} สัปดาห์`, `${streak}-week streak`) : t(`สัปดาห์นี้ ${Math.min(activeThisWeek, 3)}/3 ครั้ง`, `This week ${Math.min(activeThisWeek, 3)}/3`)}
-            </div>
+            {/* streak นับสัปดาห์ที่ฝึก ≥3 ครั้ง — ยังเป็น 0 ไม่ต้องแสดง เพราะวงด้านล่างบอกความคืบหน้าสัปดาห์นี้อยู่แล้ว */}
+            {streak > 0 && (
+              <div className="flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm font-semibold">
+                <Flame size={16} /> {t(`ต่อเนื่อง ${streak} สัปดาห์`, `${streak}-week streak`)}
+              </div>
+            )}
             {form && <button onClick={() => nav('progress')} className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">{t('ฟอร์ม', 'Form')}: {t(form.label, form.labelEn)}</button>}
           </div>
         </div>

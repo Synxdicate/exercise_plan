@@ -47,8 +47,9 @@ export function HeatCard() {
   return (
     <section className="rounded-2xl bg-card p-3.5 shadow-sm ring-1 ring-line">
       <button onClick={() => setOpen(!open)} aria-expanded={open} className="flex w-full items-center gap-3 text-left active:scale-100">
-        <span className={cx('grid size-11 shrink-0 place-items-center rounded-xl text-center leading-none', tone[level])}>
+        <span className={cx('flex size-11 shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl text-center leading-none', tone[level])}>
           <span className="text-base font-extrabold tabular-nums">{cur.wbgt.toFixed(0)}°</span>
+          <span className="text-[9px] font-bold">WBGT</span>
         </span>
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-1.5 text-sm font-bold"><Thermometer size={14} className="text-warn" /> {t(heatAdvice[level].label, heatAdvice[level].labelEn)} · {cur.temp.toFixed(0)}°C {t('ชื้น', 'RH')} {cur.rh}%</span>

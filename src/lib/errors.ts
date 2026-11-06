@@ -30,7 +30,8 @@ export function captureError(err: unknown, context?: string) {
 let sending = false
 /** ส่งรายการที่ยังไม่ส่ง (เรียกตอนเกิด error และหลังซิงก์) */
 export async function sendErrors() {
-  if (sending) return
+  // error จาก dev server (HMR ค้างครึ่งทาง) ไม่ใช่บั๊กของผู้ใช้ — เก็บในเครื่องแต่ไม่ส่งขึ้นเซิร์ฟเวอร์
+  if (sending || import.meta.env.DEV) return
   const pending = errorLog().filter(e => !e.sent)
   if (!pending.length) return
   sending = true

@@ -231,6 +231,7 @@ export function useProgram() {
     addExercise: (d: Day, e: Exercise) => setExtras(prev => ({ ...prev, [extrasKey(program, d)]: [...(prev[extrasKey(program, d)] ?? []), e] })),
     removeExercise: (d: Day, name: string) => setExtras(prev => ({ ...prev, [extrasKey(program, d)]: (prev[extrasKey(program, d)] ?? []).filter(e => e.name !== name) })),
     kmTarget: (week = currentWeek) => weekKm(program, Math.max(1, week)),
+    /** i = ลำดับวันก่อนสลับวัน (ส่ง day.movedFrom ถ้าวันนั้นถูกสลับมา) */
     setDayLocation: (week: number, i: number, m: Mode) => setOverrides(prev => ({ ...prev, [slotId(week, i)]: m })),
     doneId: slotId,
     // รองรับ id แบบเก่า (ผูกกับ mode + key ของวัน) ที่เคยติ๊กไว้ก่อนหน้า

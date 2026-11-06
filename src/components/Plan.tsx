@@ -184,7 +184,7 @@ function PlanBody() {
         done={isDone(selected)} hint={paceHint(est, day.runKind, day.title)} weekNoteText={note}
         setDone={v => setDayDone(selected, v)}
         onStart={() => setChecking(selected)}
-        onLocation={m => p.setDayLocation(week, selected, m)} slotId={p.doneId(week, selected)}
+        onLocation={m => p.setDayLocation(week, day.movedFrom ?? selected, m)} slotId={p.doneId(week, selected)}
         onDoToday={canDoToday ? () => void doToday() : undefined}
         date={addDays(p.mondayOf(week), selected)} />
 

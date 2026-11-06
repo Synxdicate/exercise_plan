@@ -17,6 +17,7 @@ import { LegTestCard } from './LegTests'
 import { useT } from '../lib/i18n'
 import { trNow } from '../lib/i18n'
 import { titleEn } from '../lib/dayText'
+import { useNav } from '../lib/nav'
 
 type Entry = { date: string; weight: number; waist?: number }
 
@@ -133,9 +134,18 @@ function WorkoutHistory() {
   const [editing, setEditing] = useState<string | null>(null)
   const removePhotos = useRemovePhotosFor()
   const [months, setMonths] = useState(3)
+  const nav = useNav()
 
   if (sessions.length === 0)
-    return <Card><p className="py-6 text-center text-sm text-muted">{tr('ยังไม่มีบันทึก — ไปที่แท็บ "ฝึก" แล้วกด "เริ่มฝึก" ในวันเวท', 'Nothing logged yet — open the plan tab and tap "Start workout" on a strength day')}</p></Card>
+    return (
+      <Card>
+        <div className="flex flex-col items-center gap-3 py-5 text-center">
+          <Dumbbell size={28} className="text-muted" />
+          <p className="text-sm text-muted">{tr('ยังไม่มีบันทึกเวท — กด "เริ่มฝึก" ในวันเวทของตาราง', 'No workouts logged yet — tap "Start workout" on a strength day in your plan')}</p>
+          <Button variant="soft" onClick={() => nav('plan')}>{tr('ไปที่ตารางฝึก', 'Open the plan')}</Button>
+        </div>
+      </Card>
+    )
 
   // แสดงทีละ 3 เดือน มีหัวเดือนพร้อมจำนวนครั้ง
   const sorted = [...sessions].sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id))
