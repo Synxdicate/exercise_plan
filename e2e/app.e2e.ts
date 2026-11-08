@@ -105,8 +105,8 @@ test('แชร์การวิ่ง: การ์ดทึบ และส�
   await page.getByRole('button', { name: 'ประวัติ' }).click()
   await page.locator('main li button', { hasText: '3.02' }).click()
   await page.getByRole('button', { name: 'แชร์เป็นรูป' }).click()
-  // ตารางพรีวิว: การ์ดสี + สติกเกอร์ 4 แบบ (รอบนี้ไม่มีเพซรายกิโล จึงไม่มีแบบ splits)
-  await expect(page.locator('[role=radio] img')).toHaveCount(5)
+  // ตารางพรีวิว: การ์ดสี + สติกเกอร์ 8 แบบ (รอบนี้ไม่มีเพซรายกิโล จึงไม่มีแบบ splits)
+  await expect(page.locator('[role=radio] img')).toHaveCount(9)
   const alpha = () => page.locator('[role=radio][aria-checked=true] img').evaluate(async (img: HTMLImageElement) => {
     await img.decode()
     const c = document.createElement('canvas')

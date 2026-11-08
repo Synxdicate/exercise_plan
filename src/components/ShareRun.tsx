@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Copy, Download, Share2 } from 'lucide-react'
 import type { Run } from '../lib/log'
-import { renderRunCard, saveImage, shareRunImage, SHARE_LAYOUTS, type CardStyle, type ShareLayout } from '../lib/shareImage'
+import { layoutFits, renderRunCard, saveImage, shareRunImage, SHARE_LAYOUTS, type CardStyle, type ShareLayout } from '../lib/shareImage'
 import { usePersisted } from '../lib/storage'
 import { isNative } from '../lib/native'
 import { notify } from '../lib/dialog'
@@ -17,6 +17,7 @@ type Choice = 'card' | ShareLayout
 const LABELS: Record<Choice, [string, string]> = {
   card: ['การ์ดสี', 'Color card'], stats: ['ตัวเลข + เส้นทาง', 'Stats + route'], row: ['เส้นทาง + แถวตัวเลข', 'Route + row'],
   route: ['เส้นทางอย่างเดียว', 'Route only'], splits: ['เพซรายกิโล', 'KM splits'], ticket: ['ตั๋ววันวิ่ง', 'Run ticket'],
+  big: ['ระยะตัวใหญ่', 'Big distance'], circle: ['ป้ายวงกลม', 'Circle badge'], pace: ['กราฟเพซ', 'Pace graph'], bottom: ['แถบล่าง (เว้นที่ให้รูป)', 'Bottom bar'],
 }
 
 export function ShareRunSheet({ run, onClose }: { run: Run; onClose: () => void }) {
@@ -25,8 +26,7 @@ export function ShareRunSheet({ run, onClose }: { run: Run; onClose: () => void 
   const [style, setStyle] = usePersisted<CardStyle>('shareStyle', 'white')
   const [layout, setLayout] = usePersisted<ShareLayout>('shareLayout', 'stats')
   const ink: 'white' | 'black' = style === 'black' ? 'black' : 'white'
-  const hasRoute = (run.route?.length ?? 0) > 1
-  const choices: Choice[] = ['card', ...SHARE_LAYOUTS.filter(l => (l !== 'route' && l !== 'row') || hasRoute).filter(l => l !== 'splits' || (run.splits?.length ?? 0) > 0)]
+  const choices: Choice[] = ['card', ...SHARE_LAYOUTS.filter(l => layoutFits(run, l))]
   const picked: Choice = style === 'card' ? 'card' : choices.includes(layout) ? layout : 'stats'
   const [previews, setPreviews] = useState<Partial<Record<Choice, { canvas: HTMLCanvasElement; url: string }>>>({})
   const [busy, setBusy] = useState(false)

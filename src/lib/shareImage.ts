@@ -5,6 +5,7 @@ import { formatDuration, formatPace, runKinds, runKindsEn, type Run } from './lo
 import { trNow } from './i18n'
 import { isNative } from './native'
 import { projectRoute } from './geo'
+import { paceSeries } from './analysis'
 
 // การ์ดรูปการวิ่งสำหรับแชร์ (1080×1350 = สัดส่วน 4:5 ของ IG) — สีคงที่ ไม่ตามธีม เพราะเป็นรูปที่ส่งออก
 const W = 1080
@@ -18,9 +19,19 @@ const thaiDate = (s: string) => {
 
 export type CardStyle = 'card' | 'white' | 'black'
 /** แบบของสติกเกอร์ (พื้นโปร่ง): stats = ตัวเลขเรียงลง + เส้นทาง, row = เส้นทางใหญ่ + ตัวเลขแถวเดียว,
- *  route = เส้นทางอย่างเดียว, splits = เพซรายกิโล, ticket = ตั๋ววันวิ่ง */
-export type ShareLayout = 'stats' | 'row' | 'route' | 'splits' | 'ticket'
-export const SHARE_LAYOUTS: ShareLayout[] = ['stats', 'row', 'route', 'splits', 'ticket']
+ *  route = เส้นทางอย่างเดียว, splits = เพซรายกิโล, ticket = ตั๋ววันวิ่ง, big = ระยะตัวใหญ่, circle = ป้ายวงกลม,
+ *  pace = กราฟเพซตลอดเส้นทาง, bottom = แถบตัวเลขชิดขอบล่าง (เหลือที่ให้รูปตัวเอง) */
+export type ShareLayout = 'stats' | 'row' | 'route' | 'splits' | 'ticket' | 'big' | 'circle' | 'pace' | 'bottom'
+export const SHARE_LAYOUTS: ShareLayout[] = ['stats', 'row', 'route', 'splits', 'ticket', 'big', 'circle', 'pace', 'bottom']
+
+/** แบบที่ใช้ได้กับรอบนี้ (บางแบบต้องมีเส้นทาง/เพซรายกิโล/เวลาตามจุด GPS) */
+export const layoutFits = (run: Run, l: ShareLayout) => {
+  const hasRoute = (run.route?.length ?? 0) > 1
+  if (l === 'route' || l === 'row') return hasRoute
+  if (l === 'splits') return (run.splits?.length ?? 0) > 0
+  if (l === 'pace') return hasRoute && paceSeries(run.route!, run.times ?? []).length >= 10
+  return true
+}
 const WEEKDAY_TH = ['วันอาทิตย์', 'วันจันทร์', 'วันอังคาร', 'วันพุธ', 'วันพฤหัสบดี', 'วันศุกร์', 'วันเสาร์']
 const WEEKDAY_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
@@ -63,6 +74,10 @@ export async function renderRunCard(run: Run, style: CardStyle = 'card', layout:
     else if (layout === 'route' && hasRoute) drawRouteOnly(g, run, ink)
     else if (layout === 'splits' && (run.splits?.length ?? 0) > 0) drawSplits(g, run, ink)
     else if (layout === 'ticket') drawTicket(g, run, ink)
+    else if (layout === 'big') drawBig(g, run)
+    else if (layout === 'circle') drawCircle(g, run, ink)
+    else if (layout === 'pace' && layoutFits(run, 'pace')) drawPace(g, run, ink)
+    else if (layout === 'bottom') drawBottom(g, run, ink)
     else return drawSticker(g, c, run, style, hasRoute)
     g.shadowBlur = 0
     g.textAlign = 'left'
@@ -256,6 +271,125 @@ function drawTicket(g: CanvasRenderingContext2D, run: Run, ink: string) {
   g.font = `500 36px ${FONT}`
   g.fillText(`${thaiDate(run.date)} · ${formatDuration(run.seconds)}`, W / 2, by + 565)
   g.globalAlpha = 1
+}
+
+// ระยะตัวใหญ่เต็มภาพ + เวลา/เพซบรรทัดเดียว
+function drawBig(g: CanvasRenderingContext2D, run: Run) {
+  g.textAlign = 'center'
+  const km = run.km.toFixed(2)
+  g.font = `800 300px ${FONT}`
+  const scale = Math.min(1, (W - 120) / g.measureText(km).width)
+  g.font = `800 ${Math.floor(300 * scale)}px ${FONT}`
+  g.fillText(km, W / 2, 700)
+  g.font = `700 72px ${FONT}`
+  g.fillText(trNow('กิโลเมตร', 'kilometres'), W / 2, 810)
+  g.globalAlpha = 0.9
+  g.font = `600 48px ${FONT}`
+  g.fillText(`${formatDuration(run.seconds)}  ·  ${formatPace(run.seconds, run.km)} ${trNow('/กม.', '/km')}`, W / 2, 920)
+  g.globalAlpha = 1
+  footer(g, run, H - 110)
+}
+
+// ป้ายวงกลม: วงแหวน + ระยะกลางวง + เวลา/เพซใต้วง
+function drawCircle(g: CanvasRenderingContext2D, run: Run, ink: string) {
+  const cx = W / 2, cy = 600, r = 330
+  g.strokeStyle = ink
+  g.lineWidth = 10
+  g.beginPath()
+  g.arc(cx, cy, r, 0, Math.PI * 2)
+  g.stroke()
+  g.lineWidth = 3
+  g.beginPath()
+  g.arc(cx, cy, r - 30, 0, Math.PI * 2)
+  g.stroke()
+  g.textAlign = 'center'
+  g.font = `700 44px ${FONT}`
+  g.fillText(trNow(`วิ่ง ${runKinds[run.kind]}`, `${runKindsEn[run.kind]} run`), cx, cy - 150)
+  g.font = `800 190px ${FONT}`
+  g.fillText(run.km.toFixed(2), cx, cy + 60)
+  g.font = `600 52px ${FONT}`
+  g.fillText(trNow('กม.', 'km'), cx, cy + 140)
+  g.font = `800 64px ${FONT}`
+  g.fillText(formatDuration(run.seconds), cx - 230, cy + r + 150)
+  g.fillText(formatPace(run.seconds, run.km), cx + 230, cy + r + 150)
+  g.globalAlpha = 0.85
+  g.font = `500 34px ${FONT}`
+  g.fillText(trNow('เวลา', 'Time'), cx - 230, cy + r + 80)
+  g.fillText(trNow('เพซ /กม.', 'Pace /km'), cx + 230, cy + r + 80)
+  g.globalAlpha = 1
+  footer(g, run)
+}
+
+// กราฟเพซตลอดเส้นทาง (สูง = เร็ว) + ตัวเลขด้านล่าง
+function drawPace(g: CanvasRenderingContext2D, run: Run, ink: string) {
+  // เฉลี่ยเคลื่อนที่ 7 จุด ให้กราฟเรียบ (GPS แกว่ง)
+  const raw = paceSeries(run.route!, run.times!)
+  const series = raw.map((p, i) => {
+    const win = raw.slice(Math.max(0, i - 3), i + 4)
+    return { km: p.km, pace: win.reduce((a, q) => a + q.pace, 0) / win.length }
+  })
+  const box = { x: 100, y: 330, w: W - 200, h: 460 }
+  const paces = series.map(p => p.pace)
+  const fast = Math.min(...paces), slow = Math.max(...paces)
+  const maxKm = series.at(-1)!.km
+  const pt = (p: { km: number; pace: number }): [number, number] =>
+    [box.x + (p.km / maxKm) * box.w, box.y + (slow === fast ? 0.5 : (p.pace - fast) / (slow - fast)) * box.h]
+  g.textAlign = 'left'
+  g.font = `800 56px ${FONT}`
+  g.fillText(trNow('เพซตลอดเส้นทาง', 'Pace along the run'), box.x, box.y - 90)
+  g.globalAlpha = 0.85
+  g.font = `500 32px ${FONT}`
+  g.fillText(trNow(`เร็วสุด ${formatPace(fast, 1)} · ช้าสุด ${formatPace(slow, 1)} /กม.`, `Fastest ${formatPace(fast, 1)} · slowest ${formatPace(slow, 1)} /km`), box.x, box.y - 35)
+  g.globalAlpha = 1
+  g.strokeStyle = ink
+  g.lineWidth = 8
+  g.lineJoin = 'round'
+  g.lineCap = 'round'
+  g.beginPath()
+  series.forEach((p, i) => { const [x, y] = pt(p); if (i) g.lineTo(x, y); else g.moveTo(x, y) })
+  g.stroke()
+  g.lineWidth = 2
+  g.globalAlpha = 0.6
+  g.beginPath()
+  g.moveTo(box.x, box.y + box.h + 30)
+  g.lineTo(box.x + box.w, box.y + box.h + 30)
+  g.stroke()
+  g.globalAlpha = 1
+  const stats = statList(run).slice(0, 3)
+  const colW = (W - 120) / stats.length
+  g.textAlign = 'center'
+  stats.forEach(([label, value], i) => {
+    const x = 60 + colW * (i + 0.5)
+    g.globalAlpha = 0.85
+    g.font = `500 32px ${FONT}`
+    g.fillText(label, x, 990)
+    g.globalAlpha = 1
+    g.font = `800 60px ${FONT}`
+    g.fillText(value, x, 1065)
+  })
+  footer(g, run)
+}
+
+// แถบตัวเลขชิดขอบล่าง — ด้านบนว่างให้เห็นรูปของตัวเองเต็ม ๆ
+function drawBottom(g: CanvasRenderingContext2D, run: Run, ink: string) {
+  const stats = statList(run)
+  const colW = (W - 120) / stats.length
+  g.textAlign = 'left'
+  g.font = `800 52px ${FONT}`
+  g.fillText(trNow(`วิ่ง ${runKinds[run.kind]}`, `${runKindsEn[run.kind]} run`), 60, H - 290)
+  g.fillStyle = ink
+  g.fillRect(60, H - 255, W - 120, 4)
+  g.textAlign = 'center'
+  stats.forEach(([label, value], i) => {
+    const x = 60 + colW * (i + 0.5)
+    g.globalAlpha = 0.85
+    g.font = `500 30px ${FONT}`
+    g.fillText(label, x, H - 190)
+    g.globalAlpha = 1
+    g.font = `800 ${stats.length > 3 ? 50 : 60}px ${FONT}`
+    g.fillText(value, x, H - 125)
+  })
+  footer(g, run)
 }
 
 /** แชร์รูป: แอปใช้หน้าต่างแชร์ของ Android, เว็บใช้ Web Share ถ้ารองรับ ไม่งั้นดาวน์โหลด */
