@@ -45,6 +45,12 @@ export function withRaceKm(days: Day[], km: number): Day[] {
 export const extrasKey = (program: string, d: Day) => `${program}:${d.key}:${d.location ?? 'gym'}`
 
 /** ใส่ท่าที่ผู้ใช้สลับ (ทุกวันที่มีท่านั้น) และท่าที่เพิ่มเอง (ต่อวัน+สถานที่) ลงในแผน */
+/** เรียก f ถ้า throw ให้ใช้ fallback และรายงาน error (นำเข้าแบบ dynamic เพื่อไม่ดึง Supabase เข้าเทสต์) */
+export function safeLayer<T>(layer: string, f: () => T, fallback: () => T, report: (e: unknown, ctx: string) => void = reportLater): T {
+  try { return f() } catch (e) { report(e, `plan:${layer}`); return fallback() }
+}
+const reportLater = (e: unknown, ctx: string) => queueMicrotask(() => { void import('./errors').then(m => m.captureError(e, ctx)).catch(() => {}) })
+
 export function applyCustom(days: Day[], program: string, swaps: Record<string, string>, extras: Record<string, Exercise[]>, solo = false): Day[] {
   return days.map(d => {
     if (d.type !== 'strength') return d
@@ -204,12 +210,16 @@ export function useProgram() {
       return raw < 1 ? null : raw - repeats.filter(r => r > start && r <= monday).length > meta.weeks ? null : weekAt(start, repeats, monday, meta.weeks)
     },
     plan: (week = currentWeek) => {
-      const base = applyCustom(weekPlan(program, Math.max(1, week), i => locationFor(week, i)), program, swaps, extras, solo)
-      const days = raceHills ? withHills(base, program, Math.max(1, week)) : base
+      // แต่ละชั้นที่อ่านข้อมูลซิงก์ (สถานที่ สลับท่า เนิน สลับวัน) ถ้าพังจากข้อมูลแปลก ๆ ให้ข้ามชั้นนั้น ไม่ให้ทั้งแอปแครช
+      const w = Math.max(1, week)
+      const raw = safeLayer('location', () => weekPlan(program, w, i => locationFor(week, i)), () => weekPlan(program, w, () => 'gym'))
+      const base = safeLayer('custom', () => applyCustom(raw, program, swaps, extras, solo), () => raw)
+      const days = raceHills ? safeLayer('hills', () => withHills(base, program, w), () => base) : base
       const mv = moves[mondayOf(week)]
-      if (!isRace || week !== meta.weeks) return applyMoves(days, mv)
-      const sized = raceKmOverride ? withRaceKm(days, raceKmOverride) : days
-      return applyMoves(raceDate ? placeRaceDay(sized, (new Date(`${raceDate}T00:00:00`).getDay() + 6) % 7) : sized, mv)
+      const moved = (d: Day[]) => safeLayer('moves', () => applyMoves(d, mv), () => d)
+      if (!isRace || week !== meta.weeks) return moved(days)
+      const sized = raceKmOverride ? safeLayer('raceKm', () => withRaceKm(days, raceKmOverride), () => days) : days
+      return moved(raceDate ? safeLayer('raceDay', () => placeRaceDay(sized, (new Date(`${raceDate}T00:00:00`).getDay() + 6) % 7), () => sized) : sized)
     },
     /** สลับเนื้อหาวัน a กับ b ในสัปดาห์ `week` (เช่น ทำแผนวันอังคารวันนี้) */
     moveDay: (week: number, a: number, b: number) => setMoves(prev => ({ ...prev, [mondayOf(week)]: [...(prev[mondayOf(week)] ?? []), [a, b]] })),
