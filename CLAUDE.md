@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 The app is called **Kao (ก้าว)** — display name only. Internal ids stay `exercise-plan` on purpose (Android appId, IndexedDB db name, backup `app` field, `exercise-plan.apk` release asset the in-app updater looks for, service-worker cache); renaming them would break updates or existing data.
 
-A personal, Thai-language workout + nutrition planner (Vite + React 19 + TypeScript + Tailwind CSS v4, no router, `lucide-react` icons, Leaflet/OpenStreetMap for run maps). It's a static SPA deployed to Vercel (`vercel.json`, output `dist/`). Auth and cross-device sync use Supabase (Google + email/password); login is optional — "local mode" (`src/lib/localMode.ts`, device flag `localMode` in localStorage) keeps everything on the device, and logging in later merges it up (first login on a device without an `owner` key).
+A personal, Thai-language workout + nutrition planner (Vite + React 19 + TypeScript 7 + Tailwind CSS v4, no router, `lucide-react` icons, Leaflet/OpenStreetMap for run maps). It's a static SPA deployed to Vercel (`vercel.json`, output `dist/`). Auth and cross-device sync use Supabase (Google + email/password); login is optional — "local mode" (`src/lib/localMode.ts`, device flag `localMode` in localStorage) keeps everything on the device, and logging in later merges it up (first login on a device without an `owner` key).
 
 Env: `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` in `.env.local` (see `.env.example`) and in Vercel project env vars. `src/lib/supabase.ts` throws at startup if missing.
 
