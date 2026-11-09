@@ -23,9 +23,10 @@ def render_glyph(px=2048):
 
 GLYPH = render_glyph()
 
-def glyph(height, color=(255, 255, 255)):
-    w = round(GLYPH.width * height / GLYPH.height)
-    g = GLYPH.resize((w, height), Image.LANCZOS)
+def glyph(box, color=(255, 255, 255)):
+    """ย่อ/ขยายให้ด้านที่ยาวกว่าเท่ากับ box พิกเซล"""
+    k = box / max(GLYPH.width, GLYPH.height)
+    g = GLYPH.resize((round(GLYPH.width * k), round(GLYPH.height * k)), Image.LANCZOS)
     solid = Image.new('RGBA', g.size, color + (255,))
     solid.putalpha(g.split()[3])
     return solid
@@ -48,14 +49,14 @@ def icon(size, shape, ratio):
 
 def foreground(size):
     im = Image.new('RGBA', (size * 4, size * 4), (0, 0, 0, 0))
-    return paste_center(im, glyph(round(size * 4 * 0.42))).resize((size, size), Image.LANCZOS)
+    return paste_center(im, glyph(round(size * 4 * 0.5))).resize((size, size), Image.LANCZOS)
 
 def splash(w, h, bg):
     im = Image.new('RGBA', (w, h), bg + (255,))
-    return paste_center(im, glyph(round(min(w, h) * 0.2), RED)).convert('RGB')
+    return paste_center(im, glyph(round(min(w, h) * 0.3), RED)).convert('RGB')
 
 # sources in assets/
-icon(1024, 'square', 0.6).convert('RGB').save(os.path.join(ROOT, 'assets/icon-only.png'))
+icon(1024, 'square', 0.74).convert('RGB').save(os.path.join(ROOT, 'assets/icon-only.png'))
 foreground(1024).save(os.path.join(ROOT, 'assets/icon-foreground.png'))
 Image.new('RGB', (1024, 1024), RED).save(os.path.join(ROOT, 'assets/icon-background.png'))
 splash(2732, 2732, LIGHT).save(os.path.join(ROOT, 'assets/splash.png'))
@@ -64,8 +65,8 @@ splash(2732, 2732, DARK).save(os.path.join(ROOT, 'assets/splash-dark.png'))
 # android launcher icons (sizes from the existing files)
 for dpi, s in {'mdpi': 48, 'hdpi': 72, 'xhdpi': 96, 'xxhdpi': 144, 'xxxhdpi': 192}.items():
     d = os.path.join(RES, f'mipmap-{dpi}')
-    icon(s, 'round', 0.6).save(os.path.join(d, 'ic_launcher.png'))
-    icon(s, 'circle', 0.55).save(os.path.join(d, 'ic_launcher_round.png'))
+    icon(s, 'round', 0.74).save(os.path.join(d, 'ic_launcher.png'))
+    icon(s, 'circle', 0.66).save(os.path.join(d, 'ic_launcher_round.png'))
     foreground(round(s * 2.25)).save(os.path.join(d, 'ic_launcher_foreground.png'))
 
 # android splash: keep each existing file's size

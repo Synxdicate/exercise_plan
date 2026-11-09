@@ -1,7 +1,7 @@
-import { FootPaths } from './Logo'
+import { SHOE } from '../lib/shoeShape'
 
 // ไอคอนแท็บด้านล่างที่วาดเอง ชุดเดียวกันทั้งหมด: เส้นมนหนาเท่ากัน แท็บที่เลือกเติมสีจาง ๆ ด้านใน (duotone)
-// แท็บวิ่งใช้รอยเท้าจากโลโก้ของแอป
+// แท็บวิ่งใช้รองเท้าวิ่งจากโลโก้ของแอป
 export type NavIconName = 'home' | 'plan' | 'runs' | 'food' | 'progress'
 
 const shapes: Record<Exclude<NavIconName, 'runs'>, { fill: string; line?: string }> = {
@@ -17,8 +17,10 @@ const shapes: Record<Exclude<NavIconName, 'runs'>, { fill: string; line?: string
 export function NavIcon({ name, active, size = 22 }: { name: NavIconName; active: boolean; size?: number }) {
   if (name === 'runs')
     return (
-      <svg viewBox="-330 -330 660 660" width={size} height={size} aria-hidden fill={active ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={active ? 0 : 42} strokeLinejoin="round">
-        <FootPaths />
+      <svg viewBox="4 6 96 54" width={size} height={size} aria-hidden fill="none" stroke="currentColor" strokeWidth={active ? 8.4 : 7.2} strokeLinecap="round" strokeLinejoin="round">
+        <path d={SHOE.silhouette} fill={active ? 'currentColor' : 'none'} fillOpacity={0.22} />
+        <path d={SHOE.midsole} strokeWidth={active ? 6.5 : 5.5} />
+        <path d={SHOE.laces} strokeWidth={5} />
       </svg>
     )
   const s = shapes[name]

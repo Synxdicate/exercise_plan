@@ -1,23 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- ไอคอนแจ้งเตือน (ขาวล้วน) จากโลโก้ assets/logo.svg -->
+<!-- ไอคอนแจ้งเตือน (ขาวล้วน): เงารองเท้าวิ่งจากโลโก้ assets/logo.svg -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="24dp" android:height="24dp" android:viewportWidth="660" android:viewportHeight="660">
-    <group android:translateX="330" android:translateY="330">
-        <group android:translateX="-120" android:translateY="96" android:rotation="-10" android:scaleX="-1">
-            <path android:fillColor="#FFFFFFFF" android:pathData="M6 -150 C66 -150 92 -96 88 -34 C85 22 66 62 56 96 C50 118 -18 118 -24 96 C-28 70 -12 40 -30 6 C-48 -26 -70 -50 -66 -92 C-62 -132 -36 -150 6 -150 Z" />
-            <path android:fillColor="#FFFFFFFF" android:pathData="M-20 140 C-22 124 54 118 58 136 C64 170 44 206 16 206 C-12 206 -22 170 -20 140 Z" />
-            <path android:fillColor="#FFFFFFFF" android:pathData="M-68,-184 a26,26 0 1,0 52,0 a26,26 0 1,0 -52,0 Z" />
-            <path android:fillColor="#FFFFFFFF" android:pathData="M-11,-200 a19,19 0 1,0 38,0 a19,19 0 1,0 -38,0 Z" />
-            <path android:fillColor="#FFFFFFFF" android:pathData="M30,-190 a16,16 0 1,0 32,0 a16,16 0 1,0 -32,0 Z" />
-            <path android:fillColor="#FFFFFFFF" android:pathData="M63,-166 a13,13 0 1,0 26,0 a13,13 0 1,0 -26,0 Z" />
-        </group>
-        <group android:translateX="120" android:translateY="-84" android:rotation="10">
-            <path android:fillColor="#FFFFFFFF" android:pathData="M6 -150 C66 -150 92 -96 88 -34 C85 22 66 62 56 96 C50 118 -18 118 -24 96 C-28 70 -12 40 -30 6 C-48 -26 -70 -50 -66 -92 C-62 -132 -36 -150 6 -150 Z" />
-            <path android:fillColor="#FFFFFFFF" android:pathData="M-20 140 C-22 124 54 118 58 136 C64 170 44 206 16 206 C-12 206 -22 170 -20 140 Z" />
-            <path android:fillColor="#FFFFFFFF" android:pathData="M-68,-184 a26,26 0 1,0 52,0 a26,26 0 1,0 -52,0 Z" />
-            <path android:fillColor="#FFFFFFFF" android:pathData="M-11,-200 a19,19 0 1,0 38,0 a19,19 0 1,0 -38,0 Z" />
-            <path android:fillColor="#FFFFFFFF" android:pathData="M30,-190 a16,16 0 1,0 32,0 a16,16 0 1,0 -32,0 Z" />
-            <path android:fillColor="#FFFFFFFF" android:pathData="M63,-166 a13,13 0 1,0 26,0 a13,13 0 1,0 -26,0 Z" />
+    android:width="24dp" android:height="24dp" android:viewportWidth="110" android:viewportHeight="110">
+    <group android:translateX="55" android:translateY="57" android:rotation="-14">
+        <group android:translateX="-53" android:translateY="-34">
+            <path android:fillColor="#FFFFFFFF" android:pathData="M11 53 L80 53 C88 53 94 49 97.5 43 C99 40 97 37.5 93 36.5 C83 34.5 73 31.5 65 26.5 L53 16.5 C50.5 13.5 46.5 12.5 43.5 14.5 C38.5 18.5 31 22 23 21.5 C19 21 17.5 17 14 16 C10.5 15.5 9 18.5 9 22 C8.5 30 7.5 40 8 46 C8.2 50.5 9.2 53 11 53 Z" />
         </group>
     </group>
 </vector>
