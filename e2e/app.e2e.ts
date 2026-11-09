@@ -617,3 +617,18 @@ test('สภาพอากาศ: ดูพยากรณ์ของพรุ
   await page.getByRole('button', { name: 'พรุ่งนี้', exact: true }).click()
   await expect(page.getByText('ช่วงเหมาะสุด 06:00')).toBeVisible()
 })
+
+test('โค้ช: ทวงเวทเมื่อไม่ได้เล่นมานาน และสรุปหลังวิ่ง', async ({ page }) => {
+  const monday = (() => { const d = new Date(`${ymd(0)}T00:00:00`); d.setDate(d.getDate() - ((d.getDay() + 6) % 7) - 14); return d.toLocaleDateString('en-CA') })()
+  await seed(page, {
+    program: 'ten', programStart: monday,
+    runs: [{ id: 'e', date: ymd(1), km: 5, seconds: 5 * 480, kind: 'easy', source: 'manual', rpe: 8 }],
+  })
+  await expect(page.getByText(/ยังไม่ได้เริ่มเวทเลย/)).toBeVisible()
+  await page.getByRole('button', { name: 'ไว้ทีหลัง' }).click()
+  await expect(page.getByText(/ยังไม่ได้เริ่มเวทเลย/)).toHaveCount(0)
+  await nav(page, 'วิ่ง')
+  await page.getByRole('button', { name: 'ประวัติ' }).click()
+  await page.locator('main li button', { hasText: '5.00' }).click()
+  await expect(page.getByText(/โค้ช: วันเบาแต่เหนื่อยมาก/)).toBeVisible()
+})

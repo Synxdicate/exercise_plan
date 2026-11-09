@@ -7,7 +7,7 @@ import { looksLikeWalk } from '../lib/walk'
 import { saveGpx } from '../lib/gpxFile'
 import { useShoes } from '../lib/shoes'
 import { paceSeries, remeasure, splitAnalysis } from '../lib/analysis'
-import { easyTooFast } from '../lib/recovery'
+import { CoachReview } from './Coach'
 import { PaceChart, ZoneBar } from './Charts'
 import { zoneInfo, zoneOf } from '../lib/zones'
 import { RpePicker } from './RpePicker'
@@ -72,8 +72,6 @@ export function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { r
   useBackClose(onClose)
   const series = run.route && run.times ? paceSeries(run.route, run.times) : []
   const sa = splitAnalysis(run.splits)
-  // "หลงความเร็ว" (ครูดิน): วิ่งเบาเร็วกว่าโซนเบา — เทียบเฉพาะเมื่อโซนคิดจากผลวิ่งเต็มที่ (fiveK มาจาก zoneRef)
-  const tooFast = easyTooFast(run, fiveK ? fiveK * 1.2 : undefined)
   const saText = sa && {
     // เร็วขึ้นเกิน 10% มักแปลว่าช่วงแรกเดิน/วอร์มอัพ มากกว่าการคุมแรง
     negative: sa.diffPct < -10
@@ -112,9 +110,7 @@ export function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { r
             {run.guide.finished ? tr(`ทำครบตามแผน (วิ่ง ${run.guide.work} ช่วง)`, `Workout completed (${run.guide.work} reps)`) : tr(`ทำชุดซ้อมได้ ${run.guide.work}/${run.guide.total} ช่วง — ร่างกายไม่พร้อมก็หยุดได้ ไม่ต้องฝืน วันหลังยังมี`, `${run.guide.work}/${run.guide.total} reps done — stopping when your body says no is fine`)}
           </p>
         )}
-        {tooFast && (
-          <p className="mb-3 rounded-xl bg-warn/15 p-2.5 text-sm text-warn">{tr(`วิ่งเบาเร็วกว่าโซนเบา ~${tooFast} วิ/กม. — วันเบาควรเบาจริง วันวิ่งเร็วจะได้มีแรง ("หลงความเร็ว" เป็นสาเหตุเจ็บที่พบบ่อย)`, `Easy run ~${tooFast} s/km faster than the easy zone — keep easy days easy so fast days have quality (chasing pace is a common injury cause)`)}</p>
-        )}
+        <CoachReview run={run} runs={runs} fiveK={fiveK} splitDiffPct={sa?.diffPct} />
         {fix && (
           <div className="mb-3 rounded-xl bg-warn/15 p-3 text-sm text-warn">
             <p>{tr(`ระยะตามเส้นทางคือ ${fix.km.toFixed(2)} กม. แต่บันทึกไว้ ${run.km.toFixed(2)} กม. — แอปก่อน v2.26 นับช่วงเดินขาด`, `The route measures ${fix.km.toFixed(2)} km but ${run.km.toFixed(2)} km was saved — versions before v2.26 missed walking sections`)}</p>
