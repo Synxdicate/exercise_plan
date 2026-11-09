@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type PointerEvent } from 'react'
 import { CalendarDays } from 'lucide-react'
 import { useRuns, formatDuration } from '../lib/log'
 import { useProgram } from '../lib/program'
@@ -18,7 +18,10 @@ export function ThisWeekCard() {
   const p = useProgram()
   const monday = weekStart(today())
   const weeks = useMemo(() => weeklySeries(runs, monday, N), [runs, monday])
+  // ไม่มีเส้นแผนในสัปดาห์ก่อนเริ่มโปรแกรมปัจจุบัน (เช่น เพิ่งเปลี่ยนจากมินิเป็น 10K กลางทาง)
+  const startMonday = p.storedStart && !p.prepWeeks.length ? weekStart(p.storedStart) : ''
   const planned = weeks.map(w => {
+    if (w.monday < startMonday) return null
     const n = p.weekOf(w.monday)
     return n === null ? null : p.kmTarget(n) || null
   })
@@ -39,6 +42,12 @@ export function ThisWeekCard() {
   const labels = weeks.flatMap((w, i) => (changes[i] || (i === 0 && (firstChange < 0 || firstChange > 2))
     ? [{ i, text: month.format(new Date(`${w.monday}T00:00:00`)) }] : []))
 
+  // ลากแนวนอนเลื่อนดูสัปดาห์ ลากแนวตั้งยังเลื่อนหน้าได้ (touch-pan-y)
+  const scrub = (e: PointerEvent<SVGSVGElement>) => {
+    const r = e.currentTarget.getBoundingClientRect()
+    const px = ((e.clientX - r.left) / r.width) * W
+    setSel(Math.max(0, Math.min(N - 1, Math.round(((px - L) / (W - L - R)) * (N - 1)))))
+  }
   const cur = weeks[N - 1]
   const s = weeks[sel]
   const hasPlan = planned.some(v => v !== null)
@@ -67,13 +76,9 @@ export function ThisWeekCard() {
         )}
       </div>
 
-      <svg viewBox={`0 0 ${W} ${H}`} className="mt-1 block w-full touch-none select-none" role="img"
+      <svg viewBox={`0 0 ${W} ${H}`} className="mt-1 block w-full touch-pan-y select-none" role="img"
         aria-label={t(`ระยะวิ่ง 12 สัปดาห์ล่าสุด สัปดาห์นี้ ${cur.km.toFixed(1)} กม.`, `Running distance, last 12 weeks; this week ${cur.km.toFixed(1)} km`)}
-        onPointerMove={e => {
-          const r = e.currentTarget.getBoundingClientRect()
-          const px = ((e.clientX - r.left) / r.width) * W
-          setSel(Math.max(0, Math.min(N - 1, Math.round(((px - L) / (W - L - R)) * (N - 1)))))
-        }}
+        onPointerDown={scrub} onPointerMove={scrub}
         onPointerLeave={e => { if (e.pointerType === 'mouse') setSel(N - 1) }}>
         {ticks.map(v => (
           <g key={v}>

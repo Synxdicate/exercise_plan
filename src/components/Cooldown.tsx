@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Check, Droplets, Footprints, Play, Sandwich, StretchHorizontal } from 'lucide-react'
 import { formatDuration, formatPace, useRuns, type Run } from '../lib/log'
 import { RunAchievements } from './RunExtras'
@@ -43,7 +43,8 @@ export function CooldownSheet({ run, onUpdate, onDone }: { run: Run; onUpdate: (
   const [walked, setWalked] = useState(false)
   const [showStretch, setShowStretch] = useState(false)
   const [runs] = useRuns()
-  const all = runs.some(r => r.id === run.id) ? runs : [...runs, run]
+  // หน้านี้ render ทุก 0.5 วิ ตอนจับเวลาคูลดาวน์ ต้องคงอ้างอิงไว้ ไม่งั้นคิดสถิติทั้งหมดใหม่ทุกครั้ง
+  const all = useMemo(() => (runs.some(r => r.id === run.id) ? runs : [...runs, run]), [runs, run])
   const left = endAt ? Math.max(0, Math.ceil((endAt - now) / 1000)) : WALK_SEC
 
   useEffect(() => {
