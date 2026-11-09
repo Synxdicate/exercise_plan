@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { ChevronDown, MapPin, Thermometer, Wind } from 'lucide-react'
-import { airAdvice, airLevel, bestHour, heatAdvice, heatLevel, useHeat, type AirLevel, type HeatLevel } from '../lib/weather'
+import { airAdvice, airLevel, bestHour, bestHourOn, heatAdvice, heatLevel, useHeat, type AirLevel, type HeatLevel } from '../lib/weather'
 import { cx } from '../lib/cx'
-import { Collapse } from './ui'
+import { Collapse, Segmented } from './ui'
+import { addDays } from '../lib/date'
 import { useT } from '../lib/i18n'
 
 const tone: Record<HeatLevel, string> = {
@@ -21,9 +22,10 @@ const nowIso = () => {
 }
 
 /** ความร้อน + ฝุ่น PM2.5 ตอนนี้ และช่วงเวลาที่เหมาะกับการวิ่ง (พยากรณ์จาก Open-Meteo) */
-export function HeatCard() {
+export function HeatCard({ initialDay = 'today' }: { initialDay?: 'today' | 'tomorrow' }) {
   const { hours, place, error } = useHeat()
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(initialDay === 'tomorrow')
+  const [day, setDay] = useState<'today' | 'tomorrow'>(initialDay)
   const t = useT()
   if (error) return null
   // โครงเดียวกับการ์ดจริง (สูงเท่ากัน) — หน้าไม่กระโดดตอนโหลดเสร็จ
@@ -42,7 +44,10 @@ export function HeatCard() {
   const level = heatLevel(cur.wbgt)
   const best = bestHour(hours, now)
   const air = cur.pm25 === undefined ? null : airLevel(cur.pm25)
-  const strip = hours.filter(h => h.time.slice(0, 10) === now.slice(0, 10) && h.hour >= 5 && h.hour <= 21)
+  const date = day === 'today' ? now.slice(0, 10) : addDays(now.slice(0, 10), 1)
+  const strip = hours.filter(h => h.time.slice(0, 10) === date && h.hour >= 5 && h.hour <= 21)
+  const dayBest = bestHourOn(hours, date, now)
+  const morning = strip.find(h => h.hour === 6)
 
   return (
     <section className="rounded-2xl bg-card p-3.5 shadow-sm ring-1 ring-line">
@@ -66,8 +71,18 @@ export function HeatCard() {
       )}
       <Collapse open={open}>
         <div className="pt-3">
-          <p className="text-sm">{t(heatAdvice[level].text, heatAdvice[level].textEn)}</p>
-          {air && air !== 'good' && <p className="mt-1.5 text-sm">{t(airAdvice[air].text, airAdvice[air].textEn)}</p>}
+          {day === 'today' && <p className="text-sm">{t(heatAdvice[level].text, heatAdvice[level].textEn)}</p>}
+          {day === 'today' && air && air !== 'good' && <p className="mt-1.5 text-sm">{t(airAdvice[air].text, airAdvice[air].textEn)}</p>}
+          <div className={day === 'today' ? 'mt-3' : ''}>
+            <Segmented value={day} onChange={setDay} options={[{ value: 'today', label: t('วันนี้', 'Today') }, { value: 'tomorrow', label: t('พรุ่งนี้', 'Tomorrow') }]} />
+          </div>
+          {dayBest ? (
+            <p className="mt-2 text-sm">
+              <span className="font-semibold">{t('ช่วงเหมาะสุด', 'Best time')} {String(dayBest.hour).padStart(2, '0')}:00</span>
+              {' '}· WBGT ~{dayBest.wbgt.toFixed(0)}° {t(heatAdvice[heatLevel(dayBest.wbgt)].label, heatAdvice[heatLevel(dayBest.wbgt)].labelEn)}{dayBest.pm25 !== undefined && ` · PM2.5 ${dayBest.pm25}`}
+              {day === 'tomorrow' && morning && morning !== dayBest && <span className="block text-xs text-muted">06:00 · WBGT ~{morning.wbgt.toFixed(0)}° · {morning.temp.toFixed(0)}°C{morning.pm25 !== undefined && ` · PM2.5 ${morning.pm25}`}</span>}
+            </p>
+          ) : <p className="mt-2 text-sm text-muted">{t('วันนี้เลย 21:00 แล้ว — ดูของพรุ่งนี้แทน', 'Past 21:00 — check tomorrow instead')}</p>}
           {strip.length > 0 && (
             <div className="mt-3">
               <div className="flex h-10 items-end gap-0.5">

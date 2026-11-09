@@ -604,3 +604,16 @@ test('เซอร์กิตแกนกลางไม่นับเป็�
   await page.getByRole('button', { name: /สรุปสัปดาห์ที่แล้ว/ }).click()
   await expect(page.getByText(/^0 \/ \d+ ครั้ง$/)).toBeVisible()
 })
+
+test('สภาพอากาศ: ดูพยากรณ์ของพรุ่งนี้ได้', async ({ page }) => {
+  const day = (offset: number) => ymd(-offset)
+  const hours = [0, 1].flatMap(o => Array.from({ length: 24 }, (_, h) => ({
+    time: `${day(o)}T${String(h).padStart(2, '0')}:00`, hour: h, temp: 30, rh: 70,
+    wbgt: o === 1 && h === 6 ? 22 : 31, pm25: 20,
+  })))
+  await seed(page, { heatCache: { at: Date.now(), v: 2, hours, place: { name: 'ขอนแก่น', precise: true } } })
+  await nav(page, 'วิ่ง')
+  await page.getByRole('button', { name: /WBGT/ }).first().click()
+  await page.getByRole('button', { name: 'พรุ่งนี้', exact: true }).click()
+  await expect(page.getByText('ช่วงเหมาะสุด 06:00')).toBeVisible()
+})

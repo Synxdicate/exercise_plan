@@ -102,7 +102,7 @@ async function placeName({ lat, lon }: Loc): Promise<string | null> {
 async function fetchAir(lat: number, lon: number) {
   const out = new Map<string, number>()
   try {
-    const r = await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&hourly=pm2_5&timezone=auto&forecast_days=2`, { signal: AbortSignal.timeout(TIMEOUT) })
+    const r = await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&hourly=pm2_5&timezone=auto&forecast_days=3`, { signal: AbortSignal.timeout(TIMEOUT) })
     if (!r.ok) return out
     const d = await r.json() as { hourly: { time: string[]; pm2_5: (number | null)[] } }
     d.hourly.time.forEach((t, i) => { const v = d.hourly.pm2_5[i]; if (v != null) out.set(t, Math.round(v)) })
@@ -130,7 +130,7 @@ export async function fetchForecast(): Promise<Forecast> {
   try {
     return await fetchFresh()
   } catch (e) {
-    // ออฟไลน์: ใช้พยากรณ์เดิมได้ถ้ายังครอบคลุมวันนี้ (ดึงมา 2 วัน)
+    // ออฟไลน์: ใช้พยากรณ์เดิมได้ถ้ายังครอบคลุมวันนี้ (ดึงมา 3 วัน จึงยังมีของพรุ่งนี้)
     if (c && Date.now() - c.at < 24 * 3600 * 1000) return c
     throw e
   }
@@ -139,7 +139,7 @@ export async function fetchForecast(): Promise<Forecast> {
 async function fetchFresh(): Promise<Forecast> {
   const loc = await locate()
   const { lat, lon } = loc
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,relative_humidity_2m&timezone=auto&forecast_days=2`
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,relative_humidity_2m&timezone=auto&forecast_days=3`
   const [res, air] = await Promise.all([fetch(url, { signal: AbortSignal.timeout(TIMEOUT) }), fetchAir(lat, lon)])
   if (!res.ok) throw new Error('weather')
   const d = await res.json() as { hourly: { time: string[]; temperature_2m: number[]; relative_humidity_2m: number[] } }
@@ -164,6 +164,11 @@ const score = (h: Hour) => h.wbgt + (h.pm25 === undefined ? 0 : AIR_RANK[airLeve
 export function bestHour(hours: Hour[], nowIso: string) {
   const upcoming = hours.filter(h => h.time >= nowIso.slice(0, 13) && h.hour >= 5 && h.hour <= 21).slice(0, 24)
   return upcoming.reduce<Hour | null>((b, h) => (!b || score(h) < score(b) ? h : b), null)
+}
+
+/** ช่วงเหมาะสุดของวันที่ date (05:00–21:00 ที่ยังไม่ผ่าน) */
+export function bestHourOn(hours: Hour[], date: string, nowIso: string) {
+  return bestHour(hours.filter(h => h.time.slice(0, 10) === date), nowIso)
 }
 
 export function useHeat() {

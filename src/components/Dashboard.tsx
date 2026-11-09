@@ -148,7 +148,7 @@ export function Dashboard() {
           onSaved={() => { setDone(prev => ({ ...prev, [p.doneId(week, todayIdx)]: true })); setPlaying(null) }} />
       )}
 
-      {todayPlan?.type === 'run' && <HeatCard />}
+      {todayPlan?.type === 'run' ? <HeatCard /> : tomorrow?.type === 'run' && !p.finished && <HeatCard initialDay="tomorrow" />}
 
       {/* สิ่งที่ต้องทำวันนี้อยู่บนสุด — เป้าเดือน/สรุปสัปดาห์ที่แล้วเป็นข้อมูลประกอบ */}
       <MonthGoalCard />
