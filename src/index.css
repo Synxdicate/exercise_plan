@@ -161,3 +161,6 @@ html.theme-fade, html.theme-fade * { transition: background-color .3s, color .3s
   border-radius: 10px;
   background: color-mix(in oklab, currentColor 14%, transparent);
 }
+
+/* ปัดขวาสลับหน้าย่อย: กันเบราว์เซอร์ตีความเป็น "ย้อนกลับ" (overscroll history navigation) แล้วออกจากหน้า */
+html, body { overscroll-behavior-x: none; }

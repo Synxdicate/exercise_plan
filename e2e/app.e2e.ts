@@ -762,3 +762,24 @@ test('ตัวจับเวลาเซอร์กิตเดินตร�
   await expect(page.getByText('ทำท่า', { exact: true })).toBeVisible()
   await expect(page.getByText('แพลงก์ด้านข้าง (ซ้าย)').first()).toBeVisible()
 })
+
+test('ปัดซ้าย/ขวาสลับหน้าย่อยของแท็บวิ่ง', async ({ page }) => {
+  await seed(page)
+  await nav(page, 'วิ่ง')
+  const cdp = await page.context().newCDPSession(page)
+  await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 })
+  const swipe = async (x0: number, x1: number, y = 140) => {
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: x0, y }] })
+    for (let k = 1; k <= 5; k++) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: x0 + ((x1 - x0) * k) / 5, y }] })
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+  }
+  const pressed = (name: string) => expect(page.getByRole('button', { name, exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await page.getByRole('button', { name: 'ประวัติ', exact: true }).waitFor()
+  await swipe(320, 80)
+  await pressed('ประวัติ')
+  await swipe(320, 80)
+  await pressed('สถิติ')
+  await swipe(80, 320) // ปัดขวา = ย้อนหน้าย่อย ไม่ใช่ปุ่มย้อนกลับของเบราว์เซอร์ (overscroll-behavior-x: none)
+  await pressed('ประวัติ')
+  expect(page.url()).toContain('#runs')
+})

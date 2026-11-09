@@ -1,5 +1,6 @@
 import { isStrength } from '../lib/sessionKind'
 import { Fragment, useState } from 'react'
+import { useSwipe } from '../lib/swipe'
 import { Activity, CalendarDays, ChevronDown, Dumbbell, Pencil, Scale, Trash2, Trophy } from 'lucide-react'
 import { usePersisted } from '../lib/storage'
 import { monthLabel, niceDate, shortDate, today, weekStart } from '../lib/date'
@@ -26,8 +27,9 @@ type Entry = { date: string; weight: number; waist?: number }
 export function Progress() {
   const [view, setView] = useState<'workouts' | 'stats' | 'fitness' | 'body'>('workouts')
   const t = useT()
+  useSwipe(['workouts', 'stats', 'fitness', 'body'] as const, view, setView)
   return (
-    <>
+    <div className="space-y-4">
       <Segmented value={view} onChange={setView} options={[
         { value: 'workouts', label: <><CalendarDays size={16} /> {t('ปฏิทิน', 'Calendar')}</> },
         { value: 'stats', label: <><Dumbbell size={16} /> {t('เวท', 'Lifts')}</> },
@@ -35,7 +37,7 @@ export function Progress() {
         { value: 'body', label: <><Scale size={16} /> {t('น้ำหนัก', 'Weight')}</> },
       ]} />
       {view === 'workouts' ? <><TrainingCalendar /><WorkoutHistory /></> : view === 'stats' ? <StrengthStats /> : view === 'fitness' ? <><Fitness /><LegTestCard /></> : <BodyLog />}
-    </>
+    </div>
   )
 }
 

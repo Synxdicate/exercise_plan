@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSwipe } from '../lib/swipe'
 import { Search } from 'lucide-react'
 import { carbFoods, extraFoods, nutritionRules, nutritionRulesEn, proteinFoods, sampleDays, searchFoods, streetDishes, type Food } from '../data/nutrition'
 import { targets, type Profile } from '../lib/calc'
@@ -23,6 +24,7 @@ export function Nutrition({ profile, setProfile }: { profile: Profile; setProfil
   const { isRace } = useProgram()
   const t = targets(profile, isRace)
   const [view, setView] = useState<View>('menu')
+  useSwipe(['menu', 'street', 'foods'] as const, view, setView)
   const tr = useT()
   const [q, setQ] = useState('')
   const dishes = searchFoods(streetDishes, q)
@@ -45,6 +47,7 @@ export function Nutrition({ profile, setProfile }: { profile: Profile; setProfil
 
       <ProfileCard profile={profile} setProfile={setProfile} />
 
+      <div className="space-y-4">
       <Segmented value={view} onChange={setView} options={[
         { value: 'menu', label: tr('เมนูตัวอย่าง', 'Sample menus') },
         { value: 'street', label: tr('ร้านตามสั่ง', 'Street food') },
@@ -111,6 +114,7 @@ export function Nutrition({ profile, setProfile }: { profile: Profile; setProfil
       )}
 
       <p className="px-2 text-xs text-muted">{tr('ค่าประมาณ ขึ้นกับปริมาณและวิธีปรุงของแต่ละร้าน · ดูเพิ่มที่', 'Estimates — vary with portion and cooking · more at')} <a href="https://inmu.mahidol.ac.th/thaifcd/home" target="_blank" rel="noreferrer" className="underline">Thai Food Composition Database (ม.มหิดล)</a></p>
+      </div>
     </>
   )
 }

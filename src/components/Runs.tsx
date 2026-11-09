@@ -12,6 +12,7 @@ import { parseGpx } from '../lib/gpx'
 import { defaultShoe, useShoes } from '../lib/shoes'
 import { personalBests } from '../lib/analysis'
 import { isNative } from '../lib/native'
+import { useSwipe } from '../lib/swipe'
 import { noticeText, onRunNoticeAction, stepNow, updateRunNotice } from '../lib/runNotice'
 import { ensureNotifications } from '../lib/notify'
 import { speak, splitAnnouncement } from '../lib/voice'
@@ -233,6 +234,7 @@ export function Runs() {
     }
   }
 
+  useSwipe(['start', 'history', 'stats'] as const, view, setView)
   if (t.status !== 'idle') return (
     <ActiveRun t={t} kind={kind} target={todayRun?.targetKm} fiveK={zoneRef} voice={voice} setVoice={setVoice} onFinish={finish} liveOn={liveOn} setLiveOn={setLiveOn}
       coachOn={coachOn && !!est} setCoachOn={est ? setCoachOn : undefined}

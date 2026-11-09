@@ -2,6 +2,9 @@ import { ReplaySoFar } from './Replay'
 import { CourseCard } from './Course'
 import { EaseOffCard, StrengthNudgeCard } from './Coach'
 import { useMemo, useState } from 'react'
+import { useSwipe } from '../lib/swipe'
+
+const DAYS = ['0', '1', '2', '3', '4', '5', '6'] as const
 import { ArrowDown, ArrowLeftRight, House, ArrowUp, Check, ChevronDown, ChevronRight, Dumbbell, Flag, Footprints, Moon, Play, Plus, RefreshCw, Trash2, Trees } from 'lucide-react'
 import { yt, type Day, type Exercise } from '../data/workouts'
 import { locationInfo, weekNote } from '../data/programs'
@@ -61,6 +64,7 @@ function PlanBody() {
   const [, setDone] = usePersisted<Record<string, boolean>>('done', {})
   const [viewWeek, setViewWeek] = useState(p.currentWeek)
   const [selected, setSelected] = useState(todayIdx)
+  useSwipe(DAYS, String(selected) as typeof DAYS[number], v => setSelected(Number(v)))
   const [picking, setPicking] = useState(false)
   const [playing, setPlaying] = useState<{ i: number; light: boolean } | null>(null)
   const [checking, setChecking] = useState<number | null>(null)
@@ -186,7 +190,7 @@ function PlanBody() {
         )}
       </div>
 
-      {/* วันที่เลือก */}
+      {/* วันที่เลือก (ปัดซ้าย/ขวาเปลี่ยนวัน) */}
       <DayDetail key={`${week}-${selected}-${day.location ?? ''}`} day={day} isToday={isThisWeek && selected === todayIdx()}
         done={isDone(selected)} hint={paceHint(est, day.runKind, day.title, dt.en)} weekNoteText={note}
         setDone={v => setDayDone(selected, v)}
