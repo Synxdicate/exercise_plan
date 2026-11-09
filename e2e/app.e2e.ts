@@ -645,3 +645,16 @@ test('อากาศร้อนกว่าปกติ: โค้ชเพซ
   await nav(page, 'วิ่ง')
   await expect(page.getByText(/ร้อนกว่าปกติ \(WBGT 30°\) — วันนี้โค้ชเพซตั้งเป้าช้าลง 2\.4%/)).toBeVisible()
 })
+
+test('ช่วงนี้ไม่ไหว: ปรับแผนเบาลงชั่วคราวแล้วกลับแผนปกติ', async ({ page }) => {
+  await seed(page, { program: 'mini' })
+  await nav(page, 'ฝึก')
+  await page.getByRole('button', { name: /ช่วงนี้ไม่ไหว\?/ }).click()
+  await page.getByRole('button', { name: 'ไม่สบาย', exact: true }).click()
+  await page.getByRole('button', { name: 'เริ่มแผนเบา' }).click()
+  await expect(page.getByText(/แผนเบาลง \(ไม่สบาย\) ถึง/)).toBeVisible()
+  await expect(page.getByText('พักฟื้น (ไม่สบาย)').first()).toBeVisible()
+  await expect.poll(async () => ((await idb(page, 'easeOff')) as { reason: string }).reason).toBe('sick')
+  await page.getByRole('button', { name: 'กลับแผนปกติ' }).click()
+  await expect(page.getByText(/แผนเบาลง/)).toHaveCount(0)
+})

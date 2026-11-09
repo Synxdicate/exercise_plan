@@ -1,4 +1,4 @@
-import { StrengthNudgeCard } from './Coach'
+import { EaseOffCard, StrengthNudgeCard } from './Coach'
 import { useMemo, useState } from 'react'
 import { ArrowDown, ArrowLeftRight, House, ArrowUp, Check, ChevronDown, ChevronRight, Dumbbell, Flag, Footprints, Moon, Play, Plus, RefreshCw, Trash2, Trees } from 'lucide-react'
 import { yt, type Day, type Exercise } from '../data/workouts'
@@ -98,6 +98,7 @@ function PlanBody() {
       <NextStepCard />
       <MissedRunCard />
       <StrengthNudgeCard onPlan />
+      <EaseOffCard trigger />
       <WeekCheckCard />
       <button onClick={() => setPicking(true)} className="flex w-full items-center gap-3 rounded-3xl bg-card p-4 text-left shadow-sm ring-1 ring-line active:scale-[.99]">
         <div className="min-w-0 flex-1">

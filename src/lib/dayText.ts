@@ -8,6 +8,11 @@ import { muscleNames, muscleNamesEn, type Muscle } from '../data/muscles'
 
 // ชื่อวันฝึกในแผนสร้างจากรูปแบบไม่กี่แบบ (programs.ts) — แปลด้วยวลีตามลำดับ แล้วค่อยแปลหน่วย
 const TITLE_EN: [RegExp, string][] = [
+  [/^พักฟื้น \(ไม่สบาย\)$/, 'Recovery (unwell)'],
+  [/^วิ่งเบา \(ช่วงเจ็บ\)$/, 'Easy run (sore)'],
+  [/^เวทเบา \(ช่วงเจ็บ\)$/, 'Light strength (sore)'],
+  [/^วิ่งเบาสั้น \(ไม่มีเวลา\)$/, 'Short easy run (busy)'],
+  [/^เวทย่อ \(ไม่มีเวลา\)$/, 'Short strength (busy)'],
   [/^Upper A — เน้นแรง \(ช่วงบน\)$/, 'Upper A — strength focus'],
   [/^Upper B — เน้นสร้างกล้าม \(ช่วงบน\)$/, 'Upper B — hypertrophy'],
   [/^Lower \+ Core \(ช่วงล่าง\)$/, 'Lower + Core'],

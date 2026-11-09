@@ -5,6 +5,7 @@ import { usePersisted } from './storage'
 import { homeUsable, libEx, needsSpotter } from '../data/library'
 import type { Day, Exercise } from '../data/workouts'
 import { applyMoves, type DayMoves } from './moves'
+import { applyEaseOff, type EaseOff } from './easeOff'
 
 // สลับท่า: ใช้ช่วงครั้ง/เซ็ต/พักของท่าเดิม (โปรแกรมยังสมดุล) ยกเว้นหน่วยต่างกัน (ครั้ง ↔ วินาที) ใช้ค่าของท่าใหม่
 export function swapExercise(e: Exercise, to: string): Exercise {
@@ -97,6 +98,7 @@ export function useProgram() {
   const [raceCutoff, setRaceCutoff] = usePersisted<number | null>('raceCutoff', null)
   // เส้นทางแข่งมีเนิน (เช่น เนินซึมยาว) — เพิ่มการซ้อมเนินในแผน (withHills)
   const [raceHills, setRaceHills] = usePersisted('raceHills', false)
+  const [easeOff, setEaseOff] = usePersisted<EaseOff | null>('easeOff', null)
   const [swaps, setSwaps] = usePersisted<Record<string, string>>('exerciseSwaps', {})
   const [extras, setExtras] = usePersisted<Record<string, Exercise[]>>('extraExercises', {})
   const [solo, setSolo] = usePersisted('soloMode', false)
@@ -216,11 +218,15 @@ export function useProgram() {
       const base = safeLayer('custom', () => applyCustom(raw, program, swaps, extras, solo), () => raw)
       const days = raceHills ? safeLayer('hills', () => withHills(base, program, w), () => base) : base
       const mv = moves[mondayOf(week)]
-      const moved = (d: Day[]) => safeLayer('moves', () => applyMoves(d, mv), () => d)
+      const eased = (d: Day[]) => safeLayer('easeOff', () => applyEaseOff(d, mondayOf(week), easeOff), () => d)
+      const moved = (d: Day[]) => eased(safeLayer('moves', () => applyMoves(d, mv), () => d))
       if (!isRace || week !== meta.weeks) return moved(days)
       const sized = raceKmOverride ? safeLayer('raceKm', () => withRaceKm(days, raceKmOverride), () => days) : days
       return moved(raceDate ? safeLayer('raceDay', () => placeRaceDay(sized, (new Date(`${raceDate}T00:00:00`).getDay() + 6) % 7), () => sized) : sized)
     },
+    /** ช่วงนี้ไม่ไหว: ปรับแผนชั่วคราว (null = กลับแผนปกติ) */
+    easeOff,
+    setEaseOff,
     /** สลับเนื้อหาวัน a กับ b ในสัปดาห์ `week` (เช่น ทำแผนวันอังคารวันนี้) */
     moveDay: (week: number, a: number, b: number) => setMoves(prev => ({ ...prev, [mondayOf(week)]: [...(prev[mondayOf(week)] ?? []), [a, b]] })),
     hasMoves: (week: number) => !!moves[mondayOf(week)]?.length,

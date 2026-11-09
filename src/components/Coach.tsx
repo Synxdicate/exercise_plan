@@ -1,5 +1,7 @@
-import { Dumbbell, MessageSquareQuote } from 'lucide-react'
-import { addDays, today, weekStart, WEEKDAYS_EN, WEEKDAYS_TH } from '../lib/date'
+import { useState } from 'react'
+import { BatteryLow, Dumbbell, MessageSquareQuote } from 'lucide-react'
+import { easeActive, type EaseReason } from '../lib/easeOff'
+import { addDays, niceDate, today, weekStart, WEEKDAYS_EN, WEEKDAYS_TH } from '../lib/date'
 import { useDayDone } from '../lib/dayDone'
 import { useSessions, type Run } from '../lib/log'
 import { nextSession, runReview, strengthGap } from '../lib/coachNotes'
@@ -11,7 +13,7 @@ import { useLang, useT } from '../lib/i18n'
 import { useDayText } from '../lib/dayText'
 import { useNav } from '../lib/nav'
 import { cx } from '../lib/cx'
-import { Button } from './ui'
+import { Button, Segmented, Sheet } from './ui'
 
 /** ทวงเวทเมื่อไม่ได้เล่นมา ≥8 วัน (บันทึกเซ็ตหรือติ๊กทำแล้ว) — เวทลดการบาดเจ็บ (Lauersen 2014, Toresdahl 2020) */
 export function StrengthNudgeCard({ onPlan = false }: { onPlan?: boolean }) {
@@ -92,5 +94,61 @@ export function CoachReview({ run, runs, fiveK, splitDiffPct }: { run: Run; runs
         </p>
       )}
     </section>
+  )
+}
+
+const REASONS: { value: EaseReason; th: string; en: string; what: [string, string] }[] = [
+  { value: 'sick', th: 'ไม่สบาย', en: 'Unwell', what: ['พักทุกวันในช่วงนี้ หายไข้แล้วค่อยเดินเบา ๆ', 'Rest every day in this spell; walk gently once the fever is gone'] },
+  { value: 'sore', th: 'เจ็บเล็กน้อย', en: 'Sore', what: ['วิ่งเบาครึ่งระยะ ไม่มีวันเร็ว เวทลดครึ่งเซ็ต', 'Easy runs at half distance, no fast days, half the strength sets'] },
+  { value: 'busy', th: 'ไม่มีเวลา', en: 'Busy', what: ['วิ่งเบาสั้นลง ~60% เวทย่อ ~15 นาที', 'Shorter easy runs (~60%), ~15-minute strength'] },
+]
+
+/** ช่วงนี้ไม่ไหว: ปรับแผนชั่วคราวแล้วกลับแผนเดิมเอง — ป้ายเมื่อใช้งานอยู่ / ปุ่มเปิดในหน้าฝึก */
+export function EaseOffCard({ trigger = false }: { trigger?: boolean }) {
+  const p = useProgram()
+  const t = useT()
+  const [open, setOpen] = useState(false)
+  const [reason, setReason] = useState<EaseReason>('sore')
+  const [days, setDays] = useState<'3' | '7' | '14'>('7')
+  const now = today()
+  if (p.finished) return null
+  const r = p.easeOff
+  if (easeActive(r, now)) {
+    const info = REASONS.find(x => x.value === r!.reason)!
+    return (
+      <section className="flex items-start gap-3 rounded-2xl bg-raised p-3.5 ring-1 ring-line">
+        <BatteryLow size={18} className="mt-0.5 shrink-0 text-warn" />
+        <div className="min-w-0 flex-1 text-sm">
+          <div className="font-bold">{t(`แผนเบาลง (${info.th}) ถึง ${niceDate(r!.to)}`, `Eased plan (${info.en.toLowerCase()}) until ${niceDate(r!.to)}`)}</div>
+          <div className="text-muted">{t(info.what[0], info.what[1])} — {t('หมดช่วงแล้วกลับแผนเดิมเอง', 'the normal plan resumes afterwards')}</div>
+        </div>
+        <Button size="sm" variant="soft" onClick={() => p.setEaseOff(null)}>{t('กลับแผนปกติ', 'Resume')}</Button>
+      </section>
+    )
+  }
+  if (!trigger) return null
+  return (
+    <>
+      <button onClick={() => setOpen(true)} className="flex w-full items-center gap-2 rounded-2xl px-1 py-1 text-left text-sm text-muted">
+        <BatteryLow size={16} className="shrink-0" /> <span className="underline underline-offset-2">{t('ช่วงนี้ไม่ไหว? ปรับแผนให้เบาลงชั่วคราว', 'Not feeling 100%? Ease the plan for a while')}</span>
+      </button>
+      {open && (
+        <Sheet onClose={() => setOpen(false)} title={t('ช่วงนี้ไม่ไหว', 'Not feeling 100%')}>
+          <div className="space-y-3 pb-2">
+            <div>
+              <div className="mb-1.5 text-sm font-medium text-muted">{t('เพราะอะไร', 'Why')}</div>
+              <Segmented value={reason} onChange={setReason} options={REASONS.map(x => ({ value: x.value, label: t(x.th, x.en) }))} />
+            </div>
+            <div>
+              <div className="mb-1.5 text-sm font-medium text-muted">{t('นานเท่าไร', 'For how long')}</div>
+              <Segmented value={days} onChange={setDays} options={[{ value: '3', label: t('3 วัน', '3 days') }, { value: '7', label: t('1 สัปดาห์', '1 week') }, { value: '14', label: t('2 สัปดาห์', '2 weeks') }]} />
+            </div>
+            <p className="text-sm">{t(REASONS.find(x => x.value === reason)!.what[0], REASONS.find(x => x.value === reason)!.what[1])}. {t('วันแข่งไม่เปลี่ยน หมดช่วงแล้วกลับแผนเดิม ถ้าหยุดไปนาน แอปจะถอยสัปดาห์ให้เอง', 'Race day stays. The normal plan resumes afterwards; after a long break the app steps back a week by itself.')}</p>
+            {reason === 'sore' && <p className="text-xs text-muted">{t('ปวดเกิน 3 จาก 10 หรือเดินกะเผลก ควรพบแพทย์/นักกายภาพ', 'Pain above 3/10 or limping — see a doctor or physio')}</p>}
+            <Button className="w-full" onClick={() => { p.setEaseOff({ from: now, to: addDays(now, +days - 1), reason }); setOpen(false) }}>{t('เริ่มแผนเบา', 'Start eased plan')}</Button>
+          </div>
+        </Sheet>
+      )}
+    </>
   )
 }

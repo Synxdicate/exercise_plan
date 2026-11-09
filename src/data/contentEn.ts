@@ -3,6 +3,12 @@
 import { hillyDownhillNote, hillyLongNote, hillyRaceNote } from './programs'
 
 export const NOTE_EN: Record<string, string> = {
+  'พักฟื้นจากป่วย — หายไข้แล้วค่อยเริ่มเดินเบา ๆ ไม่ต้องรีบชดเชย': 'Recovering from illness — once the fever is gone, start with easy walks; no need to make up sessions',
+  'พักฟื้นจากป่วย — งดเวทจนหายดี': 'Recovering from illness — no strength work until you are well',
+  'ช่วงเจ็บ: วิ่งเบาครึ่งระยะ ไม่มีช่วงเร็ว — ปวดได้ไม่เกิน 3 จาก 10 และไม่แย่ลงวันรุ่งขึ้น ถ้าเกินให้หยุด แล้วใช้ปั่นจักรยาน/ว่ายน้ำแทน': 'Sore spell: easy run at half distance, no fast parts — pain up to 3/10 that isn’t worse the next day; beyond that stop and cycle or swim instead',
+  'ช่วงเจ็บ: ลดเซ็ตลงครึ่งหนึ่ง ข้ามท่าที่ทำให้ส่วนที่เจ็บปวด': 'Sore spell: half the sets, skip moves that hurt the sore area',
+  'ช่วงไม่มีเวลา: วิ่งเบาสั้นลง — วิ่งน้อยดีกว่าไม่วิ่ง': 'Busy spell: shorter easy run — a little running beats none',
+  'ช่วงไม่มีเวลา: ทำ 2–3 ท่าแรก ท่าละ 2 เซ็ต (~15 นาที)': 'Busy spell: first 2–3 exercises, 2 sets each (~15 min)',
   'วอร์มอัพ 5–10 นาที: จ็อกเบา ๆ หรือกระโดดเชือก + หมุนข้อต่อ แล้วเล่นเซ็ตเบา 1–2 เซ็ตของท่าแรก': 'Warm up 5–10 min: easy jog or jump rope + joint circles, then 1–2 light sets of the first exercise',
   'ใช้ความเร็วที่ยังพูดเป็นประโยคได้ ถ้าหอบจนพูดไม่ได้แปลว่าเร็วไป ให้เดินสลับได้': 'Run at a pace where you can still talk in sentences; too breathless to talk means too fast — walk breaks are fine',
   'เดิน 6,000–10,000 ก้าว ยืดเหยียด นอนให้ได้ 7–9 ชั่วโมง': 'Walk 6,000–10,000 steps, stretch, sleep 7–9 hours',

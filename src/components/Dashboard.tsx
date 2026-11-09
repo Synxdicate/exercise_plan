@@ -1,4 +1,4 @@
-import { StrengthNudgeCard } from './Coach'
+import { EaseOffCard, StrengthNudgeCard } from './Coach'
 import { strengthOnly } from '../lib/sessionKind'
 import { useMemo, useState } from 'react'
 import { Check, Dumbbell, Flag, Flame, Footprints, Moon, Play } from 'lucide-react'
@@ -76,6 +76,7 @@ export function Dashboard() {
       <Alerts />
       <NextStepCard />
       <MissedRunCard />
+      <EaseOffCard />
       <StrengthNudgeCard />
       <WeekCheckCard />
       <section className="rounded-2xl bg-gradient-to-br from-accent-fill to-[#7c3aed] p-4 text-white shadow-sm">
