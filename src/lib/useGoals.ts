@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react'
-import { BADGES, BADGES_EN, defaultMonthGoal, earnedBadges, planStreak, type Ctx, type RaceKey } from './goals'
+import { BADGES, BADGES_EN, STICKY, defaultMonthGoal, earnedBadges, planStreak, type Ctx, type RaceKey } from './goals'
+import { weekStart } from './date'
 import { useDayDone } from './dayDone'
 import { useRuns, useSessions } from './log'
 import { usePersisted } from './storage'
@@ -23,16 +24,22 @@ export function useBadgeCtx(): Ctx {
   const [goalKm] = useMonthGoal()
   const p = useProgram()
   const dayDone = useDayDone()
-  const first = Math.min(1, ...p.prepWeeks)
+  // โปรแกรมมีจุดจบ: สัปดาห์ 1 (หรือช่วงเตรียมตัว) ถึงสัปดาห์ที่จบแล้ว; วนรอบ: 26 สัปดาห์ล่าสุดนับจากวันเริ่ม (เลขสัปดาห์ ≤0 = รอบก่อน ๆ)
+  const first = p.ongoing ? p.currentWeek - 26 : Math.min(1, ...p.prepWeeks)
   const last = p.finished ? p.meta.weeks : p.currentWeek - 1
+  const since = p.storedStart ? weekStart(p.storedStart) : ''
   const weeks: { planned: number; done: number }[] = []
-  if (!p.ongoing) for (let w = first; w <= last; w++) {
+  for (let w = first; w <= last; w++) {
+    if (p.ongoing && p.mondayOf(w) < since) continue
     let planned = 0, done = 0
     p.plan(w).forEach((d, i) => { if (d.type !== 'rest') { planned++; if (dayDone(w, i, d)) done++ } })
     weeks.push({ planned, done })
   }
   const planWeeks = planStreak(weeks)
-  return useMemo(() => ({ runs, sessions, goalKm, planWeeks, raceDate: p.isRace && p.raceDate ? p.raceDate : undefined }), [runs, sessions, goalKm, planWeeks, p.isRace, p.raceDate])
+  // เหรียญที่ขึ้นกับโปรแกรม/วันแข่งตอนนั้น: ได้แล้วไม่หายเมื่อเปลี่ยนโปรแกรมหรือวันแข่ง
+  const [seen] = usePersisted<string[] | null>('badgesSeen', null)
+  const kept = useMemo(() => (seen ?? []).filter(id => STICKY.includes(id)), [seen])
+  return useMemo(() => ({ runs, sessions, goalKm, planWeeks, kept, raceDate: p.isRace && p.raceDate ? p.raceDate : undefined }), [runs, sessions, goalKm, planWeeks, kept, p.isRace, p.raceDate])
 }
 
 /** แจ้งเตือนเมื่อได้เหรียญใหม่ ครั้งแรกบนเครื่องนี้ถือว่าเหรียญที่มีอยู่แล้ว "เห็นแล้ว" ไม่แจ้งย้อนหลัง */

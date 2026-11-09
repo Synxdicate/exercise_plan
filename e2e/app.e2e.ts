@@ -732,3 +732,14 @@ test('สัปดาห์นี้: กราฟ 12 สัปดาห์ แ�
   await expect(page.getByText('วิ่งไกลที่สุดที่เคยวิ่ง')).toBeVisible()
   await expect(page.getByText('ครึ่งหลังเร็วกว่าครึ่งแรก').first()).toBeVisible()
 })
+
+test('เหรียญตามแผน 4 สัปดาห์: นับได้ในโปรแกรมวนรอบ และไม่หายเมื่อเปลี่ยนโปรแกรม', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-11-11T08:00:00+07:00') })
+  const mondays = ['2026-10-12', '2026-10-19', '2026-10-26', '2026-11-02']
+  const done = Object.fromEntries(mondays.flatMap(m => [0, 1, 2, 3, 4, 5, 6].map(i => [`base-${m}-d${i}`, true])))
+  await seed(page, { program: 'base', programStart: '2026-10-12', done })
+  await expect.poll(async () => (await idb(page, 'badgesSeen')) as string[] | null).toContain('plan-4')
+  await seed(page, { program: 'ten', programStart: '2026-11-09', done })
+  await page.getByRole('button', { name: /เหรียญรางวัล/ }).click()
+  await expect(page.getByText('ตามแผน 4 สัปดาห์').locator('..').locator('.bg-accent-fill')).toHaveCount(1)
+})

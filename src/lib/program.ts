@@ -152,7 +152,7 @@ export function useProgram() {
   }
   /** แผนก่อนสลับวัน/ช่วงไม่ไหว: สถานที่ → สลับท่า → เนิน → ไต่ระยะ */
   const sizedWeek = (week: number) => {
-    const w = Math.max(1, week)
+    const w = contentWeek(week)
     const raw = safeLayer('location', () => weekPlan(program, w, i => locationFor(week, i)), () => weekPlan(program, w, () => 'gym'))
     const base = safeLayer('custom', () => applyCustom(raw, program, swaps, extras, solo), () => raw)
     const days = raceHills ? safeLayer('hills', () => withHills(base, program, w), () => base) : base
@@ -168,11 +168,16 @@ export function useProgram() {
     return `${program}-w${week}${n ? `x${n}` : ''}-d${i}`
   }
 
+  // เนื้อหาของสัปดาห์ week: โปรแกรมวนรอบใช้เลขในรอบ (สัปดาห์ก่อนหน้าเป็นเลข ≤0 ได้ เช่น ดูย้อนหลังเพื่อนับเหรียญ)
+  function contentWeek(week: number) {
+    return ongoing ? ((((week - 1) % meta.weeks) + meta.weeks) % meta.weeks) + 1 : Math.max(1, week)
+  }
+
   const locationFor = (week: number, i: number): Mode => {
     const o = overrides[slotId(week, i)]
     if (o) return o
     if (location !== 'mix') return location
-    const strengthDays = variants(program, Math.max(1, week)).gym.flatMap((d, j) => (d.type === 'strength' ? [j] : []))
+    const strengthDays = variants(program, contentWeek(week)).gym.flatMap((d, j) => (d.type === 'strength' ? [j] : []))
     return i === strengthDays.at(-1) ? 'park' : 'gym'
   }
 
@@ -268,7 +273,7 @@ export function useProgram() {
     removeExercise: (d: Day, name: string) => setExtras(prev => ({ ...prev, [extrasKey(program, d)]: (prev[extrasKey(program, d)] ?? []).filter(e => e.name !== name) })),
     kmTarget: (week = currentWeek) => rampFor(week)
       ? Math.round(sizedWeek(week).reduce((s, d) => s + (d.type === 'run' ? d.targetKm ?? 0 : 0), 0))
-      : weekKm(program, Math.max(1, week)),
+      : weekKm(program, contentWeek(week)),
     /** ระยะที่วิ่งจริงต่อสัปดาห์ก่อนเริ่มกลางโปรแกรม (0 = ไม่ได้ไต่ระยะ) */
     rampBaseline: rampStart ? baseline : 0,
     /** i = ลำดับวันก่อนสลับวัน (ส่ง day.movedFrom ถ้าวันนั้นถูกสลับมา) */

@@ -54,3 +54,12 @@ describe('runHighlights', () => {
     expect(h.some(x => x.kind === 'pr')).toBe(false)
   })
 })
+
+describe('sticky badges', () => {
+  it('plan/race badges stay once seen, others never stick', async () => {
+    const { earnedBadges } = await import('../goals')
+    const ids = earnedBadges({ runs: [], sessions: [], goalKm: 0, kept: ['plan-4', 'race-finish', 'km-50'] })
+    expect(ids).toEqual(expect.arrayContaining(['plan-4', 'race-finish']))
+    expect(ids).not.toContain('km-50')
+  })
+})

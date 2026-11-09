@@ -39,7 +39,9 @@ export function bestWeekStreak(runs: Run[], sessions: Session[], min = 3) {
 export type BadgeIcon = 'footprints' | 'medal' | 'trophy' | 'flame' | 'dumbbell' | 'target' | 'mountain' | 'zap' | 'climb' | 'split' | 'calendar' | 'flag' | 'route'
 export type BadgeDef = { id: string; title: string; text: string; icon: BadgeIcon }
 /** planWeeks = สัปดาห์ติดกันมากที่สุดที่ทำตามแผน ≥80%, raceDate = วันแข่งของโปรแกรม (ไม่ส่ง = ไม่นับ) */
-export type Ctx = { runs: Run[]; sessions: Session[]; goalKm: number; planWeeks?: number; raceDate?: string }
+export type Ctx = { runs: Run[]; sessions: Session[]; goalKm: number; planWeeks?: number; raceDate?: string; kept?: string[] }
+/** เหรียญที่ขึ้นกับโปรแกรม/วันแข่งปัจจุบัน เคยได้แล้ว (อยู่ใน badgesSeen) ถือว่าได้ตลอด */
+export const STICKY = ['plan-4', 'race-finish']
 
 /** วิ่งเส้นทางเดิมกี่ครั้งมากที่สุด (เส้นทางเดียวกันตาม sameRoute) */
 export function mostRepeatedRoute(runs: Run[]) {
@@ -99,7 +101,7 @@ export const BADGES_EN: Record<string, [string, string]> = {
   'negative-split': ['Negative split', 'A ≥3 km run with a faster second half'], 'route-10': ['Route regular', 'Ran the same route 10 times'],
   'plan-4': ['On plan 4 weeks', '≥80% of the plan done 4 weeks in a row'], 'race-finish': ['Race finisher', 'Finished the race on your program’s race day'],
 }
-export const earnedBadges = (c: Ctx) => BADGES.filter(b => b.earned(c)).map(b => b.id)
+export const earnedBadges = (c: Ctx) => BADGES.filter(b => b.earned(c) || (STICKY.includes(b.id) && !!c.kept?.includes(b.id))).map(b => b.id)
 
 /** เป้าเริ่มต้นจากระยะต่อสัปดาห์ของโปรแกรม (~4.3 สัปดาห์/เดือน) ปัดเป็น 5 กม. */
 export const defaultMonthGoal = (weekKm: number) => Math.max(10, Math.round((weekKm * 4.3) / 5) * 5)
