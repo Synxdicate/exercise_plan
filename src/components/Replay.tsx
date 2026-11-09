@@ -38,10 +38,10 @@ function Stats() {
   const { p, s } = useSummary()
   const cutoff = p.raceCutoff ? p.raceCutoff * 60 : null
   const cells: [string, string][] = [
-    [t('วิ่ง', 'Runs'), `${s.runs} ${t('ครั้ง', '')}`],
+    [t('วิ่ง', 'Runs'), `${s.runs}${t(' ครั้ง', '')}`],
     [t('ระยะรวม', 'Distance'), `${s.km} ${t('กม.', 'km')}`],
     [t('เวลาวิ่ง', 'Run time'), formatDuration(s.seconds)],
-    [t('เวท', 'Strength'), `${s.lifts} ${t('ครั้ง', '')}`],
+    [t('เวท', 'Strength'), `${s.lifts}${t(' ครั้ง', '')}`],
     [t('ทำตามแผน', 'Plan done'), s.adherence !== null ? `${s.adherence}%` : '-'],
     [t('ไกลสุด', 'Longest'), s.longest ? `${s.longest.km.toFixed(1)} ${t('กม.', 'km')}` : '-'],
   ]

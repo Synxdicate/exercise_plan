@@ -40,7 +40,10 @@ export function applyEaseOff(days: Day[], monday: string, ease: EaseOff | null |
     if (ease.reason === 'sick') return { ...d, type: 'rest', title, note, exercises: [], targetKm: undefined, runKind: undefined, guide: undefined, duration: '—' }
     if (d.type === 'run') {
       const km = d.targetKm ? half(d.targetKm, ease.reason === 'sore' ? 0.5 : 0.6) : undefined
-      return { ...d, title, note, runKind: 'easy', targetKm: km, guide: undefined, duration: km ? `~${Math.round(km * 8)} นาที` : d.duration }
+      // วันวิ่งที่กำหนดเป็นเวลา (โปรแกรมเริ่มวิ่ง) ลดเวลาในสัดส่วนเดียวกัน
+      const min = Number(d.duration.match(/(\d+) นาที/)?.[1])
+      const duration = km ? `~${Math.round(km * 8)} นาที` : min ? `~${Math.max(10, Math.round(min * (ease.reason === 'sore' ? 0.5 : 0.6)))} นาที` : d.duration
+      return { ...d, title, note, runKind: 'easy', targetKm: km, guide: undefined, duration }
     }
     return { ...d, title, note }
   })

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { programs, variants, withHills, weekKm, weekPlan, type LocationPref, type Mode, type ProgramId } from '../data/programs'
 import { addDays, daysBetween, today, weekStart } from './date'
 import { usePersisted } from './storage'
@@ -6,6 +6,9 @@ import { homeUsable, libEx, needsSpotter } from '../data/library'
 import type { Day, Exercise } from '../data/workouts'
 import { applyMoves, type DayMoves } from './moves'
 import { applyEaseOff, type EaseOff } from './easeOff'
+import { applyRampIn, rampCap, recentWeekKm } from './rampIn'
+import { runsOnly } from './walk'
+import type { Run } from './log'
 
 // สลับท่า: ใช้ช่วงครั้ง/เซ็ต/พักของท่าเดิม (โปรแกรมยังสมดุล) ยกเว้นหน่วยต่างกัน (ครั้ง ↔ วินาที) ใช้ค่าของท่าใหม่
 export function swapExercise(e: Exercise, to: string): Exercise {
@@ -103,6 +106,8 @@ export function useProgram() {
   const [extras, setExtras] = usePersisted<Record<string, Exercise[]>>('extraExercises', {})
   const [solo, setSolo] = usePersisted('soloMode', false)
   const [moves, setMoves] = usePersisted<DayMoves>('dayMoves', {})
+  // ใช้แค่วันที่/ระยะ (ไม่ต้องรวมเส้นทาง) สำหรับไต่ระยะเมื่อเริ่มโปรแกรมกลางทาง
+  const [rawRuns] = usePersisted<Run[]>('runs', [])
 
   const meta = programs[program]
   const isRace = !!meta.raceKm
@@ -137,6 +142,24 @@ export function useProgram() {
   const firstPrepWeek = raceStart && programStart && programStart < raceStart
     ? 1 - Math.ceil(daysBetween(weekStart(programStart), raceStart) / 7) : 1
   const prepWeeks = Array.from({ length: Math.max(0, 1 - firstPrepWeek) }, (_, k) => firstPrepWeek + k).filter(w => mondayOf(w) < thisMonday)
+  // เริ่มกลางโปรแกรม (วันเริ่มอยู่หลังสัปดาห์ 1 ที่นับจากวันแข่ง): จำกัดระยะตามที่วิ่งจริง แล้วไต่ขึ้น ~20%/สัปดาห์
+  const rampStart = raceStart && programStart && weekStart(programStart) > raceStart ? weekStart(programStart) : null
+  const baseline = useMemo(() => (rampStart ? recentWeekKm(runsOnly(rawRuns), rampStart) : 0), [rampStart, rawRuns])
+  const rampFor = (week: number) => {
+    if (!rampStart || !baseline || week >= meta.weeks) return null
+    const n = Math.round(daysBetween(rampStart, mondayOf(week)) / 7)
+    return n < 0 || n > 10 ? null : { cap: rampCap(baseline, n), first: n === 0 }
+  }
+  /** แผนก่อนสลับวัน/ช่วงไม่ไหว: สถานที่ → สลับท่า → เนิน → ไต่ระยะ */
+  const sizedWeek = (week: number) => {
+    const w = Math.max(1, week)
+    const raw = safeLayer('location', () => weekPlan(program, w, i => locationFor(week, i)), () => weekPlan(program, w, () => 'gym'))
+    const base = safeLayer('custom', () => applyCustom(raw, program, swaps, extras, solo), () => raw)
+    const days = raceHills ? safeLayer('hills', () => withHills(base, program, w), () => base) : base
+    const r = rampFor(week)
+    return r ? safeLayer('ramp', () => applyRampIn(days, r.cap, r.first), () => days) : days
+  }
+
   const slotId = (week: number, i: number) => {
     // ช่วงเตรียมตัวก่อนสัปดาห์ 1 ใช้แผนสัปดาห์ 1 ต้องแยก id ตามวันจันทร์ ไม่งั้นติ๊กไว้แล้วจะค้างไปถึงสัปดาห์ 1 จริง
     if (raceStart && (week < 1 || (weeksUntilStart > 0 && week === 1))) return `${program}-pre${mondayOf(week)}-d${i}`
@@ -213,10 +236,7 @@ export function useProgram() {
     },
     plan: (week = currentWeek) => {
       // แต่ละชั้นที่อ่านข้อมูลซิงก์ (สถานที่ สลับท่า เนิน สลับวัน) ถ้าพังจากข้อมูลแปลก ๆ ให้ข้ามชั้นนั้น ไม่ให้ทั้งแอปแครช
-      const w = Math.max(1, week)
-      const raw = safeLayer('location', () => weekPlan(program, w, i => locationFor(week, i)), () => weekPlan(program, w, () => 'gym'))
-      const base = safeLayer('custom', () => applyCustom(raw, program, swaps, extras, solo), () => raw)
-      const days = raceHills ? safeLayer('hills', () => withHills(base, program, w), () => base) : base
+      const days = sizedWeek(week)
       const mv = moves[mondayOf(week)]
       const eased = (d: Day[]) => safeLayer('easeOff', () => applyEaseOff(d, mondayOf(week), easeOff), () => d)
       const moved = (d: Day[]) => eased(safeLayer('moves', () => applyMoves(d, mv), () => d))
@@ -246,7 +266,11 @@ export function useProgram() {
     }),
     addExercise: (d: Day, e: Exercise) => setExtras(prev => ({ ...prev, [extrasKey(program, d)]: [...(prev[extrasKey(program, d)] ?? []), e] })),
     removeExercise: (d: Day, name: string) => setExtras(prev => ({ ...prev, [extrasKey(program, d)]: (prev[extrasKey(program, d)] ?? []).filter(e => e.name !== name) })),
-    kmTarget: (week = currentWeek) => weekKm(program, Math.max(1, week)),
+    kmTarget: (week = currentWeek) => rampFor(week)
+      ? Math.round(sizedWeek(week).reduce((s, d) => s + (d.type === 'run' ? d.targetKm ?? 0 : 0), 0))
+      : weekKm(program, Math.max(1, week)),
+    /** ระยะที่วิ่งจริงต่อสัปดาห์ก่อนเริ่มกลางโปรแกรม (0 = ไม่ได้ไต่ระยะ) */
+    rampBaseline: rampStart ? baseline : 0,
     /** i = ลำดับวันก่อนสลับวัน (ส่ง day.movedFrom ถ้าวันนั้นถูกสลับมา) */
     setDayLocation: (week: number, i: number, m: Mode) => setOverrides(prev => ({ ...prev, [slotId(week, i)]: m })),
     doneId: slotId,

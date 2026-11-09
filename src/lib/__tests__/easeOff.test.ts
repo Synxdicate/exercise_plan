@@ -43,3 +43,15 @@ describe('applyEaseOff', () => {
     expect(easeActive({ from: monday, to: '2026-11-12', reason: 'busy' }, '2026-11-13')).toBe(false)
   })
 })
+
+describe('applyEaseOff on time-based run days', () => {
+  it('shortens run-walk minutes when sore or busy', () => {
+    const start = weekPlan('start', 3, () => 'gym')
+    const out = applyEaseOff(start, monday, { from: monday, to: '2026-11-15', reason: 'sore' })
+    start.forEach((d, i) => {
+      if (d.type !== 'run') return
+      const before = Number(d.duration.match(/\d+/)![0]), after = Number(out[i].duration.match(/\d+/)![0])
+      expect(after).toBeLessThan(before)
+    })
+  })
+})

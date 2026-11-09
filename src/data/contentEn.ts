@@ -3,6 +3,8 @@
 import { hillyDownhillNote, hillyLongNote, hillyRaceNote } from './programs'
 
 export const NOTE_EN: Record<string, string> = {
+  'เริ่มกลางโปรแกรม: ระยะสัปดาห์นี้ปรับให้ใกล้กับที่วิ่งอยู่จริง แล้วค่อยเพิ่มทีละ ~20% จนตามตารางทัน': 'Mid-program start: this week is sized to what you actually run, then grows ~20% a week until it meets the plan',
+  'เริ่มกลางโปรแกรม: สัปดาห์แรกยังไม่มีวิ่งหนัก ใช้ strides แทน': 'Mid-program start: no hard run in the first week, strides instead',
   'พักฟื้นจากป่วย หายไข้แล้วค่อยเริ่มเดินเบา ๆ ไม่ต้องรีบชดเชย': 'Recovering from illness — once the fever is gone, start with easy walks; no need to make up sessions',
   'พักฟื้นจากป่วย งดเวทจนหายดี': 'Recovering from illness — no strength work until you are well',
   'ช่วงเจ็บ: วิ่งเบาครึ่งระยะ ไม่มีช่วงเร็ว ปวดได้ไม่เกิน 3 จาก 10 และไม่แย่ลงวันรุ่งขึ้น ถ้าเกินให้หยุด แล้วใช้ปั่นจักรยาน/ว่ายน้ำแทน': 'Sore spell: easy run at half distance, no fast parts — pain up to 3/10 that isn’t worse the next day; beyond that stop and cycle or swim instead',

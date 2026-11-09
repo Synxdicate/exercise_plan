@@ -699,3 +699,18 @@ test('จบโปรแกรมแข่ง: สรุปทั้งโปร
   await page.getByRole('button', { name: 'ปิด', exact: true }).click()
   await expect(page.getByText('จบโปรแกรมมินิแล้ว')).toHaveCount(0)
 })
+
+test('เริ่มโปรแกรมกลางทาง: สัปดาห์แรกไต่ระยะจากที่วิ่งจริง', async ({ page }) => {
+  // วันแข่งอีก 9 สัปดาห์ (โปรแกรม 10K ยาว 12) → เริ่มที่สัปดาห์ 4 ซึ่งตารางมี 15 กม.; สัปดาห์ก่อนวิ่งจริง ~10 กม.
+  const now = new Date()
+  const back = (now.getDay() + 6) % 7
+  const monday = ymd(back)
+  const race = ymd(back - 62)
+  await seed(page, {
+    program: 'ten', raceDate: race, programStart: monday,
+    runs: [3, 5, 2].map((km, i) => ({ id: `r${i}`, date: ymd(back + 1 + i * 2), km, seconds: km * 480, kind: 'easy', source: 'manual' })),
+  })
+  await nav(page, 'ฝึก')
+  await expect(page.getByText(/วิ่ง 1[0-2] กม\./).first()).toBeVisible()
+  await expect(page.getByText(/วิ่ง 15 กม\./)).toHaveCount(0)
+})
