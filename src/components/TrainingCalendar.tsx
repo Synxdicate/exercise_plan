@@ -1,3 +1,4 @@
+import { isStrength } from '../lib/sessionKind'
 import { useMemo, useState } from 'react'
 import { Bike, Check, ChevronLeft, ChevronRight, Dumbbell, Footprints } from 'lucide-react'
 import { monthGrid, shiftMonth } from '../lib/calendar'
@@ -89,7 +90,7 @@ export function TrainingCalendar() {
               if (!d) return <span key={j} />
               const x = byDate.get(d)
               const plan = planFor(d)
-              const ran = !!x?.runs.length, lifted = !!x?.sessions.length, carded = !!x?.cross.length || !!x?.walks.length
+              const ran = !!x?.runs.length, lifted = !!x?.sessions.some(isStrength), carded = !!x?.cross.length || !!x?.walks.length || !!x?.sessions.some(s => !isStrength(s))
               const ticked = !ran && !lifted && !carded && tickedOn(d)
               const missed = d < now && !ran && !lifted && !carded && !ticked && (plan?.type === 'run' || plan?.type === 'strength')
               const future = d > now && (plan?.type === 'run' || plan?.type === 'strength')
@@ -127,7 +128,7 @@ export function TrainingCalendar() {
           {sel?.cross.map(c => <div key={c.id} className="mt-1 flex items-center gap-1.5"><Bike size={13} className="text-run" /> {t(crossKinds[c.kind], crossKindsEn[c.kind])} · {c.minutes} {t('นาที', 'min')}</div>)}
           {sel?.walks.map(r => <div key={r.id} className="mt-1 flex items-center gap-1.5"><Footprints size={13} className="text-muted" /> {t('เดิน', 'Walk')} {r.km.toFixed(2)} {t('กม.', 'km')} · {formatDuration(r.seconds)}</div>)}
           {sel?.runs.map(r => <div key={r.id} className="mt-1 flex items-center gap-1.5"><Footprints size={13} className="text-run" /> {t(runKinds[r.kind], runKindsEn[r.kind])} {r.km.toFixed(2)} {t('กม.', 'km')} · {formatDuration(r.seconds)}</div>)}
-          {sel?.sessions.map(s => <div key={s.id} className="mt-1 flex items-center gap-1.5"><Dumbbell size={13} className="text-accent" /> {t(s.title, titleEn(s.title))} · {s.entries.reduce((n, e) => n + e.sets.length, 0)} {t('เซ็ต', 'sets')}</div>)}
+          {sel?.sessions.map(s => <div key={s.id} className="mt-1 flex items-center gap-1.5"><Dumbbell size={13} className={isStrength(s) ? 'text-accent' : 'text-muted'} /> {t(s.title, titleEn(s.title))} · {isStrength(s) ? `${s.entries.reduce((n, e) => n + e.sets.length, 0)} ${t('เซ็ต', 'sets')}` : `${s.minutes ?? 0} ${t('นาที', 'min')}`}</div>)}
         </div>
       )}
     </Card>

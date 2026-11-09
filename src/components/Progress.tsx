@@ -1,3 +1,4 @@
+import { isStrength } from '../lib/sessionKind'
 import { Fragment, useState } from 'react'
 import { Activity, CalendarDays, ChevronDown, Dumbbell, Pencil, Scale, Trash2, Trophy } from 'lucide-react'
 import { usePersisted } from '../lib/storage'
@@ -176,7 +177,7 @@ function WorkoutHistory() {
               <div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-accent-soft text-accent"><Dumbbell size={22} /></div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2"><b className="truncate">{tr(s.title, titleEn(s.title))}</b><Badge tone="muted">{s.mode === 'gym' ? tr('ยิม', 'Gym') : s.mode === 'home' ? tr('บ้าน', 'Home') : tr('สวน', 'Park')}</Badge>{prs.length > 0 && <Badge tone="good"><Trophy size={11} /> PR {prs.length}</Badge>}</div>
-                <div className="text-xs text-muted">{niceDate(s.date)} · {totalSets} {tr('เซ็ต', 'sets')}{volume ? ` · ${Math.round(volume).toLocaleString()} ${tr('กก.', 'kg')}` : ''}</div>
+                <div className="text-xs text-muted">{niceDate(s.date)} · {isStrength(s) ? `${totalSets} ${tr('เซ็ต', 'sets')}` : `${s.minutes ?? 0} ${tr('นาที', 'min')}`}{volume ? ` · ${Math.round(volume).toLocaleString()} ${tr('กก.', 'kg')}` : ''}</div>
               </div>
               <ChevronDown size={18} className={cx('shrink-0 text-muted transition', isOpen && 'rotate-180')} />
             </button>

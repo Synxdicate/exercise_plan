@@ -1,3 +1,4 @@
+import { strengthOnly } from '../lib/sessionKind'
 import { CalendarRange } from 'lucide-react'
 import { defaultProfile, targets, type Profile } from '../lib/calc'
 import { useRuns, useSessions } from '../lib/log'
@@ -23,8 +24,10 @@ export function WeekSummary() {
   const dt = useDayText()
   const last = addDays(weekStart(today()), -7)
   const r = runs.filter(x => weekStart(x.date) === last)
-  const s = sessions.filter(x => weekStart(x.date) === last)
-  if (!r.length && !s.length) return null
+  const all = sessions.filter(x => weekStart(x.date) === last)
+  if (!r.length && !all.length) return null
+  // นับเฉพาะเวทจริง — เซอร์กิตแกนกลางไม่ใช่วันเวท
+  const s = strengthOnly(all)
 
   // สัปดาห์ของโปรแกรมตามวันที่จริง (ช่วงเตรียมตัว/สัปดาห์ที่ทำซ้ำ/รอบวน) — เดิมเดาเป็นสัปดาห์นี้ − 1
   const prevWeek = p.weekOf(last) ?? Math.max(1, p.currentWeek - 1)

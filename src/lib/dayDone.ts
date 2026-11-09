@@ -1,3 +1,4 @@
+import { isStrength } from './sessionKind'
 import type { Day } from '../data/workouts'
 import { addDays } from './date'
 import { useRuns, useSessions } from './log'
@@ -20,7 +21,7 @@ export function useDayDone() {
     if (p.isDone(done, week, i)) return true
     const date = addDays(p.mondayOf(week), i)
     if (day?.type === 'run') return runs.some(r => r.date === date && !isWalk(r))
-    if (day?.type === 'strength') return sessions.some(s => s.date === date && s.dayKey !== 'circuit' && s.dayKey !== 'cross')
+    if (day?.type === 'strength') return sessions.some(s => s.date === date && isStrength(s))
     return false
   }
 }

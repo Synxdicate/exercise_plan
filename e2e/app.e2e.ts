@@ -597,3 +597,10 @@ test('สลับวันแล้วเปลี่ยนสถานที�
   await expect.poll(() => idb(page, 'dayLocation')).toEqual({ 'mini-w1-d0': 'home' })
   await expect(page.getByRole('button', { name: 'ที่บ้าน' })).toHaveAttribute('aria-pressed', 'true')
 })
+
+test('เซอร์กิตแกนกลางไม่นับเป็นวันเวทในสรุปสัปดาห์ที่แล้ว', async ({ page }) => {
+  const circuit = (id: string, date: string) => ({ id, date, mode: 'park', dayKey: 'circuit', title: 'เซอร์กิตแกนกลาง/สะโพก', entries: [], rpe: 5, minutes: 12 })
+  await seed(page, { sessions: [circuit('c1', ymd(7))] })
+  await page.getByRole('button', { name: /สรุปสัปดาห์ที่แล้ว/ }).click()
+  await expect(page.getByText(/^0 \/ \d+ ครั้ง$/)).toBeVisible()
+})

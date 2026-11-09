@@ -1,5 +1,6 @@
 import type { Run, Session } from './log'
 import { runsOnly } from './walk'
+import { strengthOnly } from './sessionKind'
 import { weekStart } from './date'
 import { personalBests } from './analysis'
 
@@ -9,7 +10,7 @@ export const monthOf = (date: string) => date.slice(0, 7) // YYYY-MM
 
 export function periodStats(runs: Run[], sessions: Session[], prefix: string) {
   const r = runsOnly(runs).filter(x => x.date.startsWith(prefix))
-  const s = sessions.filter(x => x.date.startsWith(prefix))
+  const s = strengthOnly(sessions).filter(x => x.date.startsWith(prefix))
   return {
     km: r.reduce((a, x) => a + x.km, 0),
     runs: r.length,
@@ -43,7 +44,7 @@ const longest = (c: Ctx) => runsOnly(c.runs).reduce((a, r) => Math.max(a, r.km),
 
 export const BADGES: (BadgeDef & { earned: (c: Ctx) => boolean })[] = [
   { id: 'first-run', title: 'ก้าวแรก', text: 'บันทึกการวิ่งครั้งแรก', icon: 'footprints', earned: c => runsOnly(c.runs).length > 0 },
-  { id: 'first-workout', title: 'เริ่มยก', text: 'ฝึกเวทครั้งแรก', icon: 'dumbbell', earned: c => c.sessions.length > 0 },
+  { id: 'first-workout', title: 'เริ่มยก', text: 'ฝึกเวทครั้งแรก', icon: 'dumbbell', earned: c => strengthOnly(c.sessions).length > 0 },
   { id: 'run-5k', title: '5K', text: 'วิ่งต่อเนื่องได้ 5 กม.', icon: 'medal', earned: c => longest(c) >= 5 },
   { id: 'run-10k', title: '10K', text: 'วิ่งต่อเนื่องได้ 10 กม.', icon: 'medal', earned: c => longest(c) >= 10 },
   { id: 'run-half', title: 'ฮาล์ฟมาราธอน', text: 'วิ่งได้ 21.1 กม.', icon: 'trophy', earned: c => longest(c) >= 21.0 },
@@ -51,7 +52,7 @@ export const BADGES: (BadgeDef & { earned: (c: Ctx) => boolean })[] = [
   { id: 'sub30-5k', title: '5K ต่ำกว่า 30 นาที', text: 'ช่วง 5 กม. ที่เร็วที่สุดต่ำกว่า 30:00', icon: 'zap', earned: c => (personalBests(c.runs).find(b => b.km === 5)?.best?.seconds ?? Infinity) < 1800 },
   { id: 'km-100', title: '100 กม.', text: 'วิ่งสะสมครบ 100 กม.', icon: 'mountain', earned: c => totalKm(c) >= 100 },
   { id: 'km-500', title: '500 กม.', text: 'วิ่งสะสมครบ 500 กม.', icon: 'mountain', earned: c => totalKm(c) >= 500 },
-  { id: 'workouts-25', title: 'ยกครบ 25 ครั้ง', text: 'ฝึกเวทสะสม 25 ครั้ง', icon: 'dumbbell', earned: c => c.sessions.length >= 25 },
+  { id: 'workouts-25', title: 'ยกครบ 25 ครั้ง', text: 'ฝึกเวทสะสม 25 ครั้ง', icon: 'dumbbell', earned: c => strengthOnly(c.sessions).length >= 25 },
   { id: 'streak-4', title: 'ต่อเนื่อง 4 สัปดาห์', text: 'ออกกำลังกาย ≥3 ครั้ง/สัปดาห์ ติดกัน 4 สัปดาห์', icon: 'flame', earned: c => bestWeekStreak(c.runs, c.sessions) >= 4 },
   { id: 'streak-12', title: 'ต่อเนื่อง 12 สัปดาห์', text: 'ออกกำลังกาย ≥3 ครั้ง/สัปดาห์ ติดกัน 12 สัปดาห์', icon: 'flame', earned: c => bestWeekStreak(c.runs, c.sessions) >= 12 },
   { id: 'month-goal', title: 'ทำตามเป้าเดือน', text: 'วิ่งครบเป้าหมายรายเดือน', icon: 'target', earned: c => c.goalKm > 0 && [...new Set(runsOnly(c.runs).map(r => monthOf(r.date)))].some(m => periodStats(c.runs, [], m).km >= c.goalKm) },

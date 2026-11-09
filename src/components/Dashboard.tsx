@@ -1,3 +1,4 @@
+import { strengthOnly } from '../lib/sessionKind'
 import { useMemo, useState } from 'react'
 import { Check, Dumbbell, Flag, Flame, Footprints, Moon, Play } from 'lucide-react'
 import type { Day } from '../data/workouts'
@@ -49,7 +50,7 @@ export function Dashboard() {
   const strengthTarget = p.finished ? 0 : plan.filter(d => d.type === 'strength').length
   const thisWeek = weekStart(today())
   // เซสชันที่บันทึกในสัปดาห์นี้ + วันเวทที่ติ๊กทำแล้วโดยไม่ได้บันทึกเซ็ต
-  const logged = sessions.filter(s => weekStart(s.date) === thisWeek)
+  const logged = strengthOnly(sessions).filter(s => weekStart(s.date) === thisWeek)
   const tickedOnly = plan.filter((d, i) => d.type === 'strength' && p.isDone(done, week, i) && !logged.some(s => s.date === addDays(thisWeek, i))).length
   const sessionsThisWeek = logged.length + tickedOnly
   const kmThisWeek = runsOnly(runs).filter(r => weekStart(r.date) === thisWeek).reduce((s, r) => s + r.km, 0)
