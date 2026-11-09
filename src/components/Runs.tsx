@@ -66,8 +66,9 @@ export function Runs() {
   const wbgtNow = useWbgtNow()
   const heatPct = wbgtNow !== undefined ? heatSlowdown(wbgtNow) : 0
   const heatF = 1 + heatPct / 100
+  // คำนวณจากวิ่งเบา: เพซ tempo/interval ที่ได้จะช้ากว่าความจริง (tempo ช้ากว่าเพซวิ่งเบาด้วยซ้ำ) จึงไม่ให้เป้าเพซ ใช้ความรู้สึกแทน
   const paces = useMemo(() => {
-    if (!est) return undefined
+    if (!est || est.from.easy) return undefined
     if (heatF === 1) return est.paces
     const p: Record<string, unknown> = {}
     for (const [k, v] of Object.entries(est.paces)) p[k] = typeof v === 'number' ? v * heatF : Array.isArray(v) ? v.map(x => x * heatF) : v
@@ -230,7 +231,7 @@ export function Runs() {
             <div>
               <div className="font-bold">{tr('แผนวันนี้', "Today's plan")}: {dt.title(todayRun)} · {todayRun.targetKm ? `${todayRun.targetKm} ${tr('กม.', 'km')}` : dt.duration(todayRun)}</div>
               <div className="">{dt.cue(todayRun.exercises[0]?.cue ?? '')}</div>
-              {paceHint(est, todayRun.runKind, todayRun.title) && <div className="font-semibold">{paceHint(est, todayRun.runKind, todayRun.title)}</div>}
+              {paceHint(est, todayRun.runKind, todayRun.title, dt.en) && <div className="font-semibold">{paceHint(est, todayRun.runKind, todayRun.title, dt.en)}</div>}
               <CapNote day={todayRun} date={today()} className="mt-1.5 flex items-start gap-1.5 rounded-xl bg-white/20 p-2 font-semibold" />
             </div>
           </div>

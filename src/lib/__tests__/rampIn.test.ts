@@ -51,3 +51,19 @@ describe('ramp-in order', () => {
     expect(km(out)).toBeLessThanOrEqual(12.7)
   })
 })
+
+describe('paceHint from an easy-run estimate', () => {
+  it('uses effort instead of misleading paces, and speaks English when asked', async () => {
+    const { estimate, paceHint } = await import('../pace')
+    const run = { id: 'l', date: '2026-11-08', km: 5.01, seconds: 2462, kind: 'long' as const, source: 'manual' as const }
+    const e = estimate([run], '2026-11-10')!
+    expect(e.from.easy).toBe(true)
+    expect(paceHint(e, 'tempo', 'Tempo 15 นาที')).toMatch(/~7\/10/)
+    expect(paceHint(e, 'interval', 'Interval 5 × 800 ม.')).toMatch(/~8\/10/)
+    expect(paceHint(e, 'easy', 'Easy run')).toContain('8:11')
+    expect(paceHint(e, 'easy', 'Easy run', true)).toMatch(/^Easy: conversational/)
+    const hard = estimate([{ ...run, kind: 'race' as const }], '2026-11-10')!
+    expect(paceHint(hard, 'tempo', 'Tempo 15 นาที')).toMatch(/^Tempo ~8:5\d \/กม\.$/)
+    expect(paceHint(hard, 'easy', 'Easy run', true)).toMatch(/^Easy \d+:\d\d–\d+:\d\d \/km$/)
+  })
+})

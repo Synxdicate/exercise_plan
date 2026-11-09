@@ -71,7 +71,7 @@ export function Dashboard() {
   const tomorrow = todayIdx < 6 ? plan[todayIdx + 1] : null
   const kmToday = runsOnly(runs).filter(r => r.date === today()).reduce((s, r) => s + r.km, 0)
   const est = useMemo(() => estimate(runs), [runs])
-  const hint = todayPlan?.type === 'run' ? paceHint(est, todayPlan.runKind, todayPlan.title) : null
+  const hint = todayPlan?.type === 'run' ? paceHint(est, todayPlan.runKind, todayPlan.title, dt.en) : null
 
   return (
     <>

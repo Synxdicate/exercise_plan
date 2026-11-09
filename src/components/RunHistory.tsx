@@ -18,12 +18,12 @@ export function RoutePreview({ run, className }: { run: Run; className?: string 
     return pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join(' ')
   }, [run.route])
   return (
-    <div className={cx('grid size-12 shrink-0 place-items-center rounded-2xl bg-run/15 text-run', className)}>
+    <div className={cx('grid shrink-0 place-items-center bg-run/15 text-run', className ?? 'size-12 rounded-2xl')}>
       {d ? (
-        <svg viewBox="0 0 48 48" className="size-12" aria-hidden>
+        <svg viewBox="0 0 48 48" className="size-full" aria-hidden>
           <path d={d} fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
         </svg>
-      ) : <Footprints size={22} />}
+      ) : <Footprints size={className ? 16 : 22} />}
     </div>
   )
 }
@@ -89,7 +89,7 @@ export function RunHistory({ runs, onOpen }: { runs: Run[]; onOpen: (id: string)
                 <li key={r.id}>
                   <button onClick={() => onOpen(r.id)} className="w-full rounded-2xl bg-card p-3 text-left ring-1 ring-line">
                     <div className="flex items-center gap-2">
-                      {!big && <RoutePreview run={r} className="size-9 rounded-xl" />}
+                      {!big && <RoutePreview run={r} className="size-8 rounded-xl" />}
                       <span className="min-w-0 flex-1 truncate text-xs text-muted">{niceDate(r.date)}</span>
                       <Badge tone="run">{kindName(r.kind)}</Badge>
                       <ChevronRight size={16} className="text-muted" />

@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react'
 import { ArrowDown, ArrowLeftRight, House, ArrowUp, Check, ChevronDown, ChevronRight, Dumbbell, Flag, Footprints, Moon, Play, Plus, RefreshCw, Trash2, Trees } from 'lucide-react'
 import { yt, type Day, type Exercise } from '../data/workouts'
 import { locationInfo, weekNote } from '../data/programs'
+import { RAMP_NOTE, RAMP_STRIDES_NOTE } from '../lib/rampIn'
 import { dayIntensity, musclesOf, muscleNames } from '../data/muscles'
 import { useRuns } from '../lib/log'
 import { useDayText } from '../lib/dayText'
@@ -78,7 +79,8 @@ function PlanBody() {
   const setDayDone = (i: number, v: boolean) => setDone(prev => ({ ...prev, [p.doneId(week, i)]: v }))
   const trainingIdx = days.flatMap((d, i) => (d.type !== 'rest' ? [i] : []))
   const doneCount = trainingIdx.filter(isDone).length
-  const note = weekNote(p.program, week)
+  // ไต่ระยะหลังเริ่มกลางโปรแกรม: โน้ตของตาราง (เช่น "เริ่มวิ่ง 4 วัน") อาจไม่ตรงกับแผนที่ปรับแล้ว
+  const note = days.some(d => d.note?.includes(RAMP_NOTE) || d.note === RAMP_STRIDES_NOTE) ? RAMP_NOTE : weekNote(p.program, week)
   const day = days[selected]
   // ทำแผนของวันอื่นวันนี้ (สลับกับวันนี้) เฉพาะสัปดาห์นี้ ทั้งสองวันยังไม่ได้ทำ และไม่ใช่วันแข่ง
   const tIdx = todayIdx()
@@ -186,7 +188,7 @@ function PlanBody() {
 
       {/* วันที่เลือก */}
       <DayDetail key={`${week}-${selected}-${day.location ?? ''}`} day={day} isToday={isThisWeek && selected === todayIdx()}
-        done={isDone(selected)} hint={paceHint(est, day.runKind, day.title)} weekNoteText={note}
+        done={isDone(selected)} hint={paceHint(est, day.runKind, day.title, dt.en)} weekNoteText={note}
         setDone={v => setDayDone(selected, v)}
         onStart={() => setChecking(selected)}
         onLocation={m => p.setDayLocation(week, day.movedFrom ?? selected, m)} slotId={p.doneId(week, selected)}

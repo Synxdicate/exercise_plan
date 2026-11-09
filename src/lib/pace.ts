@@ -61,7 +61,7 @@ export function estimate(runs: Run[], asOf = today()) {
   const half = riegel(src.seconds, src.km, 21.0975)
   const full = vickersMarathon(src.seconds, src.km, weeklyKm / MILES)
   return {
-    from: { km: +src.km.toFixed(2), date: src.date, id: src.runId, segment: src.segment, easy: src.easy },
+    from: { km: +src.km.toFixed(2), date: src.date, id: src.runId, segment: src.segment, easy: src.easy, pace: src.seconds / src.km },
     stale,
     weeklyKm,
     // ฟูลยังไม่น่าเชื่อถือถ้าซ้อมน้อยหรือยังไม่เคยวิ่งไกล (ระยะยาวสุดที่ใช้คำนวณ < 10 กม.)
@@ -96,18 +96,28 @@ export type Estimate = NonNullable<ReturnType<typeof estimate>>
 const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`
 
 // ข้อความเพซแนะนำของวันวิ่งตามชนิด
-export function paceHint(e: Estimate | null, kind?: string, title = '') {
+export function paceHint(e: Estimate | null, kind?: string, title = '', en = false) {
+  const tr = (th: string, eng: string) => (en ? eng : th)
+  const km = tr('/กม.', '/km')
   // โปรแกรมเริ่มวิ่ง (วิ่งสลับเดิน/วิ่งต่อเนื่อง N นาที) ไม่มีเป้าเพซ แค่ให้พูดเป็นประโยคได้
   if (!e || /วิ่งสลับเดิน|วิ่งต่อเนื่อง \d+ นาที/.test(title)) return null
-  if (/10K/.test(title)) return `เพซ 10K ~${fmt(e.paces.tenK)} /กม.`
-  if (/5K/.test(title)) return `เพซ 5K ~${fmt(e.paces.interval)} /กม.`
-  if (/ฮาล์ฟ/.test(title)) return `เพซฮาล์ฟ ~${fmt(e.paces.half)} /กม.`
-  if (/มาราธอน/.test(title)) return `เพซมาราธอน ~${fmt(e.paces.marathon)} /กม.`
+  // คำนวณจากวิ่งเบา (ไม่ใช่การวิ่งเต็มที่): เพซที่ได้ช้ากว่าความจริงมาก ใช้ความรู้สึกแทน แล้วชวนวิ่งทดสอบ 5K
+  if (e.from.easy) {
+    if (kind === 'race') return null
+    if (kind === 'tempo' || kind === 'interval' || /10K|5K|ฮาล์ฟ|มาราธอน/.test(title))
+      return kind === 'interval' ? tr('ช่วงเร็ว: เหนื่อย ~8/10 พูดได้แค่คำสั้น ๆ (วิ่งทดสอบ 5K แล้วจะได้เพซที่แม่น)', 'Fast reps: ~8/10 effort, a few words only (a 5K test gives exact paces)')
+        : tr('Tempo: เหนื่อยแต่คุมได้ ~7/10 พูดได้เป็นคำ ๆ (วิ่งทดสอบ 5K แล้วจะได้เพซที่แม่น)', 'Tempo: comfortably hard ~7/10, short phrases (a 5K test gives exact paces)')
+    return tr(`เบา: พูดเป็นประโยคได้ ไม่เร็วกว่าวิ่งเบาปกติ (~${fmt(e.from.pace)} ${km})`, `Easy: conversational, no faster than your usual easy runs (~${fmt(e.from.pace)} ${km})`)
+  }
+  if (/10K/.test(title)) return tr(`เพซ 10K ~${fmt(e.paces.tenK)} ${km}`, `10K pace ~${fmt(e.paces.tenK)} ${km}`)
+  if (/5K/.test(title)) return tr(`เพซ 5K ~${fmt(e.paces.interval)} ${km}`, `5K pace ~${fmt(e.paces.interval)} ${km}`)
+  if (/ฮาล์ฟ/.test(title)) return tr(`เพซฮาล์ฟ ~${fmt(e.paces.half)} ${km}`, `Half pace ~${fmt(e.paces.half)} ${km}`)
+  if (/มาราธอน/.test(title)) return tr(`เพซมาราธอน ~${fmt(e.paces.marathon)} ${km}`, `Marathon pace ~${fmt(e.paces.marathon)} ${km}`)
   switch (kind) {
-    case 'tempo': return `Tempo ~${fmt(e.paces.tempo)} /กม.`
-    case 'interval': return `ช่วงเร็ว ~${fmt(e.paces.interval)} /กม.`
+    case 'tempo': return `Tempo ~${fmt(e.paces.tempo)} ${km}`
+    case 'interval': return tr(`ช่วงเร็ว ~${fmt(e.paces.interval)} ${km}`, `Fast reps ~${fmt(e.paces.interval)} ${km}`)
     case 'race': return null
-    default: return `เบา ${fmt(e.paces.easy[0])}–${fmt(e.paces.easy[1])} /กม.`
+    default: return tr(`เบา ${fmt(e.paces.easy[0])}–${fmt(e.paces.easy[1])} ${km}`, `Easy ${fmt(e.paces.easy[0])}–${fmt(e.paces.easy[1])} ${km}`)
   }
 }
 
