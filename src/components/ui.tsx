@@ -70,7 +70,9 @@ export function Segmented<T extends string>({ value, options, onChange }: { valu
     <div data-segmented className="flex rounded-full bg-raised p-1 ring-1 ring-line">
       {options.map(o => (
         <button key={o.value} onClick={() => onChange(o.value)} aria-pressed={value === o.value}
-          className={cx('flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition',
+          className={cx('flex min-w-0 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-full py-2 text-sm font-semibold transition',
+            // 4 ตัวเลือกขึ้นไปบนจอแคบ: ลดขอบและซ่อนไอคอน ไม่ให้ข้อความตัดบรรทัดจนเมนูสูงไม่เท่ากัน
+            options.length >= 4 ? 'px-1.5 max-[399px]:[&>svg]:hidden' : 'px-3',
             value === o.value ? 'bg-card text-accent shadow-sm' : 'text-muted')}>
           {o.label}
         </button>
