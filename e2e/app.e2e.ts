@@ -684,3 +684,18 @@ test('เส้นทางสนามแข่ง: นำเข้า GPX แ�
   await expect(page.getByText(/^ขึ้น \d+ ม\./).first()).toBeVisible()
   await expect.poll(async () => ((await idb(page, 'raceCourse')) as { profile: number[] }).profile.length).toBeGreaterThan(200)
 })
+
+test('จบโปรแกรมแข่ง: สรุปทั้งโปรแกรมในหน้าแรก', async ({ page }) => {
+  await seed(page, {
+    program: 'mini', raceDate: ymd(2), raceCutoff: 120, raceKm: 11.55,
+    runs: [
+      { id: 'a', date: ymd(30), km: 5, seconds: 2400, kind: 'easy', source: 'manual' },
+      { id: 'r', date: ymd(2), km: 11.55, seconds: 6000, kind: 'race', source: 'manual' },
+    ],
+  })
+  await expect(page.getByText('จบโปรแกรมมินิแล้ว')).toBeVisible()
+  await expect(page.getByText(/วันแข่ง 11\.55 กม\. ใน 1:40:00/)).toBeVisible()
+  await expect(page.getByText(/ทันเวลาตัด เหลือ 20:00/)).toBeVisible()
+  await page.getByRole('button', { name: 'ปิด', exact: true }).click()
+  await expect(page.getByText('จบโปรแกรมมินิแล้ว')).toHaveCount(0)
+})

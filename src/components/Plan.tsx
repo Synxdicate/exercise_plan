@@ -1,3 +1,4 @@
+import { ReplaySoFar } from './Replay'
 import { CourseCard } from './Course'
 import { EaseOffCard, StrengthNudgeCard } from './Coach'
 import { useMemo, useState } from 'react'
@@ -216,6 +217,7 @@ function PlanBody() {
       </section>
 
       <CourseCard />
+      <ReplaySoFar />
       <CircuitCard />
       <WeeklyMuscles plan={days} />
 
