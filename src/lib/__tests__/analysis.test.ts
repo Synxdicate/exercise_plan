@@ -116,3 +116,26 @@ describe('top-3 efforts and achievements', () => {
     expect(runAchievements(runs[3], runs)).toEqual([])
   })
 })
+
+describe('trimRun', () => {
+  it('cuts a forgotten-stop tail and recomputes km, time and splits', async () => {
+    const { trimRun } = await import('../analysis')
+    // 3 กม. ไปทางเหนือ ทุก 10 ม. ทุก 4 วิ (6:40/กม.) แล้วยืนนิ่ง 100 จุด (ลืมกดหยุด)
+    const route: [number, number][] = []
+    const times: number[] = []
+    for (let i = 0; i <= 300; i++) { route.push([16 + (i * 10) / 111_195, 102]); times.push(i * 4) }
+    for (let i = 1; i <= 100; i++) { route.push(route[300]); times.push(1200 + i * 4) }
+    const run = { id: 'x', date: '2026-11-09', km: 3, seconds: 1600, kind: 'easy' as const, source: 'gps' as const, route, times, elev: { gain: 1, loss: 1, max: 1, min: 0 } }
+    const p = trimRun(run, 0, 300)!
+    expect(p.km).toBeCloseTo(3, 1)
+    expect(p.seconds).toBe(1200)
+    expect(p.splits).toHaveLength(3)
+    expect(p.splits![0]).toBeCloseTo(400, -1)
+    expect(p.route).toHaveLength(301)
+    expect(p.elev).toBeUndefined()
+    const start = trimRun(run, 100, 300)!
+    expect(start.km).toBeCloseTo(2, 1)
+    expect(start.times![0]).toBe(0)
+    expect(trimRun(run, 5, 6)).toBeNull()
+  })
+})

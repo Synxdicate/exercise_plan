@@ -22,6 +22,11 @@ export function remeasure(run: Pick<Run, 'km' | 'route' | 'times'>) {
   const d = cumulative(route)
   const km = d.at(-1)! / 1000
   if (km < run.km * 1.1 || km - run.km < 0.2) return null
+  return { km: +km.toFixed(2), splits: splitsFrom(d, times, km) }
+}
+
+/** เวลาต่อกิโลจากระยะสะสม (เมตร) และเวลาสะสมของแต่ละจุด */
+function splitsFrom(d: number[], times: number[], km: number) {
   const splits: number[] = []
   let prev = 0
   for (let i = 1, k = 1; i < d.length && k <= Math.floor(km); i++) {
@@ -34,7 +39,31 @@ export function remeasure(run: Pick<Run, 'km' | 'route' | 'times'>) {
       k++
     }
   }
-  return { km: +km.toFixed(2), splits }
+  return splits
+}
+
+/**
+ * ตัดต้น/ท้ายรอบวิ่ง (ลืมกดหยุด/เริ่มก่อนออกวิ่ง) — เก็บจุด a…b
+ * ระยะใช้สัดส่วนเดียวกับที่บันทึกไว้ (ตัวกรอง GPS ตอนวิ่งตัดการแกว่งออก ระยะจริงจึงสั้นกว่าเส้นเล็กน้อย)
+ */
+export function trimRun(run: Run, a: number, b: number): Partial<Run> | null {
+  const { route, times } = run
+  if (!route || !times || times.length !== route.length || a < 0 || b >= route.length || b - a < 2) return null
+  const d = cumulative(route)
+  const ratio = d.at(-1)! > 0 ? run.km / (d.at(-1)! / 1000) : 1
+  const scale = ratio > 0.8 && ratio < 1.2 ? ratio : 1
+  const r = route.slice(a, b + 1)
+  const t0 = times[a]
+  const t = times.slice(a, b + 1).map(x => x - t0)
+  const dd = d.slice(a, b + 1).map(x => (x - d[a]) * scale)
+  const km = +(dd.at(-1)! / 1000).toFixed(2)
+  const seconds = Math.round(t.at(-1)!)
+  return {
+    route: r, times: t, km, seconds, splits: splitsFrom(dd, t, km),
+    elapsedSeconds: run.elapsedSeconds ? Math.max(seconds, run.elapsedSeconds - (run.seconds - seconds)) : undefined,
+    startedAt: run.startedAt ? run.startedAt + Math.round(t0 * 1000) : undefined,
+    elev: undefined, elevProfile: undefined,
+  }
 }
 
 const FASTEST_PLAUSIBLE = 150 // วินาที/กม. (2:30) — เร็วกว่านี้ถือว่า GPS กระโดด

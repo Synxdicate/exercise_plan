@@ -658,3 +658,15 @@ test('ช่วงนี้ไม่ไหว: ปรับแผนเบาล
   await page.getByRole('button', { name: 'กลับแผนปกติ' }).click()
   await expect(page.getByText(/แผนเบาลง/)).toHaveCount(0)
 })
+
+test('ตัดท้ายเส้นทางที่ลืมกดหยุด', async ({ page }) => {
+  await seed(page, { runs: [{ id: 'g', date: ymd(1), km: 3.4, seconds: 1800, kind: 'easy', source: 'gps', ...loopRoute() }] })
+  await nav(page, 'วิ่ง')
+  await page.getByRole('button', { name: 'ประวัติ' }).click()
+  await page.locator('main li button', { hasText: '3.40' }).click()
+  await page.getByRole('button', { name: 'ตัดต้น/ท้าย' }).click()
+  await page.getByRole('slider', { name: 'จุดจบ' }).fill('60')
+  await page.getByRole('button', { name: 'บันทึกเส้นทางที่ตัดแล้ว' }).click()
+  await expect.poll(async () => ((await idb(page, 'runs')) as { km: number }[])[0].km).toBeLessThan(2)
+  await expect.poll(async () => ((await idb(page, 'routes')) as Record<string, { route: unknown[] }>).g.route.length).toBe(61)
+})

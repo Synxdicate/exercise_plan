@@ -1,13 +1,13 @@
 import { gapSplits } from '../lib/grade'
 import { lazy, Suspense, useState } from 'react'
-import { FileDown, ListChecks, Pencil, Share2, Trash2, X } from 'lucide-react'
+import { FileDown, ListChecks, Pencil, Scissors, Share2, Trash2, X } from 'lucide-react'
 import { type Point } from '../lib/gps'
 import { formatDuration, formatPace, runKinds, runKindsEn, type Run } from '../lib/log'
 import { trNow, useT } from '../lib/i18n'
 import { looksLikeWalk } from '../lib/walk'
 import { saveGpx } from '../lib/gpxFile'
 import { useShoes } from '../lib/shoes'
-import { paceSeries, remeasure, splitAnalysis } from '../lib/analysis'
+import { paceSeries, remeasure, splitAnalysis, trimRun } from '../lib/analysis'
 import { CoachReview } from './Coach'
 import { PaceChart, ZoneBar } from './Charts'
 import { zoneInfo, zoneOf } from '../lib/zones'
@@ -16,7 +16,7 @@ import { useBackClose } from '../lib/back'
 import { ShareRunSheet } from './ShareRun'
 import { PhotoStrip } from './Photos'
 import { niceDate } from '../lib/date'
-import { Button, Collapse, Portal, Stat } from './ui'
+import { Button, Collapse, Portal, Sheet, Stat } from './ui'
 import { MatchedRuns } from './Matched'
 import { useCountUp } from '../lib/useCountUp'
 import { DateInput, NumberInput, SelectInput } from './Form'
@@ -72,6 +72,8 @@ export function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { r
   const [editing, setEditing] = useState(false)
   const [sharing, setSharing] = useState(false)
   const [scrub, setScrub] = useState<Point | null>(null)
+  const [trimming, setTrimming] = useState(false)
+  const canTrim = (run.route?.length ?? 0) > 10 && run.times?.length === run.route?.length
   useBackClose(onClose)
   const series = run.route && run.times ? paceSeries(run.route, run.times) : []
   const sa = splitAnalysis(run.splits)
@@ -101,6 +103,7 @@ export function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { r
           </span>
         </div>
         {sharing && <ShareRunSheet run={run} onClose={() => setSharing(false)} />}
+        {trimming && <TrimSheet run={run} onClose={() => setTrimming(false)} onSave={patch => { onUpdate(patch); setTrimming(false) }} />}
         {run.route && run.route.length > 1 && <Map route={run.route} highlight={scrub} className="mb-3 h-56" />}
         <div className="mb-3 grid grid-cols-3 gap-2 text-center">
           <Stat label={tr('ระยะ', 'Distance')} value={kmUp.toFixed(2)} sub={tr('กม.', 'km')} accent />
@@ -157,11 +160,45 @@ export function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { r
         </Collapse>
         <div className="mt-3 flex gap-2">
           <Button variant="soft" size="sm" onClick={() => setEditing(!editing)}><Pencil size={14} /> {editing ? tr('ยกเลิกแก้ไข', 'Cancel edit') : tr('แก้ไข', 'Edit')}</Button>
+          {canTrim && <Button variant="soft" size="sm" onClick={() => setTrimming(true)}><Scissors size={14} /> {tr('ตัดต้น/ท้าย', 'Crop')}</Button>}
           <Button variant="danger" size="sm" onClick={async () => (await ask(tr('ลบการวิ่งนี้ออกจากประวัติ?', 'Delete this run from history?'), { ok: tr('ลบ', 'Delete'), danger: true })) && onDelete()}><Trash2 size={14} /> {tr('ลบ', 'Delete')}</Button>
         </div>
       </div>
     </div>
     </Portal>
+  )
+}
+
+/** ตัดต้น/ท้ายเส้นทาง (เช่น ลืมกดหยุด) — แบบ Strava crop: เลื่อนจุดเริ่ม/จบ ดูระยะและเวลาก่อนบันทึก */
+function TrimSheet({ run, onClose, onSave }: { run: Run; onClose: () => void; onSave: (patch: Partial<Run>) => void }) {
+  const tr = useT()
+  const n = run.route!.length
+  const [a, setA] = useState(0)
+  const [b, setB] = useState(n - 1)
+  const p = trimRun(run, a, b)
+  return (
+    <Sheet onClose={onClose} title={tr('ตัดต้น/ท้ายเส้นทาง', 'Crop the run')}>
+      <div className="space-y-3 pb-2">
+        <Map route={p?.route ?? run.route!} className="h-52" />
+        <label className="block text-sm">
+          <span className="text-muted">{tr('จุดเริ่ม', 'Start')}</span>
+          <input type="range" min={0} max={n - 3} value={a} onChange={e => setA(Math.min(+e.target.value, b - 2))} className="bare w-full accent-[var(--c-accent)]" aria-label={tr('จุดเริ่ม', 'Start')} />
+        </label>
+        <label className="block text-sm">
+          <span className="text-muted">{tr('จุดจบ', 'End')}</span>
+          <input type="range" min={2} max={n - 1} value={b} onChange={e => setB(Math.max(+e.target.value, a + 2))} className="bare w-full accent-[var(--c-accent)]" aria-label={tr('จุดจบ', 'End')} />
+        </label>
+        {p && (
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <Stat label={tr('ระยะ', 'Distance')} value={p.km!.toFixed(2)} sub={`${tr('เดิม', 'was')} ${run.km.toFixed(2)}`} />
+            <Stat label={tr('เวลา', 'Time')} value={formatDuration(p.seconds!)} sub={`${tr('เดิม', 'was')} ${formatDuration(run.seconds)}`} />
+            <Stat label={tr('เพซ', 'Pace')} value={formatPace(p.seconds!, p.km!)} sub={tr('นาที/กม.', 'min/km')} />
+          </div>
+        )}
+        <p className="text-xs text-muted">{tr('ส่วนที่ตัดออกจะหายไปถาวร ความสูงเส้นทางจะคำนวณใหม่', 'The cropped part is removed for good; elevation is recalculated')}</p>
+        <Button className="w-full" disabled={!p || (a === 0 && b === n - 1)} onClick={() => p && onSave(p)}>{tr('บันทึกเส้นทางที่ตัดแล้ว', 'Save cropped run')}</Button>
+      </div>
+    </Sheet>
   )
 }
 
