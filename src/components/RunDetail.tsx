@@ -1,3 +1,4 @@
+import { gapSplits } from '../lib/grade'
 import { lazy, Suspense, useState } from 'react'
 import { FileDown, ListChecks, Pencil, Share2, Trash2, X } from 'lucide-react'
 import { type Point } from '../lib/gps'
@@ -27,7 +28,7 @@ import { ElevationCard, RunAchievements } from './RunExtras'
 const RunMap = lazy(() => import('./RunMap'))
 
 // รายละเอียดรอบวิ่ง (แยกจาก Runs.tsx): แผนที่ เพซ ความสำเร็จ ความสูง แก้ไข แชร์
-export function Map(props: { route: Point[]; position?: Point | null; follow?: boolean; className?: string; interactive?: boolean }) {
+export function Map(props: { route: Point[]; position?: Point | null; follow?: boolean; className?: string; interactive?: boolean; highlight?: Point | null }) {
   return (
     <ErrorBoundary fallback={<div className={cx('grid w-full place-items-center rounded-2xl bg-raised text-sm text-muted', props.className ?? 'h-64')}>{trNow('แสดงแผนที่ไม่ได้', 'Couldn’t show the map')}</div>}>
       <Suspense fallback={<div className={cx('w-full animate-pulse rounded-2xl bg-raised', props.className ?? 'h-64')} />}>
@@ -37,16 +38,16 @@ export function Map(props: { route: Point[]; position?: Point | null; follow?: b
   )
 }
 
-export function Splits({ splits, fiveK }: { splits: number[]; fiveK?: number }) {
+export function Splits({ splits, fiveK, gap }: { splits: number[]; fiveK?: number; gap?: (number | null)[] }) {
   const tr = useT()
   const fastest = Math.min(...splits)
   const slowest = Math.max(...splits)
   return (
     <div className="rounded-2xl bg-raised p-3">
-      <div className="mb-2 flex justify-between text-xs text-muted"><span>{tr('เพซรายกิโล', 'Pace per km')}</span><span>{tr('นาที/กม.', 'min/km')}</span></div>
+      <div className="mb-2 flex justify-between text-xs text-muted"><span>{tr('เพซรายกิโล', 'Pace per km')}</span><span>{tr('นาที/กม.', 'min/km')}{gap ? tr(' · GAP เทียบทางราบ', ' · GAP flat-equivalent') : ''}</span></div>
       <ul className="space-y-1.5">
         {splits.map((s, i) => (
-          <li key={i} className="grid grid-cols-[3rem_1fr_1.25rem_3rem] items-center gap-2 text-sm">
+          <li key={i} className={cx('grid items-center gap-2 text-sm', gap ? 'grid-cols-[3rem_1fr_1.25rem_3rem_3rem]' : 'grid-cols-[3rem_1fr_1.25rem_3rem]')}>
             <span className="text-muted">{tr('กม.', 'km')} {i + 1}</span>
             <span className="h-2.5 overflow-hidden rounded-full bg-body">
               {/* แท่งยาว = เร็ว, สี = โซนเพซ */}
@@ -55,6 +56,7 @@ export function Splits({ splits, fiveK }: { splits: number[]; fiveK?: number }) 
             </span>
             <span className="text-center text-[10px] font-bold" style={{ color: fiveK ? zoneInfo(zoneOf(s, fiveK)).color : undefined }}>{fiveK ? zoneOf(s, fiveK) : ''}</span>
             <span className={cx('text-right tabular-nums', s === fastest && 'font-bold')}>{formatPace(s, 1)}</span>
+            {gap && <span className="text-right text-xs tabular-nums text-muted">{gap[i] ? formatPace(gap[i]!, 1) : '–'}</span>}
           </li>
         ))}
       </ul>
@@ -69,6 +71,7 @@ export function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { r
   const secUp = useCountUp(run.seconds)
   const [editing, setEditing] = useState(false)
   const [sharing, setSharing] = useState(false)
+  const [scrub, setScrub] = useState<Point | null>(null)
   useBackClose(onClose)
   const series = run.route && run.times ? paceSeries(run.route, run.times) : []
   const sa = splitAnalysis(run.splits)
@@ -98,7 +101,7 @@ export function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { r
           </span>
         </div>
         {sharing && <ShareRunSheet run={run} onClose={() => setSharing(false)} />}
-        {run.route && run.route.length > 1 && <Map route={run.route} className="mb-3 h-56" />}
+        {run.route && run.route.length > 1 && <Map route={run.route} highlight={scrub} className="mb-3 h-56" />}
         <div className="mb-3 grid grid-cols-3 gap-2 text-center">
           <Stat label={tr('ระยะ', 'Distance')} value={kmUp.toFixed(2)} sub={tr('กม.', 'km')} accent />
           <Stat label={tr('เวลาเคลื่อนที่', 'Moving time')} value={formatDuration(secUp)} sub={run.elapsedSeconds ? `${tr('รวม', 'total')} ${formatDuration(run.elapsedSeconds)}` : undefined} />
@@ -144,8 +147,8 @@ export function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { r
             </div>
           </div>
         )}
-        {run.splits && run.splits.length > 0 && <Splits splits={run.splits} fiveK={fiveK} />}
-        <div className="mt-3"><ElevationCard run={run} onUpdate={onUpdate} /></div>
+        {run.splits && run.splits.length > 0 && <Splits splits={run.splits} fiveK={fiveK} gap={run.elevProfile && run.elevProfile.length > 2 && (run.elev?.gain ?? 0) >= 5 ? gapSplits(run.splits, run.elevProfile, run.km) : undefined} />}
+        <div className="mt-3"><ElevationCard run={run} onUpdate={onUpdate} onScrub={setScrub} /></div>
         <MatchedRuns run={run} runs={runs} />
         <div className="mt-3 rounded-2xl bg-raised p-3"><RpePicker value={run.rpe} onPick={rpe => onUpdate({ rpe })} /></div>
         <div className="mt-3"><PhotoStrip kind="run" refId={run.id} date={run.date} label={tr('รูปการวิ่ง', 'Run photos')} /></div>

@@ -10,6 +10,7 @@ type Props = {
   follow?: boolean // live: เลื่อนแผนที่ตามตำแหน่ง / history: ซูมให้เห็นทั้งเส้น
   className?: string
   interactive?: boolean
+  highlight?: Point | null // จุดที่แตะบนกราฟความสูง
 }
 
 const BANGKOK: Point = [13.7563, 100.5018]
@@ -25,7 +26,7 @@ function Camera({ route, position, follow }: Pick<Props, 'route' | 'position' | 
   return null
 }
 
-export default function RunMap({ route, position, follow = false, className = 'h-64', interactive = true }: Props) {
+export default function RunMap({ route, position, follow = false, className = 'h-64', interactive = true, highlight }: Props) {
   const center = position ?? route.at(-1) ?? BANGKOK
   const style = getComputedStyle(document.documentElement)
   const accent = style.getPropertyValue('--c-accent').trim() || '#e11d48'
@@ -45,6 +46,7 @@ export default function RunMap({ route, position, follow = false, className = 'h
       {route.length > 0 && !position && <CircleMarker center={route[0]} radius={6} pathOptions={{ color: '#fff', weight: 2, fillColor: '#10b981', fillOpacity: 1 }} />}
       {route.length > 1 && !position && <CircleMarker center={route.at(-1)!} radius={6} pathOptions={{ color: '#fff', weight: 2, fillColor: accent, fillOpacity: 1 }} />}
       {position && <CircleMarker center={position} radius={8} pathOptions={{ color: '#fff', weight: 3, fillColor: run, fillOpacity: 1 }} />}
+      {highlight && <CircleMarker center={highlight} radius={7} pathOptions={{ color: '#fff', weight: 3, fillColor: run, fillOpacity: 1 }} />}
       <Camera route={route} position={position} follow={follow} />
     </MapContainer>
   )
