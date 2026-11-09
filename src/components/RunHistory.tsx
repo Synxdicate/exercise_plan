@@ -28,6 +28,24 @@ export function RoutePreview({ run, className }: { run: Run; className?: string 
   )
 }
 
+/** เส้นทางขนาดใหญ่ในการ์ดประวัติ (แบบฟีด Strava) วาดเป็น SVG ไม่โหลดแผนที่ ใช้ได้แม้ออฟไลน์ */
+function RouteBanner({ run }: { run: Run }) {
+  const d = useMemo(() => {
+    const route = run.route!
+    const step = Math.ceil(route.length / 160)
+    const pts = projectRoute(route.filter((_, i) => i % step === 0 || i === route.length - 1), { x: 12, y: 10, w: 296, h: 100 })
+    return { path: pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join(' '), start: pts[0], end: pts.at(-1)! }
+  }, [run.route])
+  return (
+    <svg viewBox="0 0 320 120" className="mt-2 block h-28 w-full rounded-xl bg-raised" aria-hidden>
+      <path d={d.path} fill="none" className="stroke-card" strokeWidth={6} strokeLinejoin="round" strokeLinecap="round" />
+      <path d={d.path} fill="none" className="stroke-run" strokeWidth={3} strokeLinejoin="round" strokeLinecap="round" />
+      <circle cx={d.start[0]} cy={d.start[1]} r={4.5} className="fill-good-fill stroke-card" strokeWidth={2} />
+      <circle cx={d.end[0]} cy={d.end[1]} r={4.5} className="fill-bad-fill stroke-card" strokeWidth={2} />
+    </svg>
+  )
+}
+
 const PAGE = 3 // จำนวนเดือนที่แสดงต่อครั้ง
 
 /** ประวัติการวิ่งแบ่งตามเดือน พร้อมยอดรวมรายเดือนและตัวกรองชนิด */
@@ -64,19 +82,31 @@ export function RunHistory({ runs, onOpen }: { runs: Run[]; onOpen: (id: string)
             <span className="text-sm font-bold">{monthLabel(ym)}</span>
             <span className="text-xs tabular-nums text-muted">{list.length} {tr('ครั้ง', 'runs')} · {runsOnly(list).reduce((a, r) => a + r.km, 0).toFixed(1)} {tr('กม.', 'km')}</span>
           </div>
-          <ul className="divide-y divide-line">
-            {list.map(r => (
-              <li key={r.id}>
-                <button onClick={() => onOpen(r.id)} className="flex w-full items-center gap-3 py-2.5 text-left">
-                  <RoutePreview run={r} />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2"><b className="tabular-nums">{r.km.toFixed(2)} {tr('กม.', 'km')}</b><Badge tone="run">{kindName(r.kind)}</Badge></div>
-                    <div className="text-xs text-muted">{niceDate(r.date)} · {formatDuration(r.seconds)} · {formatPace(r.seconds, r.km)} {tr('/กม.', '/km')}</div>
-                  </div>
-                  <ChevronRight size={18} className="text-muted" />
-                </button>
-              </li>
-            ))}
+          <ul className="space-y-2">
+            {list.map(r => {
+              const big = (r.route?.length ?? 0) >= 10
+              return (
+                <li key={r.id}>
+                  <button onClick={() => onOpen(r.id)} className="w-full rounded-2xl bg-card p-3 text-left ring-1 ring-line">
+                    <div className="flex items-center gap-2">
+                      {!big && <RoutePreview run={r} className="size-9 rounded-xl" />}
+                      <span className="min-w-0 flex-1 truncate text-xs text-muted">{niceDate(r.date)}</span>
+                      <Badge tone="run">{kindName(r.kind)}</Badge>
+                      <ChevronRight size={16} className="text-muted" />
+                    </div>
+                    <div className="mt-1.5 grid grid-cols-3 gap-2">
+                      {[[tr('ระยะ', 'Distance'), r.km.toFixed(2), tr('กม.', 'km')], [tr('เพซ', 'Pace'), formatPace(r.seconds, r.km), tr('/กม.', '/km')], [tr('เวลา', 'Time'), formatDuration(r.seconds), '']].map(([l, v, u]) => (
+                        <div key={l}>
+                          <div className="text-[11px] text-muted">{l}</div>
+                          <div className="text-lg font-extrabold leading-tight tabular-nums">{v}<span className="ml-0.5 text-[11px] font-normal text-muted">{u}</span></div>
+                        </div>
+                      ))}
+                    </div>
+                    {big && <RouteBanner run={r} />}
+                  </button>
+                </li>
+              )
+            })}
           </ul>
         </section>
       ))}

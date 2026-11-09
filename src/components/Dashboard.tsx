@@ -1,4 +1,5 @@
 import { ReplayCard } from './Replay'
+import { ThisWeekCard } from './ThisWeek'
 import { EaseOffCard, StrengthNudgeCard } from './Coach'
 import { strengthOnly } from '../lib/sessionKind'
 import { useMemo, useState } from 'react'
@@ -156,6 +157,8 @@ export function Dashboard() {
       {todayPlan?.type === 'run' ? <HeatCard /> : tomorrow?.type === 'run' && !p.finished && <HeatCard initialDay="tomorrow" />}
 
       {/* สิ่งที่ต้องทำวันนี้อยู่บนสุด เป้าเดือน/สรุปสัปดาห์ที่แล้วเป็นข้อมูลประกอบ */}
+      <ThisWeekCard />
+
       <MonthGoalCard />
 
       <WeekSummary />

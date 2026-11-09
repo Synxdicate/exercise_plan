@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useState, useSyncExternalStore } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { Bell, BookOpen, Bug, Languages, Cloud, CloudOff, Download, Dumbbell, Footprints, House, LogIn, LogOut, Monitor, Moon, RefreshCw, SlidersHorizontal, Smartphone, Sun, TrendingUp, Upload, Utensils } from 'lucide-react'
+import { LogoMark } from './components/Logo'
 import { AuthGate } from './components/AuthGate'
 import { DialogHost } from './components/DialogHost'
 import { Portal } from './components/ui'
@@ -112,7 +113,7 @@ function Main({ session }: { session: Session | null }) {
     <div className="mx-auto min-h-dvh max-w-lg">
       <header className="sticky top-0 z-30 flex items-center justify-between gap-3 bg-bg/85 px-4 pb-3 pt-[calc(var(--sat)+0.75rem)] backdrop-blur">
         <button onClick={() => go('overview')} className="flex min-w-0 items-center gap-2.5 text-left">
-          <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-accent-fill text-white"><Footprints size={18} /></span>
+          <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-accent-fill text-white"><LogoMark size={24} /></span>
           <span className="min-w-0">
             <span className="block text-[11px] font-semibold uppercase tracking-wider text-accent">Kao</span>
             <h1 className="truncate text-lg font-bold leading-tight">{title}</h1>

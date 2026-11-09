@@ -1,15 +1,15 @@
-import { useState } from 'react'
-import { Award, Dumbbell, Flame, Footprints, Medal, Mountain, Pencil, Target, Trophy, Zap, type LucideIcon } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Award, CalendarCheck, Dumbbell, Flag, Flame, Footprints, Medal, Mountain, Pencil, Route, Target, TrendingUp, Trophy, Zap, ChevronsRight, type LucideIcon } from 'lucide-react'
 import { BADGES, BADGES_EN, earnedBadges, monthOf, periodStats, type BadgeIcon } from '../lib/goals'
 import { useT } from '../lib/i18n'
-import { useMonthGoal } from '../lib/useGoals'
+import { useBadgeCtx, useMonthGoal } from '../lib/useGoals'
 import { formatDuration, useRuns, useSessions } from '../lib/log'
 import { monthLabel, today } from '../lib/date'
 import { cx } from '../lib/cx'
 import { Button, Card, Collapse, Sheet } from './ui'
 import { NumberInput } from './Form'
 
-const icons: Record<BadgeIcon, LucideIcon> = { footprints: Footprints, medal: Medal, trophy: Trophy, flame: Flame, dumbbell: Dumbbell, target: Target, mountain: Mountain, zap: Zap }
+const icons: Record<BadgeIcon, LucideIcon> = { footprints: Footprints, medal: Medal, trophy: Trophy, flame: Flame, dumbbell: Dumbbell, target: Target, mountain: Mountain, zap: Zap, climb: TrendingUp, split: ChevronsRight, calendar: CalendarCheck, flag: Flag, route: Route }
 const enMonths = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 const thMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม']
 
@@ -25,7 +25,8 @@ export function MonthGoalCard() {
   const month = monthOf(today())
   const s = periodStats(runs, sessions, month)
   const pct = Math.min(1, s.km / goal)
-  const earned = earnedBadges({ runs, sessions, goalKm: goal })
+  const ctx = useBadgeCtx()
+  const earned = useMemo(() => earnedBadges(ctx), [ctx])
 
   return (
     <Card title={t(`เป้าเดือน${thMonths[+month.slice(5) - 1]}`, `${enMonths[+month.slice(5) - 1]} goal`)}

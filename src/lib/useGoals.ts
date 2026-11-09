@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react'
-import { BADGES, BADGES_EN, defaultMonthGoal, earnedBadges, type RaceKey } from './goals'
+import { BADGES, BADGES_EN, defaultMonthGoal, earnedBadges, planStreak, type Ctx, type RaceKey } from './goals'
+import { useDayDone } from './dayDone'
 import { useRuns, useSessions } from './log'
 import { usePersisted } from './storage'
 import { useProgram } from './program'
@@ -15,13 +16,30 @@ export function useMonthGoal() {
   return [goals.monthKm ?? defaultMonthGoal(avg), (km: number) => setGoals(g => ({ ...g, monthKm: km })), goals.monthKm === undefined] as const
 }
 
-/** แจ้งเตือนเมื่อได้เหรียญใหม่ ครั้งแรกบนเครื่องนี้ถือว่าเหรียญที่มีอยู่แล้ว "เห็นแล้ว" ไม่แจ้งย้อนหลัง */
-export function useBadgeWatcher() {
+/** ข้อมูลสำหรับคิดเหรียญ: บันทึกทั้งหมด + สัปดาห์ที่ทำตามแผน (เฉพาะสัปดาห์ที่จบแล้ว) + วันแข่ง */
+export function useBadgeCtx(): Ctx {
   const [runs] = useRuns()
   const [sessions] = useSessions()
   const [goalKm] = useMonthGoal()
+  const p = useProgram()
+  const dayDone = useDayDone()
+  const first = Math.min(1, ...p.prepWeeks)
+  const last = p.finished ? p.meta.weeks : p.currentWeek - 1
+  const weeks: { planned: number; done: number }[] = []
+  if (!p.ongoing) for (let w = first; w <= last; w++) {
+    let planned = 0, done = 0
+    p.plan(w).forEach((d, i) => { if (d.type !== 'rest') { planned++; if (dayDone(w, i, d)) done++ } })
+    weeks.push({ planned, done })
+  }
+  const planWeeks = planStreak(weeks)
+  return useMemo(() => ({ runs, sessions, goalKm, planWeeks, raceDate: p.isRace && p.raceDate ? p.raceDate : undefined }), [runs, sessions, goalKm, planWeeks, p.isRace, p.raceDate])
+}
+
+/** แจ้งเตือนเมื่อได้เหรียญใหม่ ครั้งแรกบนเครื่องนี้ถือว่าเหรียญที่มีอยู่แล้ว "เห็นแล้ว" ไม่แจ้งย้อนหลัง */
+export function useBadgeWatcher() {
+  const ctx = useBadgeCtx()
   const [seen, setSeen] = usePersisted<string[] | null>('badgesSeen', null)
-  const earned = useMemo(() => earnedBadges({ runs, sessions, goalKm }), [runs, sessions, goalKm])
+  const earned = useMemo(() => earnedBadges(ctx), [ctx])
   useEffect(() => {
     if (seen === null) return setSeen(earned)
     const fresh = earned.filter(id => !seen.includes(id))

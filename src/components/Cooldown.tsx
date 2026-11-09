@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Check, Droplets, Footprints, Play, Sandwich, StretchHorizontal } from 'lucide-react'
-import { formatDuration, formatPace, type Run } from '../lib/log'
+import { formatDuration, formatPace, useRuns, type Run } from '../lib/log'
+import { RunAchievements } from './RunExtras'
 import { isWalk, looksLikeWalk } from '../lib/walk'
 import { RpePicker } from './RpePicker'
 import { useT } from '../lib/i18n'
@@ -41,6 +42,8 @@ export function CooldownSheet({ run, onUpdate, onDone }: { run: Run; onUpdate: (
   const [now, setNow] = useState(() => Date.now())
   const [walked, setWalked] = useState(false)
   const [showStretch, setShowStretch] = useState(false)
+  const [runs] = useRuns()
+  const all = runs.some(r => r.id === run.id) ? runs : [...runs, run]
   const left = endAt ? Math.max(0, Math.ceil((endAt - now) / 1000)) : WALK_SEC
 
   useEffect(() => {
@@ -73,6 +76,7 @@ export function CooldownSheet({ run, onUpdate, onDone }: { run: Run; onUpdate: (
                 </>}
           </div>
         )}
+        {!isWalk(run) && <RunAchievements run={run} runs={all} className="ring-1 ring-warn/30" />}
         <div className="rounded-2xl bg-raised p-3"><RpePicker value={run.rpe} onPick={rpe => onUpdate({ rpe })} /></div>
         <div className="rounded-2xl bg-raised p-4 text-center">
           <div className="text-xs text-muted">{t('เดินหรือจ็อกเบามาก ๆ', 'Walk or jog very easy')}</div>

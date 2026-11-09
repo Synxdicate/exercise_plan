@@ -164,6 +164,32 @@ export function runAchievements(run: Run, runs: Run[]) {
   })
 }
 
+export type Highlight =
+  | { kind: 'pr'; label: string; rank: number; seconds: number }
+  | { kind: 'year'; label: string; year: string; seconds: number }
+  | { kind: 'longest'; km: number }
+  | { kind: 'negative'; diffPct: number }
+
+/** ความสำเร็จทั้งหมดของรอบนี้: ติด 3 อันดับตลอดกาล, ไม่ติดแต่เร็วสุดของปี (แบบ annual best efforts ของ Strava),
+ *  ไกลที่สุดที่เคยวิ่ง, ครึ่งหลังเร็วกว่าครึ่งแรก */
+export function runHighlights(run: Run, runs: Run[]): Highlight[] {
+  if (run.kind === 'walk') return []
+  const out: Highlight[] = []
+  const year = run.date.slice(0, 4)
+  const all = personalBests(runs)
+  const inYear = personalBests(runs.filter(r => r.date.startsWith(year)))
+  all.forEach((p, k) => {
+    const i = p.top.findIndex(t => t.id === run.id)
+    if (i >= 0) out.push({ kind: 'pr', label: p.label, rank: i + 1, seconds: p.top[i].seconds })
+    else if (inYear[k].best?.id === run.id) out.push({ kind: 'year', label: p.label, year, seconds: inYear[k].best!.seconds })
+  })
+  const others = runsOnly(runs).filter(r => r.id !== run.id)
+  if (run.km >= 3 && others.length && others.every(r => r.km < run.km)) out.push({ kind: 'longest', km: run.km })
+  const sa = splitAnalysis(run.splits)
+  if (run.km >= 3 && sa?.kind === 'negative') out.push({ kind: 'negative', diffPct: sa.diffPct })
+  return out
+}
+
 // ---------- Training load: Fitness / Fatigue / Form ----------
 
 // session-RPE (Foster 2001): ภาระ = ความเหนื่อย (0–10) × นาที ถ้าไม่ได้ให้คะแนนไว้ ใช้ค่าประมาณตามชนิดการวิ่ง

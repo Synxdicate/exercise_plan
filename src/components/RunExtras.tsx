@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ChevronLeft, ChevronRight, Medal, Mountain } from 'lucide-react'
+import { CalendarCheck, ChevronLeft, ChevronRight, ChevronsRight, Medal, Mountain, Route } from 'lucide-react'
 import { useProgram } from '../lib/program'
 import { addDays, shortDate, today, weekStart } from '../lib/date'
 import { isWalk, runsOnly } from '../lib/walk'
-import { cumulative, paceSeries, runAchievements } from '../lib/analysis'
+import { cumulative, paceSeries, runHighlights } from '../lib/analysis'
 import { elevStats, fetchElevation, sampleRoute, samplesFor } from '../lib/elevation'
 import { atKm, findClimbs, gapPace, grades } from '../lib/grade'
 import type { Point } from '../lib/geo'
@@ -15,21 +15,25 @@ const RANK = ['', 'PR', '2', '3']
 const rankTone = ['', 'bg-warn text-white', 'bg-muted/70 text-white', 'bg-warn/40 text-ink']
 
 /** ความสำเร็จของรอบนี้: ติด 3 อันดับเร็วสุดของระยะไหนบ้าง (Strava แสดงแค่ PR/อันดับ 2) */
-export function RunAchievements({ run, runs }: { run: Run; runs: Run[] }) {
+export function RunAchievements({ run, runs, className = 'mb-3' }: { run: Run; runs: Run[]; className?: string }) {
   const t = useT()
-  const list = useMemo(() => runAchievements(run, runs), [run, runs])
+  const list = useMemo(() => runHighlights(run, runs), [run, runs])
   if (!list.length) return null
   return (
-    <div className="mb-3 rounded-2xl bg-raised p-3">
+    <div className={cx('rounded-2xl bg-raised p-3', className)}>
       <div className="mb-1.5 flex items-center gap-2 text-sm font-bold"><Medal size={16} className="text-warn" /> {t('ความสำเร็จรอบนี้', 'Achievements')}</div>
       <ul className="space-y-1.5 text-sm">
         {list.map(a => (
-          <li key={a.label} className="flex items-center gap-2.5">
-            <span className={cx('grid size-7 shrink-0 place-items-center rounded-full text-[11px] font-extrabold', rankTone[a.rank])}>{RANK[a.rank]}</span>
+          <li key={a.kind + ('label' in a ? a.label : '')} className="flex items-center gap-2.5">
+            {a.kind === 'pr' ? <span className={cx('grid size-7 shrink-0 place-items-center rounded-full text-[11px] font-extrabold', rankTone[a.rank])}>{RANK[a.rank]}</span>
+              : <span className="grid size-7 shrink-0 place-items-center rounded-full bg-run/15 text-run">{a.kind === 'year' ? <CalendarCheck size={14} /> : a.kind === 'longest' ? <Route size={14} /> : <ChevronsRight size={14} />}</span>}
             <span className="flex-1 font-semibold">
-              {a.rank === 1 ? t(`${a.label} เร็วที่สุดของคุณ`, `${a.label} PR`) : t(`${a.label} เร็วอันดับ ${a.rank}`, `${a.rank === 2 ? '2nd' : '3rd'}-fastest ${a.label}`)}
+              {a.kind === 'pr' ? (a.rank === 1 ? t(`${a.label} เร็วที่สุดของคุณ`, `${a.label} PR`) : t(`${a.label} เร็วอันดับ ${a.rank}`, `${a.rank === 2 ? '2nd' : '3rd'}-fastest ${a.label}`))
+                : a.kind === 'year' ? t(`${a.label} เร็วที่สุดของปี ${+a.year + 543}`, `Fastest ${a.label} of ${a.year}`)
+                : a.kind === 'longest' ? t('วิ่งไกลที่สุดที่เคยวิ่ง', 'Your longest run yet')
+                : t('ครึ่งหลังเร็วกว่าครึ่งแรก', 'Negative split')}
             </span>
-            <span className="tabular-nums">{formatDuration(a.seconds)}</span>
+            <span className="tabular-nums">{a.kind === 'pr' || a.kind === 'year' ? formatDuration(a.seconds) : a.kind === 'longest' ? `${a.km.toFixed(2)} ${t('กม.', 'km')}` : `${a.diffPct.toFixed(1)}%`}</span>
           </li>
         ))}
       </ul>

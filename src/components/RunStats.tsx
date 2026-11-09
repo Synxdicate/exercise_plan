@@ -8,7 +8,7 @@ import { DEFAULT_LIMIT_KM, defaultShoe, shoeKm, shoeStatus, useShoes, type Shoe 
 import { personalBests } from '../lib/analysis'
 import { ZoneLegend } from './Charts'
 import { addDays, daysBetween, shortDate, today, weekStart } from '../lib/date'
-import { Badge, Button, Card, Collapse, Stat } from './ui'
+import { Badge, Button, Card, Collapse, Segmented, Stat } from './ui'
 import { heatmapRoutes } from '../lib/matched'
 import { useRaceGoals } from '../lib/useGoals'
 import { parseDuration, raceKm, raceLabel, raceLabelEn, type RaceKey } from '../lib/goals'
@@ -190,8 +190,11 @@ function TrendLine({ points, goal }: { points: { date: string; v: number | null 
 export function BestEfforts({ runs }: { runs: Run[] }) {
   const tr = useT()
   const [openPb, setOpenPb] = useState<string | null>(null)
+  // ดีสุดตลอดกาล หรือดีสุดของปีนี้ (แบบ annual best efforts ของ Strava) ปีใหม่จะได้มีเป้าให้ไล่อีกครั้ง
+  const [scope, setScope] = useState<'all' | 'year'>('all')
+  const year = today().slice(0, 4)
+  const pbs = useMemo(() => personalBests(scope === 'all' ? runs : runs.filter(r => r.date.startsWith(year))).filter(p => p.best), [runs, scope, year])
   if (!runs.length) return null
-  const pbs = personalBests(runs).filter(p => p.best)
   const longest = runsOnly(runs).reduce((m, r) => Math.max(m, r.km), 0)
   return (
     <Card title={<span className="flex items-center gap-2"><Trophy size={18} className="text-warn" /> {tr('สถิติของฉัน', 'My stats')}</span>}>
@@ -200,7 +203,11 @@ export function BestEfforts({ runs }: { runs: Run[] }) {
         <Stat label={tr('จำนวนครั้ง', 'Runs')} value={runsOnly(runs).length} sub={tr('ครั้ง', 'times')} />
         <Stat label={tr('ไกลสุด', 'Longest')} value={longest.toFixed(1)} sub={tr('กม.', 'km')} />
       </div>
-      {pbs.length > 0 && <div className="mt-3 text-xs font-semibold text-muted">{tr('เวลาเร็วสุดแต่ละระยะ', 'Best efforts')}</div>}
+      <div className="mt-3 flex items-center justify-between gap-2">
+        <span className="text-xs font-semibold text-muted">{tr('เวลาเร็วสุดแต่ละระยะ', 'Best efforts')}</span>
+        <div className="w-40"><Segmented value={scope} onChange={setScope} options={[{ value: 'all', label: tr('ตลอดกาล', 'All time') }, { value: 'year', label: tr(`ปี ${+year + 543}`, year) }]} /></div>
+      </div>
+      {!pbs.length && <p className="mt-2 text-xs text-muted">{tr('ปีนี้ยังไม่มีสถิติ', 'No efforts yet this year')}</p>}
       <ul className="divide-y divide-line text-sm">
         {pbs.map(p => (
           <li key={p.label} className="py-2">

@@ -2,7 +2,8 @@ import type { Run, Session } from './log'
 import { runsOnly } from './walk'
 import { strengthOnly } from './sessionKind'
 import { weekStart } from './date'
-import { personalBests } from './analysis'
+import { personalBests, splitAnalysis } from './analysis'
+import { sameRoute } from './matched'
 
 // เป้าหมายรายเดือน + เหรียญรางวัล คำนวณจากข้อมูลที่บันทึกไว้ทั้งหมด (ไม่เก็บเหรียญแยก จึงไม่หลุดตามข้อมูล)
 
@@ -35,9 +36,28 @@ export function bestWeekStreak(runs: Run[], sessions: Session[], min = 3) {
   return best
 }
 
-export type BadgeIcon = 'footprints' | 'medal' | 'trophy' | 'flame' | 'dumbbell' | 'target' | 'mountain' | 'zap'
+export type BadgeIcon = 'footprints' | 'medal' | 'trophy' | 'flame' | 'dumbbell' | 'target' | 'mountain' | 'zap' | 'climb' | 'split' | 'calendar' | 'flag' | 'route'
 export type BadgeDef = { id: string; title: string; text: string; icon: BadgeIcon }
-type Ctx = { runs: Run[]; sessions: Session[]; goalKm: number }
+/** planWeeks = สัปดาห์ติดกันมากที่สุดที่ทำตามแผน ≥80%, raceDate = วันแข่งของโปรแกรม (ไม่ส่ง = ไม่นับ) */
+export type Ctx = { runs: Run[]; sessions: Session[]; goalKm: number; planWeeks?: number; raceDate?: string }
+
+/** วิ่งเส้นทางเดิมกี่ครั้งมากที่สุด (เส้นทางเดียวกันตาม sameRoute) */
+export function mostRepeatedRoute(runs: Run[]) {
+  const list = runsOnly(runs).filter(r => (r.route?.length ?? 0) >= 5)
+  let best = 0
+  for (const a of list) best = Math.max(best, list.filter(b => b === a || sameRoute(a, b)).length)
+  return best
+}
+
+/** สัปดาห์ติดกันมากที่สุดที่ทำตามแผน ≥ min (สัดส่วน done/planned ต่อสัปดาห์ ตามลำดับเวลา) */
+export function planStreak(weeks: { planned: number; done: number }[], min = 0.8) {
+  let best = 0, cur = 0
+  for (const w of weeks) {
+    cur = w.planned > 0 && w.done / w.planned >= min ? cur + 1 : 0
+    best = Math.max(best, cur)
+  }
+  return best
+}
 
 const totalKm = (c: Ctx) => runsOnly(c.runs).reduce((a, r) => a + r.km, 0)
 const longest = (c: Ctx) => runsOnly(c.runs).reduce((a, r) => Math.max(a, r.km), 0)
@@ -50,11 +70,20 @@ export const BADGES: (BadgeDef & { earned: (c: Ctx) => boolean })[] = [
   { id: 'run-half', title: 'ฮาล์ฟมาราธอน', text: 'วิ่งได้ 21.1 กม.', icon: 'trophy', earned: c => longest(c) >= 21.0 },
   { id: 'run-full', title: 'มาราธอน', text: 'วิ่งได้ 42.2 กม.', icon: 'trophy', earned: c => longest(c) >= 42.0 },
   { id: 'sub30-5k', title: '5K ต่ำกว่า 30 นาที', text: 'ช่วง 5 กม. ที่เร็วที่สุดต่ำกว่า 30:00', icon: 'zap', earned: c => (personalBests(c.runs).find(b => b.km === 5)?.best?.seconds ?? Infinity) < 1800 },
+  { id: 'km-50', title: '50 กม.', text: 'วิ่งสะสมครบ 50 กม.', icon: 'mountain', earned: c => totalKm(c) >= 50 },
   { id: 'km-100', title: '100 กม.', text: 'วิ่งสะสมครบ 100 กม.', icon: 'mountain', earned: c => totalKm(c) >= 100 },
+  { id: 'km-250', title: '250 กม.', text: 'วิ่งสะสมครบ 250 กม.', icon: 'mountain', earned: c => totalKm(c) >= 250 },
   { id: 'km-500', title: '500 กม.', text: 'วิ่งสะสมครบ 500 กม.', icon: 'mountain', earned: c => totalKm(c) >= 500 },
+  { id: 'km-1000', title: '1,000 กม.', text: 'วิ่งสะสมครบ 1,000 กม.', icon: 'mountain', earned: c => totalKm(c) >= 1000 },
+  { id: 'hill-50', title: 'นักไต่เนิน', text: 'ขึ้นสะสม ≥50 ม. ในการวิ่งครั้งเดียว', icon: 'climb', earned: c => runsOnly(c.runs).some(r => (r.elev?.gain ?? 0) >= 50) },
+  { id: 'climb-1000', title: 'ไต่ครบ 1,000 ม.', text: 'ขึ้นสะสมรวมทุกการวิ่ง 1,000 ม.', icon: 'climb', earned: c => runsOnly(c.runs).reduce((a, r) => a + (r.elev?.gain ?? 0), 0) >= 1000 },
+  { id: 'negative-split', title: 'ครึ่งหลังเร็วกว่า', text: 'วิ่ง ≥3 กม. ครึ่งหลังเร็วกว่าครึ่งแรก (negative split)', icon: 'split', earned: c => runsOnly(c.runs).some(r => r.km >= 3 && splitAnalysis(r.splits)?.kind === 'negative') },
+  { id: 'route-10', title: 'เจ้าถิ่นเส้นทาง', text: 'วิ่งเส้นทางเดิมครบ 10 ครั้ง', icon: 'route', earned: c => mostRepeatedRoute(c.runs) >= 10 },
   { id: 'workouts-25', title: 'ยกครบ 25 ครั้ง', text: 'ฝึกเวทสะสม 25 ครั้ง', icon: 'dumbbell', earned: c => strengthOnly(c.sessions).length >= 25 },
   { id: 'streak-4', title: 'ต่อเนื่อง 4 สัปดาห์', text: 'ออกกำลังกาย ≥3 ครั้ง/สัปดาห์ ติดกัน 4 สัปดาห์', icon: 'flame', earned: c => bestWeekStreak(c.runs, c.sessions) >= 4 },
   { id: 'streak-12', title: 'ต่อเนื่อง 12 สัปดาห์', text: 'ออกกำลังกาย ≥3 ครั้ง/สัปดาห์ ติดกัน 12 สัปดาห์', icon: 'flame', earned: c => bestWeekStreak(c.runs, c.sessions) >= 12 },
+  { id: 'plan-4', title: 'ตามแผน 4 สัปดาห์', text: 'ทำตามแผน ≥80% ติดกัน 4 สัปดาห์', icon: 'calendar', earned: c => (c.planWeeks ?? 0) >= 4 },
+  { id: 'race-finish', title: 'จบงานแข่ง', text: 'วิ่งจบงานแข่งตามวันแข่งในโปรแกรม', icon: 'flag', earned: c => !!c.raceDate && runsOnly(c.runs).some(r => r.date === c.raceDate && r.km >= 3) },
   { id: 'month-goal', title: 'ทำตามเป้าเดือน', text: 'วิ่งครบเป้าหมายรายเดือน', icon: 'target', earned: c => c.goalKm > 0 && [...new Set(runsOnly(c.runs).map(r => monthOf(r.date)))].some(m => periodStats(c.runs, [], m).km >= c.goalKm) },
 ]
 
@@ -65,6 +94,10 @@ export const BADGES_EN: Record<string, [string, string]> = {
   'sub30-5k': ['Sub-30 5K', 'Fastest 5 km segment under 30:00'], 'km-100': ['100 km', '100 km total'], 'km-500': ['500 km', '500 km total'],
   'workouts-25': ['25 workouts', '25 strength workouts'], 'streak-4': ['4-week streak', '≥3 sessions/week for 4 weeks in a row'],
   'streak-12': ['12-week streak', '≥3 sessions/week for 12 weeks in a row'], 'month-goal': ['Monthly goal', 'Hit your monthly distance goal'],
+  'km-50': ['50 km', '50 km total'], 'km-250': ['250 km', '250 km total'], 'km-1000': ['1,000 km', '1,000 km total'],
+  'hill-50': ['Hill climber', '≥50 m of climbing in one run'], 'climb-1000': ['1,000 m climbed', '1,000 m of climbing across all runs'],
+  'negative-split': ['Negative split', 'A ≥3 km run with a faster second half'], 'route-10': ['Route regular', 'Ran the same route 10 times'],
+  'plan-4': ['On plan 4 weeks', '≥80% of the plan done 4 weeks in a row'], 'race-finish': ['Race finisher', 'Finished the race on your program’s race day'],
 }
 export const earnedBadges = (c: Ctx) => BADGES.filter(b => b.earned(c)).map(b => b.id)
 

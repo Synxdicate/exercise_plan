@@ -459,7 +459,7 @@ test('พลาดวิ่งยาว: ไม่ต้องชดเชย, �
   // ระยะสัปดาห์นับแต่การวิ่ง: เปลี่ยนรอบเพซ 14 นาทีเป็นเดิน
   await nav(page, 'วิ่ง')
   await page.getByRole('button', { name: 'ประวัติ' }).click()
-  await page.getByText('2.49 กม.').click()
+  await page.getByRole('button', { name: /2\.49/ }).click()
   await page.getByRole('button', { name: 'เปลี่ยนเป็นเดิน' }).click()
   await expect.poll(async () => ((await idb(page, 'runs')) as { id: string; kind: string }[]).find(r => r.id === '2026-10-31')?.kind).toBe('walk')
   await page.getByRole('button', { name: 'ปิด' }).first().click()
@@ -713,4 +713,22 @@ test('เริ่มโปรแกรมกลางทาง: สัปดา
   await nav(page, 'ฝึก')
   await expect(page.getByText(/วิ่ง 1[0-2] กม\./).first()).toBeVisible()
   await expect(page.getByText(/วิ่ง 15 กม\./)).toHaveCount(0)
+})
+
+test('สัปดาห์นี้: กราฟ 12 สัปดาห์ แตะจุดดูสัปดาห์นั้น และความสำเร็จหลังวิ่ง', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-11-11T08:00:00+07:00') })
+  const run = (id: string, date: string, km: number, extra = {}) => ({ id, date, km, seconds: km * 480, kind: 'easy', source: 'manual', ...extra })
+  await seed(page, { runs: [run('a', '2026-11-10', 3), run('b', '2026-11-08', 5.01, { splits: [500, 495, 480, 470, 460] }), run('c', '2026-11-03', 2.5)] })
+  await expect(page.getByRole('img', { name: /ระยะวิ่ง 12 สัปดาห์ล่าสุด สัปดาห์นี้ 3\.0 กม\./ })).toBeVisible()
+  const chart = page.getByRole('img', { name: /ระยะวิ่ง 12 สัปดาห์/ })
+  const box = (await chart.boundingBox())!
+  await page.mouse.move(box.x + box.width * 0.9, box.y + box.height / 2)
+  await expect(page.getByText(/สัปดาห์ 2\/11/)).toBeVisible()
+  await expect(page.getByText(/7\.5 กม\. · 2 ครั้ง/)).toBeVisible()
+  // ความสำเร็จของรอบวิ่ง: ไกลสุด + ครึ่งหลังเร็วกว่า
+  await nav(page, 'วิ่ง')
+  await page.getByRole('button', { name: 'ประวัติ' }).click()
+  await page.getByRole('button', { name: /5\.01/ }).click()
+  await expect(page.getByText('วิ่งไกลที่สุดที่เคยวิ่ง')).toBeVisible()
+  await expect(page.getByText('ครึ่งหลังเร็วกว่าครึ่งแรก').first()).toBeVisible()
 })
