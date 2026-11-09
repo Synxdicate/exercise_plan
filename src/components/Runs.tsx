@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { CalendarCheck, Check, CircleCheck, FileUp, Gauge, Ghost, History, Pause, Play, Plus, Satellite, TriangleAlert, Volume2, VolumeX, X } from 'lucide-react'
+import { BellOff, BellRing, CalendarCheck, Check, CircleCheck, FileUp, Gauge, Ghost, History, Pause, Play, Plus, Satellite, TriangleAlert, Volume2, VolumeX, X } from 'lucide-react'
 import { GOOD_ACCURACY_M, useRunTracker } from '../lib/gps'
 import { useDayText } from '../lib/dayText'
 import { useTodayIdx, useDateField } from '../lib/useToday'
@@ -12,6 +12,8 @@ import { parseGpx } from '../lib/gpx'
 import { defaultShoe, useShoes } from '../lib/shoes'
 import { personalBests } from '../lib/analysis'
 import { isNative } from '../lib/native'
+import { noticeText, onRunNoticeAction, stepNow, updateRunNotice } from '../lib/runNotice'
+import { ensureNotifications } from '../lib/notify'
 import { speak, splitAnnouncement } from '../lib/voice'
 import { useGuide } from '../lib/useGuide'
 import { guideResult, guides, paceSec } from '../lib/guide'
@@ -95,7 +97,7 @@ export function Runs() {
     : steps === TRIAL && guideOn ? trialGhost(best5k, est?.fiveK) : null
   const [ghostNow, setGhostNow] = useState<{ lead: number; m: number; ghostM: number } | null>(null)
   const ghostKm = useRef(0)
-  const tRef = useRef<{ elapsed: number } | null>(null)
+  const tRef = useRef<ReturnType<typeof useRunTracker> | null>(null)
   const ghostTick = (meters: number) => {
     if (!ghost || !ghostOn) return
     const r = guide.runner
@@ -127,8 +129,28 @@ export function Runs() {
   // พลาดวิ่งยาวมาก่อน → แผนวันนี้อาจกระโดดเกิน 110% ของครั้งที่ยาวที่สุด: จบชุดซ้อมที่เพดานแทน
   const cap = longRunCap(runs, today(), todayRun)
   const planKm = steps && steps !== TRIAL ? (cap?.cap ?? todayRun?.targetKm) : undefined
+  // แจ้งเตือนสด (แอป Android): ช่วงที่กำลังทำ เพซ ระยะ เวลา บนแจ้งเตือนของ GPS ดูได้จากหน้าล็อก ไม่ต้องเข้าแอป
+  const [liveOn, setLiveOn] = usePersisted('liveNotice', true)
+  const live = useRef({ at: 0, key: '' })
+  const pushLive = (meters: number, pace: number | null, force = false) => {
+    const tt = tRef.current
+    if (!isNative || !tt || tt.status === 'idle') return
+    // ปิดแจ้งเตือนสด: กลับเป็นข้อความเดิมของ GPS ครั้งเดียว
+    if (!liveOn) {
+      if (force) updateRunNotice({ title: tr('Kao กำลังบันทึกการวิ่ง', 'Kao is recording your run'), body: tr('แตะเพื่อกลับเข้าแอป', 'Tap to return to the app'), actions: [] })
+      return
+    }
+    const r = guide.runner
+    const key = `${tt.status}|${tt.signalLost}|${r?.state.index ?? -1}`
+    const now = clockNow()
+    if (!force && key === live.current.key && now - live.current.at < 5000) return
+    live.current = { at: now, key }
+    const step = r ? stepNow(r.steps, r.state, meters, dt.en) : null
+    updateRunNotice(noticeText({ status: tt.status, signalLost: tt.signalLost, meters, elapsed: tt.elapsed, pace, kind: tr(runKinds[kind], runKindsEn[kind]), step }, dt.en))
+  }
   const onTick = (meters: number, active: boolean, pace: number | null) => {
     guide.onTick(meters, active)
+    pushLive(meters, pace)
     if (planKm && meters >= planKm * 1000 && guide.runner?.state.started && !guide.runner.state.done) guide.complete()
     ghostTick(meters)
     if (!voice || !coachOn || !est) return
@@ -157,6 +179,24 @@ export function Runs() {
     onEvent: e => { if (voice) void speak(eventText[e]) },
   })
   useEffect(() => { tRef.current = t })
+  // ปุ่มในแจ้งเตือน: หยุดชั่วคราว / วิ่งต่อ / ข้ามช่วง (อ่านค่าล่าสุดผ่าน ref เพราะ listener ลงทะเบียนครั้งเดียว)
+  const guideRef = useRef(guide)
+  useEffect(() => { guideRef.current = guide })
+  useEffect(() => onRunNoticeAction(id => {
+    const tt = tRef.current
+    if (!tt) return
+    if (id === 'pause' && (tt.status === 'running' || tt.status === 'autopaused')) tt.pause()
+    else if (id === 'resume' && tt.status === 'paused') tt.resume()
+    else if (id === 'skip') guideRef.current.skip(tt.meters)
+  }), [])
+  useEffect(() => { if (isNative && t.status === 'running') void ensureNotifications() }, [t.status])
+  // เปลี่ยนสถานะ (หยุด/วิ่งต่อ/GPS หาย/เปลี่ยนช่วง/เปิด-ปิดแจ้งเตือนสด) อัปเดตทันที
+  const pushLiveRef = useRef(pushLive)
+  useEffect(() => { pushLiveRef.current = pushLive })
+  useEffect(() => {
+    const tt = tRef.current
+    if (tt) pushLiveRef.current(tt.meters, tt.currentPace, true)
+  }, [t.status, t.signalLost, liveOn, guide.runner?.state.index])
 
   const [shoes] = useShoes()
   const removePhotos = useRemovePhotosFor()
@@ -188,7 +228,7 @@ export function Runs() {
   }
 
   if (t.status !== 'idle') return (
-    <ActiveRun t={t} kind={kind} target={todayRun?.targetKm} fiveK={zoneRef} voice={voice} setVoice={setVoice} onFinish={finish}
+    <ActiveRun t={t} kind={kind} target={todayRun?.targetKm} fiveK={zoneRef} voice={voice} setVoice={setVoice} onFinish={finish} liveOn={liveOn} setLiveOn={setLiveOn}
       coachOn={coachOn && !!est} setCoachOn={est ? setCoachOn : undefined}
       onDiscard={() => { guide.reset(); resetGhost(); t.discard() }}
       ghost={ghost && <GhostCard ghost={ghost} now={ghostNow} on={ghostOn} setOn={setGhostOn} />}
@@ -315,7 +355,7 @@ export function Runs() {
   )
 }
 
-function ActiveRun({ t, kind, target, fiveK, voice, setVoice, coachOn, setCoachOn, onFinish, onDiscard, guide, ghost }: { t: ReturnType<typeof useRunTracker>; kind: Run['kind']; target?: number; fiveK?: number; voice: boolean; setVoice: (v: boolean) => void; coachOn: boolean; setCoachOn?: (v: boolean) => void; onFinish: () => void; onDiscard: () => void; guide?: ReactNode; ghost?: ReactNode }) {
+function ActiveRun({ t, kind, target, fiveK, voice, setVoice, coachOn, setCoachOn, onFinish, onDiscard, guide, ghost, liveOn, setLiveOn }: { t: ReturnType<typeof useRunTracker>; kind: Run['kind']; target?: number; fiveK?: number; voice: boolean; setVoice: (v: boolean) => void; liveOn: boolean; setLiveOn: (v: boolean) => void; coachOn: boolean; setCoachOn?: (v: boolean) => void; onFinish: () => void; onDiscard: () => void; guide?: ReactNode; ghost?: ReactNode }) {
   const km = t.meters / 1000
   const tr = useT()
   // ระหว่างวิ่ง ปุ่มย้อนกลับแค่ย่อแอป (GPS บันทึกต่อ) ไม่ออกจากหน้าวิ่ง
@@ -339,6 +379,12 @@ function ActiveRun({ t, kind, target, fiveK, voice, setVoice, coachOn, setCoachO
               className={cx('grid size-8 place-items-center rounded-full ring-1 ring-line', voice ? 'bg-run/15 text-run' : 'text-muted')}>
               {voice ? <Volume2 size={15} /> : <VolumeX size={15} />}
             </button>
+            {isNative && (
+              <button onClick={() => setLiveOn(!liveOn)} aria-pressed={liveOn} aria-label={tr('แจ้งเตือนสดบนหน้าล็อก', 'Live lock-screen notification')}
+                className={cx('grid size-8 place-items-center rounded-full ring-1 ring-line', liveOn ? 'bg-run/15 text-run' : 'text-muted')}>
+                {liveOn ? <BellRing size={15} /> : <BellOff size={15} />}
+              </button>
+            )}
             {setCoachOn && voice && (
               <button onClick={() => { setCoachOn(!coachOn); if (!coachOn) void speak('เปิดโค้ชเพซ') }} aria-label={coachOn ? tr('ปิดโค้ชเพซ', 'Pace coach off') : tr('เปิดโค้ชเพซ', 'Pace coach on')}
                 className={cx('flex h-8 items-center gap-1 rounded-full px-2.5 text-xs font-semibold ring-1 ring-line', coachOn ? 'bg-run/15 text-run' : 'text-muted')}>

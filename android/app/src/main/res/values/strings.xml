@@ -6,4 +6,5 @@
     <string name="custom_url_scheme">com.synxdicate.exerciseplan</string>
     <string name="capacitor_background_geolocation_notification_channel_name">บันทึกการวิ่ง</string>
     <string name="capacitor_background_geolocation_notification_color">#E11D48</string>
+    <string name="capacitor_background_geolocation_notification_icon">drawable/ic_stat_kao</string>
 </resources>
