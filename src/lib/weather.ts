@@ -171,6 +171,16 @@ export function bestHourOn(hours: Hour[], date: string, nowIso: string) {
   return bestHour(hours.filter(h => h.time.slice(0, 10) === date), nowIso)
 }
 
+/**
+ * ปรับเป้าเพซตามความร้อน (แบบ Adapt for Heat ของ Runna) — % ที่ควรช้าลง
+ * Ely 2007: มาราธอนช้าลงต่อเนื่องเมื่อ WBGT สูงขึ้น (นักวิ่งหัวแถว ~0.2%/°C) และนักวิ่งที่ช้ากว่าโดนผลมากกว่า → ใช้ 0.4%/°C
+ * เทียบกับ WBGT ~24° (เช้าปกติในไทย) เพราะเพซอ้างอิงคำนวณจากการวิ่งในอากาศแบบนี้อยู่แล้ว — เพดาน 8%
+ */
+export function heatSlowdown(wbgt: number, base = 24) {
+  const pct = Math.min(8, Math.max(0, (wbgt - base) * 0.4))
+  return pct >= 1 ? Math.round(pct * 10) / 10 : 0
+}
+
 export function useHeat() {
   const [data, setData] = useState<Forecast | null>(null)
   const [error, setError] = useState(false)
@@ -180,4 +190,20 @@ export function useHeat() {
     return () => { alive = false }
   }, [])
   return { hours: data?.hours ?? null, place: data?.place ?? null, error }
+}
+
+const hourKey = () => {
+  const d = new Date()
+  const p = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}`
+}
+/** WBGT ของชั่วโมงนี้จากพยากรณ์ (อัปเดตทุกนาที) — undefined ถ้ายังโหลดไม่ได้ */
+export function useWbgtNow() {
+  const { hours } = useHeat()
+  const [key, setKey] = useState(hourKey)
+  useEffect(() => {
+    const id = setInterval(() => setKey(hourKey()), 60_000)
+    return () => clearInterval(id)
+  }, [])
+  return hours?.find(h => h.time.slice(0, 13) === key)?.wbgt
 }

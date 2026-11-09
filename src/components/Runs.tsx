@@ -29,6 +29,7 @@ import { FinishCard } from './Finish'
 import { longRunCap } from '../lib/missed'
 import { useRemovePhotosFor } from '../lib/photos'
 import { HeatCard } from './Heat'
+import { heatSlowdown, useWbgtNow } from '../lib/weather'
 import { ReadinessSheet } from './Readiness'
 import { today, weekStart } from '../lib/date'
 import { Badge, Button, Card, Collapse, Portal, Segmented, Stat } from './ui'
@@ -61,6 +62,17 @@ export function Runs() {
   const est = useMemo(() => estimate(runs), [runs])
   // โซนเพซคิดจากเพซ 5K — ถ้าได้มาจากวิ่งเบา โซนจะผิด (วิ่งเบาปกติถูกจัดเป็น Speed) จึงไม่แสดงโซน
   const zoneRef = est && !est.from.easy ? est.paces.interval : undefined
+  // ร้อนกว่าเช้าปกติ: เป้าเพซของโค้ชช้าลงตาม WBGT ตอนนี้ (Ely 2007)
+  const wbgtNow = useWbgtNow()
+  const heatPct = wbgtNow !== undefined ? heatSlowdown(wbgtNow) : 0
+  const heatF = 1 + heatPct / 100
+  const paces = useMemo(() => {
+    if (!est) return undefined
+    if (heatF === 1) return est.paces
+    const p: Record<string, unknown> = {}
+    for (const [k, v] of Object.entries(est.paces)) p[k] = typeof v === 'number' ? v * heatF : Array.isArray(v) ? v.map(x => x * heatF) : v
+    return p as typeof est.paces
+  }, [est, heatF])
   const [detail, setDetail] = useState<string | null>(null)
   const [manual, setManual] = useState(false)
   const [checking, setChecking] = useState(false)
@@ -72,7 +84,7 @@ export function Runs() {
   // เสียงนำใช้กับชุดซ้อมของวันนี้ เมื่อเลือกชนิดการวิ่งตรงกับแผน
   // วันแข่งตามแผนไม่มีชุดซ้อม — เลือก "แข่ง" ในวันอื่นคือวิ่งทดสอบ 5K
   const steps = todayRun?.guide && kind === todayRun.runKind ? todayRun.guide : kind === 'race' && todayRun?.runKind !== 'race' ? TRIAL : null
-  const guide = useGuide(guideOn ? steps : null, est?.paces, voice)
+  const guide = useGuide(guideOn ? steps : null, paces, voice)
   // นักวิ่งเงา: เฉพาะวิ่งทดสอบ 5K (ช่วง 5 กม.) และวันแข่งตามแผน
   const [ghostOn, setGhostOn] = usePersisted('ghostOn', true)
   const [raceGoals] = useRaceGoals()
@@ -127,12 +139,12 @@ export function Runs() {
       coachStep.current = { index: r!.state.index, at: now }
       coach.current.reset()
     }
-    const target = step?.kind === 'work' ? paceSec(step, est.paces) : null
+    const target = step?.kind === 'work' ? paceSec(step, paces) : null
     const settling = step && now - coachStep.current.at < 25_000
     const band = settling ? null
       : target ? workBand(target)
       // คำนวณจากวิ่งเบา: โซน Easy จะช้ากว่าเพซวิ่งเบาจริงของเรา — ไม่เตือนให้ช้าลง
-      : !est.from.easy && (step ? step.pace === 'easy' : kind === 'easy' || kind === 'long') ? easyBand(est.paces.easy[0])
+      : !est.from.easy && (step ? step.pace === 'easy' : kind === 'easy' || kind === 'long') ? easyBand(paces!.easy[0])
       : null
     const cue = coach.current.update(now, pace, band, target ? 20_000 : 45_000)
     if (cue) void speak(cueText(cue, !!target))
@@ -180,7 +192,7 @@ export function Runs() {
       onDiscard={() => { guide.reset(); resetGhost(); t.discard() }}
       ghost={ghost && <GhostCard ghost={ghost} now={ghostNow} on={ghostOn} setOn={setGhostOn} />}
       guide={steps && (
-        <GuideCard steps={steps} runner={guide.runner} meters={t.meters} paces={est?.paces}
+        <GuideCard steps={steps} runner={guide.runner} meters={t.meters} paces={paces}
           on={guideOn} setOn={setGuideOn} onSkip={() => guide.skip(t.meters)} />
       )} />
   )
@@ -241,6 +253,11 @@ export function Runs() {
       {view === 'start' && (
         <>
           <HeatCard />
+          {heatPct > 0 && kind !== 'walk' && est && (
+            <p className="-mt-1 rounded-xl bg-warn/10 px-3 py-2 text-sm text-warn">
+              {tr(`ร้อนกว่าปกติ (WBGT ${Math.round(wbgtNow!)}°) — วันนี้โค้ชเพซตั้งเป้าช้าลง ${heatPct}% ให้ได้ผลการซ้อมเท่าเดิม`, `Hotter than usual (WBGT ${Math.round(wbgtNow!)}°) — the pace coach targets ${heatPct}% slower today for the same training effect`)}
+            </p>
+          )}
           {kind !== 'walk' && <DrillsCard kind={kind} />}
           <RunFormTips />
         </>

@@ -44,3 +44,13 @@ describe('กลับมาหลังหยุดฝึก (Mujika & Padilla 
   it('15–28 วัน → ย้อน 1 สัปดาห์', () => expect(comeback(['2026-10-01'], '2026-10-25')?.weeksBack).toBe(1))
   it('เกิน 4 สัปดาห์ → ย้อน 2 สัปดาห์', () => expect(comeback(['2026-09-01', '2026-08-01'], '2026-10-25')?.weeksBack).toBe(2))
 })
+
+describe('heatSlowdown (Ely 2007)', () => {
+  it('slows targets only above a normal Thai morning and caps at 8%', async () => {
+    const { heatSlowdown } = await import('../weather')
+    expect(heatSlowdown(24)).toBe(0)
+    expect(heatSlowdown(25)).toBe(0) // <1% ไม่ปรับ
+    expect(heatSlowdown(29)).toBe(2)
+    expect(heatSlowdown(45)).toBe(8)
+  })
+})

@@ -635,3 +635,13 @@ test('โค้ช: ทวงเวทเมื่อไม่ได้เล่
   await page.locator('main li button', { hasText: '5.00' }).click()
   await expect(page.getByText(/โค้ช: วันเบาแต่เหนื่อยมาก/)).toBeVisible()
 })
+
+test('อากาศร้อนกว่าปกติ: โค้ชเพซตั้งเป้าช้าลง', async ({ page }) => {
+  const hours = [0, 1].flatMap(o => Array.from({ length: 24 }, (_, h) => ({ time: `${ymd(-o)}T${String(h).padStart(2, '0')}:00`, hour: h, temp: 33, rh: 70, wbgt: 30, pm25: 20 })))
+  await seed(page, {
+    heatCache: { at: Date.now(), v: 2, hours, place: { name: 'ขอนแก่น', precise: true } },
+    runs: [{ id: 'a', date: ymd(3), km: 5, seconds: 1650, kind: 'race', source: 'manual' }],
+  })
+  await nav(page, 'วิ่ง')
+  await expect(page.getByText(/ร้อนกว่าปกติ \(WBGT 30°\) — วันนี้โค้ชเพซตั้งเป้าช้าลง 2\.4%/)).toBeVisible()
+})
