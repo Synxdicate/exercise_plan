@@ -1,4 +1,4 @@
-// IndexedDB แบบบาง ๆ — 'kv' เก็บค่าของ usePersisted (จุได้มากกว่า localStorage ~5 MB หลายเท่า)
+// IndexedDB แบบบาง ๆ 'kv' เก็บค่าของ usePersisted (จุได้มากกว่า localStorage ~5 MB หลายเท่า)
 // และ 'blobs' เก็บไฟล์รูป (ใช้ได้ตอนออฟไลน์/โหมดไม่ล็อกอิน)
 const DB = 'exercise-plan'
 type Store = 'kv' | 'blobs'

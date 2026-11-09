@@ -33,7 +33,7 @@ export function ExerciseDemo({ name, className }: { name: string; className?: st
         ))}
         <span className="absolute bottom-1.5 left-1.5 rounded-full bg-black/55 px-2 py-0.5 text-[10px] font-semibold text-white">{frame ? trNow('ท่าจบ', 'End') : trNow('ท่าเริ่ม', 'Start')}</span>
       </div>
-      <figcaption className="mt-1 text-[10px] text-muted">{trNow('ภาพตัวอย่าง — อุปกรณ์อาจต่างจากที่คุณใช้', 'Example photo — your equipment may differ')}</figcaption>
+      <figcaption className="mt-1 text-[10px] text-muted">{trNow('ภาพตัวอย่าง อุปกรณ์อาจต่างจากที่คุณใช้', 'Example photo — your equipment may differ')}</figcaption>
     </figure>
   )
 }
@@ -66,7 +66,7 @@ function StickFigure({ demo, frame, name, className }: { demo: StickDemo; frame:
         </svg>
         <span className="absolute bottom-1.5 left-1.5 rounded-full bg-black/55 px-2 py-0.5 text-[10px] font-semibold text-white">{frame ? trNow('ท่าจบ', 'End') : trNow('ท่าเริ่ม', 'Start')}</span>
       </div>
-      <figcaption className="mt-1 text-[10px] text-muted">{trNow('ภาพลายเส้นแสดงตำแหน่งคร่าว ๆ — ดูท่าละเอียดในคลิป YouTube', 'Rough line drawing — see YouTube for detailed form')}</figcaption>
+      <figcaption className="mt-1 text-[10px] text-muted">{trNow('ภาพลายเส้นแสดงตำแหน่งคร่าว ๆ ดูท่าละเอียดในคลิป YouTube', 'Rough line drawing — see YouTube for detailed form')}</figcaption>
     </figure>
   )
 }

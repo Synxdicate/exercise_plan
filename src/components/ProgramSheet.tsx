@@ -10,7 +10,7 @@ import { ProgramPicker } from './ProgramPicker'
 import { clearance, useScreening } from '../lib/screening'
 import { useLang, useT } from '../lib/i18n'
 
-/** ตั้งค่าเป้าหมาย/วันแข่ง/สถานที่ฝึก — เปิดได้จากเมนูโปรไฟล์และการ์ดโปรแกรมในหน้าฝึก */
+/** ตั้งค่าเป้าหมาย/วันแข่ง/สถานที่ฝึก เปิดได้จากเมนูโปรไฟล์และการ์ดโปรแกรมในหน้าฝึก */
 export function ProgramSheet({ onClose }: { onClose: () => void }) {
   const p = useProgram()
   const t = useT()
@@ -50,23 +50,23 @@ export function ProgramSheet({ onClose }: { onClose: () => void }) {
       <Collapse open={!!programs[choice].raceKm}>
         <div className="pt-3">
           {screening && clearance(screening) !== 'clear' && (
-            <p className="mb-3 rounded-xl bg-bad/15 p-2 text-xs text-bad">{t('ผลเช็กสุขภาพแนะนำให้พบแพทย์ก่อนฝึกหนัก — โปรแกรมวิ่งแข่งมีวิ่ง tempo/interval ที่นับเป็นการฝึกหนัก', 'Your health check suggests seeing a doctor before vigorous training — race programs include tempo/interval runs')}</p>
+            <p className="mb-3 rounded-xl bg-bad/15 p-2 text-xs text-bad">{t('ผลเช็กสุขภาพแนะนำให้พบแพทย์ก่อนฝึกหนัก โปรแกรมวิ่งแข่งมีวิ่ง tempo/interval ที่นับเป็นการฝึกหนัก', 'Your health check suggests seeing a doctor before vigorous training — race programs include tempo/interval runs')}</p>
           )}
-          <DateInput label={t('วันแข่ง', 'Race date')} hint={t('ไม่บังคับ — ใส่แล้วแอปจะนับสัปดาห์และ taper ให้เอง', 'Optional — the app counts weeks and the taper for you')} value={date} onChange={setDate} />
+          <DateInput label={t('วันแข่ง', 'Race date')} hint={t('ไม่บังคับ ใส่แล้วแอปจะนับสัปดาห์และ taper ให้เอง', 'Optional — the app counts weeks and the taper for you')} value={date} onChange={setDate} />
           <NumberInput className="mt-2" label={t('ระยะงานจริง', 'Actual race distance')} unit={t('กม.', 'km')} step={0.05} value={km} placeholder={String(programs[choice].raceKm)}
             hint={t(`ไม่ใส่ = ${programs[choice].raceKm} กม. · งานมินิแต่ละงานยาวไม่เท่ากัน`, `Blank = ${programs[choice].raceKm} km · mini races vary in length`)} onChange={setKm} />
           <NumberInput className="mt-2" label={t('เวลาตัดตัว (cutoff)', 'Cutoff time')} unit={t('นาที', 'min')} step={5} value={cutoff} placeholder={t('เช่น 120', 'e.g. 120')}
-            hint={t('ไม่บังคับ — แอปจะเทียบกับเวลาจบโดยประมาณ', 'Optional — compared with your estimated finish')} onChange={setCutoff} />
+            hint={t('ไม่บังคับ แอปจะเทียบกับเวลาจบโดยประมาณ', 'Optional — compared with your estimated finish')} onChange={setCutoff} />
           <label className="mt-3 flex items-start gap-3 rounded-2xl bg-raised p-3">
             <input type="checkbox" className="mt-0.5 size-5 shrink-0 accent-accent" checked={hills} onChange={e => setHills(e.target.checked)} />
             <span>
               <span className="block text-sm font-semibold">{t('เส้นทางแข่งมีเนิน', 'The race course is hilly')}</span>
-              <span className="block text-xs text-muted">{t('รวมถึง "เนินซึม" ยาว ๆ ที่มองไม่ค่อยเห็น (เช่น ขอนแก่น) — แผนจะเพิ่มวิ่งยาวบนเส้นทางมีเนิน ซ้อมลงเนิน และวิธีคุมแรงบนเนินวันแข่ง', 'Including long gradual grades you barely notice — the plan adds hilly long runs, downhill practice and hill pacing for race day')}</span>
+              <span className="block text-xs text-muted">{t('รวมถึง "เนินซึม" ยาว ๆ ที่มองไม่ค่อยเห็น (เช่น ขอนแก่น) แผนจะเพิ่มวิ่งยาวบนเส้นทางมีเนิน ซ้อมลงเนิน และวิธีคุมแรงบนเนินวันแข่ง', 'Including long gradual grades you barely notice — the plan adds hilly long runs, downhill practice and hill pacing for race day')}</span>
             </span>
           </label>
           {!!programs[choice].raceKm && weeksAway !== null && weeksAway < programs[choice].weeks && (
             <p className="mt-2 rounded-xl bg-warn/15 p-2 text-xs text-warn">
-              {t(`เหลือ ${Math.max(weeksAway, 0)} สัปดาห์ น้อยกว่าโปรแกรม ${programs[choice].weeks} สัปดาห์ — แอปจะเริ่มจากกลางโปรแกรม ถ้าฐานยังไม่ถึง ควรเลือกงานที่ไกลกว่านี้`, `${Math.max(weeksAway, 0)} weeks left, shorter than the ${programs[choice].weeks}-week program — the app starts mid-program; if your base isn't there yet, pick a later race`)}
+              {t(`เหลือ ${Math.max(weeksAway, 0)} สัปดาห์ น้อยกว่าโปรแกรม ${programs[choice].weeks} สัปดาห์ แอปจะเริ่มจากกลางโปรแกรม ถ้าฐานยังไม่ถึง ควรเลือกงานที่ไกลกว่านี้`, `${Math.max(weeksAway, 0)} weeks left, shorter than the ${programs[choice].weeks}-week program — the app starts mid-program; if your base isn't there yet, pick a later race`)}
             </p>
           )}
         </div>

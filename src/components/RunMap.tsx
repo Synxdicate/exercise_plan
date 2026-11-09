@@ -33,7 +33,7 @@ export default function RunMap({ route, position, follow = false, className = 'h
   const run = style.getPropertyValue('--c-run').trim() || '#2563eb'
 
   // ไม่ใช้แอนิเมชันซูม: ปิดแผนที่ระหว่างซูม Leaflet ยังเรียก _onZoomTransitionEnd หลังถูกถอดแล้ว error (_leaflet_pos)
-  // (เรียก map.stop() ตอนถอดก็ไม่ได้ — ตอนนั้นแผนที่ถูกลบไปแล้ว พังเหมือนกัน)
+  // (เรียก map.stop() ตอนถอดก็ไม่ได้ ตอนนั้นแผนที่ถูกลบไปแล้ว พังเหมือนกัน)
   return (
     <MapContainer center={center} zoom={position || route.length ? 16 : 11} zoomControl={false} zoomAnimation={false} markerZoomAnimation={false}
       dragging={interactive} scrollWheelZoom={interactive} touchZoom={interactive} doubleClickZoom={interactive}

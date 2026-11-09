@@ -4,7 +4,7 @@ import { captureError } from '../lib/errors'
 import { isNative } from '../lib/native'
 import { downloadUpdate } from '../lib/update'
 
-// จับ error ระหว่าง render ไม่ให้จอขาวทั้งแอป — บันทึกรายงานแล้วให้กดโหลดใหม่ได้
+// จับ error ระหว่าง render ไม่ให้จอขาวทั้งแอป บันทึกรายงานแล้วให้กดโหลดใหม่ได้
 // fallback: แสดงแทนเฉพาะส่วนที่พัง (เช่น แผนที่) ไม่ให้ทั้งแอปขึ้นหน้า error
 export class ErrorBoundary extends Component<{ children: ReactNode; fallback?: ReactNode }, { error: Error | null }> {
   state: { error: Error | null } = { error: null }
@@ -26,7 +26,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode; fallback?: R
         <p className="max-w-sm text-sm text-muted">{trNow('บันทึกรายงานปัญหาไว้แล้ว ข้อมูลของคุณไม่หาย ลองโหลดใหม่อีกครั้ง', 'The problem was logged and your data is safe. Try reloading.')}</p>
         <code className="max-w-sm break-all rounded-xl bg-raised p-2 text-xs text-muted">{this.state.error.message}</code>
         <button onClick={() => location.reload()} className="rounded-full bg-accent-fill px-5 py-2.5 font-semibold text-white">{trNow('โหลดใหม่', 'Reload')}</button>
-        {/* แอปเวอร์ชันเก่าอาจพังเพราะข้อมูลซิงก์จากเวอร์ชันใหม่ — ให้อัปเดตได้จากหน้านี้ */}
+        {/* แอปเวอร์ชันเก่าอาจพังเพราะข้อมูลซิงก์จากเวอร์ชันใหม่ ให้อัปเดตได้จากหน้านี้ */}
         {isNative && <button onClick={() => void downloadUpdate()} className="rounded-full px-5 py-2 text-sm font-semibold text-accent ring-1 ring-line">{trNow('ดาวน์โหลดเวอร์ชันล่าสุด', 'Download the latest version')}</button>}
       </div>
     )

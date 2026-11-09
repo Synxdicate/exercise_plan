@@ -13,7 +13,7 @@ const questions: { key: keyof Omit<Screening, 'date'>; text: string; en: string;
   { key: 'joint', text: 'มีปัญหากระดูกหรือข้อต่อ ที่ออกกำลังกายแล้วอาการแย่ลง', en: 'A bone or joint problem that gets worse with exercise' },
 ]
 
-/** คำถามคัดกรอง 4 ข้อ (ACSM 2015 + PAR-Q) — ใช้ทั้งใน onboarding และแผ่นแยก */
+/** คำถามคัดกรอง 4 ข้อ (ACSM 2015 + PAR-Q) ใช้ทั้งใน onboarding และแผ่นแยก */
 export function ScreeningForm({ value, onChange }: { value: Screening; onChange: (s: Screening) => void }) {
   const result = clearance(value)
   const t = useT()

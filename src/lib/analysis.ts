@@ -13,7 +13,7 @@ export function cumulative(route: Point[]) {
 }
 
 /**
- * ระยะใหม่จากเส้นทางที่เก็บไว้ (+ เพซรายกิโลจากเวลาของแต่ละจุด) — ใช้แก้การวิ่งที่บันทึกก่อน v2.26
+ * ระยะใหม่จากเส้นทางที่เก็บไว้ (+ เพซรายกิโลจากเวลาของแต่ละจุด) ใช้แก้การวิ่งที่บันทึกก่อน v2.26
  * ซึ่งตัวกรอง GPS ทิ้งระยะช่วงเดิน คืน null ถ้าระยะตามเส้นทางไม่ได้มากกว่าที่บันทึกอย่างชัดเจน (>10% และ >200 ม.)
  */
 export function remeasure(run: Pick<Run, 'km' | 'route' | 'times'>) {
@@ -43,7 +43,7 @@ function splitsFrom(d: number[], times: number[], km: number) {
 }
 
 /**
- * ตัดต้น/ท้ายรอบวิ่ง (ลืมกดหยุด/เริ่มก่อนออกวิ่ง) — เก็บจุด a…b
+ * ตัดต้น/ท้ายรอบวิ่ง (ลืมกดหยุด/เริ่มก่อนออกวิ่ง) เก็บจุด a…b
  * ระยะใช้สัดส่วนเดียวกับที่บันทึกไว้ (ตัวกรอง GPS ตอนวิ่งตัดการแกว่งออก ระยะจริงจึงสั้นกว่าเส้นเล็กน้อย)
  */
 export function trimRun(run: Run, a: number, b: number): Partial<Run> | null {
@@ -66,7 +66,7 @@ export function trimRun(run: Run, a: number, b: number): Partial<Run> | null {
   }
 }
 
-const FASTEST_PLAUSIBLE = 150 // วินาที/กม. (2:30) — เร็วกว่านี้ถือว่า GPS กระโดด
+const FASTEST_PLAUSIBLE = 150 // วินาที/กม. (2:30) เร็วกว่านี้ถือว่า GPS กระโดด
 
 // เพซตามระยะทาง เฉลี่ยแบบเลื่อนหน้าต่าง ~250 ม. ให้เส้นไม่หยักจาก GPS
 export function paceSeries(route: Point[], times: number[], windowM = 250) {
@@ -138,7 +138,7 @@ export function bestEffort(route: Point[], times: number[], km: number): number 
   return Number.isFinite(best) ? Math.round(best) : null
 }
 
-// สถิติดีที่สุดของแต่ละระยะจากทุกการวิ่ง — การวิ่งที่ไม่มีเส้นทาง (กรอกเอง) นับเฉพาะเมื่อระยะใกล้เคียง (±2%)
+// สถิติดีที่สุดของแต่ละระยะจากทุกการวิ่ง การวิ่งที่ไม่มีเส้นทาง (กรอกเอง) นับเฉพาะเมื่อระยะใกล้เคียง (±2%)
 export type Effort = { seconds: number; date: string; id: string }
 
 /** เวลาเร็วสุดของแต่ละระยะ: best = อันดับ 1, top = 3 อันดับแรก (คนละรอบวิ่ง) */
@@ -166,7 +166,7 @@ export function runAchievements(run: Run, runs: Run[]) {
 
 // ---------- Training load: Fitness / Fatigue / Form ----------
 
-// session-RPE (Foster 2001): ภาระ = ความเหนื่อย (0–10) × นาที — ถ้าไม่ได้ให้คะแนนไว้ ใช้ค่าประมาณตามชนิดการวิ่ง
+// session-RPE (Foster 2001): ภาระ = ความเหนื่อย (0–10) × นาที ถ้าไม่ได้ให้คะแนนไว้ ใช้ค่าประมาณตามชนิดการวิ่ง
 const defaultRpe: Record<Run['kind'], number> = { easy: 3, long: 4, tempo: 6, interval: 8, race: 9, other: 4, walk: 2 }
 export const runLoad = (r: Run) => (r.rpe ?? defaultRpe[r.kind] ?? 5) * (r.seconds / 60)
 export const sessionLoad = (s: Session) => (s.rpe ?? 6) * (s.minutes ?? 50)
@@ -174,7 +174,7 @@ export const sessionLoad = (s: Session) => (s.rpe ?? 6) * (s.minutes ?? 50)
 export type LoadDay = { date: string; load: number; fitness: number; fatigue: number; form: number; day: number }
 
 // ค่าเฉลี่ยถ่วงน้ำหนักแบบ exponential: fitness ~42 วัน, fatigue ~7 วัน (แนวคิดโมเดล Banister)
-// form = fitness − fatigue ของเมื่อวาน — ใช้ดูแนวโน้ม ไม่ใช่ตัวทำนายการบาดเจ็บ
+// form = fitness − fatigue ของเมื่อวาน ใช้ดูแนวโน้ม ไม่ใช่ตัวทำนายการบาดเจ็บ
 export function trainingLoad(runs: Run[], sessions: Session[], today: string, days = 84): LoadDay[] {
   const byDate = new Map<string, number>()
   for (const r of runs) byDate.set(r.date, (byDate.get(r.date) ?? 0) + runLoad(r))
@@ -184,7 +184,7 @@ export function trainingLoad(runs: Run[], sessions: Session[], today: string, da
   const total = daysBetween(first, today)
   const kF = 1 - Math.exp(-1 / 42)
   const kA = 1 - Math.exp(-1 / 7)
-  // เริ่มจากภาระเฉลี่ย 2 สัปดาห์แรก แทน 0 — ไม่อย่างนั้นช่วงแรกความฟิตต่ำกว่าจริงและฟอร์มติดลบเกิน
+  // เริ่มจากภาระเฉลี่ย 2 สัปดาห์แรก แทน 0 ไม่อย่างนั้นช่วงแรกความฟิตต่ำกว่าจริงและฟอร์มติดลบเกิน
   const firstDays = Array.from({ length: Math.min(14, total + 1) }, (_, i) => byDate.get(addDays(first, i)) ?? 0)
   let fitness = firstDays.reduce((s, v) => s + v, 0) / firstDays.length
   let fatigue = fitness
@@ -204,8 +204,8 @@ export function formLabel(form: number, fitness: number, historyDays = Infinity)
   // ช่วงอิงสัดส่วนของ fitness (แนวทางโค้ช ไม่ใช่เกณฑ์จากงานวิจัย)
   const r = fitness > 0 ? form / fitness : 0
   if (fitness < 5 || historyDays < 28) return { label: 'เริ่มต้น', tone: 'muted' as const, text: 'ข้อมูลยังน้อย บันทึกต่อเนื่อง 2–3 สัปดาห์เพื่อเห็นแนวโน้ม', labelEn: 'Starting out', textEn: 'Not much data yet — log for 2–3 weeks to see a trend' }
-  if (r > 0.15) return { label: 'สดชื่น', tone: 'good' as const, text: 'พร้อมสำหรับวิ่งหนัก/แข่ง — ถ้าสดนานเกินไปความฟิตจะเริ่มลด', labelEn: 'Fresh', textEn: 'Ready for a hard run/race — stay fresh too long and fitness starts to drop' }
+  if (r > 0.15) return { label: 'สดชื่น', tone: 'good' as const, text: 'พร้อมสำหรับวิ่งหนัก/แข่ง ถ้าสดนานเกินไปความฟิตจะเริ่มลด', labelEn: 'Fresh', textEn: 'Ready for a hard run/race — stay fresh too long and fitness starts to drop' }
   if (r > -0.1) return { label: 'สมดุล', tone: 'run' as const, text: 'ฝึกตามแผนได้ตามปกติ', labelEn: 'Balanced', textEn: 'Train as planned' }
-  if (r > -0.3) return { label: 'กำลังสร้างความฟิต', tone: 'warn' as const, text: 'ล้าจากการฝึก ซึ่งปกติในช่วงเพิ่มปริมาณ — นอนและกินให้พอ', labelEn: 'Building', textEn: 'Tired from training, normal while volume rises — sleep and eat enough' }
+  if (r > -0.3) return { label: 'กำลังสร้างความฟิต', tone: 'warn' as const, text: 'ล้าจากการฝึก ซึ่งปกติในช่วงเพิ่มปริมาณ นอนและกินให้พอ', labelEn: 'Building', textEn: 'Tired from training, normal while volume rises — sleep and eat enough' }
   return { label: 'ล้าสะสมมาก', tone: 'bad' as const, text: 'ภาระสูงกว่าปกติมาก พิจารณาวันพักหรือสัปดาห์เบา', labelEn: 'Very fatigued', textEn: 'Load far above normal — consider a rest day or an easy week' }
 }

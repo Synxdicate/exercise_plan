@@ -1,7 +1,7 @@
 import { haversine, type Point } from './geo'
 import type { Run } from './log'
 
-// "เส้นทางเดิม": การวิ่งที่ไปตามทางเดียวกัน (เช่น รอบสวนประจำ) — เทียบเวลาแต่ละครั้งเห็นพัฒนาการชัดกว่ายอดรวม
+// "เส้นทางเดิม": การวิ่งที่ไปตามทางเดียวกัน (เช่น รอบสวนประจำ) เทียบเวลาแต่ละครั้งเห็นพัฒนาการชัดกว่ายอดรวม
 // วิธี: ระยะต่างกันไม่เกิน 10% และจุด 12 จุดที่กระจายเท่า ๆ กันตามระยะทาง อยู่ห่างจุดคู่กันไม่เกิน 150 ม.
 const SAMPLES = 12
 const MAX_GAP_M = 150
@@ -37,7 +37,7 @@ export function matchedRuns(run: Run, runs: Run[]) {
   return runs.filter(r => r.id === run.id || sameRoute(run, r)).sort((x, y) => x.date.localeCompare(y.date))
 }
 
-/** เส้นทางสำหรับ heatmap: เฉพาะที่อยู่ใกล้การวิ่งล่าสุด (≤30 กม.) — ไปวิ่งต่างจังหวัดครั้งเดียวไม่ทำให้แผนที่ซูมออกจนดูอะไรไม่ออก */
+/** เส้นทางสำหรับ heatmap: เฉพาะที่อยู่ใกล้การวิ่งล่าสุด (≤30 กม.) ไปวิ่งต่างจังหวัดครั้งเดียวไม่ทำให้แผนที่ซูมออกจนดูอะไรไม่ออก */
 export function heatmapRoutes(runs: Run[], radiusKm = 30) {
   const withRoute = runs.filter(r => r.route && r.route.length > 1).sort((a, b) => a.date.localeCompare(b.date))
   const last = withRoute.at(-1)

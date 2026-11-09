@@ -17,7 +17,7 @@ import { ExerciseDemo } from './ExerciseDemo'
 
 const BY_ROUNDS: Record<1 | 2, CircuitStep[]> = { 1: buildCircuit(coreCircuit, 30, 15, 1), 2: buildCircuit(coreCircuit, 30, 15, 2) }
 
-/** การ์ดในหน้าฝึก: เซอร์กิตแกนกลาง/สะโพก — บอกว่าวันนี้เหมาะไหม ทำไปกี่ครั้งแล้ว และเริ่มยังไง */
+/** การ์ดในหน้าฝึก: เซอร์กิตแกนกลาง/สะโพก บอกว่าวันนี้เหมาะไหม ทำไปกี่ครั้งแล้ว และเริ่มยังไง */
 export function CircuitCard() {
   const [open, setOpen] = useState(false)
   const [how, setHow] = useState(false)
@@ -37,8 +37,8 @@ export function CircuitCard() {
       action={<span className={cx('rounded-full px-2.5 py-1 text-xs font-semibold tabular-nums', thisWeek >= 2 ? 'bg-good/15 text-good' : 'bg-raised text-muted')}>{t(`สัปดาห์นี้ ${thisWeek}/2`, `This week ${thisWeek}/2`)}</span>}>
       <p className={cx('rounded-xl p-2.5 text-sm font-semibold', doneToday || fit === 'good' ? 'bg-good/10 text-good' : fit === 'avoid' ? 'bg-warn/10 text-warn' : 'bg-raised text-muted')}>
         {doneToday ? t('ทำแล้ววันนี้', 'Done today')
-          : fit === 'good' ? t('วันนี้เหมาะ — ทำหลังวิ่งเบา หรือช่วงไหนก็ได้ของวันพัก', 'Good day for it — after an easy run, or any time on a rest day')
-          : fit === 'avoid' ? t('วันนี้เลี่ยงไว้ก่อน — วันนี้หรือพรุ่งนี้มีวิ่งยาว/วิ่งหนัก ขาควรสด', 'Skip today — a long/hard run is today or tomorrow; keep your legs fresh')
+          : fit === 'good' ? t('วันนี้เหมาะ ทำหลังวิ่งเบา หรือช่วงไหนก็ได้ของวันพัก', 'Good day for it — after an easy run, or any time on a rest day')
+          : fit === 'avoid' ? t('วันนี้เลี่ยงไว้ก่อน วันนี้หรือพรุ่งนี้มีวิ่งยาว/วิ่งหนัก ขาควรสด', 'Skip today — a long/hard run is today or tomorrow; keep your legs fresh')
           : t('วันเวทมีท่าแกนกลางอยู่แล้ว ไม่ต้องทำเพิ่ม', 'Strength days already include core work')}
       </p>
       <div className="mt-3">
@@ -53,10 +53,10 @@ export function CircuitCard() {
       </button>
       <Collapse open={how}>
         <ul className="list-disc space-y-1 pl-5 pt-1 text-sm text-muted">
-          <li>{t('สัปดาห์ละ 2–3 ครั้ง ทำหลังวิ่งเบา (ร่างกายอุ่นแล้ว) หรือวันพัก — ไม่ทำก่อนวิ่งยาว/วิ่งหนัก', '2–3×/week, after an easy run (already warm) or on a rest day — not before a long/hard run')}</li>
+          <li>{t('สัปดาห์ละ 2–3 ครั้ง ทำหลังวิ่งเบา (ร่างกายอุ่นแล้ว) หรือวันพัก ไม่ทำก่อนวิ่งยาว/วิ่งหนัก', '2–3×/week, after an easy run (already warm) or on a rest day — not before a long/hard run')}</li>
           <li>{t('เริ่ม 1 รอบ 2 สัปดาห์แรก แล้วค่อยเพิ่มเป็น 2 รอบ ท่าละ 30 วิ ทำไม่ไหวพักได้ ท่าต้องถูกก่อนจะเร็ว', 'Start with 1 round for 2 weeks, then 2 rounds. 30 s per move — rest if needed; form first')}</li>
           <li>{t('ทำบนเสื่อหรือพื้นนุ่ม ไม่ต้องใช้อุปกรณ์ เสียงนำบอกท่าถัดไปให้ ปิดจอได้', 'On a mat, no equipment; the voice announces each move')}</li>
-          <li>{t('หลักฐาน: การฝึกความแข็งแรงช่วยลดการบาดเจ็บจากกีฬาโดยรวม (Lauersen 2014) แต่โปรแกรมแกนกลาง/สะโพก 10 นาทีในนักวิ่งมาราธอนมือใหม่ยังไม่เห็นผลลดเจ็บชัด (Toresdahl 2020) — ทำเพื่อความแข็งแรงและท่าวิ่งที่มั่นคง ไม่ใช่เกราะกันเจ็บ', 'Evidence: strength training lowers sports injuries overall (Lauersen 2014), but a 10-min core/hip program in first-time marathoners showed no clear injury reduction (Toresdahl 2020) — do it for strength and stability, not as injury armour')}</li>
+          <li>{t('หลักฐาน: การฝึกความแข็งแรงช่วยลดการบาดเจ็บจากกีฬาโดยรวม (Lauersen 2014) แต่โปรแกรมแกนกลาง/สะโพก 10 นาทีในนักวิ่งมาราธอนมือใหม่ยังไม่เห็นผลลดเจ็บชัด (Toresdahl 2020) ทำเพื่อความแข็งแรงและท่าวิ่งที่มั่นคง ไม่ใช่เกราะกันเจ็บ', 'Evidence: strength training lowers sports injuries overall (Lauersen 2014), but a 10-min core/hip program in first-time marathoners showed no clear injury reduction (Toresdahl 2020) — do it for strength and stability, not as injury armour')}</li>
         </ul>
       </Collapse>
       {open && <CircuitPlayer steps={steps} rounds={rounds} onClose={() => setOpen(false)} />}
@@ -64,7 +64,7 @@ export function CircuitCard() {
   )
 }
 
-/** ตัวจับเวลาทีละท่า (เสียงนำ, จอไม่ดับ) — ใช้กับเซอร์กิต (บันทึกเป็นการฝึก) และดริลล์ก่อนวิ่ง (ไม่บันทึก จบแล้วไปวิ่งต่อ) */
+/** ตัวจับเวลาทีละท่า (เสียงนำ, จอไม่ดับ) ใช้กับเซอร์กิต (บันทึกเป็นการฝึก) และดริลล์ก่อนวิ่ง (ไม่บันทึก จบแล้วไปวิ่งต่อ) */
 export function CircuitPlayer({ steps: STEPS, rounds, onClose, drills = false }: { steps: CircuitStep[]; rounds: number; onClose: () => void; drills?: boolean }) {
   const tr = useT()
   const [, setSessions] = useSessions()
@@ -126,12 +126,12 @@ export function CircuitPlayer({ steps: STEPS, rounds, onClose, drills = false }:
               <div className="text-2xl font-extrabold">{drills ? tr('ดริลล์เสร็จแล้ว', 'Drills done') : tr('จบเซอร์กิตแล้ว', 'Circuit done')}</div>
               {drills ? (
                 <>
-                  <p className="text-sm text-muted">{tr('ร่างกายอุ่นแล้ว — เริ่มวิ่งภายในไม่กี่นาที อย่าพักนานจนตัวเย็น', 'You’re warm — start running within a few minutes, before you cool down')}</p>
+                  <p className="text-sm text-muted">{tr('ร่างกายอุ่นแล้ว เริ่มวิ่งภายในไม่กี่นาที อย่าพักนานจนตัวเย็น', 'You’re warm — start running within a few minutes, before you cool down')}</p>
                   <Button size="lg" onClick={onClose}>{tr('ไปเริ่มวิ่ง', 'Go run')}</Button>
                 </>
               ) : (
                 <>
-                  <p className="text-sm text-muted">{tr(`${Math.round(elapsed / 60)} นาที — บันทึกไว้ในประวัติการฝึกได้เลย`, `${Math.round(elapsed / 60)} min — save it to your workout history`)}</p>
+                  <p className="text-sm text-muted">{tr(`${Math.round(elapsed / 60)} นาที บันทึกไว้ในประวัติการฝึกได้เลย`, `${Math.round(elapsed / 60)} min — save it to your workout history`)}</p>
                   <Button size="lg" onClick={finish}>{tr('บันทึก', 'Save')}</Button>
                 </>
               )}
@@ -139,7 +139,7 @@ export function CircuitPlayer({ steps: STEPS, rounds, onClose, drills = false }:
           ) : (
             <>
               <div className={cx('rounded-3xl p-5 text-center', work ? 'bg-accent-fill text-white' : 'bg-raised')}>
-                <div className="text-sm font-semibold opacity-80">{work ? tr('ทำท่า', 'Go') : tr('พัก — ต่อไป', 'Rest — next')}</div>
+                <div className="text-sm font-semibold opacity-80">{work ? tr('ทำท่า', 'Go') : tr('พัก ต่อไป', 'Rest — next')}</div>
                 <div className="text-xl font-bold">{tr(at.step.station.th, at.step.station.en ?? at.step.station.name)}</div>
                 <div className="mt-2 text-7xl font-extrabold tabular-nums">{Math.ceil(at.left)}</div>
                 <div className="mx-auto mt-3 h-2 max-w-60 overflow-hidden rounded-full bg-black/15">

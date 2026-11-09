@@ -34,7 +34,7 @@ export const subscribeSyncStatus = (l: () => void) => {
   return () => void statusListeners.delete(l)
 }
 
-// ส่งทีละรอบ — ถ้ามีรอบที่กำลังส่งอยู่ ให้รอรอบนั้นก่อน (กัน pull ไปทับค่าที่ยังส่งไม่เสร็จ)
+// ส่งทีละรอบ ถ้ามีรอบที่กำลังส่งอยู่ ให้รอรอบนั้นก่อน (กัน pull ไปทับค่าที่ยังส่งไม่เสร็จ)
 let inFlight: Promise<void> | null = null
 function flush(): Promise<void> {
   if (inFlight) return inFlight.then(() => flush())
@@ -83,7 +83,7 @@ onWrite(key => {
   scheduleFlush()
 })
 
-// ดึงข้อมูลจาก server มาแทนของในเครื่อง (server เป็นตัวจริง) — ยกเว้น key ที่ยังส่งไม่สำเร็จ
+// ดึงข้อมูลจาก server มาแทนของในเครื่อง (server เป็นตัวจริง) ยกเว้น key ที่ยังส่งไม่สำเร็จ
 // และครั้งแรกที่เครื่องนี้ยังไม่มีเจ้าของ: รวมข้อมูลเดิมในเครื่องขึ้นไปด้วย
 async function pull(migrate: boolean) {
   const { data, error } = await supabase.from('user_data').select('key, value')
@@ -137,7 +137,7 @@ export async function refresh() {
 }
 
 // คืน false ถ้ายังมีข้อมูลค้างที่ส่งขึ้น server ไม่ได้ (เช่น ออฟไลน์) และไม่ได้สั่ง force
-// หยุดซิงก์เท่านั้น — ล้างข้อมูลในเครื่องด้วย clearSyncedData() หลังออกจากระบบแล้ว
+// หยุดซิงก์เท่านั้น ล้างข้อมูลในเครื่องด้วย clearSyncedData() หลังออกจากระบบแล้ว
 // (ถ้าล้างก่อน หน้าแอปที่ยังเปิดอยู่จะเห็น onboarded หายแล้วขึ้นแบบสอบถามตอนเริ่มระหว่างรอออกจากระบบ)
 export async function stopSync(force = false) {
   await flush()

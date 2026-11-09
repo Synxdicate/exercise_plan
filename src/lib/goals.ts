@@ -4,7 +4,7 @@ import { strengthOnly } from './sessionKind'
 import { weekStart } from './date'
 import { personalBests } from './analysis'
 
-// เป้าหมายรายเดือน + เหรียญรางวัล — คำนวณจากข้อมูลที่บันทึกไว้ทั้งหมด (ไม่เก็บเหรียญแยก จึงไม่หลุดตามข้อมูล)
+// เป้าหมายรายเดือน + เหรียญรางวัล คำนวณจากข้อมูลที่บันทึกไว้ทั้งหมด (ไม่เก็บเหรียญแยก จึงไม่หลุดตามข้อมูล)
 
 export const monthOf = (date: string) => date.slice(0, 7) // YYYY-MM
 

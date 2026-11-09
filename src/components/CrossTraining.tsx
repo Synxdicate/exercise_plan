@@ -7,7 +7,7 @@ import { useLang, useT } from '../lib/i18n'
 import { useDateField } from '../lib/useToday'
 import { DateInput, NumberInput, SelectInput } from './Form'
 
-/** คาร์ดิโอทดแทนการวิ่ง: ปั่นจักรยาน วิ่งในน้ำ ว่ายน้ำ — นับในความฟิต/ความล้า (RPE × นาที) */
+/** คาร์ดิโอทดแทนการวิ่ง: ปั่นจักรยาน วิ่งในน้ำ ว่ายน้ำ นับในความฟิต/ความล้า (RPE × นาที) */
 export function CrossTrainingCard() {
   const tr = useT()
   const kinds = useLang()[0] === 'en' ? crossKindsEn : crossKinds
@@ -28,7 +28,7 @@ export function CrossTrainingCard() {
     <Card title={<span className="flex items-center gap-2"><Bike size={18} className="text-run" /> {tr('คาร์ดิโออื่น (แรงกระแทกน้อย)', 'Other cardio (low impact)')}</span>}
       action={<Button variant="soft" size="sm" onClick={() => setOpen(!open)}><Plus size={14} /> {tr('เพิ่ม', 'Add')}</Button>}>
       <p className="-mt-1 text-xs text-muted">
-        {tr('ปั่นจักรยาน ว่ายน้ำ วิ่งในน้ำ — แอโรบิกที่ไม่กระแทกข้อ ใช้แทนวิ่งช่วงเจ็บได้', 'Cycling, swimming, deep-water running — joint-friendly aerobic work you can swap in when injured')}{weekMin ? tr(` · สัปดาห์นี้ ${weekMin} นาที`, ` · ${weekMin} min this week`) : ''}
+        {tr('ปั่นจักรยาน ว่ายน้ำ วิ่งในน้ำ แอโรบิกที่ไม่กระแทกข้อ ใช้แทนวิ่งช่วงเจ็บได้', 'Cycling, swimming, deep-water running — joint-friendly aerobic work you can swap in when injured')}{weekMin ? tr(` · สัปดาห์นี้ ${weekMin} นาที`, ` · ${weekMin} min this week`) : ''}
       </p>
       <Collapse open={open}>
         <div className="mt-3 grid grid-cols-2 gap-2 rounded-2xl bg-raised p-3">

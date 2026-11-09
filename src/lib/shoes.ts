@@ -3,7 +3,7 @@ import type { Run } from './log'
 
 export type Shoe = { id: string; name: string; startKm: number; limitKm: number; retired?: boolean; isDefault?: boolean }
 
-// ระยะเปลี่ยนรองเท้า ~500–800 กม. เป็นแนวทางของผู้ผลิต/โค้ช — ยังไม่มีงานวิจัยยืนยันตัวเลขที่แน่นอน
+// ระยะเปลี่ยนรองเท้า ~500–800 กม. เป็นแนวทางของผู้ผลิต/โค้ช ยังไม่มีงานวิจัยยืนยันตัวเลขที่แน่นอน
 export const DEFAULT_LIMIT_KM = 700
 
 export const useShoes = () => usePersisted<Shoe[]>('shoes', [])

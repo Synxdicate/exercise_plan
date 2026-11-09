@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { daysBetween, today, weekStart } from './date'
 
 /**
- * วันนี้ (YYYY-MM-DD) ที่อัปเดตเมื่อข้ามเที่ยงคืนหรือกลับมาเปิดแอป — แอป Android ค้างอยู่ใน memory ได้หลายวัน
+ * วันนี้ (YYYY-MM-DD) ที่อัปเดตเมื่อข้ามเที่ยงคืนหรือกลับมาเปิดแอป แอป Android ค้างอยู่ใน memory ได้หลายวัน
  * ถ้าจำวันไว้ตอนเปิดหน้าครั้งแรก หน้าหลักจะโชว์แผนของเมื่อวานเป็น "วันนี้"
  */
 export function useToday() {

@@ -7,10 +7,10 @@ import { addDays, daysBetween, toDateStr, weekStart } from './date'
 
 export type ReminderSetting = { on: boolean; time: string } // time = 'HH:MM'
 
-// ค่าของแต่ละเครื่อง (ไม่ sync) — เตือนเฉพาะในแอป Android
+// ค่าของแต่ละเครื่อง (ไม่ sync) เตือนเฉพาะในแอป Android
 export const useReminderSetting = () => usePersisted<ReminderSetting>('reminder', { on: true, time: '06:00' })
 
-/** ตั้งเตือน 14 วันข้างหน้าตามแผน — เรียกใหม่ทุกครั้งที่เปิดแอปหรือแผนเปลี่ยน */
+/** ตั้งเตือน 14 วันข้างหน้าตามแผน เรียกใหม่ทุกครั้งที่เปิดแอปหรือแผนเปลี่ยน */
 export function useReminderSchedule() {
   const p = useProgram()
   const [setting] = useReminderSetting()
@@ -24,7 +24,7 @@ export function useReminderSchedule() {
     const list: Reminder[] = []
     for (let d = 0; d < 14; d++) {
       const at = new Date(now.getFullYear(), now.getMonth(), now.getDate() + d, hh, mm)
-      // สัปดาห์ของโปรแกรมตามวันที่จริง (ช่วงเตรียมตัว/สัปดาห์ที่ทำซ้ำ/หลังจบโปรแกรม) — เดิมบวกเลขสัปดาห์ไปเรื่อย ๆ
+      // สัปดาห์ของโปรแกรมตามวันที่จริง (ช่วงเตรียมตัว/สัปดาห์ที่ทำซ้ำ/หลังจบโปรแกรม) เดิมบวกเลขสัปดาห์ไปเรื่อย ๆ
       const date = addDays(toDateStr(now), d)
       const week = p.weekOf(weekStart(date))
       if (week === null) continue

@@ -12,7 +12,7 @@ import { useT } from '../lib/i18n'
 // ตารางหมากรุกบอกว่าพื้นหลังโปร่ง (เหมือนโปรแกรมแต่งรูป)
 const checker = { backgroundImage: 'repeating-conic-gradient(#9ca3af 0% 25%, #e5e7eb 0% 50%)', backgroundSize: '20px 20px' }
 
-/** เลือกแบบรูปจากตารางพรีวิว (แบบ Strava) แล้วแชร์/บันทึก/คัดลอก — การ์ดสี หรือสติกเกอร์ PNG พื้นหลังโปร่ง */
+/** เลือกแบบรูปจากตารางพรีวิว (แบบ Strava) แล้วแชร์/บันทึก/คัดลอก การ์ดสี หรือสติกเกอร์ PNG พื้นหลังโปร่ง */
 type Choice = 'card' | ShareLayout
 const LABELS: Record<Choice, [string, string]> = {
   card: ['การ์ดสี', 'Color card'], stats: ['ตัวเลข + เส้นทาง', 'Stats + route'], row: ['เส้นทาง + แถวตัวเลข', 'Route + row'],
@@ -22,7 +22,7 @@ const LABELS: Record<Choice, [string, string]> = {
 
 export function ShareRunSheet({ run, onClose }: { run: Run; onClose: () => void }) {
   const tr = useT()
-  // จำแบบที่เลือกล่าสุด — เริ่มที่สติกเกอร์โปร่งใสสีขาว (วางบนรูปตัวเองในโซเชียล)
+  // จำแบบที่เลือกล่าสุด เริ่มที่สติกเกอร์โปร่งใสสีขาว (วางบนรูปตัวเองในโซเชียล)
   const [style, setStyle] = usePersisted<CardStyle>('shareStyle', 'white')
   const [layout, setLayout] = usePersisted<ShareLayout>('shareLayout', 'stats')
   const ink: 'white' | 'black' = style === 'black' ? 'black' : 'white'

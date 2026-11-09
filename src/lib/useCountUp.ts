@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-/** ตัวเลขนับขึ้นจาก 0 ถึง target (ease-out) — ปิดเองเมื่อผู้ใช้ตั้งลดการเคลื่อนไหว */
+/** ตัวเลขนับขึ้นจาก 0 ถึง target (ease-out) ปิดเองเมื่อผู้ใช้ตั้งลดการเคลื่อนไหว */
 export function useCountUp(target: number, ms = 700) {
   const [v, setV] = useState(() => (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? target : 0))
   useEffect(() => {

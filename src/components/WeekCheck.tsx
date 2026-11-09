@@ -9,9 +9,9 @@ import { useT } from '../lib/i18n'
 
 type Feel = 'easy' | 'ok' | 'hard'
 const FEEL: Record<Feel, { label: string; reply: string }> = {
-  easy: { label: 'สบาย', reply: 'ไปต่อตามแผน — ถ้าสบายมาก 2 สัปดาห์ติดกัน ข้ามไปสัปดาห์ถัดไปได้ 1 สัปดาห์' },
+  easy: { label: 'สบาย', reply: 'ไปต่อตามแผน ถ้าสบายมาก 2 สัปดาห์ติดกัน ข้ามไปสัปดาห์ถัดไปได้ 1 สัปดาห์' },
   ok: { label: 'พอดี', reply: 'กำลังดี ไปต่อตามแผน' },
-  hard: { label: 'หนักไป', reply: 'ทำสัปดาห์นี้ซ้ำอีกรอบดีกว่าฝืน — ร่างกายปรับตัวทันแล้วค่อยไปต่อ' },
+  hard: { label: 'หนักไป', reply: 'ทำสัปดาห์นี้ซ้ำอีกรอบดีกว่าฝืน ร่างกายปรับตัวทันแล้วค่อยไปต่อ' },
 }
 const FEEL_EN: Record<Feel, { label: string; reply: string }> = {
   easy: { label: 'Easy', reply: 'Carry on with the plan — if it feels very easy two weeks running, you can skip ahead one week' },
@@ -19,14 +19,14 @@ const FEEL_EN: Record<Feel, { label: string; reply: string }> = {
   hard: { label: 'Too hard', reply: 'Better to repeat this week than force it — move on once your body has caught up' },
 }
 
-/** ท้ายสัปดาห์ถามว่าหนักไปไหม — หนักไปเสนอให้ทำสัปดาห์เดิมซ้ำ (มือใหม่มักฝืนไปต่อแล้วเจ็บ) */
+/** ท้ายสัปดาห์ถามว่าหนักไปไหม หนักไปเสนอให้ทำสัปดาห์เดิมซ้ำ (มือใหม่มักฝืนไปต่อแล้วเจ็บ) */
 export function WeekCheckCard() {
   const p = useProgram()
   const t = useT()
   const feel = t('th', 'en') === 'en' ? FEEL_EN : FEEL
   const dayDone = useDayDone()
   const [answers, setAnswers] = usePersisted<Record<string, Feel | true>>('weekCheck', {})
-  const todayIdx = useTodayIdx() // 0 = จันทร์ — เปลี่ยนเองเมื่อข้ามวัน
+  const todayIdx = useTodayIdx() // 0 = จันทร์ เปลี่ยนเองเมื่อข้ามวัน
   if (p.ongoing || p.program === 'strength' || p.finished) return null
   const plan = p.plan()
   const training = plan.flatMap((d, i) => (d.type !== 'rest' ? [i] : []))

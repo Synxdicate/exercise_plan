@@ -22,14 +22,14 @@ const adviceEn: typeof advice = {
 
 const advice: Record<'strength' | 'run', Record<Level, string>> = {
   strength: {
-    green: 'พร้อมเต็มที่ — ฝึกตามแผนได้เลย',
+    green: 'พร้อมเต็มที่ ฝึกตามแผนได้เลย',
     yellow: 'ฝึกได้แต่เบาลง: ลด 1 เซ็ตทุกท่า และหยุดก่อนหมดแรง 3 ครั้ง',
-    red: 'วันนี้ควรพัก หรือเดิน/ยืดเหยียดเบา ๆ แทน — ฝึกหนักตอนล้ามากเพิ่มความเสี่ยงบาดเจ็บ',
+    red: 'วันนี้ควรพัก หรือเดิน/ยืดเหยียดเบา ๆ แทน ฝึกหนักตอนล้ามากเพิ่มความเสี่ยงบาดเจ็บ',
   },
   run: {
-    green: 'พร้อมเต็มที่ — วิ่งตามแผนได้เลย',
+    green: 'พร้อมเต็มที่ วิ่งตามแผนได้เลย',
     yellow: 'เปลี่ยนเป็น Easy run และลดระยะเหลือ ~70% ของแผน',
-    red: 'วันนี้ควรพัก — ถ้าอยากขยับ เดินเร็ว 20–30 นาทีพอ',
+    red: 'วันนี้ควรพัก ถ้าอยากขยับ เดินเร็ว 20–30 นาทีพอ',
   },
 }
 
@@ -48,7 +48,7 @@ export function ReadinessSheet({ kind, onClose, onProceed }: { kind: 'strength' 
   const area = (a: PainArea) => en ? PAIN_AREAS[a].labelEn : PAIN_AREAS[a].label
   const Icon = level === 'green' ? BatteryFull : level === 'yellow' ? BatteryMedium : BatteryLow
 
-  // ถามวันละครั้งพอ — ถ้าวันนี้ตอบแล้วและไม่ใช่ระดับแดง เริ่มได้เลยไม่ต้องถามซ้ำ
+  // ถามวันละครั้งพอ ถ้าวันนี้ตอบแล้วและไม่ใช่ระดับแดง เริ่มได้เลยไม่ต้องถามซ้ำ
   const answered = log[today()]
   useEffect(() => {
     if (answered && answered.level !== 'red') onProceed(answered.level === 'yellow')
@@ -106,7 +106,7 @@ export function ReadinessSheet({ kind, onClose, onProceed }: { kind: 'strength' 
           level === 'green' ? 'bg-good/15 text-good' : level === 'yellow' ? 'bg-warn/15 text-warn' : 'bg-bad/15 text-bad')}>
           <Icon size={22} className="shrink-0" />
           <span>
-            {r.pain ? t('หลีกเลี่ยงท่าหรือการวิ่งที่ทำให้จุดนั้นเจ็บ ถ้าเจ็บเกิน 3 วันหรือบวม ควรพบแพทย์/นักกายภาพ — ', 'Avoid moves or runs that hurt that spot; pain over 3 days or swelling: see a doctor/physio — ') : ''}{(en ? adviceEn : advice)[kind][level]}
+            {r.pain ? t('หลีกเลี่ยงท่าหรือการวิ่งที่ทำให้จุดนั้นเจ็บ ถ้าเจ็บเกิน 3 วันหรือบวม ควรพบแพทย์/นักกายภาพ ', 'Avoid moves or runs that hurt that spot; pain over 3 days or swelling: see a doctor/physio — ') : ''}{(en ? adviceEn : advice)[kind][level]}
             {r.areas?.map(a => <span key={a} className="mt-1 block font-semibold">{area(a)}: {en ? PAIN_AREAS[a].avoidEn : PAIN_AREAS[a].avoid}</span>)}
           </span>
         </div>

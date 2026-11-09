@@ -39,7 +39,7 @@ describe('missedKeyRun', () => {
   })
   it('a missed key run this week moves to a rest day not next to another run, else skip', () => {
     const plan = mini(2).map((d, i) => (i === 3 ? { ...d, runKind: 'tempo' as const } : d)) // พฤ = tempo
-    // ศุกร์: พลาด tempo วันพฤ — เสาร์เป็นวันพักแต่ติดวิ่งยาววันอาทิตย์ → ไม่มีวันย้าย ให้ข้าม
+    // ศุกร์: พลาด tempo วันพฤ เสาร์เป็นวันพักแต่ติดวิ่งยาววันอาทิตย์ → ไม่มีวันย้าย ให้ข้าม
     expect(missedKeyRun(plan, 4, i => i !== 3)).toMatchObject({ kind: 'thisWeek', i: 3, to: null })
     // ไม่มีวันวิ่งสำคัญที่พลาด
     expect(missedKeyRun(mini(2), 4, () => true)).toBeNull()
@@ -87,7 +87,7 @@ describe('finishEstimate (run-walk beginners)', () => {
     ]
     const f = finishEstimate(runs, 11.55, '2026-11-05')!
     expect(f.from).toEqual({ km: 4.82, date: '2026-10-27' })
-    expect(Math.round(f.sec / 60)).toBe(125) // ~2:05 — เกินคัตออฟ 2 ชม. เล็กน้อยตอนนี้
+    expect(Math.round(f.sec / 60)).toBe(125) // ~2:05 เกินคัตออฟ 2 ชม. เล็กน้อยตอนนี้
     expect(f.best).toBeLessThan(f.sec)
     expect(finishEstimate([run('2026-10-31', 2.49, 'easy', 14.2)], 11.55, '2026-11-05')).toBeNull()
   })

@@ -1,6 +1,6 @@
 import { addDays, weekStart } from './date'
 
-/** ตารางปฏิทินของเดือน (เริ่มวันจันทร์) 5–6 แถว × 7 วัน — วันนอกเดือนเป็น null */
+/** ตารางปฏิทินของเดือน (เริ่มวันจันทร์) 5–6 แถว × 7 วัน วันนอกเดือนเป็น null */
 export function monthGrid(ym: string): (string | null)[][] {
   const first = `${ym}-01`
   const start = weekStart(first)

@@ -41,7 +41,7 @@ export function DrillsCard({ kind }: { kind: Run['kind'] }) {
           ]} />
           <p className="mt-2 text-xs text-muted">
             {set === 'quality'
-              ? t('วันวิ่งเร็ว/เนิน/แข่ง: เพิ่มเอสคิปและสเตรตเลกบาวด์ (แรงกระแทกมากกว่า) — ชุดซ้อมของวันนั้นมีขั้นดริลล์อยู่แล้ว ทำตรงนี้แทนได้', 'Fast/hill/race days add A-skips and straight-leg bounds (more impact) — the day’s guided workout already has a drills step; you can do it here instead')
+              ? t('วันวิ่งเร็ว/เนิน/แข่ง: เพิ่มเอสคิปและสเตรตเลกบาวด์ (แรงกระแทกมากกว่า) ชุดซ้อมของวันนั้นมีขั้นดริลล์อยู่แล้ว ทำตรงนี้แทนได้', 'Fast/hill/race days add A-skips and straight-leg bounds (more impact) — the day’s guided workout already has a drills step; you can do it here instead')
               : t('วันวิ่งเบา/วิ่งยาว: ท่าแรงกระแทกต่ำ ช่วยให้ข้อต่อพร้อมและจับจังหวะก้าว', 'Easy/long days: low-impact moves to loosen up and find your rhythm')}
           </p>
           <ol className="mt-2 divide-y divide-line">
@@ -63,7 +63,7 @@ export function DrillsCard({ kind }: { kind: Run['kind'] }) {
             ))}
           </ol>
           <Button variant="run" className="mt-2 w-full" onClick={() => setPlaying(true)}><Play size={16} fill="currentColor" /> {t('เริ่มดริลล์ (มีเสียงนำ)', 'Start drills (voice-guided)')}</Button>
-          <p className="mt-2 text-[11px] text-muted">{t('ดริลล์เป็นการวอร์มอัพและฝึกจังหวะ — งานวิจัยพบว่าช่วยให้ก้าวสั้นลง ถี่ขึ้นได้ แต่ไม่ได้ทำให้วิ่งประหยัดแรงขึ้นทันที ความเร็วยังมาจากการซ้อมตามแผน (Fradkin 2010, Craighead 2014, Yamaguchi 2015)', 'Drills are a warm-up and rhythm practice — studies show they can shorten and quicken your stride but don’t instantly improve economy; speed still comes from the training plan (Fradkin 2010, Craighead 2014, Yamaguchi 2015)')}</p>
+          <p className="mt-2 text-[11px] text-muted">{t('ดริลล์เป็นการวอร์มอัพและฝึกจังหวะ งานวิจัยพบว่าช่วยให้ก้าวสั้นลง ถี่ขึ้นได้ แต่ไม่ได้ทำให้วิ่งประหยัดแรงขึ้นทันที ความเร็วยังมาจากการซ้อมตามแผน (Fradkin 2010, Craighead 2014, Yamaguchi 2015)', 'Drills are a warm-up and rhythm practice — studies show they can shorten and quicken your stride but don’t instantly improve economy; speed still comes from the training plan (Fradkin 2010, Craighead 2014, Yamaguchi 2015)')}</p>
         </div>
       </Collapse>
       {playing && <CircuitPlayer drills steps={SETS[set]} rounds={1} onClose={() => setPlaying(false)} />}

@@ -11,7 +11,7 @@ import { useT } from '../lib/i18n'
 type Item = { id: string; name: string; protein: number; kcal: number }
 type MealSet = { id: string; name: string; items: Omit<Item, 'id'>[] }
 
-/** บันทึกโปรตีน/แคลอรี่วันนี้ — ค้นหาเมนู หรือแตะจากรายการที่กินล่าสุด */
+/** บันทึกโปรตีน/แคลอรี่วันนี้ ค้นหาเมนู หรือแตะจากรายการที่กินล่าสุด */
 export function FoodLog({ proteinTarget, kcalTarget }: { proteinTarget: number; kcalTarget: number }) {
   const tr = useT()
   const [log, setLog] = usePersisted<Record<string, Item[]>>('foodLog', {})
@@ -89,7 +89,7 @@ export function FoodLog({ proteinTarget, kcalTarget }: { proteinTarget: number; 
         </ul>
       ) : (
         <>
-          <div className="mt-3 text-xs text-muted">{recent.length ? tr('กินล่าสุด — แตะเพื่อเพิ่ม', 'Recently eaten — tap to add') : tr('แตะเพื่อเพิ่ม', 'Tap to add')}</div>
+          <div className="mt-3 text-xs text-muted">{recent.length ? tr('กินล่าสุด แตะเพื่อเพิ่ม', 'Recently eaten — tap to add') : tr('แตะเพื่อเพิ่ม', 'Tap to add')}</div>
           <div className="-mx-4 mt-1.5 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
             {chips.map(f => (
               <button key={f.name} onClick={() => add({ name: f.name, protein: f.protein, kcal: f.kcal })}

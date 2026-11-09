@@ -17,10 +17,10 @@ export type Run = {
   elapsedSeconds?: number // รวมเวลาพัก
   gapSeconds?: number // ช่วงที่จอปิด GPS ไม่ได้บันทึก
   shoeId?: string
-  startedAt?: number // เวลาเริ่ม (ms) — ใช้ส่งออก GPX
+  startedAt?: number // เวลาเริ่ม (ms) ใช้ส่งออก GPX
   guide?: { work: number; total: number; finished: boolean } // ทำชุดซ้อม (เสียงนำ) ได้กี่ช่วงหลัก
   elev?: { gain: number; loss: number; max: number; min: number } // จากแผนที่ความสูง (elevation.ts)
-  elevProfile?: number[] // ความสูง ~100 จุดเท่า ๆ กันตามระยะ — เก็บใน routes
+  elevProfile?: number[] // ความสูง ~100 จุดเท่า ๆ กันตามระยะ เก็บใน routes
 }
 
 export type SetEntry = { kg: number; reps: number }
@@ -36,7 +36,7 @@ export type Session = {
   minutes?: number
 }
 
-// เส้นทาง (route/times) เก็บแยกใน key 'routes' (id → เส้นทาง) — แก้ข้อมูลรอบวิ่ง (RPE ชนิด รองเท้า)
+// เส้นทาง (route/times) เก็บแยกใน key 'routes' (id → เส้นทาง) แก้ข้อมูลรอบวิ่ง (RPE ชนิด รองเท้า)
 // จะได้ไม่ต้องส่งเส้นทางทุกรอบขึ้น server ใหม่ทั้งก้อน · useRuns() รวมให้เหมือนเดิม คอมโพเนนต์ไม่ต้องรู้
 export type RouteData = { route: Point[]; times?: number[]; elevProfile?: number[] }
 type Routes = Record<string, RouteData>
@@ -77,7 +77,7 @@ export function useRuns() {
     const cur = stored()
     const value = typeof next === 'function' ? next(joinRuns(cur.runs, cur.routes)) : next
     const s = splitRuns(value, cur.routes)
-    if (s.changed) setRoutes(s.routes) // เส้นทางก่อน — ตอน runs เปลี่ยนจะได้รวมเจอเส้นทางแล้ว
+    if (s.changed) setRoutes(s.routes) // เส้นทางก่อน ตอน runs เปลี่ยนจะได้รวมเจอเส้นทางแล้ว
     setRaw(s.runs)
   }, [setRaw, setRoutes])
   return [runs, set] as const
@@ -95,7 +95,7 @@ export function useCompactRuns() {
 }
 export const useSessions = () => usePersisted<Session[]>('sessions', [])
 
-// คาร์ดิโอทดแทนการวิ่ง (แรงกระแทกน้อย): ได้ระบบหายใจ-หัวใจโดยไม่กระแทกข้อ — ใช้เพิ่มปริมาณแอโรบิกหรือช่วงบาดเจ็บ
+// คาร์ดิโอทดแทนการวิ่ง (แรงกระแทกน้อย): ได้ระบบหายใจ-หัวใจโดยไม่กระแทกข้อ ใช้เพิ่มปริมาณแอโรบิกหรือช่วงบาดเจ็บ
 // (Eyestone 1993: วิ่งในน้ำ/ปั่นจักรยาน 6 สัปดาห์รักษา VO2max และเวลาวิ่ง 2 ไมล์ได้เท่าการวิ่ง)
 export type CrossKind = 'bike' | 'aquajog' | 'swim' | 'elliptical' | 'other'
 export type CrossSession = { id: string; date: string; kind: CrossKind; minutes: number; rpe?: number }
@@ -133,7 +133,7 @@ export function formatPace(sec: number, km: number) {
   return `${Math.floor(p / 60)}:${String(Math.round(p % 60)).padStart(2, '0')}`
 }
 
-// ครั้งล่าสุดที่เล่นท่านี้ — ใช้โชว์ตัวเลขเดิมเพื่อ progressive overload
+// ครั้งล่าสุดที่เล่นท่านี้ ใช้โชว์ตัวเลขเดิมเพื่อ progressive overload
 export function lastSetsFor(sessions: Session[], name: string) {
   for (let i = sessions.length - 1; i >= 0; i--) {
     const e = sessions[i].entries.find(x => x.name === name)

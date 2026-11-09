@@ -45,7 +45,7 @@ describe('โปรแกรมวิ่ง', () => {
     })
   }
 
-  it('base: วนรอบได้ — ข้ามจากสัปดาห์ลดกลับไปสัปดาห์ 1 เพิ่มไม่เกิน 20% และไม่มีวันแข่ง', () => {
+  it('base: วนรอบได้ ข้ามจากสัปดาห์ลดกลับไปสัปดาห์ 1 เพิ่มไม่เกิน 20% และไม่มีวันแข่ง', () => {
     const n = programs.base.weeks
     expect(weekKm('base', 1) / weekKm('base', n)).toBeLessThanOrEqual(1.2)
     for (let w = 1; w <= n; w++) expect(variants('base', w).gym.some(d => d.runKind === 'race')).toBe(false)
@@ -67,7 +67,7 @@ describe('โปรแกรมวิ่ง', () => {
     }
   })
 
-  it('ไม่วิ่งหนัก/วิ่งยาวในวันถัดจากเวทขา — ผลกระทบอยู่ราว 6–48 ชม. (Doma 2017)', () => {
+  it('ไม่วิ่งหนัก/วิ่งยาวในวันถัดจากเวทขา ผลกระทบอยู่ราว 6–48 ชม. (Doma 2017)', () => {
     const legs = /squat|deadlift|rdl|split|lunge|leg curl|pistol|bridge/i
     for (const p of ['physique', ...running] as const) {
       const weeks = programs[p].weeks

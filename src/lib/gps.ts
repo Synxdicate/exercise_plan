@@ -135,7 +135,7 @@ export function useRunTracker(opts: Opts = {}) {
     return () => clearInterval(id)
   }, [live.status, autoPause, update, tick])
 
-  // wake lock หลุดเมื่อสลับแอป — ขอใหม่เมื่อกลับมา
+  // wake lock หลุดเมื่อสลับแอป ขอใหม่เมื่อกลับมา
   useEffect(() => {
     const onVis = () => {
       const s = liveRef.current.status
@@ -145,7 +145,7 @@ export function useRunTracker(opts: Opts = {}) {
         return
       }
       if (tracking || s === 'acquiring') void lockScreen()
-      // กลับมาจากปิดจอ: เบราว์เซอร์หยุด GPS ไปช่วงนั้น — จดไว้และแจ้งผู้ใช้
+      // กลับมาจากปิดจอ: เบราว์เซอร์หยุด GPS ไปช่วงนั้น จดไว้และแจ้งผู้ใช้
       if (hiddenAt.current && tracking) {
         const gap = (Date.now() - hiddenAt.current) / 1000
         if (gap > 15) {
@@ -171,13 +171,13 @@ export function useRunTracker(opts: Opts = {}) {
         next.lastMoveAt = n
         if (x.status === 'autopaused') next = { ...next, status: 'running', segStart: n }
       }
-      // เพซรายกิโล — เวลาผ่านหลักกิโลประมาณระหว่างจุดก่อนหน้ากับจุดนี้
+      // เพซรายกิโล เวลาผ่านหลักกิโลประมาณระหว่างจุดก่อนหน้ากับจุดนี้
       const moved = movingMs(next, n) / 1000
       const prevT = x.times.at(-1) ?? 0
       if (next.meters >= (next.splits.length + 1) * 1000) next = { ...next, splits: addSplits(next.splits, x.meters, prevT, next.meters, moved) }
       return next
     })
-    // ครบกิโลใหม่ → แจ้ง (เสียงบอกเพซ) — เรียกจาก callback ของ GPS โดยตรง จึงทำงานแม้จอดับ
+    // ครบกิโลใหม่ → แจ้ง (เสียงบอกเพซ) เรียกจาก callback ของ GPS โดยตรง จึงทำงานแม้จอดับ
     const after = liveRef.current.splits
     for (let k = splitsBefore; k < after.length; k++) {
       onSplitRef.current?.(k + 1, after[k], after.slice(0, k + 1).reduce((s, v) => s + v, 0))
@@ -246,7 +246,7 @@ export function useRunTracker(opts: Opts = {}) {
         (loc, err) => {
           if (err) {
             if (err.code === 'NOT_AUTHORIZED') {
-              setError('ไม่ได้อนุญาตให้ใช้ตำแหน่ง — แตะเพื่อเปิดการตั้งค่า แล้วเลือก "อนุญาตตลอดเวลา"')
+              setError('ไม่ได้อนุญาตให้ใช้ตำแหน่ง แตะเพื่อเปิดการตั้งค่า แล้วเลือก "อนุญาตตลอดเวลา"')
               void ask('แอปต้องใช้ตำแหน่งเพื่อบันทึกการวิ่ง เลือก "อนุญาตตลอดเวลา" ในการตั้งค่า', { title: 'ต้องการสิทธิ์ตำแหน่ง', ok: 'เปิดการตั้งค่า' }).then(ok => { if (ok) void BackgroundGeolocation.openSettings() })
             }
             return
@@ -263,7 +263,7 @@ export function useRunTracker(opts: Opts = {}) {
     if (watchId.current !== null) return true
     watchId.current = navigator.geolocation.watchPosition(
       onPosition,
-      err => setError(err.code === err.PERMISSION_DENIED ? 'ไม่ได้อนุญาตให้ใช้ตำแหน่ง — เปิดสิทธิ์ Location ให้เว็บนี้ในการตั้งค่าเบราว์เซอร์' : 'กำลังรอสัญญาณ GPS…'),
+      err => setError(err.code === err.PERMISSION_DENIED ? 'ไม่ได้อนุญาตให้ใช้ตำแหน่ง เปิดสิทธิ์ Location ให้เว็บนี้ในการตั้งค่าเบราว์เซอร์' : 'กำลังรอสัญญาณ GPS…'),
       { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 },
     )
     void lockScreen()

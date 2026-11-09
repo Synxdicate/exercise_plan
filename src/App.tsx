@@ -26,7 +26,7 @@ import { readStored, usePersisted } from './lib/storage'
 import { lastBackup, setLocalMode } from './lib/localMode'
 import { daysBetween, today } from './lib/date'
 import { Overview } from './components/Overview'
-// แท็บอื่นนอกจากหน้าหลักโหลดแยกไฟล์ — เปิดแอปเร็วขึ้น แล้วค่อยโหลดล่วงหน้าตอนว่าง (สลับแท็บไม่ต้องรอ)
+// แท็บอื่นนอกจากหน้าหลักโหลดแยกไฟล์ เปิดแอปเร็วขึ้น แล้วค่อยโหลดล่วงหน้าตอนว่าง (สลับแท็บไม่ต้องรอ)
 reloadOnChunkError()
 const loadPlan = () => import('./components/Plan')
 const loadRuns = () => import('./components/Runs')
@@ -44,7 +44,7 @@ import { defaultProfile, type Profile } from './lib/calc'
 import { NavContext } from './lib/nav'
 import { usePreStartCleanup } from './lib/program'
 
-// 5 แท็บล่างแบบแอปมือถือ — "แหล่งข้อมูล" อยู่ในเมนูโปรไฟล์
+// 5 แท็บล่างแบบแอปมือถือ "แหล่งข้อมูล" อยู่ในเมนูโปรไฟล์
 const tabs = [
   { id: 'overview', label: ['หน้าหลัก', 'Home'], title: ['ภาพรวม', 'Overview'], icon: House },
   { id: 'plan', label: ['ฝึก', 'Train'], title: ['ตารางฝึก', 'Training plan'], icon: Dumbbell },
@@ -190,7 +190,7 @@ function UserMenu({ session, onSources }: { session: Session | null; onSources: 
     let ok = await stopSync()
     if (!ok) ok = (await ask(t('ยังมีข้อมูลที่ส่งขึ้น server ไม่ได้ (อาจออฟไลน์อยู่) ถ้าออกจากระบบตอนนี้ ข้อมูลส่วนนั้นจะหาย', "Some data hasn't reached the server yet (you may be offline). Signing out now will lose it."), { title: t('ออกจากระบบ?', 'Sign out?'), ok: t('ออกต่อ', 'Sign out'), danger: true })) && (await stopSync(true))
     if (ok) {
-      // รูปในเครื่องเป็นของบัญชีนี้ — ลบออกด้วย (ฉบับบน server ยังอยู่)
+      // รูปในเครื่องเป็นของบัญชีนี้ ลบออกด้วย (ฉบับบน server ยังอยู่)
       await idb.clear('blobs').catch(() => {})
       // ออกจากระบบก่อน (หน้าจอเปลี่ยนเป็นหน้าล็อกอิน) แล้วค่อยล้างข้อมูลในเครื่องหลังหน้าจอเปลี่ยนแล้ว
       // ออฟไลน์: signOut ปกติล้มเหลวและไม่ลบ session ในเครื่อง → ใช้ scope local แทน

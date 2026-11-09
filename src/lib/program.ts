@@ -56,7 +56,7 @@ export function applyCustom(days: Day[], program: string, swaps: Record<string, 
   return days.map(d => {
     if (d.type !== 'strength') return d
     // ผู้ใช้สลับเองมาก่อน ไม่งั้นถ้าฝึกคนเดียวและท่าต้องมีคนช่วย → ท่าทดแทนที่ปลอดภัย
-    // ท่าที่สลับไปเป็นท่าของยิม (ต้องใช้เครื่อง/อุปกรณ์) ใช้เฉพาะวันยิม — วันสวนกลับเป็นท่าเดิม
+    // ท่าที่สลับไปเป็นท่าของยิม (ต้องใช้เครื่อง/อุปกรณ์) ใช้เฉพาะวันยิม วันสวนกลับเป็นท่าเดิม
     const usable = (to: string) => d.location === 'home' ? homeUsable(to) : d.location !== 'park' || libEx(to)?.where !== 'gym'
     const list = d.exercises.map(e => (swaps[e.name] && usable(swaps[e.name]) ? swapExercise(e, swaps[e.name])
       : solo && needsSpotter[e.name] ? { ...swapExercise(e, needsSpotter[e.name].alt), solo: true } : e))
@@ -76,27 +76,27 @@ export function weekAt(start: string, repeats: string[], monday: string, weeks: 
   return Math.min(Math.max(raw - held, 1), weeks)
 }
 
-/** รอบที่เท่าไรของสัปดาห์ week (0 = รอบแรก) — ใช้แยกติ๊กของรอบทำซ้ำ */
+/** รอบที่เท่าไรของสัปดาห์ week (0 = รอบแรก) ใช้แยกติ๊กของรอบทำซ้ำ */
 export const attemptOf = (start: string, repeats: string[], week: number, monday: string, weeks: number) =>
   repeats.filter(r => r > start && r <= monday && weekAt(start, repeats, r, weeks) === week).length
 
-// สถานะโปรแกรมปัจจุบัน — ใช้ร่วมกันทุกหน้า
+// สถานะโปรแกรมปัจจุบัน ใช้ร่วมกันทุกหน้า
 export function useProgram() {
   const [stored, setProgramRaw] = usePersisted<ProgramId>('program', 'physique')
-  // โปรแกรมที่แอปเวอร์ชันนี้ไม่รู้จัก (ซิงก์มาจากเครื่องที่อัปเดตแล้ว) — ใช้โปรแกรมหุ่นแทนการพังทั้งแอป
+  // โปรแกรมที่แอปเวอร์ชันนี้ไม่รู้จัก (ซิงก์มาจากเครื่องที่อัปเดตแล้ว) ใช้โปรแกรมหุ่นแทนการพังทั้งแอป
   const program: ProgramId = stored in programs ? stored : 'physique'
   const [location, setLocationPref] = usePersisted<LocationPref>('mode', 'gym')
   const [overrides, setOverrides] = usePersisted<Record<string, Mode>>('dayLocation', {})
   const [manualWeek, setManualWeek] = usePersisted('week', 1)
-  // วันจันทร์ที่เริ่มโปรแกรม (ไม่มีวันแข่ง) — สัปดาห์ปัจจุบันเดินเองตามปฏิทิน; ข้อมูลเก่าที่มีแค่เลขสัปดาห์คิดย้อนจากสัปดาห์นี้
+  // วันจันทร์ที่เริ่มโปรแกรม (ไม่มีวันแข่ง) สัปดาห์ปัจจุบันเดินเองตามปฏิทิน; ข้อมูลเก่าที่มีแค่เลขสัปดาห์คิดย้อนจากสัปดาห์นี้
   const [programStart, setProgramStart] = usePersisted('programStart', '')
   const [repeats, setRepeats] = usePersisted<string[]>('repeatWeeks', [])
   const [raceDate, setRaceDate] = usePersisted('raceDate', '')
-  // ระยะงานจริง (กม.) — งานแต่ละงานยาวไม่เท่ากัน โดยเฉพาะมินิมาราธอน (10–12 กม.)
+  // ระยะงานจริง (กม.) งานแต่ละงานยาวไม่เท่ากัน โดยเฉพาะมินิมาราธอน (10–12 กม.)
   const [raceKmOverride, setRaceKm] = usePersisted<number | null>('raceKm', null)
-  // เวลาตัดตัว (นาที) ของงานจริง — เทียบกับเวลาจบโดยประมาณ
+  // เวลาตัดตัว (นาที) ของงานจริง เทียบกับเวลาจบโดยประมาณ
   const [raceCutoff, setRaceCutoff] = usePersisted<number | null>('raceCutoff', null)
-  // เส้นทางแข่งมีเนิน (เช่น เนินซึมยาว) — เพิ่มการซ้อมเนินในแผน (withHills)
+  // เส้นทางแข่งมีเนิน (เช่น เนินซึมยาว) เพิ่มการซ้อมเนินในแผน (withHills)
   const [raceHills, setRaceHills] = usePersisted('raceHills', false)
   const [easeOff, setEaseOff] = usePersisted<EaseOff | null>('easeOff', null)
   const [swaps, setSwaps] = usePersisted<Record<string, string>>('exerciseSwaps', {})
@@ -125,7 +125,7 @@ export function useProgram() {
   // โปรแกรมต่อเนื่อง: สัปดาห์ในรอบมาจากปฏิทิน (ทุกคนใช้จุดอ้างอิงเดียวกัน ไม่ต้องเก็บวันเริ่ม)
   if (ongoing) currentWeek = (Math.floor(daysBetween(CYCLE_EPOCH, thisMonday) / 7) % meta.weeks) + 1
 
-  // id ของช่องวัน (i = 0 จันทร์ … 6 อาทิตย์) — ไม่ผูกกับยิม/สวน สลับสถานที่แล้วสถานะไม่หาย
+  // id ของช่องวัน (i = 0 จันทร์ … 6 อาทิตย์) ไม่ผูกกับยิม/สวน สลับสถานที่แล้วสถานะไม่หาย
   // โปรแกรมต่อเนื่องวนเลขสัปดาห์ซ้ำ จึงผูก id กับวันจันทร์ของสัปดาห์จริงแทน (ไม่งั้นรอบใหม่จะติ๊กค้างจากรอบก่อน)
   const manual = !ongoing && !(isRace && raceDate)
   // วันจันทร์ของสัปดาห์ `week` — มีวันแข่ง: นับจากสัปดาห์ 1 ที่คิดจากวันแข่ง (สัปดาห์ ≤ 0 = ช่วงเตรียมตัวที่ผ่านมา)
@@ -133,12 +133,12 @@ export function useProgram() {
   const mondayOf = (week: number) => raceStart
     ? (weeksUntilStart > 0 && week === 1 ? thisMonday : addDays(raceStart, 7 * (week - 1)))
     : addDays(thisMonday, 7 * (week - currentWeek))
-  // ช่วงเตรียมตัวที่ผ่านมาแล้ว (เริ่มโปรแกรมก่อนสัปดาห์ 1 จริง) — ดูย้อนหลังได้เป็นสัปดาห์ 0, -1, …
+  // ช่วงเตรียมตัวที่ผ่านมาแล้ว (เริ่มโปรแกรมก่อนสัปดาห์ 1 จริง) ดูย้อนหลังได้เป็นสัปดาห์ 0, -1, …
   const firstPrepWeek = raceStart && programStart && programStart < raceStart
     ? 1 - Math.ceil(daysBetween(weekStart(programStart), raceStart) / 7) : 1
   const prepWeeks = Array.from({ length: Math.max(0, 1 - firstPrepWeek) }, (_, k) => firstPrepWeek + k).filter(w => mondayOf(w) < thisMonday)
   const slotId = (week: number, i: number) => {
-    // ช่วงเตรียมตัวก่อนสัปดาห์ 1 ใช้แผนสัปดาห์ 1 — ต้องแยก id ตามวันจันทร์ ไม่งั้นติ๊กไว้แล้วจะค้างไปถึงสัปดาห์ 1 จริง
+    // ช่วงเตรียมตัวก่อนสัปดาห์ 1 ใช้แผนสัปดาห์ 1 ต้องแยก id ตามวันจันทร์ ไม่งั้นติ๊กไว้แล้วจะค้างไปถึงสัปดาห์ 1 จริง
     if (raceStart && (week < 1 || (weeksUntilStart > 0 && week === 1))) return `${program}-pre${mondayOf(week)}-d${i}`
     if (ongoing) return `${program}-${addDays(thisMonday, 7 * (week - currentWeek))}-d${i}`
     const n = manual ? attemptOf(start, repeats, week, thisMonday, meta.weeks) : 0
@@ -170,7 +170,7 @@ export function useProgram() {
     currentWeek,
     weeksUntilStart,
     raceStart,
-    /** ผ่านวันแข่งแล้ว — ไม่มีแผน "วันนี้" อีก (เดิมยังโชว์สัปดาห์แข่งและวันแข่งซ้ำ) */
+    /** ผ่านวันแข่งแล้ว ไม่มีแผน "วันนี้" อีก (เดิมยังโชว์สัปดาห์แข่งและวันแข่งซ้ำ) */
     finished: !!(isRace && raceDate && today() > raceDate),
     mondayOf,
     /** สัปดาห์เตรียมตัวที่ผ่านมา (เลข ≤ 0) */
@@ -181,13 +181,13 @@ export function useProgram() {
     autoWeek: (isRace && !!raceDate) || ongoing,
     ongoing,
     programStart: start,
-    /** ตั้งให้สัปดาห์นี้เป็นสัปดาห์ที่ w (ทำสัปดาห์เดิมซ้ำ/ข้าม) — สัปดาห์ถัดไปเดินเองต่อจากนี้ */
+    /** ตั้งให้สัปดาห์นี้เป็นสัปดาห์ที่ w (ทำสัปดาห์เดิมซ้ำ/ข้าม) สัปดาห์ถัดไปเดินเองต่อจากนี้ */
     setWeek(w: number) {
       setManualWeek(w)
       setProgramStart(addDays(thisMonday, -7 * (w - 1)))
       setRepeats([])
     },
-    /** สัปดาห์หน้ายังเป็นสัปดาห์เดิม (เลื่อนวันเริ่มโปรแกรมไป 7 วัน) — ใช้เมื่อสัปดาห์นี้หนักเกิน */
+    /** สัปดาห์หน้ายังเป็นสัปดาห์เดิม (เลื่อนวันเริ่มโปรแกรมไป 7 วัน) ใช้เมื่อสัปดาห์นี้หนักเกิน */
     repeatWeek() {
       const next = addDays(thisMonday, 7)
       if (!programStart) setProgramStart(start)
@@ -200,12 +200,12 @@ export function useProgram() {
       setRepeats([])
       setRaceKm(null)
     },
-    /** สัปดาห์ของโปรแกรม ณ วันจันทร์ monday (null = อยู่นอกช่วงโปรแกรม) — ใช้กับปฏิทิน ให้ตรงกับวันแข่ง/การทำซ้ำ */
+    /** สัปดาห์ของโปรแกรม ณ วันจันทร์ monday (null = อยู่นอกช่วงโปรแกรม) ใช้กับปฏิทิน ให้ตรงกับวันแข่ง/การทำซ้ำ */
     weekOf(monday: string): number | null {
       if (ongoing) return (((Math.floor(daysBetween(CYCLE_EPOCH, monday) / 7) % meta.weeks) + meta.weeks) % meta.weeks) + 1
       if (isRace && raceDate) {
         const w = Math.floor(daysBetween(addDays(weekStart(raceDate), -7 * (meta.weeks - 1)), monday) / 7) + 1
-        // ก่อนเริ่มโปรแกรม แอปใช้แผนสัปดาห์ 1 (เหมือนหน้าฝึก) — ก่อนสัปดาห์นี้ไม่มีแผน
+        // ก่อนเริ่มโปรแกรม แอปใช้แผนสัปดาห์ 1 (เหมือนหน้าฝึก) ก่อนสัปดาห์นี้ไม่มีแผน
         return w > meta.weeks ? null : w >= 1 ? w : monday >= thisMonday ? 1 : prepWeeks.includes(w) ? w : null
       }
       const raw = Math.floor(daysBetween(start, monday) / 7) + 1
@@ -268,7 +268,7 @@ export function useProgram() {
 /**
  * ก่อน v2.37 ช่วงเตรียมตัว (ก่อนสัปดาห์ 1 ที่นับถอยจากวันแข่ง) ใช้ id ช่องวันเดียวกับสัปดาห์ 1 —
  * ติ๊ก/ยกเลิกติ๊กตอนเตรียมตัวจึงค้างมาที่สัปดาห์ 1 จริง: ล้างของวันที่ยังมาไม่ถึงในสัปดาห์ 1 ครั้งเดียว
- * (วันที่ยังไม่ถึงไม่ควรมีค่าติ๊กอยู่แล้ว) — เฉพาะเมื่อเริ่มโปรแกรมก่อนสัปดาห์ 1 จริง
+ * (วันที่ยังไม่ถึงไม่ควรมีค่าติ๊กอยู่แล้ว) เฉพาะเมื่อเริ่มโปรแกรมก่อนสัปดาห์ 1 จริง
  */
 export function usePreStartCleanup() {
   const p = useProgram()

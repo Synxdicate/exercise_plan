@@ -70,7 +70,7 @@ export function PaceCard({ est, runs, onTrial }: { est: Estimate | null; runs: R
   if (!est)
     return (
       <Card title={<span className="flex items-center gap-2"><Gauge size={18} className="text-run" /> {tr('เพซแนะนำ', 'Suggested paces')}</span>}>
-        <p className="text-sm text-muted">{tr('เวลาคาดการณ์ 5K–มาราธอนและโซนเพซต้องใช้การวิ่งต่อเนื่อง ≥3 กม. ที่เพซเร็วกว่า 10:00/กม. (วิ่งสลับเดินและวิ่งช้ากว่านี้ไม่นับ เพราะจะคำนวณผิด) — ระหว่างนี้ดูเวลาจบงานแข่งโดยประมาณด้านบน', '5K–marathon predictions and pace zones need a continuous run of ≥3 km faster than 10:00/km (run-walk and slower runs would give wrong numbers) — meanwhile see the estimated race finish above')}</p>
+        <p className="text-sm text-muted">{tr('เวลาคาดการณ์ 5K–มาราธอนและโซนเพซต้องใช้การวิ่งต่อเนื่อง ≥3 กม. ที่เพซเร็วกว่า 10:00/กม. (วิ่งสลับเดินและวิ่งช้ากว่านี้ไม่นับ เพราะจะคำนวณผิด) ระหว่างนี้ดูเวลาจบงานแข่งโดยประมาณด้านบน', '5K–marathon predictions and pace zones need a continuous run of ≥3 km faster than 10:00/km (run-walk and slower runs would give wrong numbers) — meanwhile see the estimated race finish above')}</p>
       </Card>
     )
   // เทียบกับ 4 สัปดาห์ก่อน: ติดลบ = เร็วขึ้น
@@ -79,16 +79,16 @@ export function PaceCard({ est, runs, onTrial }: { est: Estimate | null; runs: R
   const saveGoal = () => { setGoal(pick, parseDuration(draft)); setDraft('') }
   return (
     <Card title={<span className="flex items-center gap-2"><Gauge size={18} className="text-run" /> {tr('เวลาคาดการณ์ & โซนเพซ', 'Predictions & pace zones')}</span>}>
-      {/* ยังไม่มีผลวิ่งเต็มที่: ตัวเลขคิดจากวิ่งเบา (ช้ากว่าจริง) — บอกก่อน และไม่แสดงโซน/ความเร็ววิกฤตที่จะผิด */}
+      {/* ยังไม่มีผลวิ่งเต็มที่: ตัวเลขคิดจากวิ่งเบา (ช้ากว่าจริง) บอกก่อน และไม่แสดงโซน/ความเร็ววิกฤตที่จะผิด */}
       {est.from.easy && (
         <div className="mb-3 flex items-center gap-2 rounded-xl bg-warn/10 p-3 text-sm text-warn">
-          <span className="flex-1">{tr('ยังไม่มีผลวิ่งเต็มที่ — เวลาด้านล่างคิดจากวิ่งเบา เวลาจริงน่าจะเร็วกว่านี้ วิ่งทดสอบ 5K เมื่อวิ่งต่อเนื่องได้แล้ว', 'No all-out run yet — times below come from an easy run, so you’re probably faster. Do a 5K test once you can run continuously')}</span>
+          <span className="flex-1">{tr('ยังไม่มีผลวิ่งเต็มที่ เวลาด้านล่างคิดจากวิ่งเบา เวลาจริงน่าจะเร็วกว่านี้ วิ่งทดสอบ 5K เมื่อวิ่งต่อเนื่องได้แล้ว', 'No all-out run yet — times below come from an easy run, so you’re probably faster. Do a 5K test once you can run continuously')}</span>
           <Button size="sm" variant="soft" onClick={onTrial}>{tr('ทดสอบ 5K', '5K test')}</Button>
         </div>
       )}
       {!est.from.easy && daysBetween(est.from.date, today()) > 42 && (
         <div className="mb-3 flex items-center gap-2 rounded-xl bg-run/10 p-3 text-sm text-run">
-          <span className="flex-1">{tr('ผลที่ใช้คำนวณเก่าเกิน 6 สัปดาห์ — วิ่งทดสอบ 5K เพื่ออัปเดตโซนและเวลาคาดการณ์', 'The source result is over 6 weeks old — run a 5K test to update zones and predictions')}</span>
+          <span className="flex-1">{tr('ผลที่ใช้คำนวณเก่าเกิน 6 สัปดาห์ วิ่งทดสอบ 5K เพื่ออัปเดตโซนและเวลาคาดการณ์', 'The source result is over 6 weeks old — run a 5K test to update zones and predictions')}</span>
           <Button size="sm" variant="run" onClick={onTrial}>{tr('ทดสอบ 5K', '5K test')}</Button>
         </div>
       )}
@@ -150,8 +150,8 @@ export function PaceCard({ est, runs, onTrial }: { est: Estimate | null; runs: R
       )}
       <p className="mt-2 text-xs text-muted">
         {tr(`จาก${est.from.segment ? `ช่วง ${est.from.km} กม. ที่เร็วที่สุดในการวิ่ง` : `การวิ่ง ${est.from.km} กม.`} วันที่ ${shortDate(est.from.date)}`, `From ${est.from.segment ? `your fastest ${est.from.km} km inside a run` : `a ${est.from.km} km run`} on ${shortDate(est.from.date)}`)}
-        {est.stale && tr(' (เกิน 2 เดือนแล้ว — วิ่งเต็มที่สักครั้งเพื่ออัปเดต)', ' (over 2 months old — do one hard run to update)')}
-        {est.from.easy && tr(' (เป็นวิ่งเบา เวลาจริงน่าจะเร็วกว่านี้ — วิ่งทดสอบ 5K เพื่อให้แม่นขึ้น)', ' (an easy run — you’re probably faster; a 5K test makes it accurate)')} · {tr(`ฟูลคิดจากระยะซ้อม ~${Math.round(est.weeklyKm)} กม./สัปดาห์ด้วย`, `marathon also uses your ~${Math.round(est.weeklyKm)} km/week`)}
+        {est.stale && tr(' (เกิน 2 เดือนแล้ว วิ่งเต็มที่สักครั้งเพื่ออัปเดต)', ' (over 2 months old — do one hard run to update)')}
+        {est.from.easy && tr(' (เป็นวิ่งเบา เวลาจริงน่าจะเร็วกว่านี้ วิ่งทดสอบ 5K เพื่อให้แม่นขึ้น)', ' (an easy run — you’re probably faster; a 5K test makes it accurate)')} · {tr(`ฟูลคิดจากระยะซ้อม ~${Math.round(est.weeklyKm)} กม./สัปดาห์ด้วย`, `marathon also uses your ~${Math.round(est.weeklyKm)} km/week`)}
       </p>
     </Card>
   )
@@ -271,7 +271,7 @@ export function ShoesCard({ runs }: { runs: Run[] }) {
               <div className="mt-1 h-2 overflow-hidden rounded-full bg-body">
                 <div className={cx('h-full rounded-full', tone[st])} style={{ width: `${Math.min(100, (km / s.limitKm) * 100)}%` }} />
               </div>
-              {st !== 'good' && <p className={cx('mt-1 text-xs', st === 'bad' ? 'text-bad' : 'text-warn')}>{st === 'bad' ? tr('ถึงระยะที่ควรเปลี่ยนแล้ว — ดูพื้นรองเท้าและความรู้สึกตอนวิ่งประกอบ', 'Replacement distance reached — check the soles and how they feel') : tr('ใกล้ถึงระยะเปลี่ยน เริ่มมองหาคู่ใหม่', 'Nearly due — start looking for a new pair')}</p>}
+              {st !== 'good' && <p className={cx('mt-1 text-xs', st === 'bad' ? 'text-bad' : 'text-warn')}>{st === 'bad' ? tr('ถึงระยะที่ควรเปลี่ยนแล้ว ดูพื้นรองเท้าและความรู้สึกตอนวิ่งประกอบ', 'Replacement distance reached — check the soles and how they feel') : tr('ใกล้ถึงระยะเปลี่ยน เริ่มมองหาคู่ใหม่', 'Nearly due — start looking for a new pair')}</p>}
               <div className="mt-1 flex gap-3 text-xs">
                 {s.id !== def?.id && <button className="font-semibold text-run" onClick={() => setShoes(prev => prev.map(x => ({ ...x, isDefault: x.id === s.id })))}>{tr('ตั้งเป็นคู่หลัก', 'Make main')}</button>}
                 <button className="text-muted" onClick={() => update(s.id, { retired: true, isDefault: false })}>{tr('เลิกใช้', 'Retire')}</button>
@@ -284,7 +284,7 @@ export function ShoesCard({ runs }: { runs: Run[] }) {
   )
 }
 
-/** แผนที่รวมทุกการวิ่ง — ทางที่วิ่งบ่อยเข้มขึ้น */
+/** แผนที่รวมทุกการวิ่ง ทางที่วิ่งบ่อยเข้มขึ้น */
 export function HeatmapCard({ runs }: { runs: Run[] }) {
   const tr = useT()
   const { routes, hidden } = useMemo(() => heatmapRoutes(runs), [runs])
@@ -294,7 +294,7 @@ export function HeatmapCard({ runs }: { runs: Run[] }) {
       <Suspense fallback={<div className="h-72 w-full animate-pulse rounded-2xl bg-raised" />}>
         <RouteHeatmap routes={routes} />
       </Suspense>
-      <p className="mt-2 text-xs text-muted">{tr(`${routes.length} เส้นทาง — ทางที่วิ่งบ่อยเส้นจะเข้มขึ้น`, `${routes.length} routes — frequent paths are darker`)}{hidden ? tr(` (ไม่รวม ${hidden} ครั้งที่วิ่งที่อื่น)`, ` (excluding ${hidden} runs elsewhere)`) : ''}</p>
+      <p className="mt-2 text-xs text-muted">{tr(`${routes.length} เส้นทาง ทางที่วิ่งบ่อยเส้นจะเข้มขึ้น`, `${routes.length} routes — frequent paths are darker`)}{hidden ? tr(` (ไม่รวม ${hidden} ครั้งที่วิ่งที่อื่น)`, ` (excluding ${hidden} runs elsewhere)`) : ''}</p>
     </Card>
   )
 }

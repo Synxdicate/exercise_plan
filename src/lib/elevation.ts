@@ -25,7 +25,7 @@ export function sampleRoute(route: Point[], n = ELEV_SAMPLES): Point[] {
   return out
 }
 
-/** ขึ้นสะสม/ลงสะสม — ไม่นับการแกว่งไม่ถึง `step` เมตร (กันสัญญาณรบกวนของแผนที่ความสูง) */
+/** ขึ้นสะสม/ลงสะสม ไม่นับการแกว่งไม่ถึง `step` เมตร (กันสัญญาณรบกวนของแผนที่ความสูง) */
 export function elevStats(profile: number[], step = 1) {
   let gain = 0, loss = 0
   let ref = profile[0] ?? 0

@@ -4,7 +4,7 @@ import { isNative } from './native'
 import { APP_VERSION } from './update'
 
 // รายงาน error (แทน Sentry): เก็บ 30 รายการล่าสุดในเครื่อง (key 'errorLog', ไม่ซิงก์)
-// ถ้าล็อกอินอยู่ ส่งขึ้นตาราง public.app_errors (RLS: เห็น/เขียนได้เฉพาะของตัวเอง) — ดูรายการได้ที่เมนูบัญชี
+// ถ้าล็อกอินอยู่ ส่งขึ้นตาราง public.app_errors (RLS: เห็น/เขียนได้เฉพาะของตัวเอง) ดูรายการได้ที่เมนูบัญชี
 export type ErrorEntry = { at: string; message: string; stack?: string; context?: string; version: string; platform: string; sent?: boolean }
 
 const KEY = 'errorLog'
@@ -30,7 +30,7 @@ export function captureError(err: unknown, context?: string) {
 let sending = false
 /** ส่งรายการที่ยังไม่ส่ง (เรียกตอนเกิด error และหลังซิงก์) */
 export async function sendErrors() {
-  // error จาก dev server (HMR ค้างครึ่งทาง) ไม่ใช่บั๊กของผู้ใช้ — เก็บในเครื่องแต่ไม่ส่งขึ้นเซิร์ฟเวอร์
+  // error จาก dev server (HMR ค้างครึ่งทาง) ไม่ใช่บั๊กของผู้ใช้ เก็บในเครื่องแต่ไม่ส่งขึ้นเซิร์ฟเวอร์
   if (sending || import.meta.env.DEV) return
   const pending = errorLog().filter(e => !e.sent)
   if (!pending.length) return
@@ -41,7 +41,7 @@ export async function sendErrors() {
     const { error } = await supabase.from('app_errors').insert(pending.map(({ sent: _sent, ...e }) => e))
     if (!error) setStored(KEY, errorLog().map(e => (pending.some(p => p.at === e.at) ? { ...e, sent: true } : e)))
   } catch {
-    /* ออฟไลน์ — รอบหน้า */
+    /* ออฟไลน์ รอบหน้า */
   } finally {
     sending = false
   }

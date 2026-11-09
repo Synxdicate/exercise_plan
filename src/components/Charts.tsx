@@ -8,7 +8,7 @@ import { useT } from '../lib/i18n'
 
 const W = 320
 
-/** เพซตามระยะทาง — แกนตั้งกลับด้าน (เร็ว = สูง) เส้นเป็นสีตามโซนเพซ พร้อมเส้นเพซเฉลี่ย */
+/** เพซตามระยะทาง แกนตั้งกลับด้าน (เร็ว = สูง) เส้นเป็นสีตามโซนเพซ พร้อมเส้นเพซเฉลี่ย */
 export function PaceChart({ series, avg, fiveK }: { series: { km: number; pace: number }[]; avg: number; fiveK?: number }) {
   const tr = useT()
   const [hover, setHover] = useState<number | null>(null)

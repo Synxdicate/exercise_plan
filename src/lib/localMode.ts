@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react'
 
-// โหมดไม่ล็อกอิน: ข้อมูลอยู่ในเครื่องนี้อย่างเดียว (ไม่ซิงก์) — ค่าของเครื่อง เก็บใน localStorage
+// โหมดไม่ล็อกอิน: ข้อมูลอยู่ในเครื่องนี้อย่างเดียว (ไม่ซิงก์) ค่าของเครื่อง เก็บใน localStorage
 const KEY = 'localMode'
 const listeners = new Set<() => void>()
 

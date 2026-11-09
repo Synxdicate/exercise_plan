@@ -6,7 +6,7 @@ import { useLang } from './i18n'
 import { cueToEn, noteToEn } from '../data/contentEn'
 import { muscleNames, muscleNamesEn, type Muscle } from '../data/muscles'
 
-// ชื่อวันฝึกในแผนสร้างจากรูปแบบไม่กี่แบบ (programs.ts) — แปลด้วยวลีตามลำดับ แล้วค่อยแปลหน่วย
+// ชื่อวันฝึกในแผนสร้างจากรูปแบบไม่กี่แบบ (programs.ts) แปลด้วยวลีตามลำดับ แล้วค่อยแปลหน่วย
 const TITLE_EN: [RegExp, string][] = [
   [/^พักฟื้น \(ไม่สบาย\)$/, 'Recovery (unwell)'],
   [/^วิ่งเบา \(ช่วงเจ็บ\)$/, 'Easy run (sore)'],
@@ -59,7 +59,7 @@ const PROGRAMS_EN: Record<ProgramId, { name: string; short: string; summary: str
   full: { name: 'Marathon 42.2 km', short: 'Full', summary: '4 runs + 2 strength days (~36 → 60 km/week)' },
 }
 
-/** ข้อความของแผน (ชื่อวันฝึก, วันในสัปดาห์, เวลา, ชื่อโปรแกรม) ตามภาษาที่เลือก — คำอธิบาย/คิวยังเป็นไทย */
+/** ข้อความของแผน (ชื่อวันฝึก, วันในสัปดาห์, เวลา, ชื่อโปรแกรม) ตามภาษาที่เลือก คำอธิบาย/คิวยังเป็นไทย */
 export function useDayText() {
   const [lang] = useLang()
   const en = lang === 'en'

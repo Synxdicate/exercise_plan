@@ -2,7 +2,7 @@ import { test } from '@playwright/test'
 import { loopRoute, seed, ymd } from './helpers'
 
 // ภาพหน้าจอทุกแท็บ (สว่าง/มืด, ไทย/อังกฤษ) ไว้ตรวจ UI — รันด้วย `npm run shots` เท่านั้น (CI ข้าม)
-// แยก test ต่อภาษา — แต่ละ test ได้เบราว์เซอร์ใหม่ (ค่าใน IndexedDB ของรอบก่อนไม่ทับ)
+// แยก test ต่อภาษา แต่ละ test ได้เบราว์เซอร์ใหม่ (ค่าใน IndexedDB ของรอบก่อนไม่ทับ)
 for (const lang of ['th', 'en']) test(`screens ${lang}`, async ({ page }) => {
   test.skip(!process.env.SHOTS, 'run with npm run shots')
   const { route, times } = loopRoute()

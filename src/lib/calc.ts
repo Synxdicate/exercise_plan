@@ -35,7 +35,7 @@ export const bmr = (p: Profile) => 10 * p.weightKg + 6.25 * p.heightCm - 5 * p.a
 export const tdee = (p: Profile) => bmr(p) * p.activity
 
 // race = อยู่ในโปรแกรมฮาล์ฟ/ฟูล: ใช้พลังงานมากขึ้น และไม่ควรกินขาด
-// (กินน้อยเกินขณะซ้อมหนักเสี่ยงภาวะพลังงานไม่พอ — บาดเจ็บ/ฮอร์โมนรวน)
+// (กินน้อยเกินขณะซ้อมหนักเสี่ยงภาวะพลังงานไม่พอ บาดเจ็บ/ฮอร์โมนรวน)
 export function targets(p: Profile, race = false) {
   const activity = race ? Math.max(p.activity, 1.725) : p.activity
   const delta = race ? Math.max(goals[p.goal].delta, 0) : goals[p.goal].delta

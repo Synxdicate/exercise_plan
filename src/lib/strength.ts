@@ -1,6 +1,6 @@
 import type { Session } from './log'
 
-// ประมาณ 1RM ด้วยสูตร Epley (แม่นพอสำหรับ ≤12 ครั้ง) — ท่าบอดี้เวท (0 กก.) ใช้จำนวนครั้งแทน
+// ประมาณ 1RM ด้วยสูตร Epley (แม่นพอสำหรับ ≤12 ครั้ง) ท่าบอดี้เวท (0 กก.) ใช้จำนวนครั้งแทน
 export const e1rm = (kg: number, reps: number) => (kg > 0 ? kg * (1 + reps / 30) : reps)
 
 export type Point = { date: string; value: number; kg: number; reps: number }

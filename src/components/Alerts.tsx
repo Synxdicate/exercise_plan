@@ -13,7 +13,7 @@ import { useLang, useT } from '../lib/i18n'
 import { Button } from './ui'
 import { ScreeningSheet } from './Screening'
 
-/** การ์ดเตือนเรื่องสุขภาพ/การกลับมาฝึก — แสดงเฉพาะเมื่อมีเรื่องต้องทำ */
+/** การ์ดเตือนเรื่องสุขภาพ/การกลับมาฝึก แสดงเฉพาะเมื่อมีเรื่องต้องทำ */
 export function Alerts() {
   const [screening] = useScreening()
   const [sessions] = useSessions()
@@ -60,8 +60,8 @@ export function Alerts() {
           } />
       )}
       {rec && recSeen !== rec.race.id && (
-        <Banner tone="warn" icon={<History size={20} />} title={t(`ช่วงฟื้นตัวหลังแข่ง ${rec.race.km} กม. — อีก ${rec.left} วัน`, `Recovering from a ${rec.race.km} km race — ${rec.left} days left`)}
-          text={t(`วิ่งเบาหรือพักจนถึง ${rec.until} งดวิ่งหนัก/วิ่งยาว (แข่งหนึ่งครั้งต้องฟื้นตัว ${rec.days} วัน — เหตุผลที่ไม่ควรลงแข่งเพิ่มระหว่างโปรแกรม)`, `Easy running or rest until ${rec.until}; no hard or long runs (a race needs ${rec.days} days of recovery — why extra races mid-program are a bad idea)`)}
+        <Banner tone="warn" icon={<History size={20} />} title={t(`ช่วงฟื้นตัวหลังแข่ง ${rec.race.km} กม. อีก ${rec.left} วัน`, `Recovering from a ${rec.race.km} km race — ${rec.left} days left`)}
+          text={t(`วิ่งเบาหรือพักจนถึง ${rec.until} งดวิ่งหนัก/วิ่งยาว (แข่งหนึ่งครั้งต้องฟื้นตัว ${rec.days} วัน เหตุผลที่ไม่ควรลงแข่งเพิ่มระหว่างโปรแกรม)`, `Easy running or rest until ${rec.until}; no hard or long runs (a race needs ${rec.days} days of recovery — why extra races mid-program are a bad idea)`)}
           action={<Button size="sm" variant="soft" onClick={() => setRecSeen(rec.race.id)}>{t('รับทราบ', 'Got it')}</Button>} />
       )}
       {showPain && (
@@ -89,7 +89,7 @@ function Banner({ tone, icon, title, text, action }: { tone: 'bad' | 'warn'; ico
     <section className={cx('animate-fade-up rounded-2xl px-3.5 py-3 ring-1', tones[tone])}>
       <div className="flex items-start gap-2.5">
         <span className="mt-0.5 shrink-0">{icon}</span>
-        {/* ปุ่มอยู่ใต้ข้อความ — วางข้าง ๆ แล้วข้อความยาวถูกบีบเป็นคอลัมน์แคบบนจอมือถือ */}
+        {/* ปุ่มอยู่ใต้ข้อความ วางข้าง ๆ แล้วข้อความยาวถูกบีบเป็นคอลัมน์แคบบนจอมือถือ */}
         <div className="min-w-0 flex-1">
           <div className="text-sm font-bold">{title}</div>
           <p className="text-xs text-ink/75">{text}</p>

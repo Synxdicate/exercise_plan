@@ -140,7 +140,7 @@ export function Sheet({ onClose, children, title }: { onClose: () => void; child
   )
 }
 
-// การ์ดที่พับเก็บได้ — ใช้กับเนื้อหาอ่านประกอบ ให้หน้าไม่ยาวเกินไป
+// การ์ดที่พับเก็บได้ ใช้กับเนื้อหาอ่านประกอบ ให้หน้าไม่ยาวเกินไป
 export function Disclosure({ title, summary, children, defaultOpen = false }: { title: ReactNode; summary?: ReactNode; children: ReactNode; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen)
   return (

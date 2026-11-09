@@ -26,7 +26,7 @@ function Row({ e, onClick, right }: { e: LibEx; onClick: () => void; right?: Rea
   )
 }
 
-/** สลับท่าเป็นท่าอื่นในกลุ่มเดียวกัน — มีผลกับทุกวันที่มีท่านี้ */
+/** สลับท่าเป็นท่าอื่นในกลุ่มเดียวกัน มีผลกับทุกวันที่มีท่านี้ */
 export function SwapSheet({ e, where, exclude, onPick, onClose }: { e: Exercise; where: 'gym' | 'park' | 'home'; exclude: string[]; onPick: (to?: string) => void; onClose: () => void }) {
   const original = e.swappedFrom ?? e.name
   const p = patternOf(original)
@@ -61,7 +61,7 @@ export function AddSheet({ where, existing, onPick, onClose }: { where: 'gym' | 
   return (
     <Sheet onClose={onClose} title={tr(`เพิ่มท่า (${placeName(where, false)})`, `Add exercise (${placeName(where, true)})`)}>
       <TextInput value={q} onChange={setQ} placeholder={tr('ค้นหา เช่น curl, ลันจ์, น่อง', 'Search e.g. curl, lunge, calf')} icon={<Search size={16} />} />
-      <p className="mt-2 text-xs text-muted">{tr('เพิ่มทีละ 1–2 ท่าพอ — ปริมาณรวมที่มากเกินทำให้ฟื้นตัวไม่ทันวันวิ่ง', 'Add 1–2 at most — too much total volume hurts recovery for run days')}</p>
+      <p className="mt-2 text-xs text-muted">{tr('เพิ่มทีละ 1–2 ท่าพอ ปริมาณรวมที่มากเกินทำให้ฟื้นตัวไม่ทันวันวิ่ง', 'Add 1–2 at most — too much total volume hurts recovery for run days')}</p>
       {groups.map(g => {
         const list = found.filter(e => e.pattern === g)
         if (!list.length) return null

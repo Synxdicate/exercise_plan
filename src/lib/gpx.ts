@@ -54,7 +54,7 @@ export function parseGpx(xml: string) {
 const esc = (s: string) => s.replace(/[<>&"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' })[c]!)
 
 /**
- * ไฟล์ GPX 1.1 สำหรับอัปโหลดเข้า Strava/แอปอื่น — เวลาแต่ละจุด = เวลาเริ่ม + เวลาเคลื่อนที่สะสม (ช่วงพักถูกบีบออก)
+ * ไฟล์ GPX 1.1 สำหรับอัปโหลดเข้า Strava/แอปอื่น เวลาแต่ละจุด = เวลาเริ่ม + เวลาเคลื่อนที่สะสม (ช่วงพักถูกบีบออก)
  * การวิ่งที่บันทึกก่อนมีเวลาเริ่ม ใช้ 06:00 ของวันนั้น
  */
 export function toGpx(run: { date: string; kind: string; route?: Point[]; times?: number[]; startedAt?: number }, name = 'Kao run') {

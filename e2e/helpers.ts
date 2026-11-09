@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test'
 
-// วันที่ตามเวลาไทย (ตรงกับ timezoneId ของเบราว์เซอร์ใน playwright.config) — เครื่อง CI ใช้ UTC ถ้าใช้เวลาเครื่องจะผิดวันหลังเที่ยงคืนไทย
+// วันที่ตามเวลาไทย (ตรงกับ timezoneId ของเบราว์เซอร์ใน playwright.config) เครื่อง CI ใช้ UTC ถ้าใช้เวลาเครื่องจะผิดวันหลังเที่ยงคืนไทย
 export const ymd = (daysAgo = 0) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(new Date(Date.now() - daysAgo * 864e5))
 
 /** เริ่มแอปในโหมดไม่ล็อกอิน พร้อมข้อมูลตั้งต้น (เขียนลง localStorage แล้วให้แอปย้ายเข้า IndexedDB เอง) */

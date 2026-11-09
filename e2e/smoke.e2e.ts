@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { loopRoute, seed } from './helpers'
 
-// เปิดทุกแท็บ (และแท็บย่อย) ในทุกโปรแกรม หลายช่วงเวลา — ก่อนเริ่ม/ระหว่าง/วันแข่ง/หลังแข่ง ต้องไม่มี error
+// เปิดทุกแท็บ (และแท็บย่อย) ในทุกโปรแกรม หลายช่วงเวลา ก่อนเริ่ม/ระหว่าง/วันแข่ง/หลังแข่ง ต้องไม่มี error
 const { route, times } = loopRoute()
 const runs = ['2026-12-20', '2026-12-27', '2027-01-03', '2027-01-10'].map((date, i) => ({ id: `r${i}`, date, km: 4 + i, seconds: (4 + i) * 400, kind: i === 3 ? 'race' : i === 2 ? 'walk' : 'easy', source: 'gps', route, times, splits: [400, 400, 400, 400] }))
 const cases: [string, string, string?][] = [
@@ -43,7 +43,7 @@ test('smoke English', async ({ page }) => {
   expect(errors).toEqual([])
 })
 
-// ค่าตั้งแบบใช้งานจริง (ผสมยิม/สวน, ตั้งบ้านบางวัน, สลับวัน, สลับท่า, เส้นทางมีเนิน, ระยะงานจริง) — ทุกสัปดาห์ทุกวันในแท็บฝึกต้องไม่พัง
+// ค่าตั้งแบบใช้งานจริง (ผสมยิม/สวน, ตั้งบ้านบางวัน, สลับวัน, สลับท่า, เส้นทางมีเนิน, ระยะงานจริง) ทุกสัปดาห์ทุกวันในแท็บฝึกต้องไม่พัง
 const realistic = {
   program: 'mini', programStart: '2026-11-02', raceDate: '2027-01-10', mode: 'mix', raceHills: true, raceKm: 11.55, raceCutoff: 120, soloMode: true,
   dayLocation: { 'mini-w1-d1': 'home', 'mini-w1-d4': 'park', 'mini-w2-d4': 'home', 'mini-w5-d0': 'home' },

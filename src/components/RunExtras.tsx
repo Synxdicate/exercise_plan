@@ -45,7 +45,7 @@ export function ElevationCard({ run, onUpdate, onScrub }: { run: Run; onUpdate: 
   const [cursor, setCursor] = useState<number | null>(null) // กม.
   const hasRoute = (run.route?.length ?? 0) > 5
   const want = hasRoute ? Math.min(samplesFor(run.km), run.route!.length) : 0
-  // รอบเก่าเก็บไว้ 100 จุด — ดึงใหม่ให้ละเอียดขึ้นครั้งเดียว
+  // รอบเก่าเก็บไว้ 100 จุด ดึงใหม่ให้ละเอียดขึ้นครั้งเดียว
   const stale = !!run.elev && (run.elevProfile?.length ?? 0) === 100 && want > 110
   const update = useRef(onUpdate)
   useEffect(() => { update.current = onUpdate })
@@ -152,7 +152,7 @@ export function ElevationCard({ run, onUpdate, onScrub }: { run: Run; onUpdate: 
       )}
       <p className="mt-2 text-[11px] text-muted">
         {e.gain >= 10 * (run.km || 1)
-          ? t('เส้นทางนี้มีเนินพอสมควร — ใช้ซ้อมสนามที่เป็นเนินซึมได้ (ขึ้นเนินคุมความเหนื่อย ไม่ใช่เพซ)', 'A fairly hilly route — good practice for rolling race courses (run hills by effort, not pace)')
+          ? t('เส้นทางนี้มีเนินพอสมควร ใช้ซ้อมสนามที่เป็นเนินซึมได้ (ขึ้นเนินคุมความเหนื่อย ไม่ใช่เพซ)', 'A fairly hilly route — good practice for rolling race courses (run hills by effort, not pace)')
           : t('จากแผนที่ความสูง (~90 ม.) เห็นเนินยาว ๆ แต่ไม่เห็นเนินสั้นอย่างสะพาน', 'From a ~90 m elevation map — shows long grades, not short ones like bridges')}
         {' '}{t('GAP = เพซเทียบทางราบ (ประมาณจาก Minetti 2002)', 'GAP = flat-equivalent pace (estimate, Minetti 2002)')}
       </p>

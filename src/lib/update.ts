@@ -12,7 +12,7 @@ const REPO = 'Synxdicate/exercise_plan'
 export const LATEST_APK = `https://github.com/${REPO}/releases/latest/download/exercise-plan.apk`
 
 // แอป Android: เช็ก GitHub Release ล่าสุดที่มีไฟล์ APK — ใหม่กว่าเวอร์ชันในเครื่อง → ให้กดดาวน์โหลดอัปเดตได้เอง
-// เว็บ: แท็บที่เปิดค้างไว้ไม่โหลดเวอร์ชันใหม่เอง (SPA) — เช็ก /version.json ตอนกลับมาที่แท็บและทุก 30 นาที แล้วให้กดโหลดใหม่
+// เว็บ: แท็บที่เปิดค้างไว้ไม่โหลดเวอร์ชันใหม่เอง (SPA) เช็ก /version.json ตอนกลับมาที่แท็บและทุก 30 นาที แล้วให้กดโหลดใหม่
 // (เคยเจอ error จากแท็บเว็บ v2.39 ที่ค้างอยู่ขณะข้อมูลถูกเวอร์ชันใหม่แก้)
 export function useUpdateAvailable() {
   const [remote, setRemote] = useState<string | null>(null)

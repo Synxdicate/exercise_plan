@@ -3,7 +3,7 @@ import { CalendarDays, ChevronDown, Minus, Plus } from 'lucide-react'
 import { trNow } from '../lib/i18n'
 import { cx } from '../lib/cx'
 
-// ช่องกรอกทั้งแอปใช้ชุดนี้ — กรอบเดียวกัน, เรืองแสงตอนโฟกัส, มีหน่วยกำกับ
+// ช่องกรอกทั้งแอปใช้ชุดนี้ กรอบเดียวกัน, เรืองแสงตอนโฟกัส, มีหน่วยกำกับ
 const shell = 'flex items-center rounded-2xl bg-raised ring-1 ring-line transition focus-within:bg-card focus-within:ring-2 focus-within:ring-accent'
 const bare = 'bare h-12 w-full min-w-0 flex-1 border-0 bg-transparent px-3.5 text-base text-ink outline-none placeholder:text-muted/70'
 

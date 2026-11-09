@@ -14,7 +14,7 @@ import { useDayText } from '../lib/dayText'
 const DAY_NAMES = WEEKDAYS_TH
 const DAY_EN = WEEKDAYS_EN
 
-/** วิ่งยาว/วิ่งคุณภาพที่พลาดไป: บอกว่าย้ายไปวันไหนได้ หรือข้ามไปเลย — ไม่วิ่งชดเชยซ้อนกับวันวิ่งอื่น */
+/** วิ่งยาว/วิ่งคุณภาพที่พลาดไป: บอกว่าย้ายไปวันไหนได้ หรือข้ามไปเลย ไม่วิ่งชดเชยซ้อนกับวันวิ่งอื่น */
 export function MissedRunCard() {
   const p = useProgram()
   const [runs] = useRuns()
@@ -47,12 +47,12 @@ export function MissedRunCard() {
       </div>
       <p className="mt-1 text-sm">
         {m.kind === 'lastWeek'
-          ? t(`${m.day.title} ไม่ต้องวิ่งชดเชย — ทำตามแผนสัปดาห์นี้ต่อได้เลย ถ้าวิ่งยาวรอบนี้ไกลกว่ารอบที่เคยวิ่งมาก แอปจะบอกระยะที่ไม่ควรเกินในวันนั้น`,
+          ? t(`${m.day.title} ไม่ต้องวิ่งชดเชย ทำตามแผนสัปดาห์นี้ต่อได้เลย ถ้าวิ่งยาวรอบนี้ไกลกว่ารอบที่เคยวิ่งมาก แอปจะบอกระยะที่ไม่ควรเกินในวันนั้น`,
             "No need to make it up — just follow this week's plan. If this week's long run is much longer than anything you've done recently, the app will show a distance not to exceed that day.")
           : m.to !== null
-            ? t(`ย้ายไปวัน${DAY_NAMES[m.to]}ได้ (วันพักที่ไม่ติดกับวันวิ่งอื่น) — ถ้าไม่สะดวกก็ข้ามไป อย่าวิ่งเพิ่มติดกับวันวิ่งอื่นเพื่อชดเชย`,
+            ? t(`ย้ายไปวัน${DAY_NAMES[m.to]}ได้ (วันพักที่ไม่ติดกับวันวิ่งอื่น) ถ้าไม่สะดวกก็ข้ามไป อย่าวิ่งเพิ่มติดกับวันวิ่งอื่นเพื่อชดเชย`,
               `Move it to ${DAY_EN[m.to]} (a rest day not next to another run) — or skip it. Don't add it next to another run day to catch up.`)
-            : t('สัปดาห์นี้ไม่มีวันว่างที่ไม่ติดกับวันวิ่งอื่น — ข้ามไปได้เลย พลาดรอบเดียวไม่ทำให้ความฟิตหาย การวิ่งชดเชยติดกันเสี่ยงเจ็บกว่า',
+            : t('สัปดาห์นี้ไม่มีวันว่างที่ไม่ติดกับวันวิ่งอื่น ข้ามไปได้เลย พลาดรอบเดียวไม่ทำให้ความฟิตหาย การวิ่งชดเชยติดกันเสี่ยงเจ็บกว่า',
               "No free day this week that isn't next to another run — skip it. One missed run won't cost fitness; back-to-back catch-up runs are riskier.")}
       </p>
       <Button size="sm" variant="soft" className="mt-2" onClick={() => setSeen(id)}>{t('รับทราบ', 'Got it')}</Button>
@@ -69,7 +69,7 @@ export function CapNote({ day, date, className }: { day: Day; date: string; clas
   return (
     <p className={className ?? 'flex items-start gap-2 rounded-xl bg-warn/15 p-2.5 text-sm text-warn'}>
       <ShieldAlert size={16} className="mt-0.5 shrink-0" />
-      <span>{t('วันนี้วิ่งไม่เกิน', 'Run no more than')} <b>{c.cap} {t('กม.', 'km')}</b> {t(`(แผน ${day.targetKm} กม.) — ครั้งที่ยาวที่สุดใน 30 วันคือ ${c.longest.toFixed(1)} กม. วิ่งเกิน 110% ของระยะนั้นเสี่ยงเจ็บสูงขึ้น`, `today (plan ${day.targetKm} km) — your longest run in 30 days is ${c.longest.toFixed(1)} km; going past 110% of it raises injury risk`)}</span>
+      <span>{t('วันนี้วิ่งไม่เกิน', 'Run no more than')} <b>{c.cap} {t('กม.', 'km')}</b> {t(`(แผน ${day.targetKm} กม.) ครั้งที่ยาวที่สุดใน 30 วันคือ ${c.longest.toFixed(1)} กม. วิ่งเกิน 110% ของระยะนั้นเสี่ยงเจ็บสูงขึ้น`, `today (plan ${day.targetKm} km) — your longest run in 30 days is ${c.longest.toFixed(1)} km; going past 110% of it raises injury risk`)}</span>
     </p>
   )
 }

@@ -5,7 +5,7 @@ import { uid } from './log'
 import { today } from './date'
 import * as idb from './idb'
 
-// รูปเก็บในเครื่องก่อนเสมอ (IndexedDB 'blobs') — แนบได้แม้ไม่มีเน็ต/ไม่ล็อกอิน
+// รูปเก็บในเครื่องก่อนเสมอ (IndexedDB 'blobs') แนบได้แม้ไม่มีเน็ต/ไม่ล็อกอิน
 // ถ้าล็อกอินอยู่ ค่อยอัปโหลดขึ้น Supabase Storage (bucket ส่วนตัว 'photos', โฟลเดอร์ = user id) ทีหลัง
 // path: 'local:<id>' = ยังอยู่ในเครื่องอย่างเดียว, '<user>/<id>.jpg' = อยู่บน server แล้ว
 // รายการรูป (วันที่ แนบกับอะไร) อยู่ใน key 'photos' ที่ซิงก์เหมือนข้อมูลอื่น
@@ -39,7 +39,7 @@ export async function addPhoto(file: File, meta: Omit<Photo, 'id' | 'path' | 'da
 
 let syncing: Promise<void> | null = null
 
-/** อัปโหลดรูปที่ยังอยู่แค่ในเครื่อง — เรียกหลังเพิ่มรูป, หลังล็อกอิน และตอนกลับมาออนไลน์ */
+/** อัปโหลดรูปที่ยังอยู่แค่ในเครื่อง เรียกหลังเพิ่มรูป, หลังล็อกอิน และตอนกลับมาออนไลน์ */
 export function syncPhotos(): Promise<void> {
   syncing ??= (async () => {
     const { data } = await supabase.auth.getSession()
@@ -51,7 +51,7 @@ export function syncPhotos(): Promise<void> {
       if (!blob) continue
       const path = `${user}/${p.id}.jpg`
       const { error } = await supabase.storage.from('photos').upload(path, blob, { contentType: 'image/jpeg', upsert: true })
-      if (error) return // ออฟไลน์/เน็ตหลุด — ไว้รอบหน้า
+      if (error) return // ออฟไลน์/เน็ตหลุด ไว้รอบหน้า
       const now = (readStored('photos') as Photo[] | undefined) ?? []
       setStored('photos', now.map(x => (x.id === p.id ? { ...x, path } : x)))
     }
@@ -66,7 +66,7 @@ export async function deletePhotoFile(p: Photo) {
   if (error) throw new Error(error.message)
 }
 
-// URL ชั่วคราว (1 ชม.) — แคชไว้ในหน่วยความจำ ไม่ขอซ้ำทุกครั้งที่ render
+// URL ชั่วคราว (1 ชม.) แคชไว้ในหน่วยความจำ ไม่ขอซ้ำทุกครั้งที่ render
 const signed = new Map<string, { url: string; exp: number }>()
 const TTL_S = 3600
 
@@ -101,13 +101,13 @@ export function usePhotoUrl(p: Photo) {
       () => alive && setState({ id: p.id, url: null, failed: true }),
     )
     return () => { alive = false; if (url) URL.revokeObjectURL(url) }
-    // path เปลี่ยน (อัปโหลดเสร็จ) ไม่ต้องโหลดใหม่ — ยังเป็นรูปเดิม
+    // path เปลี่ยน (อัปโหลดเสร็จ) ไม่ต้องโหลดใหม่ ยังเป็นรูปเดิม
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [p.id])
   return state.id === p.id ? state : { url: null, failed: false }
 }
 
-/** ลบรูปที่แนบกับการวิ่ง/การฝึกที่ถูกลบ — ลบไฟล์แบบพยายาม (ออฟไลน์ก็ลบรายการออกก่อน) */
+/** ลบรูปที่แนบกับการวิ่ง/การฝึกที่ถูกลบ ลบไฟล์แบบพยายาม (ออฟไลน์ก็ลบรายการออกก่อน) */
 export function useRemovePhotosFor() {
   const [photos, setPhotos] = usePhotos()
   return (refId: string) => {

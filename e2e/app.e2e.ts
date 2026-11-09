@@ -363,7 +363,7 @@ test('แผนที่รวมทุกการวิ่ง (heatmap)', asyn
   await seed(page, {
     runs: [
       { id: 'h1', date: ymd(3), km: 3, seconds: 1200, kind: 'easy', source: 'gps', ...loopRoute() },
-      { id: 'h2', date: ymd(1), km: 3, seconds: 1150, kind: 'race', source: 'gps', ...loopRoute() }, // ผลวิ่งเต็มที่ — ความเร็ววิกฤต/โซนแสดงเมื่อไม่ได้คิดจากวิ่งเบา
+      { id: 'h2', date: ymd(1), km: 3, seconds: 1150, kind: 'race', source: 'gps', ...loopRoute() }, // ผลวิ่งเต็มที่ ความเร็ววิกฤต/โซนแสดงเมื่อไม่ได้คิดจากวิ่งเบา
     ],
   })
   await nav(page, 'วิ่ง')
@@ -435,7 +435,7 @@ test('โลโก้กลับหน้าหลัก, เมนูบัญ
 
   await page.getByRole('button', { name: 'เมนูบัญชี' }).click()
   await expect(page.getByText('ตั้งค่าโปรแกรมและเป้าหมาย')).toBeVisible()
-  // กดตรงเนื้อหาด้านล่าง (นอกกรอบ header) — เดิม backdrop ถูกจำกัดอยู่ใน header เลยไม่ปิด
+  // กดตรงเนื้อหาด้านล่าง (นอกกรอบ header) เดิม backdrop ถูกจำกัดอยู่ใน header เลยไม่ปิด
   await page.mouse.click(30, 600)
   await expect(page.getByText('ตั้งค่าโปรแกรมและเป้าหมาย')).toBeHidden()
 
@@ -451,7 +451,7 @@ test('โลโก้กลับหน้าหลัก, เมนูบัญ
 })
 
 test('พลาดวิ่งยาว: ไม่ต้องชดเชย, เพดาน 110% วันวิ่งยาว, เปลี่ยนรอบเพซช้าเป็นเดิน', async ({ page }) => {
-  // จันทร์ 2 พ.ย. 2026 — มินิสัปดาห์ 2 (เริ่ม 26 ต.ค.) วิ่งยาว 5 กม. วันอาทิตย์ 1 พ.ย. ไม่ได้ทำ
+  // จันทร์ 2 พ.ย. 2026 มินิสัปดาห์ 2 (เริ่ม 26 ต.ค.) วิ่งยาว 5 กม. วันอาทิตย์ 1 พ.ย. ไม่ได้ทำ
   await page.clock.install({ time: new Date('2026-11-02T08:00:00+07:00') })
   const run = (date: string, km: number, min: number) => ({ id: date, date, km, seconds: km * min * 60, kind: 'easy', source: 'manual' })
   await seed(page, { program: 'mini', programStart: '2026-10-26', runs: [run('2026-10-27', 4.82, 10), run('2026-10-29', 3.13, 8.4), run('2026-10-31', 2.49, 14.2)] })
@@ -643,7 +643,7 @@ test('อากาศร้อนกว่าปกติ: โค้ชเพซ
     runs: [{ id: 'a', date: ymd(3), km: 5, seconds: 1650, kind: 'race', source: 'manual' }],
   })
   await nav(page, 'วิ่ง')
-  await expect(page.getByText(/ร้อนกว่าปกติ \(WBGT 30°\) — วันนี้โค้ชเพซตั้งเป้าช้าลง 2\.4%/)).toBeVisible()
+  await expect(page.getByText(/ร้อนกว่าปกติ \(WBGT 30°\) วันนี้โค้ชเพซตั้งเป้าช้าลง 2\.4%/)).toBeVisible()
 })
 
 test('ช่วงนี้ไม่ไหว: ปรับแผนเบาลงชั่วคราวแล้วกลับแผนปกติ', async ({ page }) => {

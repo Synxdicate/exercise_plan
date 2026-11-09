@@ -46,10 +46,10 @@ export function ProgramPicker({ value, onChange }: { value: ProgramId; onChange:
       <p className="rounded-2xl bg-raised p-3 text-xs text-muted">
         {c.longestKm
           ? <>{t('จากการวิ่ง 60 วันล่าสุด: ไกลสุด', 'Last 60 days: longest')} <b className="text-ink">{c.longestKm.toFixed(1)} {t('กม.', 'km')}</b> · {t('นานสุด', 'longest time')} <b className="text-ink">{Math.round(c.longestMin)} {t('นาที', 'min')}</b></>
-          : t('ยังไม่มีการวิ่งต่อเนื่องใน 60 วันล่าสุด (เพซเร็วกว่า 10:00/กม.) — เริ่มที่ "เริ่มวิ่ง"', 'No continuous run in the last 60 days (faster than 10:00/km) — start with "Start running"')}
+          : t('ยังไม่มีการวิ่งต่อเนื่องใน 60 วันล่าสุด (เพซเร็วกว่า 10:00/กม.) เริ่มที่ "เริ่มวิ่ง"', 'No continuous run in the last 60 days (faster than 10:00/km) — start with "Start running"')}
       </p>
       <section>
-        <div className="mb-2 text-sm font-semibold text-muted">{t('เส้นทางวิ่ง — ทำตามลำดับ', 'Running path — in order')}</div>
+        <div className="mb-2 text-sm font-semibold text-muted">{t('เส้นทางวิ่ง ทำตามลำดับ', 'Running path — in order')}</div>
         <div className="space-y-2">{PATH.map((id, i) => item(id, i + 1))}</div>
       </section>
       <section>

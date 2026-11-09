@@ -28,7 +28,7 @@ export function HeatCard({ initialDay = 'today' }: { initialDay?: 'today' | 'tom
   const [day, setDay] = useState<'today' | 'tomorrow'>(initialDay)
   const t = useT()
   if (error) return null
-  // โครงเดียวกับการ์ดจริง (สูงเท่ากัน) — หน้าไม่กระโดดตอนโหลดเสร็จ
+  // โครงเดียวกับการ์ดจริง (สูงเท่ากัน) หน้าไม่กระโดดตอนโหลดเสร็จ
   if (!hours) return (
     <section className="flex items-center gap-3 rounded-2xl bg-card p-3.5 shadow-sm ring-1 ring-line" aria-busy>
       <span className="size-11 shrink-0 animate-pulse rounded-xl bg-raised" />
@@ -82,7 +82,7 @@ export function HeatCard({ initialDay = 'today' }: { initialDay?: 'today' | 'tom
               {' '}· WBGT ~{dayBest.wbgt.toFixed(0)}° {t(heatAdvice[heatLevel(dayBest.wbgt)].label, heatAdvice[heatLevel(dayBest.wbgt)].labelEn)}{dayBest.pm25 !== undefined && ` · PM2.5 ${dayBest.pm25}`}
               {day === 'tomorrow' && morning && morning !== dayBest && <span className="block text-xs text-muted">06:00 · WBGT ~{morning.wbgt.toFixed(0)}° · {morning.temp.toFixed(0)}°C{morning.pm25 !== undefined && ` · PM2.5 ${morning.pm25}`}</span>}
             </p>
-          ) : <p className="mt-2 text-sm text-muted">{t('วันนี้เลย 21:00 แล้ว — ดูของพรุ่งนี้แทน', 'Past 21:00 — check tomorrow instead')}</p>}
+          ) : <p className="mt-2 text-sm text-muted">{t('วันนี้เลย 21:00 แล้ว ดูของพรุ่งนี้แทน', 'Past 21:00 — check tomorrow instead')}</p>}
           {strip.length > 0 && (
             <div className="mt-3">
               <div className="flex h-10 items-end gap-0.5">

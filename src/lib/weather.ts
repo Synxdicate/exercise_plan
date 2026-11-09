@@ -15,7 +15,7 @@ export function wbgtApprox(tempC: number, rh: number) {
 export type HeatLevel = 'ok' | 'warm' | 'hot' | 'danger'
 
 // ระดับสำหรับปรับความหนัก อิงช่วง WBGT ของ ACSM (Armstrong 2007) แบบระมัดระวัง
-// ACSM 2023 แนะนำให้ปรับตามภูมิภาค — คนที่ชินอากาศร้อนทนได้มากกว่า แต่ใช้ค่าเดียวกันเพื่อความปลอดภัย
+// ACSM 2023 แนะนำให้ปรับตามภูมิภาค คนที่ชินอากาศร้อนทนได้มากกว่า แต่ใช้ค่าเดียวกันเพื่อความปลอดภัย
 export function heatLevel(wbgt: number): HeatLevel {
   if (wbgt < 23) return 'ok'
   if (wbgt < 28) return 'warm'
@@ -27,7 +27,7 @@ export const heatAdvice: Record<HeatLevel, { label: string; text: string; labelE
   ok: { label: 'เหมาะกับการวิ่ง', text: 'วิ่งตามแผนได้ ดื่มน้ำตามปกติ', labelEn: 'Good for running', textEn: 'Run as planned, drink as usual' },
   warm: { label: 'ร้อน', text: 'วิ่งช้าลง 10–20 วิ/กม. ดื่มน้ำเพิ่ม ถ้ามีวิ่งหนักให้เลือกช่วงที่เย็นที่สุด', labelEn: 'Hot', textEn: 'Slow down 10–20 s/km and drink more; do hard sessions in the coolest hour' },
   hot: { label: 'ร้อนจัด', text: 'เลี่ยงวิ่งหนักและวิ่งยาว ถ้าจะวิ่งให้สั้นและเบา พกน้ำ + เกลือแร่', labelEn: 'Very hot', textEn: 'Avoid hard and long runs; keep it short and easy, carry water + electrolytes' },
-  danger: { label: 'อันตราย', text: 'งดวิ่งกลางแจ้งช่วงนี้ — เสี่ยง heat stroke เลื่อนไปช่วงเช้ามืด/ค่ำ หรือวิ่งในร่ม', labelEn: 'Dangerous', textEn: 'No outdoor running now — heat stroke risk; move to early morning/night or indoors' },
+  danger: { label: 'อันตราย', text: 'งดวิ่งกลางแจ้งช่วงนี้ เสี่ยง heat stroke เลื่อนไปช่วงเช้ามืด/ค่ำ หรือวิ่งในร่ม', labelEn: 'Dangerous', textEn: 'No outdoor running now — heat stroke risk; move to early morning/night or indoors' },
 }
 
 // ฝุ่น PM2.5 (µg/m³): ช่วงตามดัชนีคุณภาพอากาศของกรมควบคุมมลพิษ (ประกาศ 2566, มาตรฐานเฉลี่ย 24 ชม. 37.5)
@@ -62,7 +62,7 @@ async function locate(): Promise<Loc> {
   const fallback = { ...BANGKOK, precise: false }
   return new Promise(resolve => {
     if (!('geolocation' in navigator)) return resolve(fallback)
-    // option timeout ไม่นับช่วงที่หน้าขออนุญาตตำแหน่งค้างอยู่ — ถ้าไม่ตอบก็ใช้ค่าเริ่มต้นไปก่อน
+    // option timeout ไม่นับช่วงที่หน้าขออนุญาตตำแหน่งค้างอยู่ ถ้าไม่ตอบก็ใช้ค่าเริ่มต้นไปก่อน
     setTimeout(() => resolve(fallback), 8000)
     navigator.geolocation.getCurrentPosition(
       p => resolve({ lat: +p.coords.latitude.toFixed(2), lon: +p.coords.longitude.toFixed(2), precise: true }), // ความละเอียด ~1 กม. พอสำหรับพยากรณ์
@@ -98,7 +98,7 @@ async function placeName({ lat, lon }: Loc): Promise<string | null> {
   return null
 }
 
-// PM2.5 รายชั่วโมงจาก Open-Meteo Air Quality (ฟรี ไม่ต้องใช้ key) — ล้มเหลวก็แสดงแค่ความร้อน
+// PM2.5 รายชั่วโมงจาก Open-Meteo Air Quality (ฟรี ไม่ต้องใช้ key) ล้มเหลวก็แสดงแค่ความร้อน
 async function fetchAir(lat: number, lon: number) {
   const out = new Map<string, number>()
   try {
@@ -174,7 +174,7 @@ export function bestHourOn(hours: Hour[], date: string, nowIso: string) {
 /**
  * ปรับเป้าเพซตามความร้อน (แบบ Adapt for Heat ของ Runna) — % ที่ควรช้าลง
  * Ely 2007: มาราธอนช้าลงต่อเนื่องเมื่อ WBGT สูงขึ้น (นักวิ่งหัวแถว ~0.2%/°C) และนักวิ่งที่ช้ากว่าโดนผลมากกว่า → ใช้ 0.4%/°C
- * เทียบกับ WBGT ~24° (เช้าปกติในไทย) เพราะเพซอ้างอิงคำนวณจากการวิ่งในอากาศแบบนี้อยู่แล้ว — เพดาน 8%
+ * เทียบกับ WBGT ~24° (เช้าปกติในไทย) เพราะเพซอ้างอิงคำนวณจากการวิ่งในอากาศแบบนี้อยู่แล้ว เพดาน 8%
  */
 export function heatSlowdown(wbgt: number, base = 24) {
   const pct = Math.min(8, Math.max(0, (wbgt - base) * 0.4))

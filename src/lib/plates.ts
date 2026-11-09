@@ -22,7 +22,7 @@ export function platesPerSide(totalKg: number, bar = BAR_KG, plates = PLATES_KG)
 const round = (kg: number, step = 2.5) => Math.round(kg / step) * step
 
 /**
- * เซ็ตวอร์มอัพไล่น้ำหนักก่อนเซ็ตทำงาน — วอร์มอัพเฉพาะท่าช่วยให้ทำครั้งได้ดีกว่า
+ * เซ็ตวอร์มอัพไล่น้ำหนักก่อนเซ็ตทำงาน วอร์มอัพเฉพาะท่าช่วยให้ทำครั้งได้ดีกว่า
  * (Ribeiro et al. 2014, 2020) ใช้ครั้งน้อยลงเมื่อหนักขึ้นเพื่อไม่ให้ล้าก่อนเซ็ตจริง
  */
 export function warmupSets(workKg: number, bar = BAR_KG) {

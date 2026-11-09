@@ -56,11 +56,11 @@ export function Dashboard() {
   const sessionsThisWeek = logged.length + tickedOnly
   const kmThisWeek = runsOnly(runs).filter(r => weekStart(r.date) === thisWeek).reduce((s, r) => s + r.km, 0)
   const kmTarget = p.finished ? 0 : p.kmTarget()
-  // จำนวนรอบวิ่งเทียบแผน (แบบ Weekly Run Goal ของ Strava) — นับวันที่วิ่ง ไม่นับรอบเดิน
+  // จำนวนรอบวิ่งเทียบแผน (แบบ Weekly Run Goal ของ Strava) นับวันที่วิ่ง ไม่นับรอบเดิน
   const runDaysThisWeek = new Set(runsOnly(runs).filter(r => weekStart(r.date) === thisWeek).map(r => r.date)).size
   const runTarget = p.finished ? 0 : plan.filter(d => d.type === 'run').length
   const streak = weekStreak(sessions.map(s => s.date), runs.map(r => r.date))
-  const todayIdx = useTodayIdx() // 0 = จันทร์ — เปลี่ยนเองเมื่อข้ามวัน
+  const todayIdx = useTodayIdx() // 0 = จันทร์ เปลี่ยนเองเมื่อข้ามวัน
   // ผ่านวันแข่งแล้ว: ไม่มีแผนวันนี้ (การ์ดขั้นต่อไปด้านบนพาไปเลือกโปรแกรมใหม่)
   const todayPlan = p.finished ? undefined : plan[todayIdx]
 
@@ -79,22 +79,22 @@ export function Dashboard() {
       <EaseOffCard />
       <StrengthNudgeCard />
       <WeekCheckCard />
-      <section className="rounded-2xl bg-gradient-to-br from-accent-fill to-[#7c3aed] p-4 text-white shadow-sm">
+      <section className="rounded-2xl bg-accent-fill p-4 text-white shadow-sm">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-sm opacity-80">{dt.program(p.program).short} · {p.ongoing ? t(`สัปดาห์ที่ ${week} ของรอบ`, `Cycle week ${week}`)
-              // ก่อนสัปดาห์ 1 (นับถอยจากวันแข่ง) ใช้แผนสัปดาห์ 1 ซ้อมไปก่อน — บอกให้ชัดว่ายังไม่ใช่สัปดาห์ 1 จริง
+            <div className="text-sm">{dt.program(p.program).short} · {p.ongoing ? t(`สัปดาห์ที่ ${week} ของรอบ`, `Cycle week ${week}`)
+              // ก่อนสัปดาห์ 1 (นับถอยจากวันแข่ง) ใช้แผนสัปดาห์ 1 ซ้อมไปก่อน บอกให้ชัดว่ายังไม่ใช่สัปดาห์ 1 จริง
               : p.weeksUntilStart > 0 ? t(`ช่วงเตรียมตัว · สัปดาห์ 1 เริ่มในอีก ${p.weeksUntilStart} สัปดาห์`, `Prep · week 1 starts in ${p.weeksUntilStart} wk`)
               : t(`สัปดาห์ที่ ${week} จาก ${p.meta.weeks}`, `Week ${week} of ${p.meta.weeks}`)}</div>
-            <div className="text-xl font-extrabold">{p.daysToRace === 0 ? t('วันนี้วันแข่ง!', 'Race day!') : p.daysToRace !== null && p.daysToRace > 0 ? t(`อีก ${p.daysToRace} วันถึงวันแข่ง`, `${p.daysToRace} days to race day`) : p.finished ? t('จบโปรแกรมแล้ว — พักฟื้นก่อนเริ่มเป้าหมายใหม่', 'Program done — recover before the next goal') : t('สัปดาห์นี้', 'This week')}</div>
+            <div className="text-xl font-extrabold">{p.daysToRace === 0 ? t('วันนี้วันแข่ง!', 'Race day!') : p.daysToRace !== null && p.daysToRace > 0 ? t(`อีก ${p.daysToRace} วันถึงวันแข่ง`, `${p.daysToRace} days to race day`) : p.finished ? t('จบโปรแกรมแล้ว พักฟื้นก่อนเริ่มเป้าหมายใหม่', 'Program done — recover before the next goal') : t('สัปดาห์นี้', 'This week')}</div>
             {fin.show && fin.f && (
-              <button onClick={() => { setRunsView('stats'); nav('runs') }} className="mt-0.5 text-left text-xs font-semibold opacity-90 underline-offset-2 hover:underline">
+              <button onClick={() => { setRunsView('stats'); nav('runs') }} className="mt-0.5 text-left text-xs font-semibold underline-offset-2 hover:underline">
                 {t(`คาดว่าจบ ~${formatDuration(fin.f.sec)}`, `Est. finish ~${formatDuration(fin.f.sec)}`)}{fin.cutoff ? ` · ${t('คัตออฟ', 'cutoff')} ${Math.floor(fin.cutoff / 60)}:${String(fin.cutoff % 60).padStart(2, '0')}:00` : ''}
               </button>
             )}
           </div>
           <div className="flex flex-col items-end gap-1">
-            {/* streak นับสัปดาห์ที่ฝึก ≥3 ครั้ง — ยังเป็น 0 ไม่ต้องแสดง เพราะวงด้านล่างบอกความคืบหน้าสัปดาห์นี้อยู่แล้ว */}
+            {/* streak นับสัปดาห์ที่ฝึก ≥3 ครั้ง ยังเป็น 0 ไม่ต้องแสดง เพราะวงด้านล่างบอกความคืบหน้าสัปดาห์นี้อยู่แล้ว */}
             {streak > 0 && (
               <div className="flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm font-semibold">
                 <Flame size={16} /> {t(`ต่อเนื่อง ${streak} สัปดาห์`, `${streak}-week streak`)}
@@ -153,7 +153,7 @@ export function Dashboard() {
 
       {todayPlan?.type === 'run' ? <HeatCard /> : tomorrow?.type === 'run' && !p.finished && <HeatCard initialDay="tomorrow" />}
 
-      {/* สิ่งที่ต้องทำวันนี้อยู่บนสุด — เป้าเดือน/สรุปสัปดาห์ที่แล้วเป็นข้อมูลประกอบ */}
+      {/* สิ่งที่ต้องทำวันนี้อยู่บนสุด เป้าเดือน/สรุปสัปดาห์ที่แล้วเป็นข้อมูลประกอบ */}
       <MonthGoalCard />
 
       <WeekSummary />
@@ -167,7 +167,7 @@ function Ring({ value, max, label, text }: { value: number; max: number; label: 
   const c = 2 * Math.PI * r
   const pct = Math.min(1, max ? value / max : 0)
   return (
-    <div className="flex flex-col items-center gap-1 rounded-xl bg-white/10 p-2.5 text-center">
+    <div className="flex flex-col items-center gap-1 rounded-xl bg-black/15 p-2.5 text-center">
       <svg viewBox="0 0 72 72" className="size-11 shrink-0" aria-hidden>
         <circle cx="36" cy="36" r={r} fill="none" stroke="rgb(255 255 255 / .25)" strokeWidth="8" />
         {pct > 0 && <circle cx="36" cy="36" r={r} fill="none" stroke="white" strokeWidth="8" strokeLinecap="round"
@@ -175,7 +175,7 @@ function Ring({ value, max, label, text }: { value: number; max: number; label: 
       </svg>
       <div>
         <div className="text-base font-extrabold tabular-nums">{text}</div>
-        <div className="text-xs opacity-80">{label}</div>
+        <div className="text-xs">{label}</div>
       </div>
     </div>
   )
@@ -185,7 +185,7 @@ function weekStreak(...lists: string[][]) {
   const perWeek = new Map<string, number>()
   for (const d of lists.flat()) perWeek.set(weekStart(d), (perWeek.get(weekStart(d)) ?? 0) + 1)
   let w = weekStart(today())
-  // สัปดาห์ปัจจุบันยังไม่จบ — ไม่ตัด streak ถ้ายังไม่ครบ
+  // สัปดาห์ปัจจุบันยังไม่จบ ไม่ตัด streak ถ้ายังไม่ครบ
   if ((perWeek.get(w) ?? 0) < 3) w = addDays(w, -7)
   let n = 0
   while ((perWeek.get(w) ?? 0) >= 3) {
@@ -195,4 +195,4 @@ function weekStreak(...lists: string[][]) {
   return n
 }
 
-// รายการกล้ามเนื้อ 17 แถวยาวเกินไป — แสดง 5 แถวที่ได้น้อยที่สุดก่อน (สิ่งที่ควรสนใจ)
+// รายการกล้ามเนื้อ 17 แถวยาวเกินไป แสดง 5 แถวที่ได้น้อยที่สุดก่อน (สิ่งที่ควรสนใจ)

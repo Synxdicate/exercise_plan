@@ -8,7 +8,7 @@ import { cx } from '../lib/cx'
 import { useT } from '../lib/i18n'
 import { Badge } from './ui'
 
-/** เส้นทางย่อแบบภาพตัวอย่าง (แทนไอคอน) — การวิ่งที่ไม่มีเส้นทางใช้ไอคอนเดิม */
+/** เส้นทางย่อแบบภาพตัวอย่าง (แทนไอคอน) การวิ่งที่ไม่มีเส้นทางใช้ไอคอนเดิม */
 export function RoutePreview({ run, className }: { run: Run; className?: string }) {
   const d = useMemo(() => {
     if (!run.route || run.route.length < 2) return null
@@ -44,7 +44,7 @@ export function RunHistory({ runs, onOpen }: { runs: Run[]; onOpen: (id: string)
     return [...map]
   }, [runs, kind])
 
-  if (!runs.length) return <p className="py-6 text-center text-sm text-muted">{tr('ยังไม่มีการวิ่ง — กด "เริ่มวิ่ง" ที่แท็บวิ่ง', 'No runs yet — tap "Start run" in the runs tab')}</p>
+  if (!runs.length) return <p className="py-6 text-center text-sm text-muted">{tr('ยังไม่มีการวิ่ง กด "เริ่มวิ่ง" ที่แท็บวิ่ง', 'No runs yet — tap "Start run" in the runs tab')}</p>
 
   return (
     <div>

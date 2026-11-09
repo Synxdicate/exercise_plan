@@ -24,7 +24,7 @@ const setsOf = (e: Exercise) => parseInt(e.sets, 10) || 1
 
 
 const targetReps = (e: Exercise) => e.reps.match(/\d+/)?.[0] ?? ''
-// ท่าค้าง (นับเป็นวินาที) ใช้ตัวจับเวลาในตัว — ท่า "/ ข้าง" จับเวลาข้างละครั้ง
+// ท่าค้าง (นับเป็นวินาที) ใช้ตัวจับเวลาในตัว ท่า "/ ข้าง" จับเวลาข้างละครั้ง
 const holdOf = (e: Exercise) => (/วิ/.test(e.reps) ? { sec: parseInt(targetReps(e), 10) || 30, sides: /ข้าง/.test(e.reps) ? 2 : 1 } : null)
 
 /** หน้าพาฝึกทีละท่า: กรอกน้ำหนัก×ครั้ง ติ๊กเซ็ต แล้วนับเวลาพักให้อัตโนมัติ */
@@ -40,7 +40,7 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
   // ตัวจับเวลาท่าค้าง: ข้างที่เท่าไร + เวลาสิ้นสุด (เริ่มนับหลังนับถอยหลัง 3 วิ)
   const [hold, setHold] = useState<{ side: number; end: number } | null>(null)
   const [voice] = usePersisted('voiceCues', true)
-  // วันสวน/ที่บ้านส่วนใหญ่ไม่มีน้ำหนักเพิ่ม — ซ่อนช่องกก. ไว้ก่อน (เปิดเองได้)
+  // วันสวน/ที่บ้านส่วนใหญ่ไม่มีน้ำหนักเพิ่ม ซ่อนช่องกก. ไว้ก่อน (เปิดเองได้)
   const [showKg, setShowKg] = usePersisted('bwWeights', false)
   const kgCol = mode === 'gym' || showKg
 
@@ -153,7 +153,7 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
     setRating(true)
   }
 
-  // บันทึกพร้อมความเหนื่อยทั้งรอบ (session-RPE) และเวลาที่ใช้ — ใช้คำนวณภาระการฝึก
+  // บันทึกพร้อมความเหนื่อยทั้งรอบ (session-RPE) และเวลาที่ใช้ ใช้คำนวณภาระการฝึก
   const save = (rpe?: number) => {
     const minutes = Math.max(1, Math.round((Date.now() - state.startedAt) / 60000))
     setSessions(p => [...p, { id: uid(), date: today(), mode, dayKey: day.key, title: day.title, entries: doneEntries(), rpe, minutes }])
@@ -214,8 +214,8 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
           {prev && <p className="mt-1 text-xs text-muted">{tr('ครั้งก่อน', 'Last time')} ({prev.date}): {prev.sets.map(s => (s.kg ? `${s.kg}×${s.reps}` : `${s.reps}`)).join(' · ')}</p>}
           {(() => {
             const sg = suggest(ex, prev?.sets)
-            // ไม่มีน้ำหนัก (บอดี้เวท): คำแนะนำเรื่องเลือกน้ำหนักไม่ตรง — เพิ่มความยากด้วยจังหวะ/ท่าแทน
-            if (!kgCol && !sg.up && /น้ำหนัก/.test(sg.text)) { sg.text = `ทำ ${ex.reps} ให้ท่าถูก เหลือแรงอีก 2–3 ครั้ง — ทำครบช่วงบนได้ทุกเซ็ตแล้วค่อยเพิ่มความยาก (ลงช้าลง หรือท่ายากขึ้น)`; sg.textEn = `Do ${dt.reps(ex.reps)} with good form and 2–3 reps left — once every set hits the top of the range, make it harder (slower lowering or a harder variation)` }
+            // ไม่มีน้ำหนัก (บอดี้เวท): คำแนะนำเรื่องเลือกน้ำหนักไม่ตรง เพิ่มความยากด้วยจังหวะ/ท่าแทน
+            if (!kgCol && !sg.up && /น้ำหนัก/.test(sg.text)) { sg.text = `ทำ ${ex.reps} ให้ท่าถูก เหลือแรงอีก 2–3 ครั้ง ทำครบช่วงบนได้ทุกเซ็ตแล้วค่อยเพิ่มความยาก (ลงช้าลง หรือท่ายากขึ้น)`; sg.textEn = `Do ${dt.reps(ex.reps)} with good form and 2–3 reps left — once every set hits the top of the range, make it harder (slower lowering or a harder variation)` }
             return (
               <p className={cx('mt-2 flex gap-2 rounded-xl p-2 text-sm', sg.up ? 'bg-good/15 text-good' : 'bg-raised text-ink')}>
                 <TrendingUp size={16} className="mt-0.5 shrink-0" /><span>{tr(sg.text, sg.textEn)}</span>

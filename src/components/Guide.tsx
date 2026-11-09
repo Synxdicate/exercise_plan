@@ -59,7 +59,7 @@ export function GuideCard({ steps, runner, meters, paces, on, setOn, onSkip }: {
   return (
     <div className={cx('rounded-2xl p-3 ring-1', pr.step.kind === 'work' ? 'bg-run/10 ring-run/30' : 'bg-card ring-line')}>
       {runner.state.done ? (
-        <div className="text-center text-sm font-semibold text-good">{en ? 'Workout done — keep jogging easy, or pause and finish' : 'จบชุดซ้อมแล้ว — วิ่งเบา ๆ ต่อ หรือกดพักแล้วจบได้เลย'}</div>
+        <div className="text-center text-sm font-semibold text-good">{en ? 'Workout done — keep jogging easy, or pause and finish' : 'จบชุดซ้อมแล้ว วิ่งเบา ๆ ต่อ หรือกดพักแล้วจบได้เลย'}</div>
       ) : (
         <>
           <div className="flex items-start justify-between gap-2">

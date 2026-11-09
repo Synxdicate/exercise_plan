@@ -1,4 +1,4 @@
-// ภาพลายเส้นท่าที่ไม่มีรูปถ่ายที่ตรงพอ — มุมมองด้านข้าง viewBox 120×80, พื้นที่ y = 72
+// ภาพลายเส้นท่าที่ไม่มีรูปถ่ายที่ตรงพอ มุมมองด้านข้าง viewBox 120×80, พื้นที่ y = 72
 // แต่ละท่ามี 2 ท่วงท่า (เริ่ม/จบ) ระบุตำแหน่งข้อต่อ: หัว ไหล่ ศอก มือ สะโพก เข่า เท้า
 export type Pt = [number, number]
 export type Pose = { head: Pt; shoulder: Pt; elbow: Pt; hand: Pt; hip: Pt; knee: Pt; foot: Pt; elbow2?: Pt; hand2?: Pt; knee2?: Pt; foot2?: Pt } // *2 = แขน/ขาข้างไกล (วาดจาง)
@@ -6,7 +6,7 @@ export type Prop = { kind: 'wall'; x: number } | { kind: 'floor' }
 export type StickDemo = { poses: [Pose, Pose]; props: Prop[] }
 
 export const stickDemos: Record<string, StickDemo> = {
-  // ดริลล์ก่อนวิ่ง (หันขวา) — ขาข้างไกลวาดจาง
+  // ดริลล์ก่อนวิ่ง (หันขวา) ขาข้างไกลวาดจาง
   'Leg Swing': {
     props: [{ kind: 'wall', x: 82 }, { kind: 'floor' }],
     poses: [
@@ -91,7 +91,7 @@ export const stickDemos: Record<string, StickDemo> = {
       { head: [58, 12], shoulder: [58, 21], elbow: [61, 32], hand: [62, 42], hip: [58, 43], knee: [58, 57], foot: [60, 69] },
     ],
   },
-  // ขาเดียวบนพื้น เข่าตึง — รูปจากคลังเป็นเครื่องยกน่องในยิม ดูไม่ตรงกับท่าบอดี้เวท
+  // ขาเดียวบนพื้น เข่าตึง รูปจากคลังเป็นเครื่องยกน่องในยิม ดูไม่ตรงกับท่าบอดี้เวท
   'Single-leg Calf Raise': {
     props: [{ kind: 'floor' }],
     poses: [

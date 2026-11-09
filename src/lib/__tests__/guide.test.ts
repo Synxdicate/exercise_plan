@@ -42,7 +42,7 @@ describe('GuideRunner', () => {
     expect(g.update(301_000, 1001, true)).toEqual([{ type: 'step', index: 1 }])
     expect(g.update(352_000, 1200, true)).toEqual([{ type: 'warn', index: 1 }])
     expect(g.update(361_000, 1250, true)).toEqual([{ type: 'step', index: 2 }])
-    // กด "พัก" 5 นาที — นาฬิกาชุดซ้อมไม่เดิน
+    // กด "พัก" 5 นาที นาฬิกาชุดซ้อมไม่เดิน
     expect(g.update(661_000, 1250, false)).toEqual([])
     expect(g.progress(1250).left).toBe(120)
     expect(g.update(781_000, 1400, true)).toEqual([{ type: 'step', index: 3 }])

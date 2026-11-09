@@ -1,4 +1,4 @@
-// เซอร์กิตแกนกลาง/สะโพกสำหรับนักวิ่ง: ทำท่าละ 30 วิ พัก 15 วิ วน 2 รอบ (~12 นาที) — ใช้ร่างกายอย่างเดียว ทำที่ไหนก็ได้
+// เซอร์กิตแกนกลาง/สะโพกสำหรับนักวิ่ง: ทำท่าละ 30 วิ พัก 15 วิ วน 2 รอบ (~12 นาที) ใช้ร่างกายอย่างเดียว ทำที่ไหนก็ได้
 // โมดูลล้วน: ตารางขั้นตอน + หาว่าตอนนี้อยู่ขั้นไหนจากเวลาที่ผ่านไป
 export type Station = { name: string; th: string; en?: string; sec?: number; how?: string; howEn?: string } // sec: เวลาเฉพาะท่านี้ (ไม่ใส่ = ใช้ work), how: วิธีทำ
 export type CircuitStep = { kind: 'work' | 'rest'; sec: number; station: Station; round: number }
@@ -27,7 +27,7 @@ export function buildCircuit(stations: Station[], work = 30, rest = 15, rounds =
 
 export const circuitTotal = (steps: CircuitStep[]) => steps.reduce((a, s) => a + s.sec, 0)
 
-/** ขั้นปัจจุบันจากเวลาที่ผ่านไป (วินาที) — เกินเวลารวม = จบ */
+/** ขั้นปัจจุบันจากเวลาที่ผ่านไป (วินาที) เกินเวลารวม = จบ */
 export function circuitAt(steps: CircuitStep[], elapsed: number) {
   let t = 0
   for (let i = 0; i < steps.length; i++) {

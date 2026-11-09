@@ -4,7 +4,7 @@ import type { Point } from '../geo'
 
 describe('elevation', () => {
   it('samples evenly by distance and keeps both ends', () => {
-    // จุดถี่ช่วงแรก ห่างช่วงหลัง — เลือกตามระยะ ไม่ใช่ตามลำดับ
+    // จุดถี่ช่วงแรก ห่างช่วงหลัง เลือกตามระยะ ไม่ใช่ตามลำดับ
     const route: Point[] = [...Array.from({ length: 300 }, (_, i) => [13 + i * 0.00001, 100] as Point), ...Array.from({ length: 50 }, (_, i) => [13.003 + i * 0.001, 100] as Point)]
     const s = sampleRoute(route, 100)
     expect(s).toHaveLength(100)

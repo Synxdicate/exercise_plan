@@ -27,7 +27,7 @@ export type LibEx = {
   cue: string
   video: string
   reps: string // ช่วงครั้งเริ่มต้น เมื่อสลับจากท่าที่นับต่างหน่วย (ครั้ง ↔ วินาที)
-  where: 'gym' | 'park' | 'both' // 'park' = ไม่ต้องใช้เครื่อง (สวน) — ที่บ้านดู homeAlt/homeUsable
+  where: 'gym' | 'park' | 'both' // 'park' = ไม่ต้องใช้เครื่อง (สวน) ที่บ้านดู homeAlt/homeUsable
   muscles?: { primary: Muscle[]; secondary: Muscle[] } // เฉพาะท่าใหม่ที่ไม่มีใน muscles.ts
 }
 
@@ -88,7 +88,7 @@ export const library: Record<Pattern, LibEx[]> = {
     x('Pike Push-up', 'วิดพื้นสะโพกสูง', 'ศีรษะลงหน้ามือ เป็นสามเหลี่ยม', 'pike push up tutorial', '6–10', 'both'),
   ],
   hpull: [
-    x('Table Row', 'ดึงตัวใต้โต๊ะ', 'ใช้โต๊ะที่แข็งแรงไม่ล้ม จับขอบโต๊ะ ตัวตรง ดึงอกขึ้นหาขอบ — ไม่มีโต๊ะเหมาะใช้ Superman แทน', 'table inverted row at home', '8–12', 'both', m(['upperBack', 'lats'], ['biceps', 'rearDelts'])),
+    x('Table Row', 'ดึงตัวใต้โต๊ะ', 'ใช้โต๊ะที่แข็งแรงไม่ล้ม จับขอบโต๊ะ ตัวตรง ดึงอกขึ้นหาขอบ ไม่มีโต๊ะเหมาะใช้ Superman แทน', 'table inverted row at home', '8–12', 'both', m(['upperBack', 'lats'], ['biceps', 'rearDelts'])),
     x('Seated Cable Row', 'ดึงเคเบิลนั่ง', 'ดึงศอกไปหลัง อกยืด', 'seated cable row proper form', '8–12', 'gym'),
     x('One-arm DB Row', 'ดึงดัมเบลแขนเดียว', 'มือ-เข่าพาดม้านั่ง ดึงศอกไปทางสะโพก', 'one arm dumbbell row form', '8–12 / ข้าง', 'gym', m(['lats', 'upperBack'], ['biceps', 'rearDelts'])),
     x('Chest-supported Row', 'ดึงดัมเบลนอนคว่ำม้านั่งเอียง', 'อกแนบเบาะ ไม่เหวี่ยงตัว', 'chest supported dumbbell row', '8–12', 'gym', m(['upperBack', 'lats'], ['rearDelts', 'biceps'])),
@@ -124,14 +124,14 @@ export const library: Record<Pattern, LibEx[]> = {
     x('Single-leg Calf Raise', 'เขย่งน่องขาเดียว', 'ลงช้า 3 วิ', 'single leg calf raise runners', '12–15 / ข้าง', 'both'),
     x('Seated Calf Raise', 'นั่งเขย่งน่อง', 'เข่างอ ~90° ลงสุด ค้างบน', 'seated calf raise form', '12–15', 'gym', m(['calves'])),
     x('Isometric Calf Hold', 'ยืนเขย่งค้าง (ฝึกเอ็นร้อยหวาย)', 'เขย่งขาเดียวครึ่งทาง ค้างนิ่ง ถือดัมเบล/เป้ได้ เกร็งแต่ไม่ถึงกับสั่น', 'isometric calf raise hold achilles', '30–45 วิ / ข้าง', 'both', m(['calves'])),
-    x('Bent-knee Calf Raise', 'เขย่งน่องงอเข่า (น่องมัดใน)', 'งอเข่าเล็กน้อยตลอด ขึ้นสุด ลงช้า 3 วิ — น่องมัดใน (soleus) รับแรงวิ่งมากที่สุด', 'bent knee calf raise soleus', '12–15', 'both', m(['calves'])),
+    x('Bent-knee Calf Raise', 'เขย่งน่องงอเข่า (น่องมัดใน)', 'งอเข่าเล็กน้อยตลอด ขึ้นสุด ลงช้า 3 วิ น่องมัดใน (soleus) รับแรงวิ่งมากที่สุด', 'bent knee calf raise soleus', '12–15', 'both', m(['calves'])),
   ],
   // สะโพกด้านข้าง (glute medius) อ่อน → สะโพกตกตอนวิ่ง เข่าบิดเข้า เจ็บ IT band (review 2024)
   hip: [
     x('Banded Lateral Walk', 'เดินข้างพันยางยืดเหนือเข่า', 'ย่อเข่าเล็กน้อย ลำตัวตั้ง ก้าวข้างช้า ๆ เข่าไม่บิดเข้า', 'banded lateral walk glute medius', '12–15 ก้าว / ข้าง', 'both', m(['glutes'], ['quads'])),
     x('Side-lying Hip Abduction', 'นอนตะแคงยกขา', 'ขาบนเหยียดตรง ปลายเท้าชี้ไปข้างหน้า ยกช้า ค้าง 1 วิ ไม่ม้วนสะโพกไปหลัง', 'side lying hip abduction form', '15–20 / ข้าง', 'both', m(['glutes'])),
   ],
-  // กระโดดเบา ๆ แตะพื้นสั้น — ฝึกเอ็นร้อยหวาย/น่องให้เด้งเหมือนสปริง (เริ่มหลังฝึกน่องแบบช้ามาแล้ว)
+  // กระโดดเบา ๆ แตะพื้นสั้น ฝึกเอ็นร้อยหวาย/น่องให้เด้งเหมือนสปริง (เริ่มหลังฝึกน่องแบบช้ามาแล้ว)
   plyo: [
     x('Pogo Jumps', 'กระโดดเขย่ง (ข้อเท้าแข็ง)', 'เข่าเกือบตรง เด้งด้วยข้อเท้า แตะพื้นสั้นที่สุด เบาและเงียบ', 'pogo jumps runners', '3 × 15–20', 'both', m(['calves'], ['quads'])),
     x('Jump Rope', 'กระโดดเชือก', 'กระโดดต่ำ ลงปลายเท้า จังหวะสม่ำเสมอ', 'jump rope for runners', '1–2 นาที', 'both', m(['calves'], ['quads'])),
@@ -159,15 +159,15 @@ export const libEx = (name: string) => byName.get(alias[name] ?? name)
 export const patternOf = (name: string) => libEx(name)?.pattern
 export const allLibrary = all
 
-// ท่าที่บาร์อยู่เหนือหน้า/บนหลัง — ถ้าหมดแรงกลางเซ็ตแล้วไม่มีคนช่วย (spotter) อาจโดนบาร์ทับ
-// โหมด "ฝึกคนเดียว" จะสลับเป็นท่าที่ปล่อยน้ำหนักได้ปลอดภัย (ดัมเบล/เครื่อง) — กล้ามโตไม่ต่างกัน (Haugen 2023)
+// ท่าที่บาร์อยู่เหนือหน้า/บนหลัง ถ้าหมดแรงกลางเซ็ตแล้วไม่มีคนช่วย (spotter) อาจโดนบาร์ทับ
+// โหมด "ฝึกคนเดียว" จะสลับเป็นท่าที่ปล่อยน้ำหนักได้ปลอดภัย (ดัมเบล/เครื่อง) กล้ามโตไม่ต่างกัน (Haugen 2023)
 export const needsSpotter: Record<string, { alt: string; note: string; noteEn: string }> = {
   'Bench Press': { alt: 'DB Bench Press', note: 'ดัมเบลวางลงข้างตัวได้ถ้าหมดแรง', noteEn: 'dumbbells can be dropped to the side if you fail' },
   'Back Squat': { alt: 'Leg Press', note: 'เครื่องมีตัวล็อก หรือใช้ squat rack ที่ตั้งเหล็กกันตก (safety bar) ต่ำกว่าจุดลึกสุดเล็กน้อย', noteEn: 'the machine has stops, or use a rack with safety bars set just below your lowest point' },
   'Front Squat': { alt: 'Goblet Squat', note: 'ถือดัมเบลที่อก ปล่อยลงพื้นได้', noteEn: 'hold a dumbbell at the chest; you can drop it to the floor' },
 }
 
-/** ท่าที่สลับแทนได้ (กลุ่มเดียวกัน ไม่รวมตัวเอง) — ท่าที่ทำได้ในที่นั้นขึ้นก่อน */
+/** ท่าที่สลับแทนได้ (กลุ่มเดียวกัน ไม่รวมตัวเอง) ท่าที่ทำได้ในที่นั้นขึ้นก่อน */
 export function alternatives(name: string, where: 'gym' | 'park' | 'home') {
   const p = patternOf(name)
   if (!p) return []

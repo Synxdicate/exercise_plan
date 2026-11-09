@@ -15,7 +15,7 @@ function load(sig: string): GuideState | null {
 }
 
 /**
- * ตัวคุมเสียงนำระหว่างวิ่ง — ส่ง onTick ให้ useRunTracker แล้วชุดซ้อมจะเริ่มเมื่อเริ่มจับเวลา
+ * ตัวคุมเสียงนำระหว่างวิ่ง ส่ง onTick ให้ useRunTracker แล้วชุดซ้อมจะเริ่มเมื่อเริ่มจับเวลา
  * สถานะเก็บใน localStorage ('activeGuide') ให้กู้ต่อได้ถ้าแอปถูกปิดกลางทาง เหมือน activeRun
  */
 export function useGuide(steps: Step[] | null, paces: Paces | undefined, voice: boolean) {

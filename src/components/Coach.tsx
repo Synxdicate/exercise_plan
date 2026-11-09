@@ -15,7 +15,7 @@ import { useNav } from '../lib/nav'
 import { cx } from '../lib/cx'
 import { Button, Segmented, Sheet } from './ui'
 
-/** ทวงเวทเมื่อไม่ได้เล่นมา ≥8 วัน (บันทึกเซ็ตหรือติ๊กทำแล้ว) — เวทลดการบาดเจ็บ (Lauersen 2014, Toresdahl 2020) */
+/** ทวงเวทเมื่อไม่ได้เล่นมา ≥8 วัน (บันทึกเซ็ตหรือติ๊กทำแล้ว) เวทลดการบาดเจ็บ (Lauersen 2014, Toresdahl 2020) */
 export function StrengthNudgeCard({ onPlan = false }: { onPlan?: boolean }) {
   const p = useProgram()
   const [sessions] = useSessions()
@@ -48,12 +48,12 @@ export function StrengthNudgeCard({ onPlan = false }: { onPlan?: boolean }) {
       </div>
       <p className="mt-1 text-sm">
         {p.raceHills
-          ? t('เวทเบา ๆ 2 ครั้ง/สัปดาห์ช่วยลดการเจ็บน่องและเข่า — สำคัญกับสนามที่มีเนิน ครั้งละ 30–40 นาทีพอ', 'Two light strength sessions a week cut calf and knee injuries — key for a hilly race. 30–40 minutes is enough.')
+          ? t('เวทเบา ๆ 2 ครั้ง/สัปดาห์ช่วยลดการเจ็บน่องและเข่า สำคัญกับสนามที่มีเนิน ครั้งละ 30–40 นาทีพอ', 'Two light strength sessions a week cut calf and knee injuries — key for a hilly race. 30–40 minutes is enough.')
           : t('เวทเบา ๆ 2 ครั้ง/สัปดาห์ช่วยลดการบาดเจ็บจากการวิ่ง ครั้งละ 30–40 นาทีพอ', 'Two light strength sessions a week cut running injuries. 30–40 minutes is enough.')}
         {' '}
         {g.left.length
           ? t(`สัปดาห์นี้ยังเหลือวันเวท: ${names(false)}`, `Strength days left this week: ${names(true)}`)
-          : t('วันเวทสัปดาห์นี้ผ่านไปแล้ว — ทำวันพักที่ไม่ติดกับวันวิ่งยาวได้ หรือเริ่มใหม่สัปดาห์หน้า', 'This week’s strength days have passed — use a rest day not next to the long run, or restart next week')}
+          : t('วันเวทสัปดาห์นี้ผ่านไปแล้ว ทำวันพักที่ไม่ติดกับวันวิ่งยาวได้ หรือเริ่มใหม่สัปดาห์หน้า', 'This week’s strength days have passed — use a rest day not next to the long run, or restart next week')}
       </p>
       <div className="mt-2 flex gap-2">
         {!onPlan && <Button size="sm" onClick={() => nav('plan')}>{t('ไปที่ตารางฝึก', 'Open the plan')}</Button>}
@@ -103,7 +103,7 @@ const REASONS: { value: EaseReason; th: string; en: string; what: [string, strin
   { value: 'busy', th: 'ไม่มีเวลา', en: 'Busy', what: ['วิ่งเบาสั้นลง ~60% เวทย่อ ~15 นาที', 'Shorter easy runs (~60%), ~15-minute strength'] },
 ]
 
-/** ช่วงนี้ไม่ไหว: ปรับแผนชั่วคราวแล้วกลับแผนเดิมเอง — ป้ายเมื่อใช้งานอยู่ / ปุ่มเปิดในหน้าฝึก */
+/** ช่วงนี้ไม่ไหว: ปรับแผนชั่วคราวแล้วกลับแผนเดิมเอง ป้ายเมื่อใช้งานอยู่ / ปุ่มเปิดในหน้าฝึก */
 export function EaseOffCard({ trigger = false }: { trigger?: boolean }) {
   const p = useProgram()
   const t = useT()

@@ -55,7 +55,7 @@ export function Runs() {
   const tr = useT()
   const dt = useDayText()
   const p = useProgram()
-  const todayIdx = useTodayIdx() // 0 = จันทร์ — เปลี่ยนเองเมื่อข้ามวัน
+  const todayIdx = useTodayIdx() // 0 = จันทร์ เปลี่ยนเองเมื่อข้ามวัน
   const todayRun = p.finished ? undefined : p.plan().filter((d, i) => i === todayIdx && d.type === 'run')[0]
   const kmToday = runsOnly(runs).filter(r => r.date === today()).reduce((s, r) => s + r.km, 0)
   const [kind, setKind] = useState<Run['kind']>(todayRun?.runKind ?? 'easy')
@@ -78,11 +78,11 @@ export function Runs() {
   const [checking, setChecking] = useState(false)
   const [cooldown, setCooldown] = useState<Run | null>(null)
   const [voice, setVoice] = usePersisted('voiceCues', true)
-  // แท็บย่อยของหน้าวิ่ง (ค่าของเครื่อง) — แยกเริ่มวิ่ง/ประวัติ/สถิติ ไม่ให้หน้าเดียวยาวเกินไป
+  // แท็บย่อยของหน้าวิ่ง (ค่าของเครื่อง) แยกเริ่มวิ่ง/ประวัติ/สถิติ ไม่ให้หน้าเดียวยาวเกินไป
   const [view, setView] = usePersisted<'start' | 'history' | 'stats'>('runsView', 'start')
   const [guideOn, setGuideOn] = usePersisted('guideOn', true)
   // เสียงนำใช้กับชุดซ้อมของวันนี้ เมื่อเลือกชนิดการวิ่งตรงกับแผน
-  // วันแข่งตามแผนไม่มีชุดซ้อม — เลือก "แข่ง" ในวันอื่นคือวิ่งทดสอบ 5K
+  // วันแข่งตามแผนไม่มีชุดซ้อม เลือก "แข่ง" ในวันอื่นคือวิ่งทดสอบ 5K
   const steps = todayRun?.guide && kind === todayRun.runKind ? todayRun.guide : kind === 'race' && todayRun?.runKind !== 'race' ? TRIAL : null
   const guide = useGuide(guideOn ? steps : null, paces, voice)
   // นักวิ่งเงา: เฉพาะวิ่งทดสอบ 5K (ช่วง 5 กม.) และวันแข่งตามแผน
@@ -118,7 +118,7 @@ export function Runs() {
     }
   }
   const resetGhost = () => { setGhostNow(null); ghostKm.current = 0 }
-  // โค้ชเสียงคุมเพซ — เรียกจาก onTick (callback ของ GPS) จึงเตือนได้แม้ปิดจอ
+  // โค้ชเสียงคุมเพซ เรียกจาก onTick (callback ของ GPS) จึงเตือนได้แม้ปิดจอ
   const [coachOn, setCoachOn] = usePersisted('paceCoach', true)
   const coach = useRef(new PaceCoach())
   const coachStep = useRef<{ index: number; at: number }>({ index: -1, at: 0 })
@@ -135,7 +135,7 @@ export function Runs() {
     const step = r && r.state.started && !r.state.done ? r.steps[r.state.index] : null
     const now = clockNow()
     if (step && coachStep.current.index !== r!.state.index) {
-      // เปลี่ยนช่วง: เพซ 30 วิล่าสุดยังเป็นของช่วงก่อน — รอให้นิ่งก่อนค่อยประเมิน
+      // เปลี่ยนช่วง: เพซ 30 วิล่าสุดยังเป็นของช่วงก่อน รอให้นิ่งก่อนค่อยประเมิน
       coachStep.current = { index: r!.state.index, at: now }
       coach.current.reset()
     }
@@ -143,7 +143,7 @@ export function Runs() {
     const settling = step && now - coachStep.current.at < 25_000
     const band = settling ? null
       : target ? workBand(target)
-      // คำนวณจากวิ่งเบา: โซน Easy จะช้ากว่าเพซวิ่งเบาจริงของเรา — ไม่เตือนให้ช้าลง
+      // คำนวณจากวิ่งเบา: โซน Easy จะช้ากว่าเพซวิ่งเบาจริงของเรา ไม่เตือนให้ช้าลง
       : !est.from.easy && (step ? step.pace === 'easy' : kind === 'easy' || kind === 'long') ? easyBand(paces!.easy[0])
       : null
     const cue = coach.current.update(now, pace, band, target ? 20_000 : 45_000)
@@ -165,7 +165,7 @@ export function Runs() {
   const finish = () => {
     const done = guide.runner ? guideResult(guide.runner.steps, guide.runner.state) : null
     guide.reset()
-    if (ghostNow && ghostOn) notify(ghostNow.lead >= 0 ? tr(`ชนะเงา ${Math.round(ghostNow.lead)} วินาที`, `Beat the ghost by ${Math.round(ghostNow.lead)} s`) : tr(`ช้ากว่าเงา ${Math.round(-ghostNow.lead)} วินาที — ครั้งหน้าเอาใหม่`, `${Math.round(-ghostNow.lead)} s behind the ghost — next time`), ghostNow.lead >= 0 ? 'good' : 'info')
+    if (ghostNow && ghostOn) notify(ghostNow.lead >= 0 ? tr(`ชนะเงา ${Math.round(ghostNow.lead)} วินาที`, `Beat the ghost by ${Math.round(ghostNow.lead)} s`) : tr(`ช้ากว่าเงา ${Math.round(-ghostNow.lead)} วินาที ครั้งหน้าเอาใหม่`, `${Math.round(-ghostNow.lead)} s behind the ghost — next time`), ghostNow.lead >= 0 ? 'good' : 'info')
     resetGhost()
     const r = t.finish()
     if (r.km < 0.05) return notify(tr('ระยะสั้นเกินไป ไม่ได้บันทึก', 'Too short — not saved'), 'bad')
@@ -211,25 +211,25 @@ export function Runs() {
       ]} />
 
       {view === 'start' && (
-      <section className="space-y-3 rounded-2xl bg-gradient-to-br from-run-fill to-accent-fill p-4 text-white shadow-sm">
+      <section className="space-y-3 rounded-2xl bg-run-fill p-4 text-white shadow-sm">
         <div>
-          <div className="text-sm opacity-80">{tr('สัปดาห์นี้', 'This week')}</div>
-          <div className="text-4xl font-extrabold tabular-nums">{kmThisWeek.toFixed(1)}<span className="ml-1 text-xl font-semibold opacity-80">{target ? `/ ${target} ${tr('กม.', 'km')}` : tr('กม.', 'km')}</span></div>
+          <div className="text-sm">{tr('สัปดาห์นี้', 'This week')}</div>
+          <div className="text-4xl font-extrabold tabular-nums">{kmThisWeek.toFixed(1)}<span className="ml-1 text-xl font-semibold">{target ? `/ ${target} ${tr('กม.', 'km')}` : tr('กม.', 'km')}</span></div>
         </div>
         <div className="h-2 overflow-hidden rounded-full bg-white/25">
           <div className="h-full rounded-full bg-white" style={{ width: `${target ? Math.min(100, (kmThisWeek / target) * 100) : 0}%` }} />
         </div>
         {todayRun && kmToday > 0 && (
-          <div className="flex items-center gap-2 rounded-2xl bg-white/15 p-3 text-sm font-bold">
+          <div className="flex items-center gap-2 rounded-2xl bg-black/15 p-3 text-sm font-bold">
             <CircleCheck size={18} className="shrink-0" /> {tr(`วันนี้วิ่งแล้ว ${kmToday.toFixed(2)} กม.`, `Ran ${kmToday.toFixed(2)} km today`)} · {dt.title(todayRun)}
           </div>
         )}
         {todayRun && !kmToday && (
-          <div className="flex items-start gap-2 rounded-2xl bg-white/15 p-3 text-sm">
+          <div className="flex items-start gap-2 rounded-2xl bg-black/15 p-3 text-sm">
             <CalendarCheck size={18} className="mt-0.5 shrink-0" />
             <div>
               <div className="font-bold">{tr('แผนวันนี้', "Today's plan")}: {dt.title(todayRun)} · {todayRun.targetKm ? `${todayRun.targetKm} ${tr('กม.', 'km')}` : dt.duration(todayRun)}</div>
-              <div className="opacity-85">{dt.cue(todayRun.exercises[0]?.cue ?? '')}</div>
+              <div className="">{dt.cue(todayRun.exercises[0]?.cue ?? '')}</div>
               {paceHint(est, todayRun.runKind, todayRun.title) && <div className="font-semibold">{paceHint(est, todayRun.runKind, todayRun.title)}</div>}
               <CapNote day={todayRun} date={today()} className="mt-1.5 flex items-start gap-1.5 rounded-xl bg-white/20 p-2 font-semibold" />
             </div>
@@ -238,7 +238,7 @@ export function Runs() {
         <div className="flex flex-wrap gap-2">
           {(Object.keys(runKinds) as Run['kind'][]).map(k => (
             <button key={k} onClick={() => setKind(k)}
-              className={cx('rounded-full px-3 py-1 text-sm font-semibold', kind === k ? 'bg-white text-accent-fill' : 'bg-white/15')}>
+              className={cx('rounded-full px-3 py-1 text-sm font-semibold', kind === k ? 'bg-white text-accent-fill' : 'bg-black/15')}>
               {tr(runKinds[k], runKindsEn[k])}
             </button>
           ))}
@@ -255,7 +255,7 @@ export function Runs() {
           <HeatCard />
           {heatPct > 0 && kind !== 'walk' && est && (
             <p className="-mt-1 rounded-xl bg-warn/10 px-3 py-2 text-sm text-warn">
-              {tr(`ร้อนกว่าปกติ (WBGT ${Math.round(wbgtNow!)}°) — วันนี้โค้ชเพซตั้งเป้าช้าลง ${heatPct}% ให้ได้ผลการซ้อมเท่าเดิม`, `Hotter than usual (WBGT ${Math.round(wbgtNow!)}°) — the pace coach targets ${heatPct}% slower today for the same training effect`)}
+              {tr(`ร้อนกว่าปกติ (WBGT ${Math.round(wbgtNow!)}°) วันนี้โค้ชเพซตั้งเป้าช้าลง ${heatPct}% ให้ได้ผลการซ้อมเท่าเดิม`, `Hotter than usual (WBGT ${Math.round(wbgtNow!)}°) — the pace coach targets ${heatPct}% slower today for the same training effect`)}
             </p>
           )}
           {kind !== 'walk' && <DrillsCard kind={kind} />}
@@ -299,7 +299,7 @@ export function Runs() {
       <p className="px-2 text-xs text-muted">
         {isNative
           ? tr('ถ้าบันทึกหยุดเองตอนปิดจอ ให้ตั้งแบตเตอรี่ของแอปเป็น "ไม่จำกัด"', 'If recording stops when the screen is off, set the app battery usage to "Unrestricted"')
-          : tr('บนเว็บ GPS ทำงานเฉพาะตอนเปิดหน้านี้ค้างไว้ — ปิดจอได้ต้องใช้แอป Android', 'On the web, GPS only works while this page stays open — use the Android app to record with the screen off')}
+          : tr('บนเว็บ GPS ทำงานเฉพาะตอนเปิดหน้านี้ค้างไว้ ปิดจอได้ต้องใช้แอป Android', 'On the web, GPS only works while this page stays open — use the Android app to record with the screen off')}
       </p>
 
       {cooldown && <CooldownSheet run={runs.find(r => r.id === cooldown.id) ?? cooldown} onUpdate={patch => setRuns(prev => prev.map(x => (x.id === cooldown.id ? { ...x, ...patch } : x)))} onDone={() => { setDetail(cooldown.id); setCooldown(null) }} />}
@@ -322,9 +322,9 @@ function ActiveRun({ t, kind, target, fiveK, voice, setVoice, coachOn, setCoachO
   const weak = t.accuracy === null || t.accuracy > GOOD_ACCURACY_M
   const banner =
     t.status === 'acquiring' ? (weak ? tr('กำลังหาสัญญาณ GPS… ออกไปที่โล่ง', 'Finding GPS… move to open sky') : tr('GPS พร้อมแล้ว', 'GPS ready')) :
-    // GPS หายมาก่อนหยุดอัตโนมัติ — ไม่มีจุดใหม่ก็ดูเหมือน "หยุดนิ่ง" ทั้งที่ยังวิ่งอยู่
-    t.signalLost ? tr('สัญญาณ GPS หาย — ออกไปที่โล่ง ระยะช่วงนี้อาจคลาดเคลื่อน', 'GPS signal lost — move to open sky; distance here may be off') :
-    t.status === 'autopaused' ? tr('หยุดอัตโนมัติ — เริ่มวิ่งต่อแล้วจะนับเวลาเอง', 'Auto-paused — timing resumes when you move') :
+    // GPS หายมาก่อนหยุดอัตโนมัติ ไม่มีจุดใหม่ก็ดูเหมือน "หยุดนิ่ง" ทั้งที่ยังวิ่งอยู่
+    t.signalLost ? tr('สัญญาณ GPS หาย ออกไปที่โล่ง ระยะช่วงนี้อาจคลาดเคลื่อน', 'GPS signal lost — move to open sky; distance here may be off') :
+    t.status === 'autopaused' ? tr('หยุดอัตโนมัติ เริ่มวิ่งต่อแล้วจะนับเวลาเอง', 'Auto-paused — timing resumes when you move') :
     t.status === 'paused' ? tr('พักอยู่', 'Paused') : null
 
   return (

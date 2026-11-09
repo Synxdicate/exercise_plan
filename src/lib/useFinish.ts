@@ -4,7 +4,7 @@ import { finishEstimate } from './pace'
 import { useProgram } from './program'
 import { today } from './date'
 
-/** เวลาจบงานแข่งโดยประมาณ (รวมวิ่งสลับเดิน) เทียบเวลาตัดตัว — สำหรับมือใหม่ที่ยังไม่มีผลวิ่งต่อเนื่องให้ทำนายแบบเต็ม */
+/** เวลาจบงานแข่งโดยประมาณ (รวมวิ่งสลับเดิน) เทียบเวลาตัดตัว สำหรับมือใหม่ที่ยังไม่มีผลวิ่งต่อเนื่องให้ทำนายแบบเต็ม */
 export function useFinish() {
   const p = useProgram()
   const [runs] = useRuns()

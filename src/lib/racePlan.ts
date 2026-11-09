@@ -6,7 +6,7 @@ import { raceKm } from './goals'
 export const START_SLOWER_S = 8 // วินาที/กม. ช่วงออกตัว
 const START_KM = 2
 
-/** goalSec = เวลาเป้า/คาดการณ์ของระยะมาตรฐาน (key) · km = ระยะงานจริงถ้าต่างจากมาตรฐาน (เช่น มินิ 11.55) — ปรับเวลาด้วย Riegel */
+/** goalSec = เวลาเป้า/คาดการณ์ของระยะมาตรฐาน (key) · km = ระยะงานจริงถ้าต่างจากมาตรฐาน (เช่น มินิ 11.55) ปรับเวลาด้วย Riegel */
 export function racePlan(key: RaceKey, standardSec: number, km = raceKm[key]) {
   const D = km
   const goalSec = km === raceKm[key] ? standardSec : standardSec * (km / raceKm[key]) ** 1.07

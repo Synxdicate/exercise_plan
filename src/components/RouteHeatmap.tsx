@@ -4,7 +4,7 @@ import { latLngBounds } from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import type { Point } from '../lib/geo'
 
-// แผนที่รวมทุกการวิ่ง (heatmap แบบเส้น): เส้นโปร่งแสงซ้อนกัน — ทางที่วิ่งบ่อยจะเข้มขึ้นเอง
+// แผนที่รวมทุกการวิ่ง (heatmap แบบเส้น): เส้นโปร่งแสงซ้อนกัน ทางที่วิ่งบ่อยจะเข้มขึ้นเอง
 // โหลดแบบ lazy เหมือน RunMap (Leaflet แยก chunk)
 function Fit({ routes }: { routes: Point[][] }) {
   const map = useMap()

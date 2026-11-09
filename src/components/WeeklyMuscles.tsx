@@ -10,7 +10,7 @@ import { useDayText } from '../lib/dayText'
 const TARGET_SETS = 10
 const fmt = (n: number) => n.toFixed(1).replace('.0', '')
 
-/** กล้ามเนื้อที่ได้ฝึกในสัปดาห์ (จำนวนเซ็ต) — แสดงในแท็บฝึกใต้ตารางของสัปดาห์นั้น */
+/** กล้ามเนื้อที่ได้ฝึกในสัปดาห์ (จำนวนเซ็ต) แสดงในแท็บฝึกใต้ตารางของสัปดาห์นั้น */
 export function WeeklyMuscles({ plan }: { plan: Day[] }) {
   const sets = weeklySets(plan)
   const t = useT()

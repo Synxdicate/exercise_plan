@@ -3,16 +3,16 @@ import { notify } from './dialog'
 import * as idb from './idb'
 
 // เก็บค่าใน memory + ที่เก็บถาวร และแจ้งทุก component ที่ใช้ key เดียวกัน
-// ที่เก็บถาวร: IndexedDB (จุได้มาก) — ถ้าใช้ไม่ได้ (private mode/ชุดทดสอบ) ถอยไปใช้ localStorage
+// ที่เก็บถาวร: IndexedDB (จุได้มาก) ถ้าใช้ไม่ได้ (private mode/ชุดทดสอบ) ถอยไปใช้ localStorage
 // ต้องเรียก initStorage() ให้เสร็จก่อน import ส่วนอื่นของแอป (ดู main.tsx) เพราะการอ่านเป็นแบบ sync จาก cache
 const cache = new Map<string, unknown>()
 const listeners = new Map<string, Set<() => void>>()
 const writeHooks = new Set<(key: string, value: unknown) => void>()
 let backend: 'local' | 'idb' = 'local'
 
-// key ที่ไม่ใช่ข้อมูลของ usePersisted (ใช้ localStorage ตรง ๆ หรือเป็นของ Supabase) — ไม่ย้าย
+// key ที่ไม่ใช่ข้อมูลของ usePersisted (ใช้ localStorage ตรง ๆ หรือเป็นของ Supabase) ไม่ย้าย
 const LOCAL_ONLY = /^(sb-|activeRun$|activeGuide$|heatCache$|localMode$|lastBackup$)/
-// ค่าที่ index.html อ่านก่อน React โหลด — เก็บใน localStorage คู่กันเสมอ
+// ค่าที่ index.html อ่านก่อน React โหลด เก็บใน localStorage คู่กันเสมอ
 const MIRROR = new Set(['theme'])
 
 export async function initStorage() {
@@ -57,7 +57,7 @@ let warnedFull = false
 const warnFull = () => {
   if (warnedFull) return
   warnedFull = true
-  notify('พื้นที่เก็บข้อมูลในเครื่องเต็ม — ต่อเน็ตเพื่อให้ข้อมูลซิงก์ขึ้นระบบ และสำรองข้อมูลจากเมนูบัญชี', 'bad')
+  notify('พื้นที่เก็บข้อมูลในเครื่องเต็ม ต่อเน็ตเพื่อให้ข้อมูลซิงก์ขึ้นระบบ และสำรองข้อมูลจากเมนูบัญชี', 'bad')
 }
 
 function persist(key: string, value: unknown) {
@@ -69,7 +69,7 @@ function persist(key: string, value: unknown) {
   try {
     localStorage.setItem(key, JSON.stringify(value))
   } catch (e) {
-    // พื้นที่เต็ม: ข้อมูลยังอยู่ในหน่วยความจำและซิงก์ขึ้น server ได้ แต่ปิดแอปตอนออฟไลน์จะหาย — ต้องบอกผู้ใช้
+    // พื้นที่เต็ม: ข้อมูลยังอยู่ในหน่วยความจำและซิงก์ขึ้น server ได้ แต่ปิดแอปตอนออฟไลน์จะหาย ต้องบอกผู้ใช้
     if (e instanceof DOMException && /quota/i.test(e.name)) warnFull()
   }
 }
@@ -102,7 +102,7 @@ export function readStored(key: string): unknown {
 // ใส่ค่าที่ดึงมาจาก server โดยไม่ยิงกลับขึ้นไปซ้ำ
 export const hydrate = store
 
-// เขียนค่าจากนอก React (เหมือนผู้ใช้แก้ — ส่งขึ้น server ด้วย)
+// เขียนค่าจากนอก React (เหมือนผู้ใช้แก้ ส่งขึ้น server ด้วย)
 export const setStored = write
 
 export function clearKeys(keys: string[]) {
@@ -143,5 +143,5 @@ export function usePersisted<T>(key: string, initial: T) {
   return [value, set] as const
 }
 
-// cache/listeners ต้องเป็นชุดเดียวทั้งแอป — แก้ไฟล์นี้ระหว่าง dev ให้รีโหลดทั้งหน้า
+// cache/listeners ต้องเป็นชุดเดียวทั้งแอป แก้ไฟล์นี้ระหว่าง dev ให้รีโหลดทั้งหน้า
 if (import.meta.hot) import.meta.hot.accept(() => window.location.reload())

@@ -80,10 +80,10 @@ export function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { r
   const saText = sa && {
     // เร็วขึ้นเกิน 10% มักแปลว่าช่วงแรกเดิน/วอร์มอัพ มากกว่าการคุมแรง
     negative: sa.diffPct < -10
-      ? { t: tr('ครึ่งหลังเร็วขึ้นมาก', 'Much faster second half'), c: 'text-run', d: tr(`เร็วขึ้น ${Math.abs(sa.diffPct).toFixed(1)}% — ช่วงแรกน่าจะเป็นการวอร์มอัพหรือเดิน`, `${Math.abs(sa.diffPct).toFixed(1)}% faster — the start was probably a warm-up or walk`) }
-      : { t: 'Negative split', c: 'text-good', d: tr(`ครึ่งหลังเร็วกว่าครึ่งแรก ${Math.abs(sa.diffPct).toFixed(1)}% — คุมแรงได้ดี`, `Second half ${Math.abs(sa.diffPct).toFixed(1)}% faster — well paced`) },
-    even: { t: 'Even split', c: 'text-run', d: tr('สองครึ่งเพซใกล้กัน — สม่ำเสมอดี', 'Both halves at a similar pace — nicely even') },
-    positive: { t: 'Positive split', c: 'text-warn', d: tr(`ครึ่งหลังช้าลง ${sa.diffPct.toFixed(1)}% — ลองออกตัวช้าลงอีกนิด`, `Second half ${sa.diffPct.toFixed(1)}% slower — try starting a bit easier`) },
+      ? { t: tr('ครึ่งหลังเร็วขึ้นมาก', 'Much faster second half'), c: 'text-run', d: tr(`เร็วขึ้น ${Math.abs(sa.diffPct).toFixed(1)}% ช่วงแรกน่าจะเป็นการวอร์มอัพหรือเดิน`, `${Math.abs(sa.diffPct).toFixed(1)}% faster — the start was probably a warm-up or walk`) }
+      : { t: 'Negative split', c: 'text-good', d: tr(`ครึ่งหลังเร็วกว่าครึ่งแรก ${Math.abs(sa.diffPct).toFixed(1)}% คุมแรงได้ดี`, `Second half ${Math.abs(sa.diffPct).toFixed(1)}% faster — well paced`) },
+    even: { t: 'Even split', c: 'text-run', d: tr('สองครึ่งเพซใกล้กัน สม่ำเสมอดี', 'Both halves at a similar pace — nicely even') },
+    positive: { t: 'Positive split', c: 'text-warn', d: tr(`ครึ่งหลังช้าลง ${sa.diffPct.toFixed(1)}% ลองออกตัวช้าลงอีกนิด`, `Second half ${sa.diffPct.toFixed(1)}% slower — try starting a bit easier`) },
   }[sa.kind]
   return (
     <Portal>
@@ -113,20 +113,20 @@ export function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { r
         {run.guide && (
           <p className={cx('mb-3 flex items-center gap-2 rounded-xl p-2.5 text-sm font-semibold', run.guide.finished ? 'bg-good/15 text-good' : 'bg-raised text-ink')}>
             <ListChecks size={16} className="shrink-0" />
-            {run.guide.finished ? tr(`ทำครบตามแผน (วิ่ง ${run.guide.work} ช่วง)`, `Workout completed (${run.guide.work} reps)`) : tr(`ทำชุดซ้อมได้ ${run.guide.work}/${run.guide.total} ช่วง — ร่างกายไม่พร้อมก็หยุดได้ ไม่ต้องฝืน วันหลังยังมี`, `${run.guide.work}/${run.guide.total} reps done — stopping when your body says no is fine`)}
+            {run.guide.finished ? tr(`ทำครบตามแผน (วิ่ง ${run.guide.work} ช่วง)`, `Workout completed (${run.guide.work} reps)`) : tr(`ทำชุดซ้อมได้ ${run.guide.work}/${run.guide.total} ช่วง ร่างกายไม่พร้อมก็หยุดได้ ไม่ต้องฝืน วันหลังยังมี`, `${run.guide.work}/${run.guide.total} reps done — stopping when your body says no is fine`)}
           </p>
         )}
         <CoachReview run={run} runs={runs} fiveK={fiveK} splitDiffPct={sa?.diffPct} />
         {fix && (
           <div className="mb-3 rounded-xl bg-warn/15 p-3 text-sm text-warn">
-            <p>{tr(`ระยะตามเส้นทางคือ ${fix.km.toFixed(2)} กม. แต่บันทึกไว้ ${run.km.toFixed(2)} กม. — แอปก่อน v2.26 นับช่วงเดินขาด`, `The route measures ${fix.km.toFixed(2)} km but ${run.km.toFixed(2)} km was saved — versions before v2.26 missed walking sections`)}</p>
+            <p>{tr(`ระยะตามเส้นทางคือ ${fix.km.toFixed(2)} กม. แต่บันทึกไว้ ${run.km.toFixed(2)} กม. แอปก่อน v2.26 นับช่วงเดินขาด`, `The route measures ${fix.km.toFixed(2)} km but ${run.km.toFixed(2)} km was saved — versions before v2.26 missed walking sections`)}</p>
             <Button size="sm" className="mt-2" onClick={() => onUpdate({ km: fix.km, splits: fix.splits })}>{tr('ใช้ระยะตามเส้นทาง', 'Use route distance')}</Button>
           </div>
         )}
-        {/* วัดระยะใหม่ก่อน — ระยะที่ขาดทำให้เพซดูช้าเหมือนเดิน */}
+        {/* วัดระยะใหม่ก่อน ระยะที่ขาดทำให้เพซดูช้าเหมือนเดิน */}
         {!fix && looksLikeWalk(run) && (
           <div className="mb-3 rounded-xl bg-warn/15 p-3 text-sm text-warn">
-            <p>{tr(`เพซเฉลี่ย ${formatPace(run.seconds, run.km)} /กม. ช้ากว่าการวิ่ง — ถ้ารอบนี้คือการเดิน บันทึกเป็น "เดิน" จะไม่นับรวมเป็นระยะวิ่ง (ยังนับเป็นวันที่ได้ออกกำลังกาย)`, `Average pace ${formatPace(run.seconds, run.km)} /km is slower than running — if this was a walk, mark it so it won't count as running distance (still an active day)`)}</p>
+            <p>{tr(`เพซเฉลี่ย ${formatPace(run.seconds, run.km)} /กม. ช้ากว่าการวิ่ง ถ้ารอบนี้คือการเดิน บันทึกเป็น "เดิน" จะไม่นับรวมเป็นระยะวิ่ง (ยังนับเป็นวันที่ได้ออกกำลังกาย)`, `Average pace ${formatPace(run.seconds, run.km)} /km is slower than running — if this was a walk, mark it so it won't count as running distance (still an active day)`)}</p>
             <Button size="sm" className="mt-2" onClick={() => onUpdate({ kind: 'walk' })}>{tr('เปลี่ยนเป็นเดิน', 'Mark as walk')}</Button>
           </div>
         )}
@@ -169,7 +169,7 @@ export function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { r
   )
 }
 
-/** ตัดต้น/ท้ายเส้นทาง (เช่น ลืมกดหยุด) — แบบ Strava crop: เลื่อนจุดเริ่ม/จบ ดูระยะและเวลาก่อนบันทึก */
+/** ตัดต้น/ท้ายเส้นทาง (เช่น ลืมกดหยุด) แบบ Strava crop: เลื่อนจุดเริ่ม/จบ ดูระยะและเวลาก่อนบันทึก */
 function TrimSheet({ run, onClose, onSave }: { run: Run; onClose: () => void; onSave: (patch: Partial<Run>) => void }) {
   const tr = useT()
   const n = run.route!.length
@@ -202,7 +202,7 @@ function TrimSheet({ run, onClose, onSave }: { run: Run; onClose: () => void; on
   )
 }
 
-// แก้ไขข้อมูลการวิ่ง — ระยะ/เวลาแก้ได้เฉพาะที่กรอกเอง (การวิ่งที่มีเส้นทางคำนวณจาก GPS อยู่แล้ว)
+// แก้ไขข้อมูลการวิ่ง ระยะ/เวลาแก้ได้เฉพาะที่กรอกเอง (การวิ่งที่มีเส้นทางคำนวณจาก GPS อยู่แล้ว)
 export function EditRun({ run, onSave }: { run: Run; onSave: (patch: Partial<Run>) => void }) {
   const tr = useT()
   const [date, setDate] = useState(run.date)

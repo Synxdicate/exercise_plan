@@ -1,6 +1,6 @@
-// นักวิ่งเงา (ghost runner): วิ่งแข่งกับเวลาอ้างอิงที่บอกตรง ๆ ว่าเร็วแค่ไหน — ใช้เฉพาะวันทดสอบ 5K และวันแข่ง
+// นักวิ่งเงา (ghost runner): วิ่งแข่งกับเวลาอ้างอิงที่บอกตรง ๆ ว่าเร็วแค่ไหน ใช้เฉพาะวันทดสอบ 5K และวันแข่ง
 // วันวิ่งเบาไม่มีเงา (ต้องเบาจริง) · เงาเร็วกว่าครั้งก่อนแค่ 1.5%: ท้าทายแต่ทำได้ (Locke & Latham 2002)
-// ไม่หลอกความเร็วเงา — การหลอกให้ผลไม่คงอยู่และทำให้รู้สึกแย่ลง (Jones 2016) ต่างจากการแข่งกับตัวเองที่รู้ความเร็ว (Stone 2012)
+// ไม่หลอกความเร็วเงา การหลอกให้ผลไม่คงอยู่และทำให้รู้สึกแย่ลง (Jones 2016) ต่างจากการแข่งกับตัวเองที่รู้ความเร็ว (Stone 2012)
 import { raceKm, raceLabel, raceLabelEn, type RaceKey } from './goals'
 import { formatDuration } from './log'
 
@@ -16,8 +16,8 @@ export function trialGhost(best5k: number | null | undefined, predicted5k: numbe
   return { km: 5, seconds, label: `${best5k ? '5K ที่ดีที่สุด' : '5K ที่คาดการณ์'} เร็วขึ้น 1.5% (${formatDuration(seconds)})`, labelEn: `${best5k ? 'Best 5K' : 'Predicted 5K'} 1.5% faster (${formatDuration(seconds)})` }
 }
 
-/** วันแข่ง: เงา = เวลาเป้าหมายที่ตั้งไว้ ไม่งั้นเวลาคาดการณ์ (ไม่บวกเพิ่ม — วันแข่งคุมเพซตามแผน) */
-/** km = ระยะงานจริง (เช่น มินิ 11.55) — เวลาของระยะมาตรฐานปรับด้วย Riegel ให้เงาวิ่งครบระยะงาน */
+/** วันแข่ง: เงา = เวลาเป้าหมายที่ตั้งไว้ ไม่งั้นเวลาคาดการณ์ (ไม่บวกเพิ่ม วันแข่งคุมเพซตามแผน) */
+/** km = ระยะงานจริง (เช่น มินิ 11.55) เวลาของระยะมาตรฐานปรับด้วย Riegel ให้เงาวิ่งครบระยะงาน */
 export function raceGhost(key: RaceKey, goal: number | undefined, predicted: number | null | undefined, km = raceKm[key]): Ghost | null {
   const base = goal ?? (predicted ? Math.round(predicted) : null)
   if (!base) return null

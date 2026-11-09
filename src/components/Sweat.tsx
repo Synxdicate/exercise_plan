@@ -31,7 +31,7 @@ export function SweatCard() {
         <div className="rounded-xl bg-raised p-3 text-sm">
           <div className="text-xs text-muted">{tr('ล่าสุด', 'Latest')} {niceDate(last.date)} · {tr(`วิ่ง ${last.minutes} นาที`, `${last.minutes} min run`)}</div>
           <div className="mt-1 font-bold">{tr(`เสียเหงื่อ ~${r.rateLph.toFixed(1)} ลิตร/ชม. · น้ำหนักลด ${r.lossPct.toFixed(1)}%`, `Sweat ~${r.rateLph.toFixed(1)} L/h · ${r.lossPct.toFixed(1)}% body-mass loss`)}</div>
-          {r.lossPct > 2 && <p className="mt-1 text-xs text-warn">{tr('ลดเกิน 2% — ครั้งหน้าดื่มระหว่างวิ่งมากขึ้น', 'Over 2% — drink more during the run next time')}</p>}
+          {r.lossPct > 2 && <p className="mt-1 text-xs text-warn">{tr('ลดเกิน 2% ครั้งหน้าดื่มระหว่างวิ่งมากขึ้น', 'Over 2% — drink more during the run next time')}</p>}
           <ul className="mt-2 space-y-1 text-xs">
             {[45, 90, 150].map(m => {
               const p = drinkPlan(r.rateLph, last.preKg || profile.weightKg, m)
@@ -40,7 +40,7 @@ export function SweatCard() {
           </ul>
         </div>
       ) : (
-        <p className="text-sm text-muted">{tr('ชั่งน้ำหนักก่อน–หลังวิ่งแล้วแอปจะบอกว่าต้องดื่มเท่าไร — สำคัญมากในอากาศร้อน', 'Weigh yourself before and after a run and the app tells you how much to drink — key in hot weather')}</p>
+        <p className="text-sm text-muted">{tr('ชั่งน้ำหนักก่อน–หลังวิ่งแล้วแอปจะบอกว่าต้องดื่มเท่าไร สำคัญมากในอากาศร้อน', 'Weigh yourself before and after a run and the app tells you how much to drink — key in hot weather')}</p>
       )}
       <Disclosure title={r ? tr('ทดสอบใหม่', 'New test') : tr('วิธีทดสอบ', 'How to test')} defaultOpen={!r}>
         <ol className="list-decimal space-y-1 pl-5 text-xs text-muted">

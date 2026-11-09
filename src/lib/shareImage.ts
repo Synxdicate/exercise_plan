@@ -7,7 +7,7 @@ import { isNative } from './native'
 import { projectRoute } from './geo'
 import { paceSeries } from './analysis'
 
-// การ์ดรูปการวิ่งสำหรับแชร์ (1080×1350 = สัดส่วน 4:5 ของ IG) — สีคงที่ ไม่ตามธีม เพราะเป็นรูปที่ส่งออก
+// การ์ดรูปการวิ่งสำหรับแชร์ (1080×1350 = สัดส่วน 4:5 ของ IG) สีคงที่ ไม่ตามธีม เพราะเป็นรูปที่ส่งออก
 const W = 1080
 const H = 1350
 const FONT = "'Noto Sans Thai', ui-sans-serif, system-ui, sans-serif"
@@ -370,7 +370,7 @@ function drawPace(g: CanvasRenderingContext2D, run: Run, ink: string) {
   footer(g, run)
 }
 
-// แถบตัวเลขชิดขอบล่าง — ด้านบนว่างให้เห็นรูปของตัวเองเต็ม ๆ
+// แถบตัวเลขชิดขอบล่าง ด้านบนว่างให้เห็นรูปของตัวเองเต็ม ๆ
 function drawBottom(g: CanvasRenderingContext2D, run: Run, ink: string) {
   const stats = statList(run)
   const colW = (W - 120) / stats.length

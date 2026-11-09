@@ -30,7 +30,7 @@ export type Day = {
   runKind?: 'easy' | 'tempo' | 'interval' | 'long' | 'race'
   location?: 'gym' | 'park' | 'home' // วันเวท: ฝึกที่ไหน (ตั้งโดย weekPlan)
   guide?: Step[] // วันวิ่งคุณภาพ: ขั้นของชุดซ้อมสำหรับเสียงนำ
-  movedFrom?: number // สลับมาจากวันที่ i ของสัปดาห์ (0 = จันทร์) — ดู lib/moves.ts
+  movedFrom?: number // สลับมาจากวันที่ i ของสัปดาห์ (0 = จันทร์) ดู lib/moves.ts
 }
 
 const warmupNote = 'วอร์มอัพ 5–10 นาที: จ็อกเบา ๆ หรือกระโดดเชือก + หมุนข้อต่อ แล้วเล่นเซ็ตเบา 1–2 เซ็ตของท่าแรก'
@@ -176,7 +176,7 @@ export const parkWeek: Day[] = [
       { name: 'Bulgarian Split Squat', th: 'สควอทขาเดียว เท้าหลังพาดม้านั่ง', sets: '4', reps: '8–15 / ข้าง', rest: '90 วิ', cue: 'ลงช้า 3 วิ ถือขวดน้ำ/กระเป๋าเพิ่มน้ำหนักได้', video: 'bulgarian split squat form' },
       { name: 'Jump Squat', th: 'สควอทกระโดด', sets: '3', reps: '8–10', rest: '90 วิ', cue: 'ลงเบา งอเข่าซับแรง', video: 'jump squat proper form' },
       { name: 'Single-leg Glute Bridge', th: 'ยกสะโพกขาเดียว', sets: '3', reps: '10–15 / ข้าง', rest: '60 วิ', cue: 'บีบก้นค้างด้านบน 1 วิ', video: 'single leg glute bridge form' },
-      { name: 'Single-leg RDL', th: 'เดดลิฟต์ขาเดียว (ตัวเปล่า/ถือขวดน้ำ)', sets: '3', reps: '8–12 / ข้าง', rest: '60 วิ', cue: 'ดันสะโพกไปหลังช้า ๆ หลังตรง รู้สึกตึงต้นขาหลัง — สวนไม่มีเครื่องงอขา ท่านี้ช่วยต้นขาหลัง', video: 'single leg romanian deadlift bodyweight' },
+      { name: 'Single-leg RDL', th: 'เดดลิฟต์ขาเดียว (ตัวเปล่า/ถือขวดน้ำ)', sets: '3', reps: '8–12 / ข้าง', rest: '60 วิ', cue: 'ดันสะโพกไปหลังช้า ๆ หลังตรง รู้สึกตึงต้นขาหลัง สวนไม่มีเครื่องงอขา ท่านี้ช่วยต้นขาหลัง', video: 'single leg romanian deadlift bodyweight' },
       { name: 'Pistol Squat progression', th: 'ฝึกสควอทขาเดียว (นั่งลงม้านั่ง)', sets: '3', reps: '5–8 / ข้าง', rest: '90 วิ', cue: 'เริ่มจากนั่งลงม้านั่งด้วยขาเดียว ค่อย ๆ ลดความสูง', video: 'pistol squat progression beginner' },
       { name: 'Hollow Body Hold', th: 'นอนเกร็งท้องทรงเรือ', sets: '3', reps: '20–40 วิ', rest: '60 วิ', cue: 'หลังล่างแนบพื้นตลอด', video: 'hollow body hold tutorial' },
     ],
@@ -215,7 +215,7 @@ export const phasesEn = [
 ]
 
 export const principles = [
-  { title: 'Double progression', text: 'เมื่อทำได้ครบจำนวนครั้งสูงสุดทุกเซ็ต (เช่น 3×8) ให้เพิ่มน้ำหนักเล็กน้อยแล้วเริ่มนับใหม่ที่ช่วงล่าง (3×6) — นี่คือ progressive overload ซึ่งเป็นหลักสำคัญของการเพิ่มกล้าม' },
+  { title: 'Double progression', text: 'เมื่อทำได้ครบจำนวนครั้งสูงสุดทุกเซ็ต (เช่น 3×8) ให้เพิ่มน้ำหนักเล็กน้อยแล้วเริ่มนับใหม่ที่ช่วงล่าง (3×6) นี่คือ progressive overload ซึ่งเป็นหลักสำคัญของการเพิ่มกล้าม' },
   { title: 'ปริมาณที่พอ', text: 'งานวิจัยแบบ meta-analysis พบว่าราว 10+ เซ็ตหนัก/กลุ่มกล้ามเนื้อ/สัปดาห์ให้ผลดีกว่าปริมาณน้อย แผนนี้ให้ ~9–14 เซ็ตต่อกลุ่มกล้ามใหญ่' },
   { title: 'ช่วงบน 2 ครั้ง ขา 1 ครั้ง/สัปดาห์', text: 'ถ้าปริมาณเซ็ตรวมต่อสัปดาห์เท่ากัน ความถี่ไม่ได้มีผลต่อการโตของกล้ามมากนัก (Schoenfeld 2019) วันขาจึงรวมไว้วันเดียว และขายังได้ฝึกจากการวิ่ง' },
   { title: 'วิ่งไม่ขัดกล้าม ถ้าไม่มากไป', text: 'วิ่งเบาเป็นหลัก (โซน E) วิ่งหนักแค่ 1 ครั้ง/สัปดาห์ และไม่วิ่งหนักในวันถัดจากวันเล่นขา' },

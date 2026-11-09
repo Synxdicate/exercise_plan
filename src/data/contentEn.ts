@@ -1,13 +1,13 @@
-// คำแปลอังกฤษของโน้ตในแผนและคำอธิบายท่า (src/data เป็นภาษาไทย) — ใช้ผ่าน useDayText().note/cue
+// คำแปลอังกฤษของโน้ตในแผนและคำอธิบายท่า (src/data เป็นภาษาไทย) ใช้ผ่าน useDayText().note/cue
 // ข้อความที่สร้างจากแม่แบบ (ชุดซ้อมวิ่ง, วิ่งสลับเดิน) แปลด้วยกฎ regex ด้านล่าง; เทสต์บังคับว่าทุกข้อความในทุกโปรแกรมแปลได้
 import { hillyDownhillNote, hillyLongNote, hillyRaceNote } from './programs'
 
 export const NOTE_EN: Record<string, string> = {
-  'พักฟื้นจากป่วย — หายไข้แล้วค่อยเริ่มเดินเบา ๆ ไม่ต้องรีบชดเชย': 'Recovering from illness — once the fever is gone, start with easy walks; no need to make up sessions',
-  'พักฟื้นจากป่วย — งดเวทจนหายดี': 'Recovering from illness — no strength work until you are well',
-  'ช่วงเจ็บ: วิ่งเบาครึ่งระยะ ไม่มีช่วงเร็ว — ปวดได้ไม่เกิน 3 จาก 10 และไม่แย่ลงวันรุ่งขึ้น ถ้าเกินให้หยุด แล้วใช้ปั่นจักรยาน/ว่ายน้ำแทน': 'Sore spell: easy run at half distance, no fast parts — pain up to 3/10 that isn’t worse the next day; beyond that stop and cycle or swim instead',
+  'พักฟื้นจากป่วย หายไข้แล้วค่อยเริ่มเดินเบา ๆ ไม่ต้องรีบชดเชย': 'Recovering from illness — once the fever is gone, start with easy walks; no need to make up sessions',
+  'พักฟื้นจากป่วย งดเวทจนหายดี': 'Recovering from illness — no strength work until you are well',
+  'ช่วงเจ็บ: วิ่งเบาครึ่งระยะ ไม่มีช่วงเร็ว ปวดได้ไม่เกิน 3 จาก 10 และไม่แย่ลงวันรุ่งขึ้น ถ้าเกินให้หยุด แล้วใช้ปั่นจักรยาน/ว่ายน้ำแทน': 'Sore spell: easy run at half distance, no fast parts — pain up to 3/10 that isn’t worse the next day; beyond that stop and cycle or swim instead',
   'ช่วงเจ็บ: ลดเซ็ตลงครึ่งหนึ่ง ข้ามท่าที่ทำให้ส่วนที่เจ็บปวด': 'Sore spell: half the sets, skip moves that hurt the sore area',
-  'ช่วงไม่มีเวลา: วิ่งเบาสั้นลง — วิ่งน้อยดีกว่าไม่วิ่ง': 'Busy spell: shorter easy run — a little running beats none',
+  'ช่วงไม่มีเวลา: วิ่งเบาสั้นลง วิ่งน้อยดีกว่าไม่วิ่ง': 'Busy spell: shorter easy run — a little running beats none',
   'ช่วงไม่มีเวลา: ทำ 2–3 ท่าแรก ท่าละ 2 เซ็ต (~15 นาที)': 'Busy spell: first 2–3 exercises, 2 sets each (~15 min)',
   'วอร์มอัพ 5–10 นาที: จ็อกเบา ๆ หรือกระโดดเชือก + หมุนข้อต่อ แล้วเล่นเซ็ตเบา 1–2 เซ็ตของท่าแรก': 'Warm up 5–10 min: easy jog or jump rope + joint circles, then 1–2 light sets of the first exercise',
   'ใช้ความเร็วที่ยังพูดเป็นประโยคได้ ถ้าหอบจนพูดไม่ได้แปลว่าเร็วไป ให้เดินสลับได้': 'Run at a pace where you can still talk in sentences; too breathless to talk means too fast — walk breaks are fine',
@@ -17,16 +17,16 @@ export const NOTE_EN: Record<string, string> = {
   'ขาเป็นส่วนที่บอดี้เวทเพิ่มความหนักยาก ให้เน้นท่าขาเดียวและจังหวะลงช้า (3 วิ)': 'Legs are hard to load with bodyweight — focus on single-leg moves and slow lowering (3 s)',
   'ส่วนแรกฝึกความแข็งแรง ปิดท้ายด้วย "Cindy" (5 pull-up, 10 push-up, 15 squat ให้ได้มากรอบที่สุด) ซึ่งตามที่ Men\'s Health รายงาน Tom Holland ใช้ท่านี้': 'Strength first, then finish with "Cindy" (5 pull-ups, 10 push-ups, 15 squats, as many rounds as possible), which Men’s Health reported Tom Holland uses',
   'มือใหม่: เลือกน้ำหนักที่เหลือแรง 3–4 ครั้ง ฝึกท่าให้ถูกก่อนเพิ่มน้ำหนัก': 'Beginner: pick weights that leave 3–4 reps in reserve; learn the form before adding weight',
-  'วิ่งช้าแค่ไหนก็ได้ ขอให้พูดเป็นประโยคได้ — เหนื่อยเกินให้เดินนานขึ้น': 'Run as slowly as you like as long as you can talk in sentences — too tired, walk longer',
+  'วิ่งช้าแค่ไหนก็ได้ ขอให้พูดเป็นประโยคได้ เหนื่อยเกินให้เดินนานขึ้น': 'Run as slowly as you like as long as you can talk in sentences — too tired, walk longer',
   'ถ้าสัปดาห์ไหนยังหนักไป ทำสัปดาห์เดิมซ้ำได้ ไม่ต้องรีบ': 'If a week still feels too hard, repeat it — no rush',
   'สัปดาห์สุดท้าย! วิ่งต่อเนื่อง 30 นาทีได้แล้ว → ไปต่อโปรแกรม 10K': 'Final week! You can run 30 min non-stop → move on to the 10K program',
   'มือใหม่: ท่าละ 2 เซ็ต เหลือแรง 3–4 ครั้ง ไม่มีท่ากระโดด': 'Beginner: 2 sets per exercise, 3–4 reps in reserve, no jumps',
   'วิ่งช้าระดับพูดเป็นประโยคได้ เดินตามจังหวะเสียงนำ ไม่ต้องรอให้เหนื่อยก่อนเดิน': 'Run slowly enough to talk in sentences; walk when the voice guide says, don’t wait until you’re tired',
   'สัปดาห์ลดปริมาณ ให้ร่างกายปรับตัว': 'Cutback week — let your body adapt',
-  'ถ้าเส้นทางแข่งมีช่วงลงเนิน: วิ่งรอบนี้ในเส้นทางที่มีทางลาดลงเล็กน้อย (สะพาน/ถนนลาด) วิ่งลงช้า ๆ 4 × 1 นาที ก้าวสั้นและถี่ ลำตัวตั้ง ไม่เบรกด้วยส้นเท้า เดินขึ้นกลับ — ครั้งแรกน่องและต้นขาหน้าอาจปวด 1–2 วัน เป็นเรื่องปกติ ครั้งต่อไป (รวมวันแข่ง) จะปวดน้อยลง': 'If the race course has downhills: run this one on a route with gentle descents (bridge/sloped road) — 4 × 1 min easy downhill, short quick steps, upright, don’t brake with the heels, walk back up. Calves and quads may be sore for 1–2 days the first time; it’s normal and the next time (including race day) hurts less',
-  'ซ้อมดื่มน้ำ/เกลือแร่ (และเจล ถ้าจะใช้วันแข่ง) ระหว่างวิ่งยาวนี้ แบบเดียวกับที่จะทำวันแข่ง — ท้องปรับตัวได้ด้วยการซ้อม วันแข่งไม่ใช้ของใหม่': 'Practise drinking water/electrolytes (and gels if you’ll use them on race day) during this long run, the same way as on race day — the gut adapts with practice; nothing new on race day',
+  'ถ้าเส้นทางแข่งมีช่วงลงเนิน: วิ่งรอบนี้ในเส้นทางที่มีทางลาดลงเล็กน้อย (สะพาน/ถนนลาด) วิ่งลงช้า ๆ 4 × 1 นาที ก้าวสั้นและถี่ ลำตัวตั้ง ไม่เบรกด้วยส้นเท้า เดินขึ้นกลับ ครั้งแรกน่องและต้นขาหน้าอาจปวด 1–2 วัน เป็นเรื่องปกติ ครั้งต่อไป (รวมวันแข่ง) จะปวดน้อยลง': 'If the race course has downhills: run this one on a route with gentle descents (bridge/sloped road) — 4 × 1 min easy downhill, short quick steps, upright, don’t brake with the heels, walk back up. Calves and quads may be sore for 1–2 days the first time; it’s normal and the next time (including race day) hurts less',
+  'ซ้อมดื่มน้ำ/เกลือแร่ (และเจล ถ้าจะใช้วันแข่ง) ระหว่างวิ่งยาวนี้ แบบเดียวกับที่จะทำวันแข่ง ท้องปรับตัวได้ด้วยการซ้อม วันแข่งไม่ใช้ของใหม่': 'Practise drinking water/electrolytes (and gels if you’ll use them on race day) during this long run, the same way as on race day — the gut adapts with practice; nothing new on race day',
   'ซ้อมใหญ่วันแข่ง: ใส่รองเท้า/ชุดที่จะใช้จริง ออกตัวด้วยเพซที่ตั้งใจใช้วันแข่ง (ไม่เร็วกว่านั้น) และลองจังหวะวิ่ง 8 นาที / เดิน 1 นาทีเหมือนแผนวันแข่ง': 'Race rehearsal: wear your race shoes/kit, start at your planned race pace (no faster) and try the run 8 min / walk 1 min rhythm of your race plan',
-  'วิ่งต่อเนื่องได้แล้ว — เหนื่อยเกินเดินพักได้ 1 นาที ไม่ผิด': 'You can run continuously now — walking 1 min when too tired is fine',
+  'วิ่งต่อเนื่องได้แล้ว เหนื่อยเกินเดินพักได้ 1 นาที ไม่ผิด': 'You can run continuously now — walking 1 min when too tired is fine',
   'Taper: ลดระยะ ให้ขาสดก่อนวันแข่ง': 'Taper: less distance so your legs are fresh for race day',
   'สัปดาห์แข่ง! วางแผนวิ่ง 8 นาที เดิน 1 นาทีตั้งแต่ต้น ดื่มน้ำทุกจุด ออกตัวช้า': 'Race week! Plan run 8 min / walk 1 min from the start, drink at every station, start slow',
   'สัปดาห์แข่ง งดเวท': 'Race week: no strength training',
@@ -78,7 +78,7 @@ export const CUE_EN: Record<string, string> = {
   'ลงช้า 3 วิ ถือขวดน้ำ/กระเป๋าเพิ่มน้ำหนักได้': 'Lower over 3 s; hold a water bottle/bag for extra load',
   'ลงเบา งอเข่าซับแรง': 'Land softly, bend the knees to absorb',
   'บีบก้นค้างด้านบน 1 วิ': 'Squeeze glutes 1 s at the top',
-  'ดันสะโพกไปหลังช้า ๆ หลังตรง รู้สึกตึงต้นขาหลัง — สวนไม่มีเครื่องงอขา ท่านี้ช่วยต้นขาหลัง': 'Push hips back slowly, flat back, feel the hamstrings — the park has no leg-curl machine, this covers hamstrings',
+  'ดันสะโพกไปหลังช้า ๆ หลังตรง รู้สึกตึงต้นขาหลัง สวนไม่มีเครื่องงอขา ท่านี้ช่วยต้นขาหลัง': 'Push hips back slowly, flat back, feel the hamstrings — the park has no leg-curl machine, this covers hamstrings',
   'เริ่มจากนั่งลงม้านั่งด้วยขาเดียว ค่อย ๆ ลดความสูง': 'Start by sitting down to a bench on one leg, then lower the height gradually',
   'หลังล่างแนบพื้นตลอด': 'Lower back stays on the floor',
   'เน้นหลังและไบเซ็ป': 'Works back and biceps',
@@ -86,7 +86,7 @@ export const CUE_EN: Record<string, string> = {
   'พื้นฐานสู่ muscle-up': 'Foundation for the muscle-up',
   'บีบสะบัก ยกช้า ค้าง 2 วิ ไม่ต้องใช้อุปกรณ์': 'Squeeze shoulder blades, lift slowly, hold 2 s — no equipment needed',
   'จดจำนวนรอบไว้ทุกครั้ง ดึงข้อไม่ไหวใช้ Australian row แทน': 'Log your rounds every time; if pull-ups are too hard use Australian rows',
-  'ใช้โต๊ะที่แข็งแรงไม่ล้ม จับขอบโต๊ะ ตัวตรง ดึงอกขึ้นหาขอบ — ไม่มีโต๊ะเหมาะใช้ Superman แทน': 'Use a sturdy table that won’t tip, grip the edge, body straight, pull your chest to the edge — no suitable table: do Superman instead',
+  'ใช้โต๊ะที่แข็งแรงไม่ล้ม จับขอบโต๊ะ ตัวตรง ดึงอกขึ้นหาขอบ ไม่มีโต๊ะเหมาะใช้ Superman แทน': 'Use a sturdy table that won’t tip, grip the edge, body straight, pull your chest to the edge — no suitable table: do Superman instead',
   'เก้าอี้ไม่มีล้อ ชิดผนัง ลงจนศอก ~90° ไหล่ไม่ห่อ': 'Chair without wheels, against a wall, lower until elbows are ~90°, shoulders not hunched',
   'ยกแขน-อก-ขาพร้อมกัน ค้าง 2 วิ คอตรง': 'Lift arms, chest and legs together, hold 2 s, neck neutral',
   'หลังล่างแนบพื้น ลงช้า ไม่ให้ขาแตะพื้น': 'Lower back on the floor, lower slowly, don’t let the legs touch down',
@@ -103,7 +103,7 @@ export const CUE_EN: Record<string, string> = {
   'ดึงศอกไปหลัง อกยืด': 'Drive elbows back, chest up',
   'ลงช้า ๆ คุมเข่าไม่บิดเข้าใน': 'Lower slowly, don’t let the knee cave in',
   'ลงจนศอก ~90°': 'Lower until elbows are ~90°',
-  'เข่างอ ~90° ลงช้า — น่องมัดใน (soleus) รับแรงตอนวิ่งมากที่สุด': 'Knees bent ~90°, lower slowly — the inner calf (soleus) takes the most load when running',
+  'เข่างอ ~90° ลงช้า น่องมัดใน (soleus) รับแรงตอนวิ่งมากที่สุด': 'Knees bent ~90°, lower slowly — the inner calf (soleus) takes the most load when running',
   'ลงช้า 3 วิ': 'Lower over 3 s',
   'ลำตัวตรง': 'Torso upright',
   'ทำไม่ได้ใช้ Negative': 'Can’t do it yet: use negatives',
@@ -115,15 +115,15 @@ export const CUE_EN: Record<string, string> = {
   'ช้า ๆ คุมการทรงตัว': 'Slow, control your balance',
   'งอเข่าเล็กน้อยตลอด ลงช้า 3 วิ': 'Knees slightly bent throughout, lower over 3 s',
   'หลังล่างแนบพื้น': 'Lower back on the floor',
-  'เขย่งขาเดียวครึ่งทาง ค้างนิ่ง — เตรียมเอ็นก่อนเริ่มท่ากระโดด ถือดัมเบล/เป้เพิ่มน้ำหนักได้': 'Single-leg half-way calf raise, hold still — prepares the tendon before jumps; hold a dumbbell/backpack for load',
+  'เขย่งขาเดียวครึ่งทาง ค้างนิ่ง เตรียมเอ็นก่อนเริ่มท่ากระโดด ถือดัมเบล/เป้เพิ่มน้ำหนักได้': 'Single-leg half-way calf raise, hold still — prepares the tendon before jumps; hold a dumbbell/backpack for load',
   'วิ่งเบาระดับพูดคุยได้ (โซน E)': 'Easy, conversational (zone E)',
-  'ช้าระดับพูดคุยได้ (โซน E) — เดินพักได้': 'Slow, conversational (zone E) — walk breaks are fine',
+  'ช้าระดับพูดคุยได้ (โซน E) เดินพักได้': 'Slow, conversational (zone E) — walk breaks are fine',
   'วิ่งเบาสั้น ๆ ให้ขาตื่นตัว': 'Short easy run to wake the legs up',
   'วิ่ง 8 นาที เดิน 1 นาทีตั้งแต่ต้น ออกตัวช้ากว่าที่รู้สึกว่าไหว ดื่มน้ำทุกจุด': 'Run 8 min / walk 1 min from the start, start slower than feels possible, drink at every station',
   'วิ่งเบา สลับเร่ง 1 นาที × 6 ครั้ง (เร่งแบบเหนื่อย ~7/10 แล้วกลับมาเบา)': 'Easy run with 6 × 1 min surges (~7/10 effort, then back to easy)',
-  'ช้าระดับพูดคุยได้ (โซน E) — วิ่งยาวเน้นเวลาบนขา ไม่เน้นความเร็ว': 'Slow, conversational (zone E) — long run is about time on feet, not speed',
-  'เกี่ยวเท้าใต้ม้านั่ง/ให้คนจับ ค่อย ๆ ล้มไปข้างหน้าช้าที่สุด ใช้มือรับ — เริ่มด้วยยางยืดคล้องอกกับเสาช่วยพยุง ตะคริวให้หยุด': 'Hook feet under a bench/have someone hold them, lower forward as slowly as possible, catch with your hands — start with a band from chest to a post for help; stop if you cramp',
-  'เข่าเกือบตรง เด้งด้วยข้อเท้า แตะพื้นสั้นที่สุด เบาและเงียบ — เจ็บน่อง/เอ็นร้อยหวายให้หยุด': 'Knees nearly straight, bounce from the ankles, minimal ground contact, light and quiet — stop if calves/Achilles hurt',
+  'ช้าระดับพูดคุยได้ (โซน E) วิ่งยาวเน้นเวลาบนขา ไม่เน้นความเร็ว': 'Slow, conversational (zone E) — long run is about time on feet, not speed',
+  'เกี่ยวเท้าใต้ม้านั่ง/ให้คนจับ ค่อย ๆ ล้มไปข้างหน้าช้าที่สุด ใช้มือรับ เริ่มด้วยยางยืดคล้องอกกับเสาช่วยพยุง ตะคริวให้หยุด': 'Hook feet under a bench/have someone hold them, lower forward as slowly as possible, catch with your hands — start with a band from chest to a post for help; stop if you cramp',
+  'เข่าเกือบตรง เด้งด้วยข้อเท้า แตะพื้นสั้นที่สุด เบาและเงียบ เจ็บน่อง/เอ็นร้อยหวายให้หยุด': 'Knees nearly straight, bounce from the ankles, minimal ground contact, light and quiet — stop if calves/Achilles hurt',
   'วิ่งเบา แล้วปิดท้าย Strides 6 × 20 วิ (เร่งลื่น ๆ ไม่สุดแรง เดินกลับ)': 'Easy run, finish with 6 × 20 s strides (smooth and quick, not all-out, walk back)',
   'ยืนกลางบาร์ ดันพื้น หลังตรง (ไม่มีบาร์หกเหลี่ยมใช้ Romanian Deadlift)': 'Stand in the middle of the bar, push the floor away, flat back (no hex bar: Romanian Deadlift)',
   'ก้าวยาวพอดี เข่าหลังเกือบแตะพื้น': 'Moderate stride, back knee almost touches the floor',
@@ -134,7 +134,7 @@ export const CUE_EN: Record<string, string> = {
   'ถอยเท้าไปหลัง ลำตัวตั้ง ดันกลับด้วยส้นเท้าหน้า': 'Step back, torso upright, drive back up through the front heel',
   'ดันขึ้นด้วยขาบน ไม่ถีบขาล่าง': 'Push up with the top leg, don’t kick off the bottom leg',
   'ค่อย ๆ ล้มไปข้างหน้าช้าที่สุด ใช้มือรับ': 'Lower forward as slowly as possible, catch with your hands',
-  'วิ่งเบา แล้ววิ่งขึ้นเนินสั้น ๆ 6 × 10 วิ (แรงแต่ฟอร์มดี) — ชันไม่เกิน ~7% (วิ่งได้ ไม่ใช่ปีน) ลงเนินเดินหรือจ็อกช้า ก้าวสั้น · ไม่มีเนินใช้สะพาน/ทางลาด': 'Easy run, then 6 × 10 s short hill sprints (strong but good form) — no steeper than ~7% (runnable, not a climb); walk or slow-jog down with short steps · no hill: use a bridge/ramp',
+  'วิ่งเบา แล้ววิ่งขึ้นเนินสั้น ๆ 6 × 10 วิ (แรงแต่ฟอร์มดี) ชันไม่เกิน ~7% (วิ่งได้ ไม่ใช่ปีน) ลงเนินเดินหรือจ็อกช้า ก้าวสั้น · ไม่มีเนินใช้สะพาน/ทางลาด': 'Easy run, then 6 × 10 s short hill sprints (strong but good form) — no steeper than ~7% (runnable, not a climb); walk or slow-jog down with short steps · no hill: use a bridge/ramp',
   'วิ่งเบา แล้ว Strides 4 × 20 วิ': 'Easy run, then 4 × 20 s strides',
   'ออกตัวช้ากว่าเพซเป้าหมาย 5–10 วิ/กม. ช่วงแรก ดื่มน้ำทุกจุด': 'Start 5–10 s/km slower than goal pace, drink at every station',
   'ลงจนต้นขาขนานพื้น เข่าตามปลายเท้า หลังตรง': 'Thighs to parallel, knees over toes, flat back',
@@ -180,7 +180,7 @@ export const CUE_EN: Record<string, string> = {
   'มือชิดใต้อก ศอกแนบลำตัว': 'Hands close under the chest, elbows tight to the body',
   'ลงสุด ค้างบน 1 วิ': 'Full stretch at the bottom, hold 1 s at the top',
   'เขย่งขาเดียวครึ่งทาง ค้างนิ่ง ถือดัมเบล/เป้ได้ เกร็งแต่ไม่ถึงกับสั่น': 'Single-leg half-way calf raise, hold still, dumbbell/backpack optional — tense but not shaking',
-  'งอเข่าเล็กน้อยตลอด ขึ้นสุด ลงช้า 3 วิ — น่องมัดใน (soleus) รับแรงวิ่งมากที่สุด': 'Knees slightly bent throughout, rise fully, lower over 3 s — the inner calf (soleus) takes the most running load',
+  'งอเข่าเล็กน้อยตลอด ขึ้นสุด ลงช้า 3 วิ น่องมัดใน (soleus) รับแรงวิ่งมากที่สุด': 'Knees slightly bent throughout, rise fully, lower over 3 s — the inner calf (soleus) takes the most running load',
   'ย่อเข่าเล็กน้อย ลำตัวตั้ง ก้าวข้างช้า ๆ เข่าไม่บิดเข้า': 'Slight knee bend, torso upright, slow side steps, knees don’t cave in',
   'ขาบนเหยียดตรง ปลายเท้าชี้ไปข้างหน้า ยกช้า ค้าง 1 วิ ไม่ม้วนสะโพกไปหลัง': 'Top leg straight, toes forward, lift slowly, hold 1 s, don’t roll the hip back',
   'เข่าเกือบตรง เด้งด้วยข้อเท้า แตะพื้นสั้นที่สุด เบาและเงียบ': 'Knees nearly straight, bounce from the ankles, minimal ground contact, light and quiet',
@@ -191,13 +191,13 @@ export const CUE_EN: Record<string, string> = {
   'ลำตัวนิ่ง ดันออกค้าง 2 วิ': 'Torso still, press out and hold 2 s',
 }
 
-// ส่วนประกอบของชุดซ้อมวิ่ง — ยาวก่อนสั้น
+// ส่วนประกอบของชุดซ้อมวิ่ง ยาวก่อนสั้น
 const PARTS: [RegExp, string][] = [
   [/ \(เหนื่อยแต่คุมได้ ~7\/10 พูดได้เป็นคำ ๆ\)/g, ' (hard but controlled ~7/10, a few words at a time)'],
   [/ \(ช่วงเร็ว ~เพซ 5K, ช่วงพักจ็อกเบา\)/g, ' (fast reps ~5K pace, easy jog recoveries)'],
   [/ \(วิ่งช้าระดับพูดเป็นประโยคได้\)/g, ' (run slowly enough to talk in sentences)'],
   [/ \(วิ่งช้าพูดเป็นประโยคได้\)/g, ' (slow enough to talk in sentences)'],
-  [/ — เน้นเวลาบนขา ไม่เน้นความเร็ว/g, ' — time on feet, not speed'],
+  [/ เน้นเวลาบนขา ไม่เน้นความเร็ว/g, ' — time on feet, not speed'],
   [/จนครบระยะ/g, 'until the distance is done'],
   [/ที่เพซฮาล์ฟ/g, 'at half-marathon pace'], [/ที่เพซมาราธอน/g, 'at marathon pace'], [/ที่เพซ (\d+K)/g, 'at $1 pace'],
   [/พักจ็อก/g, 'jog recovery'], [/จ็อก/g, 'jog'], [/คูลดาวน์/g, 'cool down'], [/วอร์ม/g, 'Warm up'],
@@ -214,5 +214,5 @@ const viaParts = (s: string) => {
 /** ข้อความคำอธิบายท่า/ชุดซ้อม → อังกฤษ (null = ยังไม่มีคำแปล) */
 export const cueToEn = (s: string): string | null => CUE_EN[s] ?? viaParts(s)
 
-/** โน้ตของวัน (หลายข้อคั่นด้วย " · ") → อังกฤษ — ข้อที่ไม่มีคำแปลคงเป็นไทย */
+/** โน้ตของวัน (หลายข้อคั่นด้วย " · ") → อังกฤษ ข้อที่ไม่มีคำแปลคงเป็นไทย */
 export const noteToEn = (s: string) => s.split(' · ').map(p => NOTE_EN[p] ?? cueToEn(p) ?? p).join(' · ')

@@ -33,7 +33,7 @@ export function RacePlan({ day, date }: { day: Day; date: string }) {
       ? [`1–2 วันก่อนแข่ง กินคาร์บ ~${carbs} ก./วัน (ข้าว เส้น ขนมปัง) ลดอาหารไขมัน/ไฟเบอร์สูง`, `1–2 days before, eat ~${carbs} g carbs/day (rice, noodles, bread), less fat/fibre`]
       : ['มื้อก่อนแข่งเป็นอาหารที่กินประจำ ย่อยง่าย', 'Pre-race meal: something familiar and easy to digest'],
     ['นอนให้พอ 2 คืนก่อนแข่ง (คืนก่อนแข่งนอนไม่หลับไม่เป็นไร)', 'Sleep well two nights before (a restless last night is fine)'],
-    ['ใช้รองเท้า ชุด และเจลที่เคยซ้อมแล้วเท่านั้น — ห้ามของใหม่วันแข่ง', 'Only shoes, kit and gels you’ve trained with — nothing new on race day'],
+    ['ใช้รองเท้า ชุด และเจลที่เคยซ้อมแล้วเท่านั้น ห้ามของใหม่วันแข่ง', 'Only shoes, kit and gels you’ve trained with — nothing new on race day'],
     ['ซ้อมดื่มน้ำ/กินเจลระหว่างวิ่งยาวมาแล้ว', 'Practised drinking/gels on long runs'],
     ['เช็กอากาศ (หน้าวิ่ง) ร้อนมากให้ลดเป้าเวลา', 'Check the weather (runs tab); if very hot, ease the goal time'],
     ['ไปถึงก่อนปล่อยตัว 45–60 นาที วอร์มเบา ๆ', 'Arrive 45–60 min before the start, warm up gently'],
@@ -52,9 +52,9 @@ export function RacePlan({ day, date }: { day: Day; date: string }) {
           <>
             <div className="text-xs text-muted">{goals[key] ? tr('จากเป้าที่ตั้งไว้', 'From your goal') : tr('จากเวลาคาดการณ์ (ตั้งเป้าเองได้ที่หน้าวิ่ง → สถิติ)', 'From the prediction (set a goal in runs → stats)')} · {formatDuration(plan.goalSec)}{day.targetKm !== raceKm[key] && ` (${day.targetKm} ${tr('กม.', 'km')})`}</div>
             <ol className="mt-2 space-y-1">
-              <li className="flex justify-between gap-2"><span>{tr('2 กม. แรก — อย่ารีบ', 'First 2 km — don’t rush')}</span><b className="tabular-nums">{formatPace(plan.startPace, 1)} {tr('/กม.', '/km')}</b></li>
+              <li className="flex justify-between gap-2"><span>{tr('2 กม. แรก อย่ารีบ', 'First 2 km — don’t rush')}</span><b className="tabular-nums">{formatPace(plan.startPace, 1)} {tr('/กม.', '/km')}</b></li>
               <li className="flex justify-between gap-2"><span>{tr('หลังจากนั้นถือเพซ', 'Then hold')}</span><b className="tabular-nums">{formatPace(plan.restPace, 1)} {tr('/กม.', '/km')}</b></li>
-              {key !== 'fiveK' && key !== 'tenK' && <li className="text-xs text-muted">{tr('ครึ่งหลังยังไหวค่อยเร่ง — ครึ่งแรกเร็วเกินคือสาเหตุ "ชนกำแพง" ที่พบบ่อย', 'Speed up in the second half if you can — a too-fast first half is the usual cause of "hitting the wall"')}</li>}
+              {key !== 'fiveK' && key !== 'tenK' && <li className="text-xs text-muted">{tr('ครึ่งหลังยังไหวค่อยเร่ง ครึ่งแรกเร็วเกินคือสาเหตุ "ชนกำแพง" ที่พบบ่อย', 'Speed up in the second half if you can — a too-fast first half is the usual cause of "hitting the wall"')}</li>}
             </ol>
             <div className="mt-2 grid grid-cols-3 gap-1.5 text-center">
               {plan.splits.map(s => (
@@ -64,7 +64,7 @@ export function RacePlan({ day, date }: { day: Day; date: string }) {
                 </div>
               ))}
             </div>
-            <p className="mt-2 text-xs">{drink ?? tr('ยังไม่ได้ทดสอบเหงื่อ — ทำที่หน้าวิ่ง → สถิติ จะรู้ว่าต้องดื่มเท่าไร', 'No sweat test yet — do one in runs → stats to know how much to drink')}</p>
+            <p className="mt-2 text-xs">{drink ?? tr('ยังไม่ได้ทดสอบเหงื่อ ทำที่หน้าวิ่ง → สถิติ จะรู้ว่าต้องดื่มเท่าไร', 'No sweat test yet — do one in runs → stats to know how much to drink')}</p>
             {plan.fuel > 0 && <p className="mt-2 text-xs">{tr(`ดื่มน้ำทุกจุดให้น้ำ (จิบ 2–3 อึก) · เจล/คาร์บ ~${plan.fuel} ครั้ง: ครั้งแรกนาทีที่ ~45 แล้วทุก ~35 นาที`, `Drink at every aid station (2–3 sips) · ~${plan.fuel} gels/carb doses: first at ~45 min, then every ~35 min`)}</p>}
           </>
         ) : <p className="text-xs text-muted">{tr('วิ่งให้ได้ ≥3 กม. สักครั้ง หรือตั้งเวลาเป้าหมาย แล้วแอปจะคำนวณแผนเพซให้', 'Run ≥3 km once or set a goal time and the app will work out a pace plan')}</p>}

@@ -5,7 +5,7 @@ import { notify } from '../lib/dialog'
 import { useT } from '../lib/i18n'
 import { Button, Sheet } from './ui'
 
-/** รายการปัญหาที่แอปบันทึกไว้ — คัดลอกส่งให้คนแก้ได้ */
+/** รายการปัญหาที่แอปบันทึกไว้ คัดลอกส่งให้คนแก้ได้ */
 export function ErrorLogSheet({ onClose }: { onClose: () => void }) {
   const [log, setLog] = usePersisted<ErrorEntry[]>('errorLog', [])
   const t = useT()

@@ -40,7 +40,7 @@ export function AuthGate({ children }: { children: (session: Session | null) => 
         syncedFor = null
         return setState({ kind: 'signedOut' })
       }
-      // ห้าม await งาน supabase ใน callback นี้โดยตรง (จะ deadlock) — เลื่อนออกไป
+      // ห้าม await งาน supabase ใน callback นี้โดยตรง (จะ deadlock) เลื่อนออกไป
       setLocalMode(false)
       setTimeout(() => void enter(session), 0)
     })

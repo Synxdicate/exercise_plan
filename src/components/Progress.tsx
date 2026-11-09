@@ -76,7 +76,7 @@ function BodyLog() {
           <NumberInput label={tr('รอบเอว (ไม่บังคับ)', 'Waist (optional)')} unit={tr('ซม.', 'cm')} step={0.5} stepper value={waist} placeholder={String(log.at(-1)?.waist ?? '')} onChange={setWaist} />
           <Button className="col-span-2" onClick={add}>{tr('บันทึก', 'Save')}</Button>
         </div>
-        <p className="mt-2 text-xs text-muted">{tr('ชั่งตอนเช้าหลังเข้าห้องน้ำ วัดเอวระดับสะดือ — น้ำหนักนิ่งแต่เอวลดก็คือไปถูกทาง', 'Weigh in the morning after the toilet, measure waist at the navel — steady weight with a shrinking waist means it’s working')}</p>
+        <p className="mt-2 text-xs text-muted">{tr('ชั่งตอนเช้าหลังเข้าห้องน้ำ วัดเอวระดับสะดือ น้ำหนักนิ่งแต่เอวลดก็คือไปถูกทาง', 'Weigh in the morning after the toilet, measure waist at the navel — steady weight with a shrinking waist means it’s working')}</p>
       </Card>
 
       <Card title={tr('รูปความคืบหน้า', 'Progress photos')}><ProgressPhotos /></Card>
@@ -143,7 +143,7 @@ function WorkoutHistory() {
       <Card>
         <div className="flex flex-col items-center gap-3 py-5 text-center">
           <Dumbbell size={28} className="text-muted" />
-          <p className="text-sm text-muted">{tr('ยังไม่มีบันทึกเวท — กด "เริ่มฝึก" ในวันเวทของตาราง', 'No workouts logged yet — tap "Start workout" on a strength day in your plan')}</p>
+          <p className="text-sm text-muted">{tr('ยังไม่มีบันทึกเวท กด "เริ่มฝึก" ในวันเวทของตาราง', 'No workouts logged yet — tap "Start workout" on a strength day in your plan')}</p>
           <Button variant="soft" onClick={() => nav('plan')}>{tr('ไปที่ตารางฝึก', 'Open the plan')}</Button>
         </div>
       </Card>
@@ -296,7 +296,7 @@ function Fitness() {
           <li><b className="text-ink">{tr('ภาระ', 'Load')}</b> {tr('ของแต่ละครั้ง = ความเหนื่อยที่ให้คะแนนหลังจบ (1–10) × นาที (session-RPE, Foster 2001) ถ้าไม่ได้ให้คะแนน แอปจะประมาณจากชนิดการฝึก', 'per session = effort rated afterwards (1–10) × minutes (session-RPE, Foster 2001); without a rating the app estimates from the session type')}</li>
           <li><b className="text-ink">{tr('ฟิต', 'Fitness')}</b> {tr('= ภาระเฉลี่ยระยะยาว (~6 สัปดาห์) ค่อย ๆ ขึ้นเมื่อฝึกสม่ำเสมอ', '= long-term average load (~6 weeks), rises slowly with consistent training')} · <b className="text-ink">{tr('ล้า', 'Fatigue')}</b> {tr('= ภาระเฉลี่ย ~1 สัปดาห์ ขึ้นลงเร็ว', '= ~1-week average load, moves quickly')}</li>
           <li><b className="text-ink">{tr('ฟอร์ม', 'Form')}</b> {tr('= ฟิต − ล้า: ติดลบตอนกำลังเพิ่มการฝึกเป็นเรื่องปกติ ก่อนแข่งควรกลับมาเป็นบวกจากการ taper', '= fitness − fatigue: negative while building is normal; the taper should make it positive before a race')}</li>
-          <li>{tr('เป็นโมเดลดูแนวโน้ม (แนวคิดของ Banister) ไม่ใช่ตัวทำนายการบาดเจ็บ — งานวิจัยยังไม่สนับสนุนการใช้อัตราส่วนภาระเพื่อทำนายการบาดเจ็บ', 'A trend model (Banister’s idea), not an injury predictor — research doesn’t support load ratios for predicting injury')}</li>
+          <li>{tr('เป็นโมเดลดูแนวโน้ม (แนวคิดของ Banister) ไม่ใช่ตัวทำนายการบาดเจ็บ งานวิจัยยังไม่สนับสนุนการใช้อัตราส่วนภาระเพื่อทำนายการบาดเจ็บ', 'A trend model (Banister’s idea), not an injury predictor — research doesn’t support load ratios for predicting injury')}</li>
         </ul>
       </Card>
     </>

@@ -6,7 +6,7 @@ import { useBackClose } from '../lib/back'
 import { trNow } from '../lib/i18n'
 import { Button, Portal } from './ui'
 
-/** แสดงกล่องยืนยันและ toast ของทั้งแอป — วางไว้ครั้งเดียวที่ราก */
+/** แสดงกล่องยืนยันและ toast ของทั้งแอป วางไว้ครั้งเดียวที่ราก */
 export function DialogHost() {
   const pending = useSyncExternalStore(subscribeDialogs, getAsk)
   const toasts = useSyncExternalStore(subscribeDialogs, getToasts)

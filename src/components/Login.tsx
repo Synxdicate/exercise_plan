@@ -12,8 +12,8 @@ type Mode = 'signin' | 'signup' | 'reset'
 
 const errorText = (msg: string, t: (th: string, en: string) => string) => {
   if (/invalid login credentials/i.test(msg)) return t('อีเมลหรือรหัสผ่านไม่ถูกต้อง', 'Wrong email or password')
-  if (/email not confirmed/i.test(msg)) return t('ยังไม่ได้ยืนยันอีเมล — เปิดลิงก์ในอีเมลที่ส่งไปก่อน', 'Email not confirmed — open the link we emailed you first')
-  if (/already registered/i.test(msg)) return t('อีเมลนี้สมัครไว้แล้ว — ลองเข้าสู่ระบบแทน', 'This email is already registered — try signing in')
+  if (/email not confirmed/i.test(msg)) return t('ยังไม่ได้ยืนยันอีเมล เปิดลิงก์ในอีเมลที่ส่งไปก่อน', 'Email not confirmed — open the link we emailed you first')
+  if (/already registered/i.test(msg)) return t('อีเมลนี้สมัครไว้แล้ว ลองเข้าสู่ระบบแทน', 'This email is already registered — try signing in')
   if (/at least 6 characters|weak/i.test(msg)) return t('รหัสผ่านสั้นหรือง่ายเกินไป (อย่างน้อย 6 ตัวอักษร)', 'Password too short or weak (at least 6 characters)')
   if (/provider is not enabled/i.test(msg)) return t('ยังไม่ได้เปิด Google login ใน Supabase', 'Google login is not enabled in Supabase')
   return msg
@@ -44,7 +44,7 @@ export function Login() {
     if (mode === 'signin') return run(() => supabase.auth.signInWithPassword({ email, password }))
     if (mode === 'signup')
       return run(() => supabase.auth.signUp({ email, password, options: { emailRedirectTo: redirectTo } }),
-        t('สมัครแล้ว — ตรวจอีเมลแล้วกดลิงก์ยืนยัน จากนั้นกลับมาเข้าสู่ระบบ', 'Signed up — open the confirmation link in your email, then come back and sign in'))
+        t('สมัครแล้ว ตรวจอีเมลแล้วกดลิงก์ยืนยัน จากนั้นกลับมาเข้าสู่ระบบ', 'Signed up — open the confirmation link in your email, then come back and sign in'))
     return run(() => supabase.auth.resetPasswordForEmail(email, { redirectTo }), t('ส่งลิงก์ตั้งรหัสผ่านใหม่ไปที่อีเมลแล้ว', 'Password reset link sent to your email'))
   }
 

@@ -78,7 +78,7 @@ function PlanBody() {
   const doneCount = trainingIdx.filter(isDone).length
   const note = weekNote(p.program, week)
   const day = days[selected]
-  // ทำแผนของวันอื่นวันนี้ (สลับกับวันนี้) — เฉพาะสัปดาห์นี้ ทั้งสองวันยังไม่ได้ทำ และไม่ใช่วันแข่ง
+  // ทำแผนของวันอื่นวันนี้ (สลับกับวันนี้) เฉพาะสัปดาห์นี้ ทั้งสองวันยังไม่ได้ทำ และไม่ใช่วันแข่ง
   const tIdx = todayIdx()
   const canDoToday = isThisWeek && selected !== tIdx && day.type !== 'rest' && day.runKind !== 'race' && days[tIdx]?.runKind !== 'race'
     && !isDone(selected) && !isDone(tIdx)
@@ -106,10 +106,10 @@ function PlanBody() {
           <div className="truncate text-lg font-bold leading-tight">{dt.program(p.program).name}</div>
           {p.isRace && (
             <div className="mt-0.5 text-xs text-muted">
-              {!p.raceDate ? t('ยังไม่ได้ใส่วันแข่ง — แตะเพื่อตั้ง', 'No race date yet — tap to set')
-                : p.weeksUntilStart > 0 ? t(`เริ่มโปรแกรมในอีก ${p.weeksUntilStart} สัปดาห์ — ระหว่างนี้วิ่งเบาสร้างฐาน`, `Program starts in ${p.weeksUntilStart} weeks — build a base with easy runs`)
+              {!p.raceDate ? t('ยังไม่ได้ใส่วันแข่ง แตะเพื่อตั้ง', 'No race date yet — tap to set')
+                : p.weeksUntilStart > 0 ? t(`เริ่มโปรแกรมในอีก ${p.weeksUntilStart} สัปดาห์ ระหว่างนี้วิ่งเบาสร้างฐาน`, `Program starts in ${p.weeksUntilStart} weeks — build a base with easy runs`)
                 : p.daysToRace !== null && p.daysToRace >= 0 ? t(`อีก ${p.daysToRace} วันถึงวันแข่ง (${p.raceDate})`, `${p.daysToRace} days to race day (${p.raceDate})`)
-                : t('ผ่านวันแข่งแล้ว — พัก 1–2 สัปดาห์ แล้วเลือกเป้าหมายถัดไป', 'Race done — rest 1–2 weeks, then pick your next goal')}
+                : t('ผ่านวันแข่งแล้ว พัก 1–2 สัปดาห์ แล้วเลือกเป้าหมายถัดไป', 'Race done — rest 1–2 weeks, then pick your next goal')}
             </div>
           )}
         </div>
@@ -156,7 +156,7 @@ function PlanBody() {
               <button key={i} onClick={() => setSelected(i)} aria-pressed={on}
                 className={cx('flex flex-col items-center gap-1 rounded-2xl py-2 transition-colors', on ? 'bg-accent-soft' : '')}>
                 <span className={cx('text-[11px] font-semibold', on ? 'text-accent' : isToday ? 'text-ink' : 'text-muted')}>{isToday ? t('วันนี้', 'Today') : t(short[i], shortEn[i])}</span>
-                {/* ชื่อเต็มสำหรับโปรแกรมอ่านหน้าจอ — ต้องขึ้นต้นด้วยข้อความที่เห็น (WCAG 2.5.3) */}
+                {/* ชื่อเต็มสำหรับโปรแกรมอ่านหน้าจอ ต้องขึ้นต้นด้วยข้อความที่เห็น (WCAG 2.5.3) */}
                 <span className="sr-only">{dt.weekday(d)}: {dt.title(d)}</span>
                 <span className={cx('grid size-9 place-items-center rounded-full transition-all',
                   isDone(i) ? 'bg-good-fill text-white' : st.tone, on && 'ring-2 ring-accent ring-offset-2 ring-offset-card')}>
@@ -387,7 +387,7 @@ function ExerciseRow({ e, n, onSwap, onRemove }: { e: Exercise; n: number; onSwa
           </div>
           <ExerciseDemo name={e.name} />
           {e.solo && e.swappedFrom && needsSpotter[e.swappedFrom] && <p className="text-xs text-run">{t(`ไปคนเดียว: ใช้ท่านี้แทน ${e.swappedFrom} — ${needsSpotter[e.swappedFrom].note}`, `Training solo: this replaces ${e.swappedFrom} — ${needsSpotter[e.swappedFrom].noteEn}`)}</p>}
-          {!e.swappedFrom && needsSpotter[e.name] && <p className="text-xs text-warn">{t(`ท่านี้ควรมีคนช่วยจับบาร์ (${needsSpotter[e.name].note}) — ไปคนเดียวติ๊ก "ไปคนเดียว" ด้านบนได้`, `This lift needs a spotter (${needsSpotter[e.name].noteEn}) — training alone? tick "Solo" above`)}</p>}
+          {!e.swappedFrom && needsSpotter[e.name] && <p className="text-xs text-warn">{t(`ท่านี้ควรมีคนช่วยจับบาร์ (${needsSpotter[e.name].note}) ไปคนเดียวติ๊ก "ไปคนเดียว" ด้านบนได้`, `This lift needs a spotter (${needsSpotter[e.name].noteEn}) — training alone? tick "Solo" above`)}</p>}
           <p className="text-muted">{dt.cue(e.cue)}</p>
           {(e.easier || e.harder) && (
             <div className="flex flex-wrap gap-3 text-xs text-run">

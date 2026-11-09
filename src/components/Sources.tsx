@@ -29,7 +29,7 @@ export function Sources() {
       </Card>
 
       <Card title={t('แหล่งอ้างอิง', 'References')}>
-        <p className="-mt-1 mb-3 text-xs text-muted">{t('ตัวเลขในแอปอ้างอิงจากรายการนี้ (ตรวจกับ PubMed แล้ว) — ข้อมูล Tom Holland มาจากสื่อ', 'Numbers in the app come from this list (checked on PubMed) — Tom Holland info comes from media')}</p>
+        <p className="-mt-1 mb-3 text-xs text-muted">{t('ตัวเลขในแอปอ้างอิงจากรายการนี้ (ตรวจกับ PubMed แล้ว) ข้อมูล Tom Holland มาจากสื่อ', 'Numbers in the app come from this list (checked on PubMed) — Tom Holland info comes from media')}</p>
         <div className="space-y-4">
           {[...new Set(references.map(r => r.cat))].map(cat => (
             <div key={cat}>

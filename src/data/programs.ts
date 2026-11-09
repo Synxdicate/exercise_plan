@@ -5,7 +5,7 @@ import { homeAlt, libEx } from './library'
 export type ProgramId = 'physique' | 'strength' | 'start' | 'mini' | 'base' | 'five' | 'ten' | 'half' | 'full'
 type RunProgram = Exclude<ProgramId, 'physique' | 'strength' | 'start' | 'mini'>
 export type Mode = 'gym' | 'park' | 'home'
-// แผนเขียนไว้สองแบบ (ยิม/สวน) — ที่บ้านแปลงจากแบบสวนใน homeWeek
+// แผนเขียนไว้สองแบบ (ยิม/สวน) ที่บ้านแปลงจากแบบสวนใน homeWeek
 type Venue = 'gym' | 'park'
 export type LocationPref = Mode | 'mix'
 
@@ -61,7 +61,7 @@ const tenWeeks: RunWeek[] = [
   { easyA: 3, q: fartlek(3), easyB: 0, long: 5 },
   { easyA: 3, q: tempo(4, '2×5'), easyB: 0, long: 5.5 },
   { easyA: 3, q: strides(3), easyB: 0, long: 5, note: 'สัปดาห์ลดปริมาณ ให้ร่างกายปรับตัว' },
-  { easyA: 3, q: reps(4, '6 × 1 นาที / จ็อก 2 นาที'), easyB: 2, long: 6, note: 'เริ่มวิ่ง 4 วัน — วันเสาร์วิ่งสั้น ๆ เบามาก' },
+  { easyA: 3, q: reps(4, '6 × 1 นาที / จ็อก 2 นาที'), easyB: 2, long: 6, note: 'เริ่มวิ่ง 4 วัน วันเสาร์วิ่งสั้น ๆ เบามาก' },
   { easyA: 3, q: tempo(4, '15'), easyB: 3, long: 6.5 },
   { easyA: 4, q: reps(5, '5 × 800 ม. / จ็อก 2 นาที'), easyB: 3, long: 7 },
   { easyA: 3, q: strides(4), easyB: 3, long: 6, note: 'สัปดาห์ลดปริมาณ' },
@@ -86,7 +86,7 @@ const halfWeeks: RunWeek[] = [
   { easyA: 5, q: pace(7, '2 × 3 กม.', 'เพซฮาล์ฟ'), easyB: 5, long: 13 },
   { easyA: 4, q: strides(5), easyB: 4, long: 10.5, note: 'สัปดาห์ลดปริมาณ' },
   { easyA: 6, q: tempo(8, '30'), easyB: 5, long: 14 },
-  { easyA: 6, q: pace(8, '3 × 3 กม.', 'เพซฮาล์ฟ'), easyB: 5, long: 15, note: 'สัปดาห์พีค — ระยะยาวที่สุดของโปรแกรม' },
+  { easyA: 6, q: pace(8, '3 × 3 กม.', 'เพซฮาล์ฟ'), easyB: 5, long: 15, note: 'สัปดาห์พีค ระยะยาวที่สุดของโปรแกรม' },
   { easyA: 5, q: pace(6, '2 × 2 กม.', 'เพซฮาล์ฟ'), easyB: 4, long: 11, note: 'Taper: ลดระยะ คงความเร็วไว้' },
   { easyA: 4, q: strides(4), easyB: 3, long: 21.1, note: 'สัปดาห์แข่ง! นอนให้พอ กินคาร์บเพิ่ม 1–2 วันก่อนแข่ง' },
 ]
@@ -105,7 +105,7 @@ const fullWeeks: RunWeek[] = [
   { easyA: 6, q: strides(8), easyB: 6, long: 23, note: 'สัปดาห์ลดปริมาณ' },
   { easyA: 8, q: tempo(12, '35'), easyB: 8, long: 31.5 },
   { easyA: 8, q: pace(13, '12 กม.', 'เพซมาราธอน'), easyB: 8, long: 26 },
-  { easyA: 8, q: reps(12, '6 × 1 กม. / จ็อก 2 นาที'), easyB: 8, long: 32, note: 'สัปดาห์พีค — ซ้อมกินเจล/น้ำระหว่างวิ่งยาว' },
+  { easyA: 8, q: reps(12, '6 × 1 กม. / จ็อก 2 นาที'), easyB: 8, long: 32, note: 'สัปดาห์พีค ซ้อมกินเจล/น้ำระหว่างวิ่งยาว' },
   { easyA: 6, q: strides(8), easyB: 6, long: 22, note: 'สัปดาห์ลดปริมาณ' },
   { easyA: 7, q: pace(10, '8 กม.', 'เพซมาราธอน'), easyB: 7, long: 24, note: 'Taper เริ่ม: ลดปริมาณ ~20%' },
   { easyA: 6, q: pace(8, '5 กม.', 'เพซมาราธอน'), easyB: 5, long: 16, note: 'Taper: ลดปริมาณ ~40%' },
@@ -113,8 +113,8 @@ const fullWeeks: RunWeek[] = [
 ]
 
 // วิ่งนานเกิน ~75–90 นาที ควรเติมคาร์บระหว่างวิ่ง 30–60 ก./ชม. (ACSM 2016, Jeukendrup 2014)
-// มือใหม่วิ่งมินิราว 1.5–2 ชม. — วิ่งยาวช่วงท้าย (~70–85 นาที) ใช้ซ้อมดื่ม/กินแบบวันแข่ง (Jeukendrup 2017: ลำไส้ฝึกได้)
-const gutNote = 'ซ้อมดื่มน้ำ/เกลือแร่ (และเจล ถ้าจะใช้วันแข่ง) ระหว่างวิ่งยาวนี้ แบบเดียวกับที่จะทำวันแข่ง — ท้องปรับตัวได้ด้วยการซ้อม วันแข่งไม่ใช้ของใหม่'
+// มือใหม่วิ่งมินิราว 1.5–2 ชม. วิ่งยาวช่วงท้าย (~70–85 นาที) ใช้ซ้อมดื่ม/กินแบบวันแข่ง (Jeukendrup 2017: ลำไส้ฝึกได้)
+const gutNote = 'ซ้อมดื่มน้ำ/เกลือแร่ (และเจล ถ้าจะใช้วันแข่ง) ระหว่างวิ่งยาวนี้ แบบเดียวกับที่จะทำวันแข่ง ท้องปรับตัวได้ด้วยการซ้อม วันแข่งไม่ใช้ของใหม่'
 // สัปดาห์ 7–8 ของมินิ: ซ้อมใหญ่วันแข่ง (ข้อแนะนำเชิงปฏิบัติ "วันแข่งไม่ใช้ของใหม่")
 const rehearsalNote = 'ซ้อมใหญ่วันแข่ง: ใส่รองเท้า/ชุดที่จะใช้จริง ออกตัวด้วยเพซที่ตั้งใจใช้วันแข่ง (ไม่เร็วกว่านั้น) และลองจังหวะวิ่ง 8 นาที / เดิน 1 นาทีเหมือนแผนวันแข่ง'
 const fuelNote = 'วิ่งนานเกิน ~75 นาที: พกเจล/เครื่องดื่มเกลือแร่ เติมคาร์บ 30–60 ก./ชม. (เจล 1 ซองทุก 30–40 นาที) และซ้อมกินแบบนี้ก่อนวันแข่ง'
@@ -146,7 +146,7 @@ const runnerStrength: Record<Venue, [Exercise[], Exercise[]]> = {
       ex('Seated Cable Row', 'ดึงเคเบิลนั่ง', '3', '8–12', '90 วิ', 'ดึงศอกไปหลัง อกยืด', 'seated cable row proper form'),
       ex('Bulgarian Split Squat', 'สควอทขาเดียว เท้าหลังพาดม้านั่ง', '2', '8 / ข้าง', '90 วิ', 'ลงช้า ๆ คุมเข่าไม่บิดเข้าใน', 'bulgarian split squat form'),
       ex('Dips', 'ดิปบาร์คู่', '2', '6–10', '90 วิ', 'ลงจนศอก ~90°', 'how to do dips correctly'),
-      ex('Seated Calf Raise', 'นั่งเขย่งน่อง (น่องมัดใน)', '2', '12–15', '60 วิ', 'เข่างอ ~90° ลงช้า — น่องมัดใน (soleus) รับแรงตอนวิ่งมากที่สุด', 'seated calf raise form'),
+      ex('Seated Calf Raise', 'นั่งเขย่งน่อง (น่องมัดใน)', '2', '12–15', '60 วิ', 'เข่างอ ~90° ลงช้า น่องมัดใน (soleus) รับแรงตอนวิ่งมากที่สุด', 'seated calf raise form'),
       ex('Dead Bug', 'นอนหงายยืดแขนขาสลับ', '2', '8 / ข้าง', '45 วิ', 'หลังล่างแนบพื้นตลอด', 'dead bug exercise form'),
     ],
   ],
@@ -157,7 +157,7 @@ const runnerStrength: Record<Venue, [Exercise[], Exercise[]]> = {
       ex('Pull-up', 'ดึงข้อ', '3', '4–8', '2 นาที', 'ทำไม่ได้ใช้ Negative', 'pull up progression for beginners calisthenics', { easier: 'Negative pull-up' }),
       ex('Single-leg Glute Bridge', 'ยกสะโพกขาเดียว', '2', '12 / ข้าง', '60 วิ', 'บีบก้นค้าง 1 วิ', 'single leg glute bridge form'),
       ex('Single-leg Calf Raise', 'เขย่งน่องขาเดียว (บนขอบบันได)', '3', '12–15 / ข้าง', '60 วิ', 'ลงช้า 3 วิ', 'single leg calf raise runners'),
-      // สวน: ไม่ต้องใช้อุปกรณ์ — มียางยืดเปลี่ยนเป็น Banded Lateral Walk ได้
+      // สวน: ไม่ต้องใช้อุปกรณ์ มียางยืดเปลี่ยนเป็น Banded Lateral Walk ได้
       ex('Side-lying Hip Abduction', 'นอนตะแคงยกขา (สะโพกด้านข้าง)', '2', '15–20 / ข้าง', '45 วิ', 'สะโพกด้านข้างอ่อน → สะโพกตก/เจ็บ IT band ตอนวิ่ง ขาบนตรง ยกช้า ค้าง 1 วิ', 'side lying hip abduction form', { harder: 'Banded Lateral Walk (ยางยืด)' }),
       ex('Side Plank', 'แพลงก์ด้านข้าง', '2', '30–45 วิ / ข้าง', '45 วิ', 'สะโพกไม่ตก', 'side plank proper form'),
     ],
@@ -173,8 +173,8 @@ const runnerStrength: Record<Venue, [Exercise[], Exercise[]]> = {
   ],
 }
 
-const calfHold = ex('Isometric Calf Hold', 'ยืนเขย่งค้าง (ฝึกเอ็นร้อยหวาย)', '3', '30–45 วิ / ข้าง', '60 วิ', 'เขย่งขาเดียวครึ่งทาง ค้างนิ่ง — เตรียมเอ็นก่อนเริ่มท่ากระโดด ถือดัมเบล/เป้เพิ่มน้ำหนักได้', 'isometric calf raise hold achilles')
-const nordic = ex('Nordic Curl', 'นอร์ดิกเคิร์ล (ใช้ยางยืดช่วยพยุงก่อน)', '2', '4–6', '2 นาที', 'เกี่ยวเท้าใต้ม้านั่ง/ให้คนจับ ค่อย ๆ ล้มไปข้างหน้าช้าที่สุด ใช้มือรับ — เริ่มด้วยยางยืดคล้องอกกับเสาช่วยพยุง ตะคริวให้หยุด', 'nordic hamstring curl band assisted')
+const calfHold = ex('Isometric Calf Hold', 'ยืนเขย่งค้าง (ฝึกเอ็นร้อยหวาย)', '3', '30–45 วิ / ข้าง', '60 วิ', 'เขย่งขาเดียวครึ่งทาง ค้างนิ่ง เตรียมเอ็นก่อนเริ่มท่ากระโดด ถือดัมเบล/เป้เพิ่มน้ำหนักได้', 'isometric calf raise hold achilles')
+const nordic = ex('Nordic Curl', 'นอร์ดิกเคิร์ล (ใช้ยางยืดช่วยพยุงก่อน)', '2', '4–6', '2 นาที', 'เกี่ยวเท้าใต้ม้านั่ง/ให้คนจับ ค่อย ๆ ล้มไปข้างหน้าช้าที่สุด ใช้มือรับ เริ่มด้วยยางยืดคล้องอกกับเสาช่วยพยุง ตะคริวให้หยุด', 'nordic hamstring curl band assisted')
 
 const strengthNote = 'เหลือแรง 2–3 ครั้งทุกเซ็ต ไม่เล่นจนหมดแรง เพื่อไม่ให้ขาล้าก่อนวันวิ่งคุณภาพ'
 
@@ -186,20 +186,20 @@ function raceWeek(program: RunProgram, mode: Venue, week: number): Day[] {
   const last = !!programs[program].raceKm && week === table.length
   const taper = last || (w.note?.startsWith('Taper') ?? false)
   const [a0, b0] = runnerStrength[mode]
-  // เอ็นก่อนกระโดด (อ.เอกวิทย์): สัปดาห์ 1–3 เขย่งค้าง (isometric) ให้เอ็นรับโหลด — เอ็นปรับตัวกับแรงค้างนาน ๆ (Bohm 2015)
-  // แล้วค่อยกระโดดเขย่ง (pogo) ตั้งแต่สัปดาห์ 4 — เวทแบบระเบิดแรงช่วยความประหยัดแรงวิ่ง (Rønnestad & Mujika 2014)
+  // เอ็นก่อนกระโดด (อ.เอกวิทย์): สัปดาห์ 1–3 เขย่งค้าง (isometric) ให้เอ็นรับโหลด เอ็นปรับตัวกับแรงค้างนาน ๆ (Bohm 2015)
+  // แล้วค่อยกระโดดเขย่ง (pogo) ตั้งแต่สัปดาห์ 4 เวทแบบระเบิดแรงช่วยความประหยัดแรงวิ่ง (Rønnestad & Mujika 2014)
   const a = week >= 4 && !taper && !last
-    ? [...a0, ex('Pogo Jumps', 'กระโดดเขย่ง (ข้อเท้าแข็ง)', '3', '15–20', '60 วิ', 'เข่าเกือบตรง เด้งด้วยข้อเท้า แตะพื้นสั้นที่สุด เบาและเงียบ — เจ็บน่อง/เอ็นร้อยหวายให้หยุด', 'pogo jumps runners')]
+    ? [...a0, ex('Pogo Jumps', 'กระโดดเขย่ง (ข้อเท้าแข็ง)', '3', '15–20', '60 วิ', 'เข่าเกือบตรง เด้งด้วยข้อเท้า แตะพื้นสั้นที่สุด เบาและเงียบ เจ็บน่อง/เอ็นร้อยหวายให้หยุด', 'pogo jumps runners')]
     : week < 4 ? [...a0, calfHold] : a0
   // ต้นขาหลังแบบยืดค้าง (eccentric) ตั้งแต่สัปดาห์ 3 ไม่ใส่ช่วง taper — ลดการเจ็บต้นขาหลัง (Al Attar 2017: ศึกษาในนักฟุตบอล)
   const b = week >= 3 && !taper && !last ? [...b0, nordic] : b0
   const lighten = (list: Exercise[]) => (taper ? list.map(e => ({ ...e, sets: '2' })) : list)
-  // ขึ้นเนินสั้น ๆ สัปดาห์เว้นสัปดาห์ (ไม่ใส่ในสัปดาห์ลดปริมาณ/taper) — วิ่งเร็วขึ้นเนินช่วยความประหยัดแรง (Barnes & Kilding 2015)
+  // ขึ้นเนินสั้น ๆ สัปดาห์เว้นสัปดาห์ (ไม่ใส่ในสัปดาห์ลดปริมาณ/taper) วิ่งเร็วขึ้นเนินช่วยความประหยัดแรง (Barnes & Kilding 2015)
   const hillWeek = week % 2 === 0 && !taper && !w.note?.startsWith('สัปดาห์ลด')
 
   return [
     { key: 'strA', day: 'จันทร์', title: 'เวท A — ทั้งตัว', type: 'strength', duration: '45 นาที', note: taper ? `ช่วง taper: ลดเหลือ 2 เซ็ต น้ำหนักเท่าเดิม` : strengthNote, exercises: lighten(a) },
-    // วิ่งหนักห่างจากเวทขาอย่างน้อย 48 ชม. — เวทขาทำให้วิ่งได้แย่ลงได้นาน 6–48 ชม. (Doma 2017)
+    // วิ่งหนักห่างจากเวทขาอย่างน้อย 48 ชม. เวทขาทำให้วิ่งได้แย่ลงได้นาน 6–48 ชม. (Doma 2017)
     runDay('easyA', 'อังคาร', 'Easy run', w.easyA, 'easy', 'วิ่งเบาระดับพูดคุยได้ (โซน E)'),
     runDay('quality', 'พุธ', w.q.title, w.q.km, w.q.kind, w.q.how, undefined, w.q.guide),
     last
@@ -208,22 +208,22 @@ function raceWeek(program: RunProgram, mode: Venue, week: number): Day[] {
     { key: 'rest', day: 'ศุกร์', title: 'พัก', type: 'rest', duration: '-', note: 'พักเต็มวัน ให้ขาสดสำหรับวิ่งเสาร์–อาทิตย์', exercises: [] },
     w.easyB > 0
       ? (hillWeek
-        ? runDay('easyB', 'เสาร์', 'Easy run + เนินสั้น', w.easyB, 'easy', 'วิ่งเบา แล้ววิ่งขึ้นเนินสั้น ๆ 6 × 10 วิ (แรงแต่ฟอร์มดี) — ชันไม่เกิน ~7% (วิ่งได้ ไม่ใช่ปีน) ลงเนินเดินหรือจ็อกช้า ก้าวสั้น · ไม่มีเนินใช้สะพาน/ทางลาด', undefined, guides.hills(w.easyB))
+        ? runDay('easyB', 'เสาร์', 'Easy run + เนินสั้น', w.easyB, 'easy', 'วิ่งเบา แล้ววิ่งขึ้นเนินสั้น ๆ 6 × 10 วิ (แรงแต่ฟอร์มดี) ชันไม่เกิน ~7% (วิ่งได้ ไม่ใช่ปีน) ลงเนินเดินหรือจ็อกช้า ก้าวสั้น · ไม่มีเนินใช้สะพาน/ทางลาด', undefined, guides.hills(w.easyB))
         : runDay('easyB', 'เสาร์', 'Easy run + Strides', w.easyB, 'easy', 'วิ่งเบา แล้ว Strides 4 × 20 วิ'))
       : { key: 'easyB', day: 'เสาร์', title: 'พัก / เดินเบา ๆ', type: 'rest', duration: '-', note: 'เดิน 20–30 นาที หรือยืดเหยียด', exercises: [] },
     last
       ? runDay('long', 'อาทิตย์', `วันแข่ง ${programs[program].raceKm} กม.`, w.long, 'race', 'ออกตัวช้ากว่าเพซเป้าหมาย 5–10 วิ/กม. ช่วงแรก ดื่มน้ำทุกจุด', w.note)
-      : runDay('long', 'อาทิตย์', 'วิ่งยาว (Long run)', w.long, 'long', 'ช้าระดับพูดคุยได้ (โซน E) — วิ่งยาวเน้นเวลาบนขา ไม่เน้นความเร็ว'),
+      : runDay('long', 'อาทิตย์', 'วิ่งยาว (Long run)', w.long, 'long', 'ช้าระดับพูดคุยได้ (โซน E) วิ่งยาวเน้นเวลาบนขา ไม่เน้นความเร็ว'),
   ]
 }
 
 // ---------- เริ่มวิ่ง: วิ่งสลับเดิน ----------
 // แบบเดียวกับ Couch to 5K (9 สัปดาห์): เวลาบนขาคงที่ ~25–30 นาที ช่วงวิ่งค่อย ๆ ยาวขึ้น ช่วงเดินคือการพัก
-// มือใหม่บาดเจ็บง่ายแม้ในโปรแกรมที่ค่อย ๆ เพิ่ม (Buist 2008) — เอ็นและกระดูกปรับตัวช้ากว่าหัวใจ จึงไม่เร่งเพซเลย
+// มือใหม่บาดเจ็บง่ายแม้ในโปรแกรมที่ค่อย ๆ เพิ่ม (Buist 2008) เอ็นและกระดูกปรับตัวช้ากว่าหัวใจ จึงไม่เร่งเพซเลย
 // แต่ละ session: [นาทีวิ่ง, นาทีเดิน, จำนวนรอบ] หรือรายการช่วงวิ่งต่อเนื่อง
 type RunWalk = { run: number; walk: number; reps: number } | { runs: number[]; walk: number }
 const startWeeks: { s: RunWalk[]; note?: string }[] = [
-  { s: [{ run: 1, walk: 2, reps: 8 }], note: 'วิ่งช้าแค่ไหนก็ได้ ขอให้พูดเป็นประโยคได้ — เหนื่อยเกินให้เดินนานขึ้น' },
+  { s: [{ run: 1, walk: 2, reps: 8 }], note: 'วิ่งช้าแค่ไหนก็ได้ ขอให้พูดเป็นประโยคได้ เหนื่อยเกินให้เดินนานขึ้น' },
   { s: [{ run: 2, walk: 2, reps: 6 }] },
   { s: [{ run: 3, walk: 2, reps: 5 }] },
   { s: [{ run: 4, walk: 2, reps: 4 }] },
@@ -252,7 +252,7 @@ const runWalkSteps = (rw: RunWalk): { steps: Step[]; runMin: number; longest: nu
   }
 }
 
-/** เวลาวิ่ง (ไม่รวมเดิน) และช่วงวิ่งต่อเนื่องที่ยาวที่สุดของแต่ละวันวิ่งในสัปดาห์ — ใช้ในเทสต์ */
+/** เวลาวิ่ง (ไม่รวมเดิน) และช่วงวิ่งต่อเนื่องที่ยาวที่สุดของแต่ละวันวิ่งในสัปดาห์ ใช้ในเทสต์ */
 export const startSessions = (week: number) => {
   const w = startWeeks[Math.min(Math.max(week, 1), startWeeks.length) - 1]
   return [0, 1, 2].map(i => runWalkSteps(w.s[i] ?? w.s[0]))
@@ -261,7 +261,7 @@ export const startSessions = (week: number) => {
 function startWeek(mode: Venue, week: number): Day[] {
   const w = startWeeks[Math.min(Math.max(week, 1), startWeeks.length) - 1]
   const [a, b] = runnerStrength[mode]
-  // มือใหม่: เวท 2 เซ็ต ไม่มีกระโดด — สร้างความแข็งแรงให้เอ็น/กล้ามรับแรงกระแทกก่อน
+  // มือใหม่: เวท 2 เซ็ต ไม่มีกระโดด สร้างความแข็งแรงให้เอ็น/กล้ามรับแรงกระแทกก่อน
   const light = (list: Exercise[]) => list.map(e => ({ ...e, sets: '2' }))
   const note = 'มือใหม่: เลือกน้ำหนักที่เหลือแรง 3–4 ครั้ง ฝึกท่าให้ถูกก่อนเพิ่มน้ำหนัก'
   const rw = (key: string, day: string, i: number): Day => {
@@ -286,8 +286,8 @@ function startWeek(mode: Venue, week: number): Day[] {
 }
 
 // ---------- มินิมาราธอนสำหรับมือใหม่ (10 สัปดาห์) ----------
-// เริ่มจากวิ่งสลับเดิน ~5 กม. ไม่มีวันวิ่งหนัก — วิ่งยาวเพิ่มทีละ ≤10% (Frandsen 2025) มีสัปดาห์ลดปริมาณและ taper
-// วันแข่งวิ่งสลับเดินได้ (10.5 กม. ≈ 1.3 เท่าของวิ่งยาวที่สุด — ระยะวันแข่งได้รับยกเว้นกฎ 10%)
+// เริ่มจากวิ่งสลับเดิน ~5 กม. ไม่มีวันวิ่งหนัก วิ่งยาวเพิ่มทีละ ≤10% (Frandsen 2025) มีสัปดาห์ลดปริมาณและ taper
+// วันแข่งวิ่งสลับเดินได้ (10.5 กม. ≈ 1.3 เท่าของวิ่งยาวที่สุด ระยะวันแข่งได้รับยกเว้นกฎ 10%)
 // [วิ่งเบา อังคาร/พฤหัส กม., วิ่งยาว กม., นาทีวิ่ง, นาทีเดิน (0 = วิ่งต่อเนื่อง)]
 const miniWeeks: { easy: number; long: number; run: number; walk: number; note?: string }[] = [
   { easy: 3, long: 5, run: 3, walk: 1, note: 'วิ่งช้าระดับพูดเป็นประโยคได้ เดินตามจังหวะเสียงนำ ไม่ต้องรอให้เหนื่อยก่อนเดิน' },
@@ -297,7 +297,7 @@ const miniWeeks: { easy: number; long: number; run: number; walk: number; note?:
   { easy: 3.5, long: 6.5, run: 8, walk: 1 },
   { easy: 4, long: 7, run: 10, walk: 1 },
   { easy: 4, long: 7.5, run: 15, walk: 1 },
-  { easy: 4.5, long: 8.2, run: 0, walk: 0, note: 'วิ่งต่อเนื่องได้แล้ว — เหนื่อยเกินเดินพักได้ 1 นาที ไม่ผิด' },
+  { easy: 4.5, long: 8.2, run: 0, walk: 0, note: 'วิ่งต่อเนื่องได้แล้ว เหนื่อยเกินเดินพักได้ 1 นาที ไม่ผิด' },
   { easy: 3.5, long: 6, run: 0, walk: 0, note: 'Taper: ลดระยะ ให้ขาสดก่อนวันแข่ง' },
   { easy: 3, long: 10.5, run: 0, walk: 0, note: 'สัปดาห์แข่ง! วางแผนวิ่ง 8 นาที เดิน 1 นาทีตั้งแต่ต้น ดื่มน้ำทุกจุด ออกตัวช้า' },
 ]
@@ -326,13 +326,13 @@ function miniWeek(mode: Venue, week: number): Day[] {
     last
       ? runDay('long', 'อาทิตย์', 'วันแข่ง มินิมาราธอน 10.5 กม.', w.long, 'race', 'วิ่ง 8 นาที เดิน 1 นาทีตั้งแต่ต้น ออกตัวช้ากว่าที่รู้สึกว่าไหว ดื่มน้ำทุกจุด', w.note)
       : w.walk
-        ? runDay('long', 'อาทิตย์', `วิ่งยาวสลับเดิน ${w.long} กม.`, w.long, 'long', `${ratio} จนครบระยะ — เน้นเวลาบนขา ไม่เน้นความเร็ว`, longNote, guides.runWalk(w.long, w.run, w.walk))
-        : runDay('long', 'อาทิตย์', 'วิ่งยาว (Long run)', w.long, 'long', 'ช้าระดับพูดคุยได้ (โซน E) — เดินพักได้', longNote),
+        ? runDay('long', 'อาทิตย์', `วิ่งยาวสลับเดิน ${w.long} กม.`, w.long, 'long', `${ratio} จนครบระยะ เน้นเวลาบนขา ไม่เน้นความเร็ว`, longNote, guides.runWalk(w.long, w.run, w.walk))
+        : runDay('long', 'อาทิตย์', 'วิ่งยาว (Long run)', w.long, 'long', 'ช้าระดับพูดคุยได้ (โซน E) เดินพักได้', longNote),
   ]
 }
 
 // ---------- เวทอย่างเดียว ----------
-// ใช้วันเวทของโปรแกรมหุ่น 3 วัน (บน/ล่าง/บน) + วันขาที่ 2 = 4 วัน/สัปดาห์ (บน 2 ล่าง 2 — แต่ละกล้ามได้ฝึก 2 ครั้ง/สัปดาห์)
+// ใช้วันเวทของโปรแกรมหุ่น 3 วัน (บน/ล่าง/บน) + วันขาที่ 2 = 4 วัน/สัปดาห์ (บน 2 ล่าง 2 แต่ละกล้ามได้ฝึก 2 ครั้ง/สัปดาห์)
 // สัปดาห์ที่ 4 ของรอบเป็น Deload ลดเซ็ตครึ่งหนึ่ง น้ำหนักเท่าเดิม
 const STRENGTH_DELOAD = 'สัปดาห์ Deload: ทำทุกท่าครึ่งหนึ่งของจำนวนเซ็ต น้ำหนักเท่าเดิม ให้ร่างกายฟื้นก่อนรอบใหม่'
 
@@ -383,16 +383,16 @@ export function variants(program: ProgramId, week: number): Record<Mode, Day[]> 
 }
 
 // ซ้อมลงเนินเบา ๆ 3–4 สัปดาห์ก่อนแข่ง: วิ่งลงเนินครั้งเดียวช่วยให้การลงเนินครั้งถัดไปปวด/กล้ามเสียหายน้อยลง
-// อยู่ได้ถึง ~6 สัปดาห์ (Byrnes 1985; Tallis 2024 ซ้ำห่าง 3 สัปดาห์) — งานวิจัยใช้ลงเนินชัน 10–15% นาน 15–30 นาที
+// อยู่ได้ถึง ~6 สัปดาห์ (Byrnes 1985; Tallis 2024 ซ้ำห่าง 3 สัปดาห์) งานวิจัยใช้ลงเนินชัน 10–15% นาน 15–30 นาที
 // แอปให้แบบเบากว่ามาก (มือใหม่) และอยู่ก่อน taper เพื่อให้ขาหายปวดก่อนวันแข่ง
-export const downhillNote = 'ถ้าเส้นทางแข่งมีช่วงลงเนิน: วิ่งรอบนี้ในเส้นทางที่มีทางลาดลงเล็กน้อย (สะพาน/ถนนลาด) วิ่งลงช้า ๆ 4 × 1 นาที ก้าวสั้นและถี่ ลำตัวตั้ง ไม่เบรกด้วยส้นเท้า เดินขึ้นกลับ — ครั้งแรกน่องและต้นขาหน้าอาจปวด 1–2 วัน เป็นเรื่องปกติ ครั้งต่อไป (รวมวันแข่ง) จะปวดน้อยลง'
+export const downhillNote = 'ถ้าเส้นทางแข่งมีช่วงลงเนิน: วิ่งรอบนี้ในเส้นทางที่มีทางลาดลงเล็กน้อย (สะพาน/ถนนลาด) วิ่งลงช้า ๆ 4 × 1 นาที ก้าวสั้นและถี่ ลำตัวตั้ง ไม่เบรกด้วยส้นเท้า เดินขึ้นกลับ ครั้งแรกน่องและต้นขาหน้าอาจปวด 1–2 วัน เป็นเรื่องปกติ ครั้งต่อไป (รวมวันแข่ง) จะปวดน้อยลง'
 // ผู้ใช้ตั้ง "เส้นทางแข่งมีเนิน" (synced raceHills — เช่น ขอนแก่นที่เป็นเนินซึมยาว): ซ้อมลงเนินแบบไม่มี "ถ้า",
 // วิ่งยาวก่อน taper บนเส้นทางมีเนิน และวันแข่งคุมความเหนื่อยแทนเพซ (Johnson 2022: เร็วสุดเมื่อออกแรงขึ้นเนินเพิ่ม ≤~10%)
-export const hillyDownhillNote = 'เส้นทางแข่งมีเนิน: วิ่งรอบนี้ในเส้นทางที่มีทางลาดลงเล็กน้อย (สะพาน/ถนนลาด) วิ่งลงช้า ๆ 4 × 1 นาที ก้าวสั้นและถี่ ลำตัวตั้ง ไม่เบรกด้วยส้นเท้า เดินขึ้นกลับ — ครั้งแรกน่องและต้นขาหน้าอาจปวด 1–2 วัน เป็นเรื่องปกติ ครั้งต่อไป (รวมวันแข่ง) จะปวดน้อยลง'
-export const hillyLongNote = 'สนามมีเนิน: วิ่งยาวรอบนี้บนเส้นทางที่มีเนินขึ้น–ลงยาว ๆ อย่างน้อยครึ่งทาง — ขึ้นเนินคุมความเหนื่อยเท่าทางราบ ปล่อยเพซช้าลงได้ ก้าวสั้นลง ลงเนินไม่เร่งจนต้องเบรก'
-export const hillyRaceNote = 'เนินซึม: คุมความเหนื่อย ไม่ใช่เพซ — ขึ้นเนินปล่อยให้ช้าลง (ฝืนเพซเดิมขึ้นเนินทำให้ขาหมดก่อนเส้นชัย) ลงเนินก้าวสั้นถี่ ไม่เบรก'
+export const hillyDownhillNote = 'เส้นทางแข่งมีเนิน: วิ่งรอบนี้ในเส้นทางที่มีทางลาดลงเล็กน้อย (สะพาน/ถนนลาด) วิ่งลงช้า ๆ 4 × 1 นาที ก้าวสั้นและถี่ ลำตัวตั้ง ไม่เบรกด้วยส้นเท้า เดินขึ้นกลับ ครั้งแรกน่องและต้นขาหน้าอาจปวด 1–2 วัน เป็นเรื่องปกติ ครั้งต่อไป (รวมวันแข่ง) จะปวดน้อยลง'
+export const hillyLongNote = 'สนามมีเนิน: วิ่งยาวรอบนี้บนเส้นทางที่มีเนินขึ้น–ลงยาว ๆ อย่างน้อยครึ่งทาง ขึ้นเนินคุมความเหนื่อยเท่าทางราบ ปล่อยเพซช้าลงได้ ก้าวสั้นลง ลงเนินไม่เร่งจนต้องเบรก'
+export const hillyRaceNote = 'เนินซึม: คุมความเหนื่อย ไม่ใช่เพซ ขึ้นเนินปล่อยให้ช้าลง (ฝืนเพซเดิมขึ้นเนินทำให้ขาหมดก่อนเส้นชัย) ลงเนินก้าวสั้นถี่ ไม่เบรก'
 
-/** ใส่ใน plan() เมื่อผู้ใช้ตั้งว่าเส้นทางแข่งมีเนิน — เฉพาะโปรแกรมแข่ง ก่อน taper และวันแข่ง */
+/** ใส่ใน plan() เมื่อผู้ใช้ตั้งว่าเส้นทางแข่งมีเนิน เฉพาะโปรแกรมแข่ง ก่อน taper และวันแข่ง */
 export function withHills(days: Day[], program: ProgramId, week: number): Day[] {
   const p = programs[program]
   if (!p.raceKm || p.ongoing) return days
@@ -415,7 +415,7 @@ function withDownhill(days: Day[]): Day[] {
 
 /**
  * ที่บ้าน/ในห้อง: ใช้แผนวันสวน แต่ท่าที่ต้องมีบาร์ (ดึงข้อ/ดิป/ห้อยตัว) เปลี่ยนเป็นท่าที่ทำในห้องได้
- * เก็บเซ็ต/ครั้ง/พักเดิม (เปลี่ยนหน่วยเฉพาะถ้าท่าใหม่นับเป็นวินาที) — ไม่ซ้ำท่าในวันเดียวกัน
+ * เก็บเซ็ต/ครั้ง/พักเดิม (เปลี่ยนหน่วยเฉพาะถ้าท่าใหม่นับเป็นวินาที) ไม่ซ้ำท่าในวันเดียวกัน
  */
 function homeWeek(days: Day[]): Day[] {
   return days.map(d => {
@@ -459,7 +459,7 @@ export const programLength = (id: ProgramId) => (programs[id].ongoing ? `วน�
 export const locationInfo: Record<LocationPref, { label: string; text: string; labelEn: string; textEn: string }> = {
   gym: { label: 'ยิมทุกวัน', text: 'เพิ่มน้ำหนักได้ละเอียด เห็นผลเรื่องกล้ามเร็วที่สุด โดยเฉพาะขา', labelEn: 'Gym every day', textEn: 'Fine-grained loading — fastest muscle gains, especially legs' },
   mix: { label: 'ผสม (แนะนำถ้ามีสมาชิกยิม)', text: 'วันที่มีขา/ท่าหนักไปยิม วันเวทวันสุดท้ายของสัปดาห์ไปสวน (บอดี้เวทแบบ Tom Holland)', labelEn: 'Mixed (best with a gym membership)', textEn: 'Leg/heavy days at the gym, the week’s last strength day at the park (Tom Holland-style bodyweight)' },
-  home: { label: 'ที่บ้าน/ในห้อง', text: 'ไม่ต้องมีอุปกรณ์ — ท่าที่ต้องใช้บาร์เปลี่ยนเป็น Table Row, Chair Dips, Lying Leg Raise ขาใช้ท่าขาเดียวและจังหวะลงช้า', labelEn: 'Home / indoors', textEn: 'No equipment — bar moves become Table Row, Chair Dips, Lying Leg Raise; legs use single-leg moves and slow lowering' },
+  home: { label: 'ที่บ้าน/ในห้อง', text: 'ไม่ต้องมีอุปกรณ์ ท่าที่ต้องใช้บาร์เปลี่ยนเป็น Table Row, Chair Dips, Lying Leg Raise ขาใช้ท่าขาเดียวและจังหวะลงช้า', labelEn: 'Home / indoors', textEn: 'No equipment — bar moves become Table Row, Chair Dips, Lying Leg Raise; legs use single-leg moves and slow lowering' },
   park: { label: 'สวนทุกวัน', text: 'ฟรี ใกล้บ้าน ดีมากสำหรับดึงข้อ/ดิป/วิดพื้น แต่ขาเพิ่มความหนักยาก ใช้ท่าขาเดียวและจังหวะลงช้าแทน', labelEn: 'Park every day', textEn: 'Free and close by — great for pull-ups/dips/push-ups, but legs are hard to load; use single-leg moves and slow lowering' },
 }
 

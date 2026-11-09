@@ -1,14 +1,14 @@
-// วิ่งแบบมีเสียงนำ: ชุดซ้อมเป็นขั้น (วอร์ม → เร็ว/พัก → คูลดาวน์) — โมดูลล้วน ทดสอบได้ (guide.test.ts)
+// วิ่งแบบมีเสียงนำ: ชุดซ้อมเป็นขั้น (วอร์ม → เร็ว/พัก → คูลดาวน์) โมดูลล้วน ทดสอบได้ (guide.test.ts)
 // GuideRunner ถูกเรียกจาก callback ของ GPS และนาฬิกาทุกวินาที จึงพูดได้แม้ปิดจอ (แอป Android)
 
 export type StepKind = 'warm' | 'work' | 'recover' | 'cool' | 'easy'
 export type PaceKey = 'easy' | 'tempo' | 'interval' | 'tenK' | 'half' | 'marathon' | 'stride'
-/** ขั้นหนึ่งของชุดซ้อม — กำหนดด้วยเวลา (sec) หรือระยะ (m) อย่างใดอย่างหนึ่ง */
+/** ขั้นหนึ่งของชุดซ้อม กำหนดด้วยเวลา (sec) หรือระยะ (m) อย่างใดอย่างหนึ่ง */
 export type Step = { kind: StepKind; sec?: number; m?: number; pace?: PaceKey; label?: string }
 
 const warm = (m = 2000): Step => ({ kind: 'warm', m, pace: 'easy' })
 const cool = (sec = 300): Step => ({ kind: 'cool', sec, pace: 'easy' })
-// วอร์มอัพไดนามิกก่อนช่วงเร็ว (วิ่งเร็ว/เนิน/ทดสอบ) — ท่าฝึกการประสานกล้ามเนื้อ (อ.เอกวิทย์, โค้ชใบพัน) · วอร์มอัพช่วยประสิทธิภาพ (Fradkin 2010)
+// วอร์มอัพไดนามิกก่อนช่วงเร็ว (วิ่งเร็ว/เนิน/ทดสอบ) ท่าฝึกการประสานกล้ามเนื้อ (อ.เอกวิทย์, โค้ชใบพัน) · วอร์มอัพช่วยประสิทธิภาพ (Fradkin 2010)
 const drills: Step = { kind: 'warm', sec: 240, label: 'ดริลล์ แองค์ลิง ยกเข่า เตะก้น เอสคิป สเตรตเลกบาวด์ ท่าละ 20 เมตร' }
 const repeat = (n: number, work: Step, rec: Step): Step[] =>
   Array.from({ length: n }, (_, i) => (i < n - 1 ? [work, rec] : [work])).flat()
@@ -41,13 +41,13 @@ export const guides = {
     const pace: PaceKey = /10K/.test(label) ? 'tenK' : /5K/.test(label) ? 'interval' : /ฮาล์ฟ/.test(label) ? 'half' : 'marathon'
     return [warm(), drills, ...repeat(Number(m[1] ?? 1), { kind: 'work', m: Number(m[2]) * 1000, pace }, { kind: 'recover', sec: 120, pace: 'easy' }), cool()]
   },
-  /** วิ่งเบา แล้วขึ้นเนินสั้น ๆ 6 × 10 วิ (แรงแต่ฟอร์มดี) เดินลงพัก — ฝึกแรงขาและความประหยัดแรง ไม่นับเป็นวันหนัก */
+  /** วิ่งเบา แล้วขึ้นเนินสั้น ๆ 6 × 10 วิ (แรงแต่ฟอร์มดี) เดินลงพัก ฝึกแรงขาและความประหยัดแรง ไม่นับเป็นวันหนัก */
   hills: (km: number): Step[] => [
     { kind: 'easy', m: Math.max(1000, km * 1000 - 400), pace: 'easy' },
     drills,
     ...repeat(6, { kind: 'work', sec: 10, pace: 'stride', label: 'ขึ้นเนิน' }, { kind: 'recover', sec: 75 }),
   ],
-  /** ทดสอบ 5K (แทนการตรวจ VO2max ในแล็บ): วอร์ม 10 นาที → 5 กม. เต็มที่แบบคุมได้ → คูลดาวน์ — ผลใช้อัปเดตโซนเพซ */
+  /** ทดสอบ 5K (แทนการตรวจ VO2max ในแล็บ): วอร์ม 10 นาที → 5 กม. เต็มที่แบบคุมได้ → คูลดาวน์ ผลใช้อัปเดตโซนเพซ */
   timeTrial: (): Step[] => [{ kind: 'warm', sec: 600, pace: 'easy' }, drills, { kind: 'work', m: 5000, pace: 'interval', label: 'ทดสอบ 5K' }, cool(600)],
   /** วิ่งสลับเดินจนครบระยะ: เดินวอร์ม 5 นาที → วิ่ง run / เดิน walk นาที (จำนวนรอบประมาณจากเพซรวม ~10 นาที/กม.) → เดินคูลดาวน์ */
   runWalk: (km: number, run: number, walk: number): Step[] => [
@@ -123,7 +123,7 @@ export class GuideRunner {
   }
 
   /**
-   * นาฬิกาของชุดซ้อมเดินตลอดเวลาที่ไม่ได้กด "พัก" (รวมช่วงหยุดอัตโนมัติ — ช่วงพักยืนรอก็ยังนับ)
+   * นาฬิกาของชุดซ้อมเดินตลอดเวลาที่ไม่ได้กด "พัก" (รวมช่วงหยุดอัตโนมัติ ช่วงพักยืนรอก็ยังนับ)
    * ระยะใช้ระยะ GPS สะสม
    */
   update(now: number, meters: number, active: boolean): GuideEvent[] {
@@ -159,7 +159,7 @@ export class GuideRunner {
     }
   }
 
-  /** จบชุดซ้อมก่อนครบทุกขั้น (เช่น วิ่งสลับเดินถึงระยะตามแผนแล้ว — จำนวนรอบในชุดซ้อมประมาณจากเพซ ~10 นาที/กม.) */
+  /** จบชุดซ้อมก่อนครบทุกขั้น (เช่น วิ่งสลับเดินถึงระยะตามแผนแล้ว จำนวนรอบในชุดซ้อมประมาณจากเพซ ~10 นาที/กม.) */
   complete(): GuideEvent[] {
     if (this.state.done || !this.state.started) return []
     this.state.done = true
@@ -197,7 +197,7 @@ export class GuideRunner {
 
 export const totalWork = (steps: Step[]) => steps.filter(s => s.kind === 'work').length
 
-/** ผลชุดซ้อมตอนจบวิ่ง: ทำช่วงหลัก (วิ่ง/เร่ง) ครบกี่ช่วง — ช่วงที่ยังไม่จบไม่นับ */
+/** ผลชุดซ้อมตอนจบวิ่ง: ทำช่วงหลัก (วิ่ง/เร่ง) ครบกี่ช่วง ช่วงที่ยังไม่จบไม่นับ */
 export function guideResult(steps: Step[], st: GuideState): { work: number; total: number; finished: boolean } | null {
   if (!st.started) return null
   const total = totalWork(steps)

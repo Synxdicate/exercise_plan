@@ -11,7 +11,7 @@ export function mergeValues(key: string, local: unknown, server: unknown): unkno
   }
   if (local && server && typeof local === 'object' && typeof server === 'object' && !Array.isArray(local)) {
     // done / dayLocation / readiness / foodLog: รวม object (ค่าในเครื่องชนะ)
-    // routes: เส้นทางตาม id รอบวิ่ง — ไม่รวมแล้วเส้นทางของรอบที่วิ่งในเครื่อง (โหมดออฟไลน์) จะหายตอนล็อกอินครั้งแรก
+    // routes: เส้นทางตาม id รอบวิ่ง ไม่รวมแล้วเส้นทางของรอบที่วิ่งในเครื่อง (โหมดออฟไลน์) จะหายตอนล็อกอินครั้งแรก
     if (['done', 'dayLocation', 'readiness', 'foodLog', 'routes', 'dayMoves', 'raceChecklist', 'weekCheck'].includes(key)) return { ...(server as object), ...(local as object) }
   }
   return server

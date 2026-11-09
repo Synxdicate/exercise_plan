@@ -6,7 +6,7 @@ import { Card, Stat } from './ui'
 import { useLang, useT } from '../lib/i18n'
 import { NumberInput, SelectInput } from './Form'
 
-/** ข้อมูลร่างกายที่ใช้คำนวณเป้ากิน — อยู่ในแท็บอาหาร */
+/** ข้อมูลร่างกายที่ใช้คำนวณเป้ากิน อยู่ในแท็บอาหาร */
 export function ProfileCard({ profile, setProfile }: { profile: Profile; setProfile: (p: Profile) => void }) {
   const set = <K extends keyof Profile>(k: K, v: Profile[K]) => setProfile({ ...profile, [k]: v })
   const [editing, setEditing] = useState(false)
@@ -33,7 +33,7 @@ export function ProfileCard({ profile, setProfile }: { profile: Profile; setProf
         <Stat label="BMR" value={Math.round(bmr(profile))} sub="kcal" />
         <Stat label="TDEE" value={Math.round(tdee(profile))} sub="kcal" />
       </div>
-      <p className="mt-2 text-xs text-muted">{tr('สูตร Mifflin-St Jeor (คลาดเคลื่อนได้ ±10%) — ปรับตามน้ำหนักจริงทุก 2–3 สัปดาห์', 'Mifflin-St Jeor formula (±10%) — adjust to your real weight trend every 2–3 weeks')}</p>
+      <p className="mt-2 text-xs text-muted">{tr('สูตร Mifflin-St Jeor (คลาดเคลื่อนได้ ±10%) ปรับตามน้ำหนักจริงทุก 2–3 สัปดาห์', 'Mifflin-St Jeor formula (±10%) — adjust to your real weight trend every 2–3 weeks')}</p>
     </Card>
   )
 }

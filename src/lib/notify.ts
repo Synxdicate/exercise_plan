@@ -1,7 +1,7 @@
 import { LocalNotifications } from '@capacitor/local-notifications'
 import { isNative } from './native'
 
-// แจ้งเตือนของเครื่อง (เฉพาะแอป Android) — ทำงานแม้ปิดจอ/แอปอยู่เบื้องหลัง
+// แจ้งเตือนของเครื่อง (เฉพาะแอป Android) ทำงานแม้ปิดจอ/แอปอยู่เบื้องหลัง
 const REST_ID = 9001
 const REMINDER_IDS = Array.from({ length: 14 }, (_, i) => 1000 + i)
 
@@ -23,7 +23,7 @@ export function ensureNotifications(): Promise<boolean> {
   return ready
 }
 
-/** เตือนเมื่อหมดเวลาพัก — ใช้ตอนจอดับ (ตอนเปิดหน้าแอปอยู่ ตัวนับในแอปจะสั่นเองอยู่แล้ว) */
+/** เตือนเมื่อหมดเวลาพัก ใช้ตอนจอดับ (ตอนเปิดหน้าแอปอยู่ ตัวนับในแอปจะสั่นเองอยู่แล้ว) */
 export async function scheduleRestEnd(at: Date, next?: string) {
   if (!(await ensureNotifications())) return
   await LocalNotifications.cancel({ notifications: [{ id: REST_ID }] }).catch(() => {})
@@ -39,7 +39,7 @@ export async function cancelRestEnd() {
 
 export type Reminder = { at: Date; title: string; body: string }
 
-/** ตั้งเตือนรายวันล่วงหน้า (สูงสุด 14 วัน) — เรียกใหม่ทุกครั้งที่เปิดแอป/เปลี่ยนแผน */
+/** ตั้งเตือนรายวันล่วงหน้า (สูงสุด 14 วัน) เรียกใหม่ทุกครั้งที่เปิดแอป/เปลี่ยนแผน */
 export async function scheduleReminders(list: Reminder[]) {
   if (!isNative) return
   await LocalNotifications.cancel({ notifications: REMINDER_IDS.map(id => ({ id })) }).catch(() => {})

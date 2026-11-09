@@ -26,10 +26,10 @@ export function WeekSummary() {
   const r = runs.filter(x => weekStart(x.date) === last)
   const all = sessions.filter(x => weekStart(x.date) === last)
   if (!r.length && !all.length) return null
-  // นับเฉพาะเวทจริง — เซอร์กิตแกนกลางไม่ใช่วันเวท
+  // นับเฉพาะเวทจริง เซอร์กิตแกนกลางไม่ใช่วันเวท
   const s = strengthOnly(all)
 
-  // สัปดาห์ของโปรแกรมตามวันที่จริง (ช่วงเตรียมตัว/สัปดาห์ที่ทำซ้ำ/รอบวน) — เดิมเดาเป็นสัปดาห์นี้ − 1
+  // สัปดาห์ของโปรแกรมตามวันที่จริง (ช่วงเตรียมตัว/สัปดาห์ที่ทำซ้ำ/รอบวน) เดิมเดาเป็นสัปดาห์นี้ − 1
   const prevWeek = p.weekOf(last) ?? Math.max(1, p.currentWeek - 1)
   const prevPlan = p.plan(prevWeek)
   const km = runsOnly(r).reduce((a, x) => a + x.km, 0)

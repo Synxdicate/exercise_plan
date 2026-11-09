@@ -2,7 +2,7 @@ import { TextToSpeech } from '@capacitor-community/text-to-speech'
 import { Haptics, ImpactStyle } from '@capacitor/haptics'
 import { isNative } from './native'
 
-// เสียงพูดภาษาไทย — แอปใช้ TTS ของเครื่อง (พูดได้แม้ปิดจอ), เว็บใช้ speechSynthesis
+// เสียงพูดภาษาไทย แอปใช้ TTS ของเครื่อง (พูดได้แม้ปิดจอ), เว็บใช้ speechSynthesis
 export async function speak(text: string) {
   try {
     if (isNative) {
@@ -15,11 +15,11 @@ export async function speak(text: string) {
       window.speechSynthesis.speak(u)
     }
   } catch {
-    /* ไม่มีเสียงภาษาไทยในเครื่อง — ข้ามไป */
+    /* ไม่มีเสียงภาษาไทยในเครื่อง ข้ามไป */
   }
 }
 
-// สั่นตอนเปลี่ยนช่วง — รู้ตัวแม้ไม่ได้ยินเสียง (ข้างถนนเสียงดัง/เปิดเพลง)
+// สั่นตอนเปลี่ยนช่วง รู้ตัวแม้ไม่ได้ยินเสียง (ข้างถนนเสียงดัง/เปิดเพลง)
 // ยาว = เริ่มช่วงหนัก (วิ่ง/เร่ง), สั้น = ช่วงเบา (เดิน/พัก), สั้นมาก = เตือน 10 วิ, ยาวมาก = จบชุดซ้อม
 // แอปใช้ Haptics (ทำงานแม้ปิดจอ เพราะถูกเรียกจาก callback ของ GPS), เว็บใช้ navigator.vibrate
 export type Buzz = 'hard' | 'easy' | 'warn' | 'done'
