@@ -48,7 +48,9 @@ function StickFigure({ demo, frame, name, className }: { demo: StickDemo; frame:
         <svg viewBox="0 0 120 80" className="size-full" role="img" aria-label={`${name} ${trNow('ภาพลายเส้น', 'drawing,')} ${frame ? trNow('ท่าจบ', 'end') : trNow('ท่าเริ่ม', 'start')}`}>
           {demo.props.map((pr, i) => pr.kind === 'floor'
             ? <line key={i} x1={0} y1={72.5} x2={120} y2={72.5} className="stroke-line" strokeWidth={1.5} />
-            : <rect key={i} x={pr.x - 4} y={0} width={4} height={72} className="fill-line" />)}
+            : pr.kind === 'bench'
+              ? <g key={i} className="fill-line"><rect x={pr.x} y={pr.y + 1.6} width={pr.w} height={4} rx={1.5} /><rect x={pr.x + 2} y={pr.y + 5} width={3} height={67.5 - pr.y} /><rect x={pr.x + pr.w - 5} y={pr.y + 5} width={3} height={67.5 - pr.y} /></g>
+              : <rect key={i} x={pr.x - 4} y={0} width={4} height={72} className="fill-line" />)}
           {(p.knee2 || p.elbow2) && (
             <g className="stroke-muted" strokeWidth={3.2} strokeLinecap="round" fill="none" opacity={0.6}>
               {p.elbow2 && <>{line(p.shoulder, p.elbow2)}{p.hand2 && line(p.elbow2, p.hand2)}</>}

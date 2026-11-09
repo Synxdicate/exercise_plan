@@ -10,11 +10,18 @@ const Foot = () => (
   </>
 )
 
+/** รอยเท้าทั้งสองข้างของโลโก้ (พิกัด −330…330) ใช้ซ้ำในไอคอนแท็บวิ่ง */
+export const FootPaths = () => (
+  <>
+    <g transform="translate(-120 96) rotate(-10) scale(-1 1)"><Foot /></g>
+    <g transform="translate(120 -84) rotate(10)"><Foot /></g>
+  </>
+)
+
 export function LogoMark({ size = 24, className }: { size?: number; className?: string }) {
   return (
     <svg viewBox="-330 -330 660 660" width={size} height={size} className={className} fill="currentColor" aria-hidden>
-      <g transform="translate(-120 96) rotate(-10) scale(-1 1)"><Foot /></g>
-      <g transform="translate(120 -84) rotate(10)"><Foot /></g>
+      <FootPaths />
     </svg>
   )
 }

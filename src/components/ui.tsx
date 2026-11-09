@@ -11,7 +11,7 @@ export function Card({ children, className, title, action }: { children: ReactNo
     <section className={cx('rounded-2xl bg-card p-3.5 shadow-sm ring-1 ring-line', className)}>
       {(title || action) && (
         <div className="mb-2.5 flex items-center justify-between gap-2">
-          {title && <h2 className="text-[15px] font-bold">{title}</h2>}
+          {title && <h2 className="card-title text-[15px] font-bold">{title}</h2>}
           {action}
         </div>
       )}
@@ -147,7 +147,7 @@ export function Disclosure({ title, summary, children, defaultOpen = false }: { 
     <section className="rounded-2xl bg-card shadow-sm ring-1 ring-line">
       <button onClick={() => setOpen(!open)} aria-expanded={open} className="flex w-full items-center gap-2 p-3.5 text-left active:scale-100">
         <span className="min-w-0 flex-1">
-          <span className="block text-[15px] font-bold">{title}</span>
+          <span className="card-title block text-[15px] font-bold">{title}</span>
           {summary && !open && <span className="block truncate text-xs text-muted">{summary}</span>}
         </span>
         <ChevronDown size={18} className={cx('shrink-0 text-muted transition-transform duration-300', open && 'rotate-180')} />

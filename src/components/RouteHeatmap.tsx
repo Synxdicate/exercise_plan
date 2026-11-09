@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
-import { MapContainer, Polyline, TileLayer, useMap } from 'react-leaflet'
+import { MapContainer, Polyline, useMap } from 'react-leaflet'
+import { MapTiles } from './MapTiles'
 import { latLngBounds } from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import type { Point } from '../lib/geo'
@@ -20,8 +21,7 @@ export default function RouteHeatmap({ routes, className = 'h-72' }: { routes: P
   return (
     <MapContainer center={routes[0]?.[0] ?? [13.7563, 100.5018]} zoom={14} zoomControl={false} preferCanvas
       attributionControl className={`w-full overflow-hidden rounded-2xl ${className}`}>
-      <TileLayer url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" maxZoom={19}
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' />
+      <MapTiles />
       {routes.map((r, i) => (
         <Polyline key={i} positions={r} pathOptions={{ color, weight: 4, opacity: 0.28, lineCap: 'round', lineJoin: 'round' }} />
       ))}

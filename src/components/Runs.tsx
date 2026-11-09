@@ -45,7 +45,7 @@ import { cx } from '../lib/cx'
 import { ask, notify } from '../lib/dialog'
 import { TrainingLog } from './RunExtras'
 import { Map, RunDetail, Splits } from './RunDetail'
-import { BestEfforts, HeatmapCard, PaceCard, ShoesCard, WeeklyBars } from './RunStats'
+import { BestEfforts, HeatmapCard, IntensityCard, PaceCard, ShoesCard, WeeklyBars } from './RunStats'
 
 // วิ่งทดสอบ 5K (เลือกชนิด "แข่ง" ในวันที่ไม่ใช่วันแข่ง)
 const TRIAL = guides.timeTrial()
@@ -332,6 +332,7 @@ export function Runs() {
         <>
           <FinishCard />
           <PaceCard est={est} runs={runs} onTrial={() => { setKind('race'); setView('start'); window.scrollTo({ top: 0, behavior: 'smooth' }) }} />
+          <IntensityCard runs={runs} fiveK={zoneRef} />
           <BestEfforts runs={runs} />
           <Card title={tr('บันทึกรายสัปดาห์', 'Training log')}><TrainingLog runs={runs} /></Card>
           <Card title={tr('8 สัปดาห์ล่าสุด', 'Last 8 weeks')}>

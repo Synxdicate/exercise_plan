@@ -151,3 +151,13 @@ html.theme-fade, html.theme-fade * { transition: background-color .3s, color .3s
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0ms !important; transition-duration: .01ms !important; }
 }
+
+/* ไอคอนหน้าหัวการ์ด: วางบนแผ่นสีจางของสีไอคอนเอง (สีมาจาก text-* ของไอคอน) ให้ดูเป็นชุดเดียวกันทั้งแอป */
+.card-title > svg:first-child,
+.card-title > span > svg:first-child {
+  box-sizing: content-box;
+  flex-shrink: 0;
+  padding: 5px;
+  border-radius: 10px;
+  background: color-mix(in oklab, currentColor 14%, transparent);
+}

@@ -744,7 +744,7 @@ test('เหรียญตามแผน 4 สัปดาห์: นับไ
   await expect.poll(async () => (await idb(page, 'badgesSeen')) as string[] | null).toContain('plan-4')
   await seed(page, { program: 'ten', programStart: '2026-11-09', done })
   await page.getByRole('button', { name: /เหรียญรางวัล/ }).click()
-  await expect(page.getByText('ตามแผน 4 สัปดาห์').locator('..').locator('.bg-accent-fill')).toHaveCount(1)
+  await expect(page.getByText('ตามแผน 4 สัปดาห์').locator('..').locator('.bg-good-fill')).toHaveCount(1)
 })
 
 test('ตัวจับเวลาเซอร์กิตเดินตรงเวลาจริง (30 วิ = 30 วิ)', async ({ page }) => {

@@ -6,6 +6,7 @@ import { runsOnly } from '../lib/walk'
 import { criticalSpeed, predictionTrend, type Estimate } from '../lib/pace'
 import { DEFAULT_LIMIT_KM, defaultShoe, shoeKm, shoeStatus, useShoes, type Shoe } from '../lib/shoes'
 import { personalBests } from '../lib/analysis'
+import { intensitySplit } from '../lib/intensity'
 import { ZoneLegend } from './Charts'
 import { addDays, daysBetween, shortDate, today, weekStart } from '../lib/date'
 import { Badge, Button, Card, Collapse, Segmented, Stat } from './ui'
@@ -302,6 +303,37 @@ export function HeatmapCard({ runs }: { runs: Run[] }) {
         <RouteHeatmap routes={routes} />
       </Suspense>
       <p className="mt-2 text-xs text-muted">{tr(`${routes.length} เส้นทาง ทางที่วิ่งบ่อยเส้นจะเข้มขึ้น`, `${routes.length} routes — frequent paths are darker`)}{hidden ? tr(` (ไม่รวม ${hidden} ครั้งที่วิ่งที่อื่น)`, ` (excluding ${hidden} runs elsewhere)`) : ''}</p>
+    </Card>
+  )
+}
+
+/** วิ่งเบา : วิ่งหนัก 4 สัปดาห์ล่าสุด เทียบหลัก ~80/20 (Seiler 2010) */
+export function IntensityCard({ runs, fiveK }: { runs: Run[]; fiveK?: number }) {
+  const tr = useT()
+  const s = useMemo(() => intensitySplit(runs, today(), fiveK ?? null), [runs, fiveK])
+  if (!s) return null
+  const verdict = s.easyPct >= 75 ? { tone: 'text-good', th: 'ดี ใกล้เคียง 80/20 วิ่งเบาเป็นส่วนใหญ่', en: 'Good: close to 80/20, mostly easy' }
+    : s.easyPct >= 60 ? { tone: 'text-warn', th: 'วิ่งหนักค่อนข้างเยอะ ลองวิ่งวันเบาให้ช้าลงอีก (พูดเป็นประโยคได้)', en: 'Quite a lot of hard running; slow your easy days down (conversational)' }
+    : { tone: 'text-bad', th: 'วิ่งหนักเกินครึ่ง เสี่ยงล้าสะสม วันเบาให้เบาจริง', en: 'Over half hard: fatigue risk; keep easy days truly easy' }
+  return (
+    <Card title={<span className="flex items-center gap-2"><Gauge size={18} className="text-run" /> {tr('วิ่งเบา : วิ่งหนัก', 'Easy : hard')}</span>}
+      action={<span className="text-xs text-muted">{tr(`4 สัปดาห์ · ${s.runs} ครั้ง`, `4 weeks · ${s.runs} runs`)}</span>}>
+      <div className="flex items-baseline justify-between text-sm">
+        <span><b className="text-2xl tabular-nums">{s.easyPct}</b> : <b className="tabular-nums">{100 - s.easyPct}</b></span>
+        <span className="text-xs text-muted">{tr('เป้าประมาณ 80 : 20', 'Aim for about 80 : 20')}</span>
+      </div>
+      <div className="relative mt-2 flex h-3 overflow-hidden rounded-full bg-raised" role="img" aria-label={tr(`วิ่งเบา ${s.easyPct}% วิ่งหนัก ${100 - s.easyPct}%`, `Easy ${s.easyPct}%, hard ${100 - s.easyPct}%`)}>
+        <div className="h-full bg-good-fill" style={{ width: `${s.easyPct}%` }} />
+        <div className="h-full flex-1 bg-accent-fill" />
+        <div className="absolute inset-y-0 w-0.5 bg-ink" style={{ left: '80%' }} />
+      </div>
+      <div className="mt-1 flex justify-between text-[11px] text-muted">
+        <span>{tr('เบา', 'Easy')} {formatDuration(s.easySec)}</span><span>{tr('หนัก', 'Hard')} {formatDuration(s.hardSec)}</span>
+      </div>
+      <p className={cx('mt-2 text-sm font-semibold', verdict.tone)}>{tr(verdict.th, verdict.en)}</p>
+      <p className="mt-1 text-[11px] text-muted">{s.by === 'pace'
+        ? tr('นับเวลาจริงในแต่ละโซนเพซจากเส้นทาง GPS (เบา = โซน E)', 'Real time in each pace zone from the GPS track (easy = zone E)')
+        : tr('ตอนนี้นับตามชนิดการวิ่ง (tempo/interval/แข่ง = หนัก) เพราะยังไม่มีเพซ 5K ที่แม่น วิ่งทดสอบ 5K แล้วจะนับตามโซนเพซจริง', 'Counted by run type for now (tempo/interval/race = hard) — no reliable 5K pace yet; after a 5K test it uses real pace zones')}</p>
     </Card>
   )
 }

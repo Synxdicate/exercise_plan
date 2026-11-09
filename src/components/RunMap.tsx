@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
-import { CircleMarker, MapContainer, Polyline, TileLayer, useMap } from 'react-leaflet'
+import { CircleMarker, MapContainer, Polyline, useMap } from 'react-leaflet'
+import { MapTiles } from './MapTiles'
 import { latLngBounds, type Polyline as LPolyline } from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import type { Point } from '../lib/gps'
@@ -38,8 +39,7 @@ export default function RunMap({ route, position, follow = false, className = 'h
     <MapContainer center={center} zoom={position || route.length ? 16 : 11} zoomControl={false} zoomAnimation={false} markerZoomAnimation={false}
       dragging={interactive} scrollWheelZoom={interactive} touchZoom={interactive} doubleClickZoom={interactive}
       attributionControl className={`w-full overflow-hidden rounded-2xl ${className}`}>
-      <TileLayer url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" maxZoom={19}
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' />
+      <MapTiles />
       {/* การวิ่งที่จบแล้ว: เส้นทางค่อย ๆ ลากจากจุดเริ่มถึงจุดจบ (pathLength=1 ให้ dash ใช้สัดส่วนของเส้น) */}
       {route.length > 1 && <Polyline positions={route} pathOptions={{ color: accent, weight: 5, opacity: 0.9, lineCap: 'round', lineJoin: 'round', className: position ? undefined : 'route-draw' }}
         eventHandlers={{ add: e => (e.target as LPolyline).getElement()?.setAttribute('pathLength', '1') }} />}

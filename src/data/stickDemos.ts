@@ -2,10 +2,18 @@
 // แต่ละท่ามี 2 ท่วงท่า (เริ่ม/จบ) ระบุตำแหน่งข้อต่อ: หัว ไหล่ ศอก มือ สะโพก เข่า เท้า
 export type Pt = [number, number]
 export type Pose = { head: Pt; shoulder: Pt; elbow: Pt; hand: Pt; hip: Pt; knee: Pt; foot: Pt; elbow2?: Pt; hand2?: Pt; knee2?: Pt; foot2?: Pt } // *2 = แขน/ขาข้างไกล (วาดจาง)
-export type Prop = { kind: 'wall'; x: number } | { kind: 'floor' }
+export type Prop = { kind: 'wall'; x: number } | { kind: 'floor' } | { kind: 'bench'; x: number; y: number; w: number }
 export type StickDemo = { poses: [Pose, Pose]; props: Prop[] }
 
 export const stickDemos: Record<string, StickDemo> = {
+  // แพลงก์ข้างวางขาบนบนม้านั่ง (มองจากด้านหน้า) ศอกอยู่ใต้ไหล่ ยกสะโพกจนลำตัวตรง ขาล่างห้อยใต้ม้านั่ง (วาดจาง)
+  'Copenhagen Plank': {
+    props: [{ kind: 'floor' }, { kind: 'bench', x: 88, y: 50, w: 26 }],
+    poses: [
+      { head: [17, 57], shoulder: [25, 60], elbow: [25, 72], hand: [36, 72], hip: [58, 66], knee: [79, 57], foot: [99, 49], knee2: [77, 70], foot2: [92, 72] },
+      { head: [16, 53], shoulder: [25, 58], elbow: [25, 72], hand: [36, 72], hip: [61, 53], knee: [80, 51], foot: [99, 49], knee2: [79, 60], foot2: [93, 68] },
+    ],
+  },
   // ดริลล์ก่อนวิ่ง (หันขวา) ขาข้างไกลวาดจาง
   'Leg Swing': {
     props: [{ kind: 'wall', x: 82 }, { kind: 'floor' }],

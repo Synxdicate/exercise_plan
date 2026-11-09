@@ -2,6 +2,9 @@ import { lazy, Suspense, useEffect, useState, useSyncExternalStore } from 'react
 import type { Session } from '@supabase/supabase-js'
 import { Bell, BookOpen, Bug, Languages, Cloud, CloudOff, Download, Dumbbell, Footprints, House, LogIn, LogOut, Monitor, Moon, RefreshCw, SlidersHorizontal, Smartphone, Sun, TrendingUp, Upload, Utensils } from 'lucide-react'
 import { LogoMark } from './components/Logo'
+import { NavIcon, type NavIconName } from './components/NavIcons'
+
+const NAV_ICON: Record<string, NavIconName> = { overview: 'home', plan: 'plan', runs: 'runs', food: 'food', progress: 'progress' }
 import { AuthGate } from './components/AuthGate'
 import { DialogHost } from './components/DialogHost'
 import { Portal } from './components/ui'
@@ -154,7 +157,7 @@ function Main({ session }: { session: Session | null }) {
               <button key={x.id} onClick={() => go(x.id)} aria-current={on ? 'page' : undefined}
                 className={cx('flex flex-col items-center gap-0.5 rounded-2xl py-1.5 text-[11px] font-semibold transition', on ? 'text-accent' : 'text-muted')}>
                 <span className={cx('grid h-7 w-12 place-items-center rounded-full transition-all duration-300', on ? 'scale-100 bg-accent-soft' : 'scale-90')}>
-                  <x.icon size={20} strokeWidth={on ? 2.5 : 2} aria-hidden />
+                  <NavIcon name={NAV_ICON[x.id] ?? 'home'} active={on} />
                 </span>
                 {t(x.label[0], x.label[1])}
               </button>

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Award, CalendarCheck, Dumbbell, Flag, Flame, Footprints, Medal, Mountain, Pencil, Route, Target, TrendingUp, Trophy, Zap, ChevronsRight, type LucideIcon } from 'lucide-react'
+import { Award, CalendarCheck, Lock, Dumbbell, Flag, Flame, Footprints, Medal, Mountain, Pencil, Route, Target, TrendingUp, Trophy, Zap, ChevronsRight, type LucideIcon } from 'lucide-react'
 import { BADGES, BADGES_EN, earnedBadges, monthOf, periodStats, type BadgeIcon } from '../lib/goals'
 import { useT } from '../lib/i18n'
 import { useBadgeCtx, useMonthGoal } from '../lib/useGoals'
@@ -10,6 +10,15 @@ import { Button, Card, Collapse, Sheet } from './ui'
 import { NumberInput } from './Form'
 
 const icons: Record<BadgeIcon, LucideIcon> = { footprints: Footprints, medal: Medal, trophy: Trophy, flame: Flame, dumbbell: Dumbbell, target: Target, mountain: Mountain, zap: Zap, climb: TrendingUp, split: ChevronsRight, calendar: CalendarCheck, flag: Flag, route: Route }
+type Tone = 'run' | 'accent' | 'good' | 'warn'
+const TONE: Record<Tone, { card: string; medal: string }> = {
+  run: { card: 'bg-run/10 ring-run/25', medal: 'bg-run-fill text-white ring-run/20' },
+  accent: { card: 'bg-accent-soft/60 ring-accent/30', medal: 'bg-accent-fill text-white ring-accent/20' },
+  good: { card: 'bg-good/10 ring-good/25', medal: 'bg-good-fill text-white ring-good/20' },
+  warn: { card: 'bg-warn/10 ring-warn/30', medal: 'bg-warn text-white ring-warn/25' },
+}
+// สีตามชนิดเหรียญ: วิ่ง/ระยะ = น้ำเงิน, ถ้วย/ความเร็ว = ทอง, ความต่อเนื่อง/แข่ง = แดง, ภูเขา/ตามแผน = เขียว
+const toneOf: Record<BadgeIcon, Tone> = { footprints: 'run', medal: 'run', route: 'run', split: 'run', trophy: 'warn', zap: 'warn', flame: 'accent', flag: 'accent', dumbbell: 'accent', mountain: 'good', climb: 'good', target: 'good', calendar: 'good' }
 const enMonths = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 const thMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม']
 
@@ -70,8 +79,12 @@ function BadgesSheet({ earned, onClose }: { earned: string[]; onClose: () => voi
           const on = earned.includes(b.id)
           const Icon = icons[b.icon]
           return (
-            <li key={b.id} className={cx('flex flex-col items-center rounded-2xl p-2.5 text-center ring-1', on ? 'bg-accent-soft/60 ring-accent/30' : 'bg-raised ring-line')}>
-              <span className={cx('grid size-11 place-items-center rounded-full', on ? 'bg-accent-fill text-white' : 'bg-body text-muted/50')}><Icon size={20} /></span>
+            <li key={b.id} className={cx('flex flex-col items-center rounded-2xl p-2.5 text-center ring-1', on ? TONE[toneOf[b.icon]].card : 'bg-raised ring-line')}>
+              {/* เหรียญ: วงนอกสีจาง + วงในสีเต็ม ยังไม่ได้ = เทาพร้อมกุญแจเล็ก */}
+              <span className={cx('relative grid size-12 place-items-center rounded-full ring-4', on ? TONE[toneOf[b.icon]].medal : 'bg-body text-muted/50 ring-line')}>
+                <Icon size={21} strokeWidth={2.2} />
+                {!on && <Lock size={11} className="absolute -bottom-0.5 -right-0.5 rounded-full bg-card p-0.5 text-muted" />}
+              </span>
               <span className={cx('mt-1.5 text-xs font-bold leading-tight', !on && 'text-muted')}>{t(b.title, BADGES_EN[b.id]?.[0] ?? b.title)}</span>
               <span className="mt-0.5 text-[10px] leading-tight text-muted">{t(b.text, BADGES_EN[b.id]?.[1] ?? b.text)}</span>
             </li>
