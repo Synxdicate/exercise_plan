@@ -35,3 +35,24 @@ describe('live run notification', () => {
     expect(stepNow(reps, { started: false, index: 0, clock: 0, stepT: 0, stepM: 0, warned: false, done: false }, 0)).toBeNull()
   })
 })
+
+describe('live notification extras', () => {
+  it('time steps count down on the device clock and fill a progress bar', () => {
+    const tempo = guides.tempo('15')
+    const i = tempo.findIndex(s => s.kind === 'work')
+    const s = stepNow(tempo, { started: true, index: i, clock: 300_000, stepT: 0, stepM: 0, warned: false, done: false }, 2000)!
+    expect(s.progress).toBeCloseTo(1 / 3)
+    const n = noticeText({ status: 'running', signalLost: false, meters: 2000, elapsed: 900, pace: 300, kind: 'Tempo', step: s, target: 310, splits: [480, 470], now: 1_000_000 })
+    expect(n.chrono).toEqual({ at: 1_000_000 + 600_000, down: true })
+    expect(n.progress).toBeCloseTo(1 / 3)
+    expect(n.text).toBe('เพซตอนนี้ 5:00 (เป้า 5:10) · เฉลี่ย 7:30 /กม.')
+    expect(n.body).toContain('กม. 2: 7:50')
+  })
+  it('plain runs show progress to the day target and an elapsed clock; paused has no clock', () => {
+    const n = noticeText({ status: 'running', signalLost: false, meters: 2500, elapsed: 1200, pace: 480, kind: 'Easy', step: null, targetKm: 5, now: 2_000_000 })
+    expect(n.title).toBe('Easy · 2.50 / 5 กม.')
+    expect(n.progress).toBe(0.5)
+    expect(n.chrono).toEqual({ at: 2_000_000 - 1_200_000, down: false })
+    expect(noticeText({ status: 'paused', signalLost: false, meters: 2500, elapsed: 1200, pace: null, kind: 'Easy', step: null, now: 2_000_000 }).chrono).toBeNull()
+  })
+})

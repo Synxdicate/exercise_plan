@@ -146,6 +146,8 @@ export const library: Record<Pattern, LibEx[]> = {
     x('Ab Wheel Rollout', 'ล้อกลิ้งหน้าท้อง', 'หลังไม่แอ่น ไปเท่าที่คุมได้', 'ab wheel rollout beginner', '6–10', 'gym', m(['abs'], ['obliques', 'lats'])),
     x('Cable Crunch', 'คุกเข่าครันช์เคเบิล', 'ม้วนลำตัวลง ไม่ใช่ดึงด้วยแขน', 'cable crunch form', '10–15', 'gym', m(['abs'])),
     x('Pallof Press', 'ดันเคเบิลต้านการบิด', 'ลำตัวนิ่ง ดันออกค้าง 2 วิ', 'pallof press form', '10 / ข้าง', 'gym', m(['obliques', 'abs'])),
+    // ต้นขาด้านใน (adductor) ไม่มีในแผนที่กล้ามเนื้อ จึงแสดงเป็นท้องด้านข้างที่ใช้ค้างตัวไว้
+    x('Copenhagen Plank', 'แพลงก์ข้างวางขาบนม้านั่ง (ต้นขาด้านใน)', 'เริ่มวางเข่าบนม้านั่ง (ง่าย) แล้วค่อยวางข้อเท้า ลำตัวตรง ยกสะโพกค้าง', 'copenhagen plank progression', '20–30 วิ / ข้าง', 'both', m(['obliques'], ['abs', 'glutes'])),
   ],
 }
 

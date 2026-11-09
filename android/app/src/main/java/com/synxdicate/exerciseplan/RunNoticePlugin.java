@@ -58,19 +58,31 @@ public class RunNoticePlugin extends Plugin {
         }
         String title = call.getString("title", "Kao");
         String body = call.getString("body", "");
+        String text = call.getString("text", body);
         NotificationCompat.Builder b = new NotificationCompat.Builder(ctx, GPS_CHANNEL)
                 .setSmallIcon(R.drawable.ic_stat_kao)
                 .setColor(Color.parseColor("#E11D48"))
                 .setContentTitle(title)
-                .setContentText(body)
+                .setContentText(text)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
                 .setSilent(true)
-                .setShowWhen(false)
                 .setCategory(NotificationCompat.CATEGORY_WORKOUT)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+        // ตัวนับเวลาที่เครื่องเดินเองทุกวินาที (ไม่ต้องรอ JS อัปเดต): นับถอยหลังถึงจบช่วง หรือเวลาวิ่งรวม
+        Double chronoAt = call.getDouble("chronoAt");
+        if (chronoAt != null && chronoAt > 0) {
+            b.setShowWhen(true).setUsesChronometer(true).setWhen(chronoAt.longValue());
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) b.setChronometerCountDown(Boolean.TRUE.equals(call.getBoolean("chronoDown", false)));
+        } else {
+            b.setShowWhen(false);
+        }
+        // แถบความคืบหน้าของช่วงนี้ (หรือระยะเป้าของวัน)
+        Double progress = call.getDouble("progress");
+        if (progress != null && progress >= 0) b.setProgress(1000, (int) Math.round(Math.min(1, progress) * 1000), false);
 
         Intent launch = ctx.getPackageManager().getLaunchIntentForPackage(ctx.getPackageName());
         if (launch != null) {
@@ -84,7 +96,9 @@ public class RunNoticePlugin extends Plugin {
                 JSObject a = JSObject.fromJSONObject(actions.getJSONObject(i));
                 Intent intent = new Intent(ctx, RunNoticeReceiver.class).setAction(ACTION).putExtra("id", a.getString("id"));
                 PendingIntent pi = PendingIntent.getBroadcast(ctx, 100 + i, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-                b.addAction(0, a.getString("title"), pi);
+                String id = a.getString("id");
+                int icon = "pause".equals(id) ? R.drawable.ic_notice_pause : "resume".equals(id) ? R.drawable.ic_notice_play : R.drawable.ic_notice_skip;
+                b.addAction(icon, a.getString("title"), pi);
             }
         } catch (Exception e) {
             // ปุ่มผิดรูปแบบ: แสดงแจ้งเตือนโดยไม่มีปุ่ม

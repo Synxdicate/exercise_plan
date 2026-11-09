@@ -146,7 +146,13 @@ export function Runs() {
     if (!force && key === live.current.key && now - live.current.at < 5000) return
     live.current = { at: now, key }
     const step = r ? stepNow(r.steps, r.state, meters, dt.en) : null
-    updateRunNotice(noticeText({ status: tt.status, signalLost: tt.signalLost, meters, elapsed: tt.elapsed, pace, kind: tr(runKinds[kind], runKindsEn[kind]), step }, dt.en))
+    const cur = r?.state.started && !r.state.done ? r.steps[r.state.index] : null
+    updateRunNotice(noticeText({
+      status: tt.status, signalLost: tt.signalLost, meters, elapsed: tt.elapsed, pace, kind: tr(runKinds[kind], runKindsEn[kind]), step,
+      target: cur?.kind === 'work' ? paceSec(cur, paces) : null,
+      targetKm: !step ? planKm ?? (kind === todayRun?.runKind ? todayRun?.targetKm : undefined) ?? null : null,
+      splits: tt.splits, now,
+    }, dt.en))
   }
   const onTick = (meters: number, active: boolean, pace: number | null) => {
     guide.onTick(meters, active)

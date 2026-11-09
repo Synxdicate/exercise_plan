@@ -50,6 +50,7 @@ export const NOTE_EN: Record<string, string> = {
 }
 
 export const CUE_EN: Record<string, string> = {
+  'เริ่มวางเข่าบนม้านั่ง (ง่าย) แล้วค่อยวางข้อเท้า ลำตัวตรง ยกสะโพกค้าง': 'Start with the knee on the bench (easier), progress to the ankle; body straight, hips up and hold',
   'บีบสะบักลง เท้าวางแน่น บาร์ลงแตะกลางอก': 'Shoulder blades down and back, feet planted, bar to mid-chest',
   'เริ่มจากห้อยตัวสุด ดึงอกขึ้นหาบาร์ ไม่เหวี่ยงตัว': 'Start from a dead hang, pull your chest to the bar, no swinging',
   'เกร็งก้นและท้อง ดันบาร์เป็นเส้นตรงผ่านหน้า': 'Squeeze glutes and abs, press the bar straight up past your face',

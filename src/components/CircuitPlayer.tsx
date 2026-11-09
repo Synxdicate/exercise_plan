@@ -80,8 +80,11 @@ export function CircuitPlayer({ steps: STEPS, rounds, onClose, drills = false }:
     if (!running) { last.current = null; return }
     const id = setInterval(() => {
       const now = Date.now()
-      if (last.current !== null) setElapsed(e => e + (now - last.current!) / 1000)
+      // คิดส่วนต่างก่อนเรียก setState: updater ของ React อาจรันทีหลัง ตอนนั้น last.current เป็นค่าใหม่แล้ว
+      // ส่วนต่างจะกลายเป็น 0 แล้วนาฬิกาเดินช้ากว่าเวลาจริง (ท่า 30 วิ นับนานกว่านั้น)
+      const d = last.current !== null ? (now - last.current) / 1000 : 0
       last.current = now
+      if (d > 0) setElapsed(e => e + d)
     }, 250)
     return () => clearInterval(id)
   }, [running])
