@@ -670,3 +670,17 @@ test('ตัดท้ายเส้นทางที่ลืมกดหย�
   await expect.poll(async () => ((await idb(page, 'runs')) as { km: number }[])[0].km).toBeLessThan(2)
   await expect.poll(async () => ((await idb(page, 'routes')) as Record<string, { route: unknown[] }>).g.route.length).toBe(61)
 })
+
+test('เส้นทางสนามแข่ง: นำเข้า GPX แล้วได้เพซรายกิโลตามเนิน', async ({ page }) => {
+  // วงรอบ ~3.4 กม. ×3 รอบ ≈ 10 กม. (ความสูงจาก stub: ลง 20 ม. แล้วขึ้น 20 ม. ทุกรอบ)
+  const { route } = loopRoute(120)
+  const pts = [...route, ...route.slice(1), ...route.slice(1)].map(([la, lo]) => `<trkpt lat="${la}" lon="${lo}"></trkpt>`).join('')
+  const gpx = `<?xml version="1.0"?><gpx version="1.1"><trk><name>Khon Kaen</name><trkseg>${pts}</trkseg></trk></gpx>`
+  await seed(page, { program: 'mini', runs: [{ id: 'a', date: ymd(3), km: 5, seconds: 2100, kind: 'race', source: 'manual' }] })
+  await nav(page, 'ฝึก')
+  await page.getByRole('button', { name: /เส้นทางสนามแข่ง/ }).click()
+  await page.locator('input[type=file][accept*=gpx]').setInputFiles({ name: 'khonkaen.gpx', mimeType: 'application/gpx+xml', buffer: Buffer.from(gpx) })
+  await expect(page.getByText('เพซรายกิโลตามเนิน', { exact: false })).toBeVisible()
+  await expect(page.getByText(/^ขึ้น \d+ ม\./).first()).toBeVisible()
+  await expect.poll(async () => ((await idb(page, 'raceCourse')) as { profile: number[] }).profile.length).toBeGreaterThan(200)
+})

@@ -63,20 +63,47 @@ export function findClimbs(profile: number[], km: number, minGain = 8): Climb[] 
   return out
 }
 
-/** เพซเทียบทางราบรายกิโล (วินาที/กม.) — split หารด้วยระยะที่ถ่วงตามความชันของกิโลนั้น */
-export function gapSplits(splits: number[], profile: number[], km: number) {
+/** ตัวคูณความชันเฉลี่ยของแต่ละกิโล (กิโลสุดท้ายอาจไม่เต็ม) + ขึ้น/ลงของกิโลนั้น */
+export function kmFactors(profile: number[], km: number) {
   const n = profile.length
-  if (n < 3 || km <= 0) return splits.map(() => null)
+  const count = Math.ceil(km - 1e-9)
+  if (n < 3 || km <= 0) return Array.from({ length: count }, (_, k) => ({ len: Math.min(1, km - k), factor: 1, up: 0, down: 0 }))
   const g = grades(profile, km)
   const step = km / (n - 1)
-  return splits.map((sec, k) => {
-    let eff = 0, len = 0
+  return Array.from({ length: count }, (_, k) => {
+    let eff = 0, len = 0, up = 0, down = 0
     g.forEach((gr, i) => {
       const a = i * step, b = (i + 1) * step
-      const ov = Math.min(b, k + 1) - Math.max(a, k)
-      if (ov > 0) { eff += ov * gradeFactor(gr); len += ov }
+      const ov = Math.min(b, k + 1, km) - Math.max(a, k)
+      if (ov > 0) { eff += ov * gradeFactor(gr); len += ov; const dh = gr * ov * 1000; if (dh > 0) up += dh; else down -= dh }
     })
-    return len >= 0.5 ? sec / (eff / len) : null
+    return { len: Math.min(1, km - k), factor: len ? eff / len : 1, up: Math.round(up), down: Math.round(down) }
+  })
+}
+
+/** เพซเทียบทางราบรายกิโล (วินาที/กม.) — split หารด้วยระยะที่ถ่วงตามความชันของกิโลนั้น */
+export function gapSplits(splits: number[], profile: number[], km: number) {
+  const f = kmFactors(profile, km)
+  return splits.map((sec, k) => (f[k] && f[k].len >= 0.5 && profile.length >= 3 ? sec / f[k].factor : null))
+}
+
+/**
+ * แผนเพซวันแข่งตามเนินจริงของสนาม: ใช้แรงเท่า ๆ กัน (เพซ ∝ ตัวคูณความชัน) ช้ากว่าเล็กน้อยช่วง 2 กม. แรก
+ * ลงเนินได้ประโยชน์แค่ 70% ของสมการ (นักวิ่งทั่วไปปล่อยตัวลงเนินเต็มที่ไม่ได้ และเสี่ยงเจ็บ) แล้วปรับให้รวมเท่าเวลาเป้า
+ */
+export function coursePacePlan(goalSec: number, km: number, profile: number[], startSlower = 8) {
+  const f = kmFactors(profile, km)
+  const goalPace = goalSec / km
+  const w = f.map((x, k) => {
+    const factor = x.factor < 1 ? 1 - (1 - x.factor) * 0.7 : x.factor
+    return factor * (k < 2 ? (goalPace + startSlower) / goalPace : 1)
+  })
+  const base = goalSec / f.reduce((a, x, k) => a + x.len * w[k], 0)
+  let at = 0
+  return f.map((x, k) => {
+    const pace = base * w[k]
+    at += pace * x.len
+    return { km: +(k + x.len).toFixed(2), pace, at, up: x.up, down: x.down }
   })
 }
 

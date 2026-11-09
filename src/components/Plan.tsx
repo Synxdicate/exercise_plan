@@ -1,3 +1,4 @@
+import { CourseCard } from './Course'
 import { EaseOffCard, StrengthNudgeCard } from './Coach'
 import { useMemo, useState } from 'react'
 import { ArrowDown, ArrowLeftRight, House, ArrowUp, Check, ChevronDown, ChevronRight, Dumbbell, Flag, Footprints, Moon, Play, Plus, RefreshCw, Trash2, Trees } from 'lucide-react'
@@ -214,6 +215,7 @@ function PlanBody() {
         </ul>
       </section>
 
+      <CourseCard />
       <CircuitCard />
       <WeeklyMuscles plan={days} />
 

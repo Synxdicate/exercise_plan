@@ -36,3 +36,23 @@ describe('grade / GAP (Minetti 2002)', () => {
     expect(p.grade).toBeGreaterThan(0.03)
   })
 })
+
+describe('coursePacePlan', () => {
+  it('adds up to the goal, slows on the climb and the first 2 km', async () => {
+    const { coursePacePlan } = await import('../grade')
+    const plan = coursePacePlan(1350, km, hill) // 3 กม. 22:30
+    expect(plan).toHaveLength(3)
+    expect(plan.at(-1)!.at).toBeCloseTo(1350, 0)
+    expect(plan[1].pace).toBeGreaterThan(plan[0].pace) // กม. 2 มีเนิน
+    expect(plan[1].up).toBeGreaterThan(10)
+    expect(plan[2].pace).toBeLessThan(plan[0].pace) // กม. 3 ราบ ไม่ใช่ช่วงออกตัว
+  })
+  it('handles a partial last km (11.55 km)', async () => {
+    const { coursePacePlan } = await import('../grade')
+    const flat = Array.from({ length: 200 }, () => 160)
+    const plan = coursePacePlan(11.55 * 600, 11.55, flat)
+    expect(plan).toHaveLength(12)
+    expect(plan.at(-1)!.km).toBeCloseTo(11.55)
+    expect(plan.at(-1)!.at).toBeCloseTo(6930, 0)
+  })
+})

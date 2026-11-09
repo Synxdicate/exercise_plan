@@ -1,3 +1,5 @@
+import { CoursePacePlan } from './Course'
+import { useRaceCourse } from '../lib/course'
 import { ClipboardCheck, Timer } from 'lucide-react'
 import type { Day } from '../data/workouts'
 import { raceKm, raceLabel, raceLabelEn } from '../lib/goals'
@@ -24,6 +26,7 @@ export function RacePlan({ day, date }: { day: Day; date: string }) {
   const goal = key ? goals[key] ?? est?.[key] : undefined
   const plan = key && goal ? racePlan(key, goal, day.targetKm) : null
   const drink = useRaceDrink(plan ? plan.goalSec / 60 : 75, en)
+  const [course] = useRaceCourse()
   if (!key) return null
   const carbs = Math.round(profile.weightKg * (key === 'full' ? 8 : 6))
   // ข้อความไทยเป็น id ที่บันทึกใน raceChecklist — แปลเฉพาะตอนแสดง
@@ -64,6 +67,7 @@ export function RacePlan({ day, date }: { day: Day; date: string }) {
                 </div>
               ))}
             </div>
+            {course && day.targetKm && <CoursePacePlan course={course} km={day.targetKm} />}
             <p className="mt-2 text-xs">{drink ?? tr('ยังไม่ได้ทดสอบเหงื่อ ทำที่หน้าวิ่ง → สถิติ จะรู้ว่าต้องดื่มเท่าไร', 'No sweat test yet — do one in runs → stats to know how much to drink')}</p>
             {plan.fuel > 0 && <p className="mt-2 text-xs">{tr(`ดื่มน้ำทุกจุดให้น้ำ (จิบ 2–3 อึก) · เจล/คาร์บ ~${plan.fuel} ครั้ง: ครั้งแรกนาทีที่ ~45 แล้วทุก ~35 นาที`, `Drink at every aid station (2–3 sips) · ~${plan.fuel} gels/carb doses: first at ~45 min, then every ~35 min`)}</p>}
           </>
