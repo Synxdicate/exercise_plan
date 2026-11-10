@@ -6,7 +6,7 @@ import { useTodayIdx, useDateField } from '../lib/useToday'
 import { formatDuration, formatPace, runKinds, runKindsEn, uid, useRuns, type Run } from '../lib/log'
 import { useT } from '../lib/i18n'
 import { runsOnly } from '../lib/walk'
-import { estimate, paceHint } from '../lib/pace'
+import { EASY_MARGIN, easyPaceRef, estimate, paceHint } from '../lib/pace'
 import { useProgram } from '../lib/program'
 import { parseGpx } from '../lib/gpx'
 import { defaultShoe, useShoes } from '../lib/shoes'
@@ -63,6 +63,7 @@ export function Runs() {
   const kmToday = runsOnly(runs).filter(r => r.date === today()).reduce((s, r) => s + r.km, 0)
   const [kind, setKind] = useState<Run['kind']>(todayRun?.runKind ?? 'easy')
   const est = useMemo(() => estimate(runs), [runs])
+  const easyRef = useMemo(() => easyPaceRef(runs), [runs])
   // โซนเพซคิดจากเพซ 5K — ถ้าได้มาจากวิ่งเบา โซนจะผิด (วิ่งเบาปกติถูกจัดเป็น Speed) จึงไม่แสดงโซน
   const zoneRef = est && !est.from.easy ? est.paces.interval : undefined
   // ร้อนกว่าเช้าปกติ: เป้าเพซของโค้ชช้าลงตาม WBGT ตอนนี้ (Ely 2007)
@@ -173,8 +174,9 @@ export function Runs() {
     const settling = step && now - coachStep.current.at < 25_000
     const band = settling ? null
       : target ? workBand(target)
-      // คำนวณจากวิ่งเบา: โซน Easy จะช้ากว่าเพซวิ่งเบาจริงของเรา ไม่เตือนให้ช้าลง
-      : !est.from.easy && (step ? step.pace === 'easy' : kind === 'easy' || kind === 'long') ? easyBand(paces!.easy[0])
+      : (step ? step.pace === 'easy' : kind === 'easy' || kind === 'long')
+        // คำนวณจากวิ่งเบา: โซน Easy ช้ากว่าเพซวิ่งเบาจริงของเรา ใช้เพซวิ่งเบาปกติ −20 วิ/กม. เป็นเพดานแทน (แนวคิด "อย่าวิ่งเบาเร็ว")
+        ? (!est.from.easy ? easyBand(paces!.easy[0]) : easyRef ? { min: easyRef - EASY_MARGIN, max: Infinity } : null)
       : null
     const cue = coach.current.update(now, pace, band, target ? 20_000 : 45_000)
     if (cue) void speak(cueText(cue, !!target))

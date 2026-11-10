@@ -797,3 +797,16 @@ test('หน้าแรกเตือนให้ตั้งระยะง�
   await nav(page, 'ฝึก')
   await expect(page.getByText('ตั้งค่างานแข่งให้ครบ')).toHaveCount(0)
 })
+
+test('วันวิ่งเบาขาล้า: ปั่นจักรยานแทน บันทึกเป็นคาร์ดิโอ และติ๊กวันนั้น', async ({ page }) => {
+  // อังคาร 10 พ.ย. 2026 = วันวิ่งเบาของโปรแกรม 10K
+  await page.clock.install({ time: new Date('2026-11-10T08:00:00+07:00') })
+  await seed(page, { program: 'ten', programStart: '2026-11-09' })
+  await nav(page, 'ฝึก')
+  await page.getByRole('button', { name: /ปั่นจักรยานแทน/ }).click()
+  await expect(page.getByText('คาร์ดิโอแทนวิ่งเบา')).toBeVisible()
+  await page.getByRole('button', { name: 'บันทึกว่าทำแล้ว' }).click()
+  await expect.poll(async () => ((await idb(page, 'cross')) as { kind: string; date: string; minutes: number }[] | null)?.[0]).toMatchObject({ kind: 'bike', date: '2026-11-10', minutes: 25 })
+  await expect.poll(async () => Object.entries((await idb(page, 'done')) as object ?? {}).filter(([, v]) => v).length).toBe(1)
+  await expect(page.getByRole('button', { name: /ปั่นจักรยานแทน/ })).toHaveCount(0)
+})

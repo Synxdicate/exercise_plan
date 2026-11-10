@@ -28,6 +28,7 @@ import { WorkoutPlayer } from './WorkoutPlayer'
 import { ProgramSheet } from './ProgramSheet'
 import { Alerts } from './Alerts'
 import { CapNote } from './MissedRun'
+import { CrossInstead } from './CrossInstead'
 import { WeeklyMuscles } from './WeeklyMuscles'
 import { RunTypeCard } from './RunTypes'
 import { ReadinessSheet } from './Readiness'
@@ -359,6 +360,7 @@ function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slo
           {day.runKind !== 'race' && (
             <Button size="lg" variant={done ? 'soft' : 'run'} className="w-full" onClick={() => nav('runs')}><Footprints size={18} /> {done ? t('ดูการวิ่ง', 'View run') : t('ไปเริ่มวิ่ง', 'Go run')}</Button>
           )}
+          <CrossInstead day={day} date={date} done={done} setDone={setDone} />
         </div>
       )}
 

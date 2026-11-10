@@ -1,4 +1,5 @@
 import type { Run } from './log'
+import type { Day } from '../data/workouts'
 import { runsOnly } from './walk'
 import { bestEffort } from './analysis'
 import { addDays, today } from './date'
@@ -163,4 +164,28 @@ export function finishEstimate(runs: Run[], km: number, asOf = today()) {
   const longest = c.reduce((a, r) => (r.km > a.km || (r.km === a.km && r.date > a.date) ? r : a))
   const best = Math.min(...c.map(r => riegel(r.seconds, r.km, km)))
   return { sec: riegel(longest.seconds, longest.km, km), best, from: { km: longest.km, date: longest.date } }
+}
+
+/**
+ * เพซวิ่งเบาจริงของเรา (วินาที/กม.): มัธยฐานของวิ่งเบา/วิ่งยาว ≥2 กม. ใน 28 วัน ที่เพซ 6:00–10:00 (ตัดเดินและวิ่งสลับเดิน)
+ * ใช้เป็นเพดานของโค้ชเสียงตอนยังไม่มีผลวิ่งเต็มที่: วิ่งเบาเร็วกว่าปกติเกิน ~20 วิ/กม. = ไม่ใช่วิ่งเบาแล้ว (pure, tested)
+ */
+export function easyPaceRef(runs: Run[], asOf = today(), days = 28): number | null {
+  const from = addDays(asOf, -days + 1)
+  const paces = runsOnly(runs)
+    .filter(r => (r.kind === 'easy' || r.kind === 'long') && r.date >= from && r.date <= asOf && r.km >= 2 && r.seconds > 0)
+    .map(r => r.seconds / r.km)
+    .filter(p => p >= 360 && p <= MAX_SOURCE_PACE)
+    .sort((a, b) => a - b)
+  if (paces.length < 2) return null
+  const m = paces.length >> 1
+  return paces.length % 2 ? paces[m] : (paces[m - 1] + paces[m]) / 2
+}
+/** วิ่งเบาเร็วกว่าเพซวิ่งเบาปกติได้ไม่เกินเท่านี้ (วินาที/กม.) ก่อนโค้ชเตือน */
+export const EASY_MARGIN = 20
+
+/** นาทีที่เท่ากับวิ่งเบาของวันนั้น: ระยะ × เพซวิ่งเบาปกติ (ไม่มีข้อมูล = 8:20/กม.) หรือนาทีในแผน ปัดเป็น 5 นาที (pure) */
+export function crossMinutes(day: Pick<Day, 'targetKm' | 'duration'>, easyPace: number | null) {
+  const min = day.targetKm ? (day.targetKm * (easyPace ?? 500)) / 60 : Number(day.duration.match(/(\d+) นาที/)?.[1] ?? 30)
+  return Math.max(15, Math.round(min / 5) * 5)
 }

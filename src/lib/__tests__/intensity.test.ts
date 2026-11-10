@@ -30,3 +30,25 @@ describe('intensitySplit', () => {
     expect(intensitySplit([], '2026-11-10', 300)).toBeNull()
   })
 })
+
+describe('easyPaceRef', () => {
+  it('is the median easy/long pace of the last 28 days, ignoring walks and run-walk paces', async () => {
+    const { easyPaceRef } = await import('../pace')
+    const r = (id: string, date: string, km: number, seconds: number, kind: Run['kind'] = 'easy'): Run => ({ id, date, km, seconds, kind, source: 'gps' })
+    // ข้อมูลจริงช่วง 25 ต.ค.–8 พ.ย.: เพซ 14 นาที/กม. (เดินสลับวิ่ง) ไม่นับ
+    const runs = [r('a', '2026-10-25', 3.29, 2854), r('b', '2026-10-27', 4.82, 2950), r('c', '2026-10-29', 3.13, 1575), r('d', '2026-10-31', 2.49, 2119),
+      r('e', '2026-11-02', 3.09, 1618), r('f', '2026-11-06', 2.49, 1150), r('g', '2026-11-08', 5.01, 2462, 'long'), r('t', '2026-11-07', 5, 1500, 'tempo')]
+    expect(Math.round(easyPaceRef(runs, '2026-11-10')!)).toBe(497) // ~8:17
+    expect(easyPaceRef(runs.slice(0, 3), '2026-11-10')).toBeNull()
+  })
+})
+
+describe('crossMinutes', () => {
+  it('matches the easy run time, rounded to 5 min, at least 15', async () => {
+    const { crossMinutes } = await import('../pace')
+    expect(crossMinutes({ targetKm: 3, duration: '3 กม.' }, 497)).toBe(25)
+    expect(crossMinutes({ targetKm: 3, duration: '3 กม.' }, null)).toBe(25)
+    expect(crossMinutes({ duration: '33 นาที' }, null)).toBe(35)
+    expect(crossMinutes({ targetKm: 1, duration: '1 กม.' }, 480)).toBe(15)
+  })
+})
