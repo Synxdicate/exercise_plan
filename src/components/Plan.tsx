@@ -1,6 +1,6 @@
 import { ReplaySoFar } from './Replay'
 import { CourseCard } from './Course'
-import { EaseOffCard, StrengthNudgeCard } from './Coach'
+import { EaseOffCard } from './Coach'
 import { useMemo, useState } from 'react'
 import { useSwipe } from '../lib/swipe'
 
@@ -27,9 +27,7 @@ import { BodyMap } from './BodyMap'
 import { WorkoutPlayer } from './WorkoutPlayer'
 import { ProgramSheet } from './ProgramSheet'
 import { Alerts } from './Alerts'
-import { NextStepCard } from './ProgramPicker'
-import { CapNote, MissedRunCard } from './MissedRun'
-import { WeekCheckCard } from './WeekCheck'
+import { CapNote } from './MissedRun'
 import { WeeklyMuscles } from './WeeklyMuscles'
 import { RunTypeCard } from './RunTypes'
 import { ReadinessSheet } from './Readiness'
@@ -103,11 +101,8 @@ function PlanBody() {
   return (
     <>
       <Alerts />
-      <NextStepCard />
-      <MissedRunCard />
-      <StrengthNudgeCard onPlan />
+      {/* การ์ดเตือน (ก้าวต่อไป, พลาดวิ่ง, เวทห่าง, เช็กสัปดาห์) อยู่หน้าแรกที่เดียว ไม่ซ้ำที่นี่ */}
       <EaseOffCard trigger />
-      <WeekCheckCard />
       <button onClick={() => setPicking(true)} className="flex w-full items-center gap-3 rounded-3xl bg-card p-4 text-left shadow-sm ring-1 ring-line active:scale-[.99]">
         <div className="min-w-0 flex-1">
           <div className="text-xs font-semibold text-accent">{t('โปรแกรมของฉัน', 'My program')} · {(dt.en ? locationInfo[p.location].labelEn : locationInfo[p.location].label).replace(/ \(.*\)/, '')}</div>

@@ -16,7 +16,7 @@ import { cx } from '../lib/cx'
 import { Button, Segmented, Sheet } from './ui'
 
 /** ทวงเวทเมื่อไม่ได้เล่นมา ≥8 วัน (บันทึกเซ็ตหรือติ๊กทำแล้ว) เวทลดการบาดเจ็บ (Lauersen 2014, Toresdahl 2020) */
-export function StrengthNudgeCard({ onPlan = false }: { onPlan?: boolean }) {
+export function StrengthNudgeCard() {
   const p = useProgram()
   const [sessions] = useSessions()
   const dayDone = useDayDone()
@@ -56,7 +56,7 @@ export function StrengthNudgeCard({ onPlan = false }: { onPlan?: boolean }) {
           : t('วันเวทสัปดาห์นี้ผ่านไปแล้ว ทำวันพักที่ไม่ติดกับวันวิ่งยาวได้ หรือเริ่มใหม่สัปดาห์หน้า', 'This week’s strength days have passed — use a rest day not next to the long run, or restart next week')}
       </p>
       <div className="mt-2 flex gap-2">
-        {!onPlan && <Button size="sm" onClick={() => nav('plan')}>{t('ไปที่ตารางฝึก', 'Open the plan')}</Button>}
+        {<Button size="sm" onClick={() => nav('plan')}>{t('ไปที่ตารางฝึก', 'Open the plan')}</Button>}
         <Button size="sm" variant="soft" onClick={() => setSeen(monday)}>{t('ไว้ทีหลัง', 'Later')}</Button>
       </div>
     </section>

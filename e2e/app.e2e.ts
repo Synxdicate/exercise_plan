@@ -783,3 +783,17 @@ test('ปัดซ้าย/ขวาสลับหน้าย่อยขอ�
   await pressed('ประวัติ')
   expect(page.url()).toContain('#runs')
 })
+
+test('หน้าแรกเตือนให้ตั้งระยะงานจริง กดแล้วเปิดตั้งค่า บันทึกแล้วการ์ดหายไป', async ({ page }) => {
+  await seed(page, { program: 'ten', raceDate: '2027-01-10', programStart: ymd(0) })
+  await expect(page.getByText('ตั้งค่างานแข่งให้ครบ')).toBeVisible()
+  await page.getByRole('button', { name: 'ตั้งค่าตอนนี้' }).click()
+  await page.getByLabel('ระยะงานจริง').fill('11.55')
+  await page.getByLabel('เวลาตัดตัว (cutoff)').fill('120')
+  await page.getByRole('button', { name: 'บันทึก', exact: true }).last().click()
+  await expect(page.getByText('ตั้งค่างานแข่งให้ครบ')).toHaveCount(0)
+  await expect.poll(async () => idb(page, 'raceKm')).toBe(11.55)
+  // การ์ดเตือนไม่ซ้ำในหน้าฝึก
+  await nav(page, 'ฝึก')
+  await expect(page.getByText('ตั้งค่างานแข่งให้ครบ')).toHaveCount(0)
+})

@@ -8,7 +8,6 @@ import { usePersisted } from '../lib/storage'
 import { addDays, shortDate, today, weekStart } from '../lib/date'
 import { cx } from '../lib/cx'
 import { useT } from '../lib/i18n'
-import { useDayText } from '../lib/dayText'
 import { Disclosure } from './ui'
 
 type FoodLog = Record<string, { protein: number }[]>
@@ -21,7 +20,6 @@ export function WeekSummary() {
   const [profile] = usePersisted<Profile>('profile', defaultProfile)
   const p = useProgram()
   const t = useT()
-  const dt = useDayText()
   const last = addDays(weekStart(today()), -7)
   const r = runs.filter(x => weekStart(x.date) === last)
   const all = sessions.filter(x => weekStart(x.date) === last)
@@ -47,9 +45,6 @@ export function WeekSummary() {
     ...(protein !== null ? [{ label: t(`โปรตีนเฉลี่ย (${foodDays.length} วันที่บันทึก)`, `Avg protein (${foodDays.length} logged days)`), value: `${Math.round(protein)} / ${proteinGoal} ${t('ก.', 'g')}`, ok: protein >= proteinGoal * 0.9 }] : []),
   ]
   const hit = rows.filter(x => x.ok).length
-  const thisPlan = p.plan()
-  const quality = thisPlan.find(d => d.runKind === 'tempo' || d.runKind === 'interval')
-  const long = thisPlan.find(d => d.runKind === 'long' || d.runKind === 'race')
 
   return (
     <Disclosure title={<span className="flex items-center gap-2"><CalendarRange size={17} className="text-accent" /> {t('สรุปสัปดาห์ที่แล้ว', 'Last week')}</span>}
@@ -63,11 +58,6 @@ export function WeekSummary() {
         ))}
         {longest > 0 && <li className="flex justify-between gap-2"><span className="text-muted">{t('วิ่งไกลสุด', 'Longest run')}</span><span className="font-semibold tabular-nums">{longest.toFixed(1)} {t('กม.', 'km')}</span></li>}
       </ul>
-      <div className="mt-3 rounded-xl bg-raised px-3 py-2 text-sm">
-        <div className="text-xs text-muted">{t('สัปดาห์นี้', 'This week')}</div>
-        <div>{p.kmTarget() ? t(`วิ่งรวม ${p.kmTarget()} กม. · `, `Run ${p.kmTarget()} km · `) : ''}{t(`เวท ${thisPlan.filter(d => d.type === 'strength').length} วัน`, `${thisPlan.filter(d => d.type === 'strength').length} strength days`)}</div>
-        {(quality || long) && <div className="text-xs text-muted">{[quality && `${dt.weekday(quality)}: ${dt.title(quality)}`, long && `${dt.weekday(long)}: ${dt.title(long)}${long.title.includes('กม') ? '' : ` ${long.targetKm} ${t('กม.', 'km')}`}`].filter(Boolean).join(' · ')}</div>}
-      </div>
     </Disclosure>
   )
 }

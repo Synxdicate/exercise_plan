@@ -8,7 +8,7 @@ import { DEFAULT_LIMIT_KM, defaultShoe, shoeKm, shoeStatus, useShoes, type Shoe 
 import { personalBests } from '../lib/analysis'
 import { intensitySplit } from '../lib/intensity'
 import { ZoneLegend } from './Charts'
-import { addDays, daysBetween, shortDate, today, weekStart } from '../lib/date'
+import { daysBetween, shortDate, today } from '../lib/date'
 import { Badge, Button, Card, Collapse, Segmented, Stat } from './ui'
 import { heatmapRoutes } from '../lib/matched'
 import { useRaceGoals } from '../lib/useGoals'
@@ -18,48 +18,6 @@ import { cx } from '../lib/cx'
 
 // การ์ดสถิติในแท็บวิ่ง (แยกจาก Runs.tsx): ระยะรายสัปดาห์ เวลาคาดการณ์ เวลาเร็วสุด รองเท้า แผนที่รวม
 const RouteHeatmap = lazy(() => import('./RouteHeatmap'))
-
-export function WeeklyBars({ runs, target }: { runs: Run[]; target: number }) {
-  const tr = useT()
-  const [hover, setHover] = useState<number | null>(null)
-  const current = weekStart(today())
-  const weeks = Array.from({ length: 8 }, (_, i) => addDays(current, (i - 7) * 7))
-  const totals = weeks.map(w => runsOnly(runs).filter(r => weekStart(r.date) === w).reduce((s, r) => s + r.km, 0))
-  const max = Math.max(target, 1, ...totals) * 1.15
-  const W = 320, H = 140, pad = 22, bw = (W - pad) / weeks.length
-  const y = (v: number) => H - pad - (v / max) * (H - pad - 8)
-
-  return (
-    <div>
-      <div className="mb-1 h-5 text-right text-sm tabular-nums">{hover !== null ? tr(`สัปดาห์ ${shortDate(weeks[hover])}: ${totals[hover].toFixed(1)} กม.`, `Week of ${shortDate(weeks[hover])}: ${totals[hover].toFixed(1)} km`) : ''}</div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="block w-full" role="img" aria-label={tr('กราฟระยะวิ่งรายสัปดาห์', 'Weekly running distance chart')}>
-        {target > 0 && (
-          <g>
-            <line x1={pad} x2={W} y1={y(target)} y2={y(target)} className="stroke-muted" strokeDasharray="4 4" />
-            <text x={W - 2} y={y(target) - 4} textAnchor="end" className="fill-muted text-[9px]">{tr('เป้า', 'Goal')} {target}</text>
-          </g>
-        )}
-        <line x1={pad} x2={W} y1={H - pad} y2={H - pad} className="stroke-line" />
-        {weeks.map((w, i) => {
-          const x = pad + i * bw + 4
-          const h = H - pad - y(totals[i])
-          return (
-            <g key={w} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} onClick={() => setHover(i)}>
-              <rect x={pad + i * bw} y={0} width={bw} height={H - pad} fill="transparent" />
-              {h > 0 && <path className={cx('fill-run', hover === i ? 'opacity-100' : 'opacity-80')} d={roundedTop(x, y(totals[i]), bw - 8, h)} />}
-              <text x={x + (bw - 8) / 2} y={H - 6} textAnchor="middle" className="fill-muted text-[9px]">{shortDate(w)}</text>
-            </g>
-          )
-        })}
-      </svg>
-    </div>
-  )
-}
-
-const roundedTop = (x: number, y: number, w: number, h: number) => {
-  const r = Math.min(4, h, w / 2)
-  return `M${x} ${y + h} V${y + r} Q${x} ${y} ${x + r} ${y} H${x + w - r} Q${x + w} ${y} ${x + w} ${y + r} V${y + h} Z`
-}
 
 export function PaceCard({ est, runs, onTrial }: { est: Estimate | null; runs: Run[]; onTrial: () => void }) {
   const tr = useT()

@@ -1,5 +1,6 @@
 import { ReplayCard } from './Replay'
 import { ThisWeekCard } from './ThisWeek'
+import { RaceSetupCard } from './RaceSetup'
 import { EaseOffCard, StrengthNudgeCard } from './Coach'
 import { strengthOnly } from '../lib/sessionKind'
 import { useMemo, useState } from 'react'
@@ -77,6 +78,7 @@ export function Dashboard() {
     <>
       <Alerts />
       <NextStepCard />
+      <RaceSetupCard />
       <MissedRunCard />
       <ReplayCard />
       <EaseOffCard />

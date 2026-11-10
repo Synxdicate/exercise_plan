@@ -49,13 +49,15 @@ export function ThisWeekCard() {
     setSel(Math.max(0, Math.min(N - 1, Math.round(((px - L) / (W - L - R)) * (N - 1)))))
   }
   const cur = weeks[N - 1]
+  const avg4 = weeks.slice(N - 5, N - 1).reduce((a, w) => a + w.km, 0) / 4
   const s = weeks[sel]
   const hasPlan = planned.some(v => v !== null)
 
   return (
     <Card title={<span className="flex items-center gap-2"><CalendarDays size={18} className="text-run" /> {t('สัปดาห์นี้', 'This week')}</span>}>
       <div className="grid grid-cols-3 gap-2">
-        {[[t('ระยะ', 'Distance'), `${cur.km.toFixed(1)}`, t('กม.', 'km')], [t('เวลา', 'Time'), formatDuration(cur.seconds), ''], [t('ขึ้นสะสม', 'Elevation'), cur.elevRuns ? `${cur.gain}` : '-', cur.elevRuns ? t('ม.', 'm') : '']].map(([l, v, u]) => (
+        {/* ระยะสัปดาห์นี้อยู่ในวงแหวนบนหัวหน้าแรกแล้ว ที่นี่แสดงสิ่งที่ไม่ซ้ำ: เวลา ขึ้นสะสม และค่าเฉลี่ย 4 สัปดาห์ก่อน */}
+        {[[t('เวลา', 'Time'), formatDuration(cur.seconds), ''], [t('ขึ้นสะสม', 'Elevation'), cur.elevRuns ? `${cur.gain}` : '-', cur.elevRuns ? t('ม.', 'm') : ''], [t('เฉลี่ย 4 สัปดาห์', '4-week avg'), avg4.toFixed(1), t('กม.', 'km')]].map(([l, v, u]) => (
           <div key={l}>
             <div className="text-[11px] text-muted">{l}</div>
             <div className="text-xl font-extrabold tabular-nums">{v}<span className="ml-0.5 text-xs font-normal text-muted">{u}</span></div>
