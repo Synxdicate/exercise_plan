@@ -29,3 +29,15 @@ describe('นักวิ่งเงา', () => {
     expect(g.label).toContain('11.55 กม.')
   })
 })
+
+describe('planGoal', () => {
+  it('uses the goal unless it is over 10% faster than the prediction', async () => {
+    const { planGoal } = await import('../racePlan')
+    expect(planGoal(undefined, 5124.4)).toEqual({ sec: 5124, from: 'prediction', capped: false })
+    expect(planGoal(4800, 5124)).toEqual({ sec: 4800, from: 'goal', capped: false })
+    // เป้า 10K 55:00 กับคาดการณ์ ~1:25 → ใช้ 90% ของคาดการณ์
+    expect(planGoal(3300, 5124)).toEqual({ sec: 4612, from: 'goal', capped: true })
+    expect(planGoal(3300, null)).toEqual({ sec: 3300, from: 'goal', capped: false })
+    expect(planGoal(undefined, null)).toBeNull()
+  })
+})

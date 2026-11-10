@@ -810,3 +810,14 @@ test('วันวิ่งเบาขาล้า: ปั่นจักรย
   await expect.poll(async () => Object.entries((await idb(page, 'done')) as object ?? {}).filter(([, v]) => v).length).toBe(1)
   await expect(page.getByRole('button', { name: /ปั่นจักรยานแทน/ })).toHaveCount(0)
 })
+
+test('เป้าแข่งที่เร็วเกินจริงถูกปรับในแผนวันแข่ง พร้อมบอกเหตุผล', async ({ page }) => {
+  await page.clock.install({ time: new Date('2027-01-10T05:00:00+07:00') })
+  await seed(page, {
+    program: 'ten', raceDate: '2027-01-10', raceKm: 11.55, goals: { race: { tenK: 3300 } },
+    runs: [{ id: 'l', date: '2027-01-03', km: 8.5, seconds: 8.5 * 490, kind: 'long', source: 'manual' }],
+  })
+  await nav(page, 'ฝึก')
+  await expect(page.getByText(/เร็วกว่าเวลาคาดการณ์ .* เกิน 10%/)).toBeVisible()
+  await expect(page.getByText('จากเป้า (ปรับให้สมจริง)', { exact: false })).toBeVisible()
+})

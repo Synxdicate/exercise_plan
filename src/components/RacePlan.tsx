@@ -3,7 +3,7 @@ import { useRaceCourse } from '../lib/course'
 import { ClipboardCheck, Timer } from 'lucide-react'
 import type { Day } from '../data/workouts'
 import { raceKm, raceLabel, raceLabelEn } from '../lib/goals'
-import { racePlan, raceKeyOf } from '../lib/racePlan'
+import { planGoal, racePlan, raceKeyOf } from '../lib/racePlan'
 import { formatDuration, formatPace, useRuns } from '../lib/log'
 import { estimate } from '../lib/pace'
 import { useRaceGoals } from '../lib/useGoals'
@@ -23,8 +23,8 @@ export function RacePlan({ day, date }: { day: Day; date: string }) {
   const [profile] = usePersisted<Profile>('profile', defaultProfile)
   const [checked, setChecked] = usePersisted<Record<string, string[]>>('raceChecklist', {})
   const est = key ? estimate(runs) : null
-  const goal = key ? goals[key] ?? est?.[key] : undefined
-  const plan = key && goal ? racePlan(key, goal, day.targetKm) : null
+  const g = key ? planGoal(goals[key], est?.[key]) : null
+  const plan = key && g ? racePlan(key, g.sec, day.targetKm) : null
   const drink = useRaceDrink(plan ? plan.goalSec / 60 : 75, en)
   const [course] = useRaceCourse()
   if (!key) return null
@@ -53,7 +53,12 @@ export function RacePlan({ day, date }: { day: Day; date: string }) {
         <div className="mb-2 flex items-center gap-2 font-bold"><Timer size={16} className="text-accent" /> {tr('แผนเพซ', 'Pace plan')} {(en ? raceLabelEn : raceLabel)[key]}</div>
         {plan ? (
           <>
-            <div className="text-xs text-muted">{goals[key] ? tr('จากเป้าที่ตั้งไว้', 'From your goal') : tr('จากเวลาคาดการณ์ (ตั้งเป้าเองได้ที่หน้าวิ่ง → สถิติ)', 'From the prediction (set a goal in runs → stats)')} · {formatDuration(plan.goalSec)}{day.targetKm !== raceKm[key] && ` (${day.targetKm} ${tr('กม.', 'km')})`}</div>
+            {g?.capped && (
+              <p className="mb-2 rounded-xl bg-warn/15 p-2 text-xs text-warn">{tr(
+                `เป้า ${formatDuration(goals[key]!)} เร็วกว่าเวลาคาดการณ์ (${formatDuration(est![key])}) เกิน 10% แผนนี้ใช้ ${formatDuration(g.sec)} แทน เพื่อไม่ให้ออกตัวเร็วจนหมดแรงกลางทาง วิ่งทดสอบ 5K แล้วเวลาคาดการณ์จะแม่นขึ้น`,
+                `Your goal ${formatDuration(goals[key]!)} is over 10% faster than the prediction (${formatDuration(est![key])}); this plan uses ${formatDuration(g.sec)} so you don't start too fast and fade. A 5K test makes the prediction more accurate`)}</p>
+            )}
+            <div className="text-xs text-muted">{g?.from === 'goal' ? tr(g.capped ? 'จากเป้า (ปรับให้สมจริง)' : 'จากเป้าที่ตั้งไว้', g.capped ? 'From your goal (made realistic)' : 'From your goal') : tr('จากเวลาคาดการณ์ (ตั้งเป้าเองได้ที่หน้าวิ่ง → สถิติ)', 'From the prediction (set a goal in runs → stats)')} · {formatDuration(plan.goalSec)}{day.targetKm !== raceKm[key] && ` (${day.targetKm} ${tr('กม.', 'km')})`}</div>
             <ol className="mt-2 space-y-1">
               <li className="flex justify-between gap-2"><span>{tr('2 กม. แรก อย่ารีบ', 'First 2 km — don’t rush')}</span><b className="tabular-nums">{formatPace(plan.startPace, 1)} {tr('/กม.', '/km')}</b></li>
               <li className="flex justify-between gap-2"><span>{tr('หลังจากนั้นถือเพซ', 'Then hold')}</span><b className="tabular-nums">{formatPace(plan.restPace, 1)} {tr('/กม.', '/km')}</b></li>

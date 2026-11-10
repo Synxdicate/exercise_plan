@@ -2,6 +2,7 @@
 // วันวิ่งเบาไม่มีเงา (ต้องเบาจริง) · เงาเร็วกว่าครั้งก่อนแค่ 1.5%: ท้าทายแต่ทำได้ (Locke & Latham 2002)
 // ไม่หลอกความเร็วเงา การหลอกให้ผลไม่คงอยู่และทำให้รู้สึกแย่ลง (Jones 2016) ต่างจากการแข่งกับตัวเองที่รู้ความเร็ว (Stone 2012)
 import { raceKm, raceLabel, raceLabelEn, type RaceKey } from './goals'
+import { planGoal } from './racePlan'
 import { formatDuration } from './log'
 
 export const GHOST_EDGE = 0.985
@@ -19,12 +20,14 @@ export function trialGhost(best5k: number | null | undefined, predicted5k: numbe
 /** วันแข่ง: เงา = เวลาเป้าหมายที่ตั้งไว้ ไม่งั้นเวลาคาดการณ์ (ไม่บวกเพิ่ม วันแข่งคุมเพซตามแผน) */
 /** km = ระยะงานจริง (เช่น มินิ 11.55) เวลาของระยะมาตรฐานปรับด้วย Riegel ให้เงาวิ่งครบระยะงาน */
 export function raceGhost(key: RaceKey, goal: number | undefined, predicted: number | null | undefined, km = raceKm[key]): Ghost | null {
-  const base = goal ?? (predicted ? Math.round(predicted) : null)
-  if (!base) return null
+  // เป้าที่ไม่สมจริง (เร็วกว่าคาดการณ์เกิน 10%) ถูกปรับเหมือนแผนเพซ เงาจะได้ไม่ลากให้ออกตัวเร็วเกิน
+  const g = planGoal(goal, predicted)
+  if (!g) return null
+  const base = g.sec
   const seconds = km === raceKm[key] ? base : Math.round(base * (km / raceKm[key]) ** 1.07)
   const name = km === raceKm[key] ? raceLabel[key] : `${km} กม.`
   const nameEn = km === raceKm[key] ? raceLabelEn[key] : `${km} km`
-  return { km, seconds, label: `${goal ? 'เป้าหมาย' : 'คาดการณ์'} ${name} ${formatDuration(seconds)}`, labelEn: `${goal ? 'Goal' : 'Predicted'} ${nameEn} ${formatDuration(seconds)}` }
+  return { km, seconds, label: `${g.from === 'goal' ? 'เป้าหมาย' : 'คาดการณ์'} ${name} ${formatDuration(seconds)}`, labelEn: `${g.from === 'goal' ? 'Goal' : 'Predicted'} ${nameEn} ${formatDuration(seconds)}` }
 }
 
 /** วินาทีที่นำ (+) หรือตามหลัง (−) เงาที่วิ่งเพซคงที่ เมื่อวิ่งได้ m เมตรในเวลา sec วินาที */

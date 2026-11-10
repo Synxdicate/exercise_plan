@@ -28,3 +28,16 @@ export function racePlan(key: RaceKey, standardSec: number, km = raceKm[key]) {
 
 /** ระยะของวันแข่ง → ประเภท (ใช้กับเป้าเวลา/เวลาคาดการณ์) */
 export const raceKeyOf = (km?: number): RaceKey | null => (!km ? null : km >= 40 ? 'full' : km >= 20 ? 'half' : km >= 9 ? 'tenK' : km >= 4.5 ? 'fiveK' : null)
+
+/** เป้าเร็วกว่าเวลาคาดการณ์ได้ไม่เกิน 10%: เกินกว่านั้นแผนเพซ/นักวิ่งเงาจะพาออกตัวเร็วจนหมดแรงกลางทาง */
+export const GOAL_STRETCH = 0.9
+
+/**
+ * เวลามาตรฐานที่ใช้วางแผนวันแข่ง (pure, tested): เป้าที่ตั้งไว้ ถ้าไม่ตั้งใช้เวลาคาดการณ์
+ * เป้าเร็วกว่าคาดการณ์เกิน 10% → ใช้คาดการณ์ × 0.9 แทน และบอกว่าถูกปรับ (capped)
+ */
+export function planGoal(goal: number | undefined, predicted: number | null | undefined) {
+  if (!goal) return predicted ? { sec: Math.round(predicted), from: 'prediction' as const, capped: false } : null
+  if (predicted && goal < predicted * GOAL_STRETCH) return { sec: Math.round(predicted * GOAL_STRETCH), from: 'goal' as const, capped: true }
+  return { sec: goal, from: 'goal' as const, capped: false }
+}
