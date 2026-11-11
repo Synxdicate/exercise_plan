@@ -32,12 +32,14 @@ export function WeekCheckCard() {
   const training = plan.flatMap((d, i) => (d.type !== 'rest' ? [i] : []))
   const done = training.filter(i => dayDone(p.currentWeek, i, plan[i])).length
   // หนึ่งคำตอบต่อหนึ่งสัปดาห์ในปฏิทิน (สัปดาห์ที่ทำซ้ำจะถามใหม่)
-  const key = `${p.program}-${p.doneId(p.currentWeek, 0)}`
-  const answer = answers[key] as Feel | undefined
+  // doneId มีชื่อโปรแกรมนำหน้าอยู่แล้ว (ก่อน v2.68.3 ใส่ซ้ำเป็น "ten-ten-w4-d0" ยังอ่านคีย์เก่าอยู่)
+  const key = p.doneId(p.currentWeek, 0)
+  const old = `${p.program}-${key}`
+  const answer = (answers[key] ?? answers[old]) as Feel | undefined
   const close = () => setAnswers(a => ({ ...a, [`${key}:acted`]: true }))
   // ถามเมื่อทำครบทุกวันของสัปดาห์ หรือถึงวันอาทิตย์แล้วได้ทำไปบ้าง
   if (!done || (done < training.length && todayIdx < 6)) return null
-  if (answers[`${key}:acted`]) return null
+  if (answers[`${key}:acted`] || answers[`${old}:acted`]) return null
   const last = p.currentWeek >= p.meta.weeks
 
   return (

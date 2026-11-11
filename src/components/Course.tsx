@@ -68,7 +68,7 @@ export function CourseCard() {
       const g = parseGpx(await f.text())
       const pts = sampleRoute(g.route, Math.min(samplesFor(g.km), g.route.length))
       const profile = await fetchElevation(pts)
-      const e = elevStats(profile)
+      const e = elevStats(profile, g.km)
       setCourse({ name: f.name.replace(/\.gpx$/i, ''), km: g.km, route: sampleRoute(g.route, 300), profile, gain: e.gain, loss: e.loss })
       notify(t('นำเข้าเส้นทางสนามแล้ว', 'Course imported'), 'good')
     } catch (e) {

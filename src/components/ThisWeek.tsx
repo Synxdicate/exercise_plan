@@ -92,6 +92,8 @@ export function ThisWeekCard() {
         <line x1={x(sel)} x2={x(sel)} y1={T - 4} y2={H - B} className="stroke-muted" strokeWidth="1" strokeDasharray="2 2" />
         <path d={area} className="fill-run" opacity="0.1" />
         {plan && <path d={plan} fill="none" className="stroke-muted" strokeWidth="2" strokeDasharray="4 3" strokeLinejoin="round" />}
+        {/* จุดแผนทุกสัปดาห์ เส้นประที่มีสัปดาห์เดียว (เพิ่งเริ่มโปรแกรม) มองไม่เห็น */}
+        {planned.map((v, i) => v !== null && <circle key={`p${i}`} cx={x(i)} cy={y(v)} r="3" className="fill-card stroke-muted" strokeWidth="1.5" />)}
         <path d={line} fill="none" className="stroke-run" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
         {weeks.map((w, i) => (
           <circle key={w.monday} cx={x(i)} cy={y(w.km)} r={i === sel ? 5.5 : 4}

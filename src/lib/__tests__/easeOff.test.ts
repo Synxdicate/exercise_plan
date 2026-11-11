@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { weekPlan } from '../../data/programs'
 import { titleEn } from '../dayText'
-import { NOTE_EN } from '../../data/contentEn'
+import { CUE_EN, NOTE_EN } from '../../data/contentEn'
 import { applyEaseOff, easeActive } from '../easeOff'
 
 const monday = '2026-11-09'
@@ -24,6 +24,17 @@ describe('applyEaseOff', () => {
       expect(out[i].guide).toBeUndefined()
       expect(out[i].targetKm!).toBeLessThanOrEqual(Math.max(1, d.targetKm! * 0.5 + 0.25))
     })
+  })
+  it('sore/busy run days lose the original fast-part cue (strides, intervals)', () => {
+    const ten = weekPlan('ten', 4, () => 'park')
+    for (const reason of ['sore', 'busy'] as const) {
+      for (const d of applyEaseOff(ten, monday, { from: monday, to: '2026-11-15', reason })) {
+        if (d.type !== 'run') continue
+        expect(d.exercises).toHaveLength(1)
+        expect(d.exercises[0].cue).not.toMatch(/Strides|×|เร็ว 1|นาที \//)
+        expect(CUE_EN[d.exercises[0].cue!]).toBeTruthy()
+      }
+    }
   })
   it('never touches race day', () => {
     const race = weekPlan('mini', 10, () => 'park')

@@ -120,7 +120,7 @@ export function EaseOffCard({ trigger = false }: { trigger?: boolean }) {
         <BatteryLow size={18} className="mt-0.5 shrink-0 text-warn" />
         <div className="min-w-0 flex-1 text-sm">
           <div className="font-bold">{t(`แผนเบาลง (${info.th}) ถึง ${niceDate(r!.to)}`, `Eased plan (${info.en.toLowerCase()}) until ${niceDate(r!.to)}`)}</div>
-          <div className="text-muted">{t(info.what[0], info.what[1])} — {t('หมดช่วงแล้วกลับแผนเดิมเอง', 'the normal plan resumes afterwards')}</div>
+          <div className="text-muted">{t(`${info.what[0]} หมดช่วงแล้วกลับแผนเดิมเอง`, `${info.what[1]} — the normal plan resumes afterwards`)}</div>
         </div>
         <Button size="sm" variant="soft" onClick={() => p.setEaseOff(null)}>{t('กลับแผนปกติ', 'Resume')}</Button>
       </section>

@@ -28,6 +28,12 @@ export const EASE_TITLES: Record<EaseReason, { run: string; strength: string }> 
   busy: { run: 'วิ่งเบาสั้น (ไม่มีเวลา)', strength: 'เวทย่อ (ไม่มีเวลา)' },
 }
 
+// คำอธิบายวันวิ่งช่วงปรับแผน: ต้องแทนของเดิม (เช่น "ปิดท้าย Strides", interval) ไม่งั้นการ์ดวันนี้ยังสั่งช่วงเร็วอยู่
+export const EASE_HOW: Record<Exclude<EaseReason, 'sick'>, string> = {
+  sore: 'วิ่งเบาต่อเนื่อง ไม่มีช่วงเร็ว ไม่มี strides',
+  busy: 'วิ่งเบาสั้น ๆ ระดับพูดคุยได้',
+}
+
 const half = (km: number, f: number) => Math.max(1, Math.round(km * f * 2) / 2)
 
 export function applyEaseOff(days: Day[], monday: string, ease: EaseOff | null | undefined): Day[] {
@@ -43,7 +49,10 @@ export function applyEaseOff(days: Day[], monday: string, ease: EaseOff | null |
       // วันวิ่งที่กำหนดเป็นเวลา (โปรแกรมเริ่มวิ่ง) ลดเวลาในสัดส่วนเดียวกัน
       const min = Number(d.duration.match(/(\d+) นาที/)?.[1])
       const duration = km ? `~${Math.round(km * 8)} นาที` : min ? `~${Math.max(10, Math.round(min * (ease.reason === 'sore' ? 0.5 : 0.6)))} นาที` : d.duration
-      return { ...d, title, note, runKind: 'easy', targetKm: km, guide: undefined, duration }
+      const how = EASE_HOW[ease.reason]
+      const reps = km ? `${km} กม.` : duration
+      return { ...d, title, note, runKind: 'easy', targetKm: km, guide: undefined, duration,
+        exercises: [{ name: 'Easy run', th: how, sets: '1', reps, rest: '-', cue: how, video: 'easy run zone 2 running how to' }] }
     }
     return { ...d, title, note }
   })

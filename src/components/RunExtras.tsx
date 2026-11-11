@@ -56,10 +56,10 @@ export function ElevationCard({ run, onUpdate, onScrub }: { run: Run; onUpdate: 
     if (!hasRoute || (run.elev && !stale) || failed || !navigator.onLine) return
     let alive = true
     fetchElevation(sampleRoute(run.route!, want))
-      .then(p => { if (alive) update.current({ elev: elevStats(p), elevProfile: p }) })
+      .then(p => { if (alive) update.current({ elev: elevStats(p, run.km), elevProfile: p }) })
       .catch(() => alive && setFailed(true))
     return () => { alive = false }
-  }, [hasRoute, run.elev, run.route, failed, stale, want])
+  }, [hasRoute, run.elev, run.route, run.km, failed, stale, want])
   const p = useMemo(() => run.elevProfile ?? [], [run.elevProfile])
   const g = useMemo(() => grades(p, run.km), [p, run.km])
   const climbs = useMemo(() => findClimbs(p, run.km), [p, run.km])

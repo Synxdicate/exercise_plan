@@ -1,3 +1,4 @@
+import { ELEV_V, elevStats } from './elevation'
 import type { Point } from './gps'
 import { useCallback, useEffect, useMemo } from 'react'
 import { readStored, usePersisted } from './storage'
@@ -19,7 +20,7 @@ export type Run = {
   shoeId?: string
   startedAt?: number // เวลาเริ่ม (ms) ใช้ส่งออก GPX
   guide?: { work: number; total: number; finished: boolean } // ทำชุดซ้อม (เสียงนำ) ได้กี่ช่วงหลัก
-  elev?: { gain: number; loss: number; max: number; min: number } // จากแผนที่ความสูง (elevation.ts)
+  elev?: { gain: number; loss: number; max: number; min: number; v?: number } // จากแผนที่ความสูง (elevation.ts)
   elevProfile?: number[] // ความสูง ~100 จุดเท่า ๆ กันตามระยะ เก็บใน routes
 }
 
@@ -92,7 +93,14 @@ export function useCompactRuns() {
     if (!raw.some(r => r.route)) return
     setRuns(prev => prev.map(r => (r.route && !isCompact(r.route) ? { ...r, route: r.route.map(roundPoint) } : r)))
   }, [raw, setRuns])
+  // ขึ้นสะสมของรอบเก่าคิดจากสูตรเดิม (ไม่เกลี่ย ได้ค่าสูงเกินจริง) คิดใหม่จากโปรไฟล์ที่เก็บไว้ ไม่ต้องดึงจากเน็ตอีก
+  const [runs] = useRuns()
+  useEffect(() => {
+    if (!runs.some(staleElev)) return
+    setRuns(prev => prev.map(r => (staleElev(r) ? { ...r, elev: elevStats(r.elevProfile!, r.km) } : r)))
+  }, [runs, setRuns])
 }
+const staleElev = (r: Run) => !!r.elev && r.elev.v !== ELEV_V && (r.elevProfile?.length ?? 0) > 2 && r.km > 0
 export const useSessions = () => usePersisted<Session[]>('sessions', [])
 
 // คาร์ดิโอทดแทนการวิ่ง (แรงกระแทกน้อย): ได้ระบบหายใจ-หัวใจโดยไม่กระแทกข้อ ใช้เพิ่มปริมาณแอโรบิกหรือช่วงบาดเจ็บ

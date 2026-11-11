@@ -1,5 +1,6 @@
 import { cumulative } from './analysis'
 import type { Point } from './geo'
+import { smoothProfile } from './grade'
 
 // ความสูงของเส้นทาง: GPS มือถือวัดความสูงคลาดเคลื่อนมาก จึงดึงจากแผนที่ความสูง (DEM ~90 ม.) ของ Open-Meteo แทน
 // ใช้ตอบคำถาม "เส้นทางนี้มีเนินซึมเท่าไร" — ค่าคร่าว ๆ ระดับเนินยาว ไม่เห็นเนินสั้น ๆ อย่างสะพาน
@@ -25,15 +26,23 @@ export function sampleRoute(route: Point[], n = ELEV_SAMPLES): Point[] {
   return out
 }
 
-/** ขึ้นสะสม/ลงสะสม ไม่นับการแกว่งไม่ถึง `step` เมตร (กันสัญญาณรบกวนของแผนที่ความสูง) */
-export function elevStats(profile: number[], step = 1) {
+/** เวอร์ชันวิธีคิดขึ้นสะสม (เพิ่มเมื่อเปลี่ยนสูตร รอบเก่าที่ยังเป็นสูตรเดิมจะคิดใหม่จาก elevProfile) */
+export const ELEV_V = 2
+/** เกลี่ยโปรไฟล์ก่อนนับขึ้น/ลง (เมตร) แผนที่ความสูง 90 ม. มีขั้นบันไดจากตึก/ต้นไม้ เก็บจุดทุก ~25 ม. จะนับขั้นพวกนั้นเป็นเนิน
+ *  (ลู่วนเล็ก ๆ ในที่ราบเคยได้ ~37 ม./กม.) */
+export const ELEV_SMOOTH_M = 100
+
+/** ขึ้นสะสม/ลงสะสม ไม่นับการแกว่งไม่ถึง `step` เมตร (กันสัญญาณรบกวนของแผนที่ความสูง)
+ *  ส่ง `km` (ระยะของโปรไฟล์) เพื่อเกลี่ยทุก ~100 ม. ก่อน — max/min ยังคิดจากค่าดิบ */
+export function elevStats(profile: number[], km?: number, step = 1) {
   let gain = 0, loss = 0
-  let ref = profile[0] ?? 0
-  for (const h of profile) {
+  const p = km ? smoothProfile(profile, km, ELEV_SMOOTH_M) : profile
+  let ref = p[0] ?? 0
+  for (const h of p) {
     if (h - ref >= step) { gain += h - ref; ref = h }
     else if (ref - h >= step) { loss += ref - h; ref = h }
   }
-  return { gain: Math.round(gain), loss: Math.round(loss), max: Math.round(Math.max(...profile)), min: Math.round(Math.min(...profile)) }
+  return { gain: Math.round(gain), loss: Math.round(loss), max: Math.round(Math.max(...profile)), min: Math.round(Math.min(...profile)), ...(km ? { v: ELEV_V } : {}) }
 }
 
 async function fetchBatch(points: Point[]): Promise<number[]> {

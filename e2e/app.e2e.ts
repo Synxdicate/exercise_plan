@@ -577,8 +577,10 @@ test('รายละเอียดรอบวิ่ง: ความสำเ
   await expect(page.getByText('ความสำเร็จรอบนี้')).toBeVisible()
   await expect(page.getByText('1K เร็วที่สุดของคุณ')).toBeVisible()
   await expect(page.getByText('ความสูงเส้นทาง')).toBeVisible()
-  await expect(page.getByText('20 ม.').first()).toBeVisible()
-  await expect.poll(async () => ((await idb(page, 'runs')) as { elev?: { gain: number } }[])[0].elev?.gain).toBe(20)
+  // ขึ้นจริง 20 ม. เกลี่ยทุก ~100 ม. แล้วมุมมนลงเล็กน้อย (v2.68.3)
+  await expect.poll(async () => ((await idb(page, 'runs')) as { elev?: { gain: number } }[])[0].elev?.gain ?? 0).toBeGreaterThanOrEqual(16)
+  expect(((await idb(page, 'runs')) as { elev: { gain: number; v?: number } }[])[0].elev).toMatchObject({ v: 2 })
+  expect(((await idb(page, 'runs')) as { elev: { gain: number } }[])[0].elev.gain).toBeLessThanOrEqual(20)
   await expect.poll(async () => ((await idb(page, 'routes')) as Record<string, { elevProfile?: number[] }>).g.elevProfile?.length).toBeGreaterThan(100) // 3.4 กม. ทุก ~25 ม. (ส่ง 2 ครั้ง)
   await expect(page.getByText('GAP', { exact: true })).toBeVisible()
   await page.getByRole('img', { name: /กราฟความสูง/ }).click()
@@ -820,4 +822,18 @@ test('เป้าแข่งที่เร็วเกินจริงถ�
   await nav(page, 'ฝึก')
   await expect(page.getByText(/เร็วกว่าเวลาคาดการณ์ .* เกิน 10%/)).toBeVisible()
   await expect(page.getByText('จากเป้า (ปรับให้สมจริง)', { exact: false })).toBeVisible()
+})
+
+test('ขึ้นสะสมของรอบเก่า (สูตรไม่เกลี่ย) ถูกคิดใหม่จากโปรไฟล์ที่เก็บไว้', async ({ page }) => {
+  // ลู่วนในที่ราบ แผนที่ความสูงเป็นขั้น 185↔203 สูตรเดิมได้ 89 ม.
+  const lap = [185, 185, 185, 193, 193, 193, 193, 193, 203, 203, 200, 200, 200, 200, 199, 200, 200, 200, 200, 189, 190, 190, 190, 190]
+  const elevProfile = [...lap, ...lap, ...lap, ...lap]
+  const { route, times } = loopRoute()
+  await seed(page, {
+    runs: [{ id: 'old', date: ymd(1), km: 2.43, seconds: 1232, kind: 'easy', source: 'gps', elev: { gain: 89, loss: 89, max: 203, min: 185 } }],
+    routes: { old: { route, times, elevProfile } },
+  })
+  await expect.poll(async () => ((await idb(page, 'runs')) as { elev: { v?: number } }[])[0].elev.v).toBe(2)
+  expect(((await idb(page, 'runs')) as { elev: { gain: number } }[])[0].elev.gain).toBeLessThan(60)
+  expect(((await idb(page, 'routes')) as Record<string, { route: unknown[] }>).old.route).toHaveLength(route.length)
 })

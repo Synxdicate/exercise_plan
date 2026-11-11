@@ -46,13 +46,15 @@ export function TrainingCalendar() {
     const weeks = new Map<number, Day[]>()
     const out = new Map<string, Day | null>()
     const ticked = new Set<string>()
+    // ก่อนวันเริ่มโปรแกรมปัจจุบัน (เช่น เปลี่ยนโปรแกรมกลางทาง) ไม่มีแผนนี้ ไม่ขึ้นว่า "ตามแผนแต่ไม่ได้ทำ" (เหมือนกราฟสัปดาห์นี้)
+    const startMonday = p.storedStart && !p.prepWeeks.length ? weekStart(p.storedStart) : ''
     for (const date of monthGrid(ym).flat()) {
       if (!date) continue
       const week = p.weekOf(weekStart(date))
       if (week === null) { out.set(date, null); continue }
       if (!weeks.has(week)) weeks.set(week, p.plan(week))
       const i = daysBetween(weekStart(date), date)
-      out.set(date, weeks.get(week)![i] ?? null)
+      out.set(date, weekStart(date) < startMonday ? null : weeks.get(week)![i] ?? null)
       if (p.isDone(done, week, i)) ticked.add(date)
     }
     return { out, ticked }
@@ -62,7 +64,7 @@ export function TrainingCalendar() {
   const tickedOn = (date: string) => plans.ticked.has(date)
   const totals = monthDays.reduce((a, d) => {
     const x = byDate.get(d)
-    if (x) { a.km += x.km; a.runs += x.runs.length; a.sessions += x.sessions.length }
+    if (x) { a.km += x.km; a.runs += x.runs.length; a.sessions += x.sessions.filter(isStrength).length }
     if (x?.runs.length || x?.walks.length || x?.sessions.length || x?.cross.length || tickedOn(d)) a.active++
     return a
   }, { km: 0, runs: 0, sessions: 0, active: 0 })

@@ -120,6 +120,8 @@ export const CUE_EN: Record<string, string> = {
   'หลังล่างแนบพื้น': 'Lower back on the floor',
   'เขย่งขาเดียวครึ่งทาง ค้างนิ่ง เตรียมเอ็นก่อนเริ่มท่ากระโดด ถือดัมเบล/เป้เพิ่มน้ำหนักได้': 'Single-leg half-way calf raise, hold still — prepares the tendon before jumps; hold a dumbbell/backpack for load',
   'วิ่งเบาระดับพูดคุยได้ (โซน E)': 'Easy, conversational (zone E)',
+  'วิ่งเบาต่อเนื่อง ไม่มีช่วงเร็ว ไม่มี strides': 'Easy and steady, no fast bits, no strides',
+  'วิ่งเบาสั้น ๆ ระดับพูดคุยได้': 'Short easy run at conversational effort',
   'ช้าระดับพูดคุยได้ (โซน E) เดินพักได้': 'Slow, conversational (zone E) — walk breaks are fine',
   'วิ่งเบาสั้น ๆ ให้ขาตื่นตัว': 'Short easy run to wake the legs up',
   'วิ่ง 8 นาที เดิน 1 นาทีตั้งแต่ต้น ออกตัวช้ากว่าที่รู้สึกว่าไหว ดื่มน้ำทุกจุด': 'Run 8 min / walk 1 min from the start, start slower than feels possible, drink at every station',

@@ -160,6 +160,19 @@ export function useProgram() {
     return r ? safeLayer('ramp', () => applyRampIn(days, r.cap, r.first), () => days) : days
   }
 
+  const easeIn = (week: number) => !!easeOff && easeOff.from <= addDays(mondayOf(week), 6) && easeOff.to >= mondayOf(week)
+  /** แผนที่แสดงจริง: sizedWeek → สลับวัน → ช่วงไม่ไหว (และย้ายวันแข่งในสัปดาห์แข่ง) */
+  const planOf = (week: number) => {
+    // แต่ละชั้นที่อ่านข้อมูลซิงก์ (สถานที่ สลับท่า เนิน สลับวัน) ถ้าพังจากข้อมูลแปลก ๆ ให้ข้ามชั้นนั้น ไม่ให้ทั้งแอปแครช
+    const days = sizedWeek(week)
+    const mv = moves[mondayOf(week)]
+    const eased = (d: Day[]) => safeLayer('easeOff', () => applyEaseOff(d, mondayOf(week), easeOff), () => d)
+    const moved = (d: Day[]) => eased(safeLayer('moves', () => applyMoves(d, mv), () => d))
+    if (!isRace || week !== meta.weeks) return moved(days)
+    const sized = raceKmOverride ? safeLayer('raceKm', () => withRaceKm(days, raceKmOverride), () => days) : days
+    return moved(raceDate ? safeLayer('raceDay', () => placeRaceDay(sized, (new Date(`${raceDate}T00:00:00`).getDay() + 6) % 7), () => sized) : sized)
+  }
+
   const slotId = (week: number, i: number) => {
     // ช่วงเตรียมตัวก่อนสัปดาห์ 1 ใช้แผนสัปดาห์ 1 ต้องแยก id ตามวันจันทร์ ไม่งั้นติ๊กไว้แล้วจะค้างไปถึงสัปดาห์ 1 จริง
     if (raceStart && (week < 1 || (weeksUntilStart > 0 && week === 1))) return `${program}-pre${mondayOf(week)}-d${i}`
@@ -239,16 +252,7 @@ export function useProgram() {
       const raw = Math.floor(daysBetween(start, monday) / 7) + 1
       return raw < 1 ? null : raw - repeats.filter(r => r > start && r <= monday).length > meta.weeks ? null : weekAt(start, repeats, monday, meta.weeks)
     },
-    plan: (week = currentWeek) => {
-      // แต่ละชั้นที่อ่านข้อมูลซิงก์ (สถานที่ สลับท่า เนิน สลับวัน) ถ้าพังจากข้อมูลแปลก ๆ ให้ข้ามชั้นนั้น ไม่ให้ทั้งแอปแครช
-      const days = sizedWeek(week)
-      const mv = moves[mondayOf(week)]
-      const eased = (d: Day[]) => safeLayer('easeOff', () => applyEaseOff(d, mondayOf(week), easeOff), () => d)
-      const moved = (d: Day[]) => eased(safeLayer('moves', () => applyMoves(d, mv), () => d))
-      if (!isRace || week !== meta.weeks) return moved(days)
-      const sized = raceKmOverride ? safeLayer('raceKm', () => withRaceKm(days, raceKmOverride), () => days) : days
-      return moved(raceDate ? safeLayer('raceDay', () => placeRaceDay(sized, (new Date(`${raceDate}T00:00:00`).getDay() + 6) % 7), () => sized) : sized)
-    },
+    plan: (week = currentWeek) => planOf(week),
     /** ช่วงนี้ไม่ไหว: ปรับแผนชั่วคราว (null = กลับแผนปกติ) */
     easeOff,
     setEaseOff,
@@ -271,8 +275,9 @@ export function useProgram() {
     }),
     addExercise: (d: Day, e: Exercise) => setExtras(prev => ({ ...prev, [extrasKey(program, d)]: [...(prev[extrasKey(program, d)] ?? []), e] })),
     removeExercise: (d: Day, name: string) => setExtras(prev => ({ ...prev, [extrasKey(program, d)]: (prev[extrasKey(program, d)] ?? []).filter(e => e.name !== name) })),
-    kmTarget: (week = currentWeek) => rampFor(week)
-      ? Math.round(sizedWeek(week).reduce((s, d) => s + (d.type === 'run' ? d.targetKm ?? 0 : 0), 0))
+    // ไต่ระยะหรือช่วงไม่ไหวในสัปดาห์นั้น: ใช้ระยะจากแผนที่แสดงจริง ไม่งั้นการ์ดต่าง ๆ บอกระยะแผนไม่ตรงกัน
+    kmTarget: (week = currentWeek) => rampFor(week) || easeIn(week)
+      ? Math.round(planOf(week).reduce((s, d) => s + (d.type === 'run' ? d.targetKm ?? 0 : 0), 0) * 10) / 10
       : weekKm(program, contentWeek(week)),
     /** ระยะที่วิ่งจริงต่อสัปดาห์ก่อนเริ่มกลางโปรแกรม (0 = ไม่ได้ไต่ระยะ) */
     rampBaseline: rampStart ? baseline : 0,
