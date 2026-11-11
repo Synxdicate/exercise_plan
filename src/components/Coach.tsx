@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { BatteryLow, Dumbbell, MessageSquareQuote } from 'lucide-react'
 import { easeActive, type EaseReason } from '../lib/easeOff'
-import { addDays, niceDate, today, weekStart, WEEKDAYS_EN, WEEKDAYS_TH } from '../lib/date'
+import { addDays, daysBetween, niceDate, today, weekStart, WEEKDAYS_EN, WEEKDAYS_TH } from '../lib/date'
 import { useDayDone } from '../lib/dayDone'
 import { useSessions, type Run } from '../lib/log'
 import { nextSession, runReview, strengthGap } from '../lib/coachNotes'
@@ -121,8 +121,14 @@ export function EaseOffCard({ trigger = false }: { trigger?: boolean }) {
         <div className="min-w-0 flex-1 text-sm">
           <div className="font-bold">{t(`แผนเบาลง (${info.th}) ถึง ${niceDate(r!.to)}`, `Eased plan (${info.en.toLowerCase()}) until ${niceDate(r!.to)}`)}</div>
           <div className="text-muted">{t(`${info.what[0]} หมดช่วงแล้วกลับแผนเดิมเอง`, `${info.what[1]} — the normal plan resumes afterwards`)}</div>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {/* ใกล้หมดช่วงแล้วยังไม่หาย ยืดได้ในแตะเดียว ไม่ต้องเปิดตั้งค่าใหม่ */}
+            {daysBetween(now, r!.to) <= 1 && (
+              <Button size="sm" onClick={() => p.setEaseOff({ ...r!, to: addDays(r!.to, 3) })}>{t('ยังไม่หาย ยืดอีก 3 วัน', 'Not better: 3 more days')}</Button>
+            )}
+            <Button size="sm" variant="soft" onClick={() => p.setEaseOff(null)}>{t('กลับแผนปกติ', 'Resume')}</Button>
+          </div>
         </div>
-        <Button size="sm" variant="soft" onClick={() => p.setEaseOff(null)}>{t('กลับแผนปกติ', 'Resume')}</Button>
       </section>
     )
   }

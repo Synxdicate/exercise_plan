@@ -94,7 +94,7 @@ function BodyLog() {
           <ul className="divide-y divide-line">
             {[...log].reverse().map(e => (
               <li key={e.date} className="flex items-center justify-between gap-2 py-2.5 text-sm">
-                <span className="text-muted">{e.date}</span>
+                <span className="text-muted">{niceDate(e.date)}</span>
                 <span className="font-semibold tabular-nums">{e.weight} {tr('กก.', 'kg')}{e.waist ? ` · ${tr('เอว', 'waist')} ${e.waist}` : ''}</span>
                 <button aria-label={tr('ลบ', 'Delete')} className="text-muted" onClick={() => setLog(prev => prev.filter(x => x.date !== e.date))}><Trash2 size={16} /></button>
               </li>
@@ -254,7 +254,7 @@ function StrengthStats() {
       </div>
       <div className="grid grid-cols-3 gap-2">
         <Stat label={bodyweight ? tr('ครั้งสูงสุด', 'Max reps') : tr('ประมาณ 1RM', 'Est. 1RM')} value={bodyweight ? best.value : best.value.toFixed(1)} sub={bodyweight ? tr('ครั้ง/เซ็ต', 'reps/set') : tr('กก.', 'kg')} accent />
-        <Stat label={tr('เซ็ตที่ดีที่สุด', 'Best set')} value={best.kg ? `${best.kg}×${best.reps}` : `${best.reps}`} sub={best.date} />
+        <Stat label={tr('เซ็ตที่ดีที่สุด', 'Best set')} value={best.kg ? `${best.kg}×${best.reps}` : `${best.reps}`} sub={niceDate(best.date)} />
         <Stat label={tr('ดีขึ้น', 'Change')} value={`${change > 0 ? '+' : ''}${change}%`} sub={tr(`จาก ${hist.length} ครั้ง`, `over ${hist.length} sessions`)} />
       </div>
       <Card title={<span className="flex items-center gap-2"><Trophy size={18} className="text-warn" /> {name}</span>}>

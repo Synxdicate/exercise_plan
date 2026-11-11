@@ -5,7 +5,8 @@ import { cx } from '../lib/cx'
 
 // ช่องกรอกทั้งแอปใช้ชุดนี้ กรอบเดียวกัน, เรืองแสงตอนโฟกัส, มีหน่วยกำกับ
 const shell = 'flex items-center rounded-2xl bg-raised ring-1 ring-line transition focus-within:bg-card focus-within:ring-2 focus-within:ring-accent'
-const bare = 'bare h-12 w-full min-w-0 flex-1 border-0 bg-transparent px-3.5 text-base text-ink outline-none placeholder:text-muted/70'
+const bareNoPad = 'bare h-12 w-full min-w-0 flex-1 border-0 bg-transparent text-base text-ink outline-none placeholder:text-muted/70'
+const bare = `${bareNoPad} px-3.5`
 
 function Label({ label, hint, children, className }: { label?: string; hint?: string; children: ReactNode; className?: string }) {
   return (
@@ -41,12 +42,13 @@ export function NumberInput({ label, hint, className, value, onChange, unit, ste
     const n = Math.max(min, (parseFloat(String(value)) || 0) + d)
     onChange(String(Math.round(n * 100) / 100))
   }
-  const btn = 'grid size-12 shrink-0 place-items-center text-muted transition hover:text-ink'
+  // ช่องครึ่งจอ (เช่น น้ำหนัก/รอบเอว คู่กัน) เหลือที่ให้ตัวเลขน้อย: ปุ่มแคบลง ช่องไม่มี padding และซ่อนลูกศรของเบราว์เซอร์
+  const btn = 'grid h-12 w-10 shrink-0 place-items-center text-muted transition hover:text-ink'
   return (
     <Label label={label} hint={hint} className={className}>
       <span className={shell}>
         {stepper && <button type="button" aria-label={trNow('ลด', 'Decrease')} className={btn} onClick={() => bump(-step)}><Minus size={16} /></button>}
-        <input className={cx(bare, 'tabular-nums', stepper && 'px-0 text-center font-semibold')} type="number" inputMode="decimal" step={step} min={min}
+        <input className={cx(stepper ? bareNoPad : bare, 'tabular-nums', stepper && 'text-center font-semibold [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none')} type="number" inputMode="decimal" step={step} min={min}
           value={value} placeholder={placeholder} onChange={e => onChange(e.target.value)} />
         {unit && <span className={cx('shrink-0 text-sm text-muted', stepper ? 'pr-1' : 'pr-3.5')}>{unit}</span>}
         {stepper && <button type="button" aria-label={trNow('เพิ่ม', 'Increase')} className={btn} onClick={() => bump(step)}><Plus size={16} /></button>}

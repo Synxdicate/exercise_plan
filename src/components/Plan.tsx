@@ -104,15 +104,15 @@ function PlanBody() {
       <Alerts />
       {/* การ์ดเตือน (ก้าวต่อไป, พลาดวิ่ง, เวทห่าง, เช็กสัปดาห์) อยู่หน้าแรกที่เดียว ไม่ซ้ำที่นี่ */}
       <EaseOffCard trigger />
-      <button onClick={() => setPicking(true)} className="flex w-full items-center gap-3 rounded-3xl bg-card p-4 text-left shadow-sm ring-1 ring-line active:scale-[.99]">
+      {/* โปรแกรมเป็นการตั้งค่า แถวเดียวพอ ให้ตารางสัปดาห์ขึ้นมาเห็นตั้งแต่จอแรก */}
+      <button onClick={() => setPicking(true)} className="flex w-full items-center gap-3 rounded-2xl bg-card px-4 py-2.5 text-left shadow-sm ring-1 ring-line active:scale-[.99]">
         <div className="min-w-0 flex-1">
-          <div className="text-xs font-semibold text-accent">{t('โปรแกรมของฉัน', 'My program')} · {(dt.en ? locationInfo[p.location].labelEn : locationInfo[p.location].label).replace(/ \(.*\)/, '')}</div>
-          <div className="truncate text-lg font-bold leading-tight">{dt.program(p.program).name}</div>
+          <div className="truncate font-bold leading-tight">{dt.program(p.program).name}<span className="font-normal text-muted"> · {(dt.en ? locationInfo[p.location].labelEn : locationInfo[p.location].label).replace(/ \(.*\)/, '')}</span></div>
           {p.isRace && (
-            <div className="mt-0.5 text-xs text-muted">
+            <div className="truncate text-xs text-muted">
               {!p.raceDate ? t('ยังไม่ได้ใส่วันแข่ง แตะเพื่อตั้ง', 'No race date yet — tap to set')
                 : p.weeksUntilStart > 0 ? t(`เริ่มโปรแกรมในอีก ${p.weeksUntilStart} สัปดาห์ ระหว่างนี้วิ่งเบาสร้างฐาน`, `Program starts in ${p.weeksUntilStart} weeks — build a base with easy runs`)
-                : p.daysToRace !== null && p.daysToRace >= 0 ? t(`อีก ${p.daysToRace} วันถึงวันแข่ง (${p.raceDate})`, `${p.daysToRace} days to race day (${p.raceDate})`)
+                : p.daysToRace !== null && p.daysToRace >= 0 ? t(`อีก ${p.daysToRace} วันถึงวันแข่ง (${shortDate(p.raceDate)})`, `${p.daysToRace} days to race day (${shortDate(p.raceDate)})`)
                 : t('ผ่านวันแข่งแล้ว พัก 1–2 สัปดาห์ แล้วเลือกเป้าหมายถัดไป', 'Race done — rest 1–2 weeks, then pick your next goal')}
             </div>
           )}
@@ -284,7 +284,7 @@ function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slo
       <div className="flex items-center gap-3">
         <div className={cx('grid size-14 shrink-0 place-items-center rounded-2xl', st.tone)}><st.icon size={26} /></div>
         <div className="min-w-0 flex-1">
-          <div className="text-xs font-semibold text-muted">{isToday ? `${t('วันนี้', 'Today')} · ${dt.weekday(day)}` : dt.weekday(day)}{day.duration !== '-' && ` · ${dt.duration(day)}`}</div>
+          <div className="text-xs font-semibold text-muted">{isToday ? `${t('วันนี้', 'Today')} · ${dt.weekday(day)}` : dt.weekday(day)}{day.duration !== '-' && ` · ${dt.amount(day)}`}</div>
           <h2 className="text-xl font-extrabold leading-tight">{dt.title(day)}</h2>
         </div>
         {day.type !== 'rest' && (

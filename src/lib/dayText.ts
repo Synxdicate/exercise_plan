@@ -67,6 +67,11 @@ export function useDayText() {
     title: useCallback((d: Pick<Day, 'title'>) => (en ? titleEn(d.title) : d.title), [en]),
     weekday: useCallback((d: Pick<Day, 'day'>) => (en ? weekdayEn(d.day) : d.day), [en]),
     duration: useCallback((d: Pick<Day, 'duration'>) => (en ? durationEn(d.duration) : d.duration), [en]),
+    /** ระยะ + เวลา: วันวิ่งที่บอกเป็นเวลา (ช่วงปรับแผน "~16 นาที") ใส่ระยะนำหน้าด้วย ให้ตรงกับหน้าวิ่ง */
+    amount: useCallback((d: Pick<Day, 'duration' | 'targetKm'>) => {
+      const dur = en ? durationEn(d.duration) : d.duration
+      return d.targetKm && !d.duration.includes('กม.') ? `${d.targetKm} ${en ? 'km' : 'กม.'} · ${dur}` : dur
+    }, [en]),
     program: useCallback((id: ProgramId) => (en ? PROGRAMS_EN[id] : programs[id]), [en]),
     reps: useCallback((s: string) => (en ? repsEn(s) : s), [en]),
     /** โน้ตของวัน/สัปดาห์ และคำอธิบายท่า/ชุดซ้อม (src/data/contentEn.ts) */

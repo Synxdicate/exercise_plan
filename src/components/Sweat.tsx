@@ -42,7 +42,7 @@ export function SweatCard() {
       ) : (
         <p className="text-sm text-muted">{tr('ชั่งน้ำหนักก่อน–หลังวิ่งแล้วแอปจะบอกว่าต้องดื่มเท่าไร สำคัญมากในอากาศร้อน', 'Weigh yourself before and after a run and the app tells you how much to drink — key in hot weather')}</p>
       )}
-      <Disclosure title={r ? tr('ทดสอบใหม่', 'New test') : tr('วิธีทดสอบ', 'How to test')} defaultOpen={!r}>
+      <Disclosure title={r ? tr('ทดสอบใหม่', 'New test') : tr('วิธีทดสอบ', 'How to test')} defaultOpen={false}>
         <ol className="list-decimal space-y-1 pl-5 text-xs text-muted">
           <li>{tr('ฉี่ก่อน แล้วชั่งน้ำหนัก (ใส่ชุดน้อยที่สุด)', 'Pee first, then weigh yourself (minimal clothing)')}</li>
           <li>{tr('วิ่งตามปกติ 45–60 นาที จดว่าดื่มน้ำไปกี่ มล. (อย่าฉี่ระหว่างวิ่ง)', 'Run normally for 45–60 min, note how many ml you drink (no toilet stops)')}</li>

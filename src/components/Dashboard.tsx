@@ -76,14 +76,8 @@ export function Dashboard() {
 
   return (
     <>
+      {/* ลำดับ: ความปลอดภัย → สัปดาห์นี้ → วันนี้ต้องทำอะไร → คำแนะนำอื่น ๆ (เปิดแอปแล้วเห็นสิ่งที่ต้องทำโดยไม่ต้องเลื่อน) */}
       <Alerts />
-      <NextStepCard />
-      <RaceSetupCard />
-      <MissedRunCard />
-      <ReplayCard />
-      <EaseOffCard />
-      <StrengthNudgeCard />
-      <WeekCheckCard />
       <section className="rounded-2xl bg-accent-fill p-4 text-white shadow-sm">
         <div className="flex items-center justify-between">
           <div>
@@ -115,6 +109,8 @@ export function Dashboard() {
         </div>
       </section>
 
+      {/* ช่วงไม่ไหวเปลี่ยนแผนวันนี้ อยู่ติดการ์ดวันนี้ */}
+      <EaseOffCard />
       {todayPlan && (
         <Card>
           <div className="flex items-center gap-3">
@@ -126,7 +122,7 @@ export function Dashboard() {
               <div className="text-xs text-muted">{t(`วันนี้ (${todayPlan.day})`, `Today (${dt.weekday(todayPlan)})`)}</div>
               <div className="font-bold">{dt.title(todayPlan)}</div>
               {/* ชื่อบอกระยะอยู่แล้ว (เช่น "วิ่งสลับเดิน 3 กม.") ไม่ต้องซ้ำ */}
-              {!todayPlan.title.includes(todayPlan.duration) && <div className="text-xs text-muted">{todayPlan.duration !== '-' ? dt.duration(todayPlan) : dt.note(todayPlan.note ?? '')}</div>}
+              {!todayPlan.title.includes(todayPlan.duration) && <div className="text-xs text-muted">{todayPlan.duration !== '-' ? dt.amount(todayPlan) : dt.note(todayPlan.note ?? '')}</div>}
               {hint && <div className="text-xs font-semibold text-run">{hint}</div>}
             </div>
             {todayDone && <span className="grid size-9 shrink-0 animate-pop place-items-center rounded-full bg-good-fill text-white"><Check size={18} strokeWidth={3} /></span>}
@@ -145,6 +141,13 @@ export function Dashboard() {
           )}
         </Card>
       )}
+
+      <NextStepCard />
+      <MissedRunCard />
+      <WeekCheckCard />
+      <RaceSetupCard />
+      <StrengthNudgeCard />
+      <ReplayCard />
 
       {checking && todayPlan && (
         <ReadinessSheet kind="strength" onClose={() => setChecking(false)}

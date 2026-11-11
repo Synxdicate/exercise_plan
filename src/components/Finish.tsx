@@ -1,15 +1,25 @@
 import { Flag } from 'lucide-react'
-import { formatDuration } from '../lib/log'
+import { useMemo } from 'react'
+import { formatDuration, useRuns } from '../lib/log'
+import { estimate } from '../lib/pace'
 import { shortDate } from '../lib/date'
 import { useFinish } from '../lib/useFinish'
 import { useT } from '../lib/i18n'
 import { cx } from '../lib/cx'
 import { Card } from './ui'
 
+type Est = NonNullable<ReturnType<typeof estimate>>
+const STANDARD: [number, (e: Est) => number][] = [[5, e => e.fiveK], [10, e => e.tenK], [21.0975, e => e.half]]
+
 export function FinishCard() {
   const t = useT()
   const { f, km, cutoff, margin, show } = useFinish()
+  const [runs] = useRuns()
+  const est = useMemo(() => estimate(runs), [runs])
   if (!show || !km) return null
+  // ระยะมาตรฐานที่การ์ดเวลาคาดการณ์ด้านล่างแสดงเลขเดียวกันอยู่แล้ว และไม่มีเวลาตัดตัวให้เทียบ = ซ้ำ ไม่ต้องแสดง
+  const same = f && est ? STANDARD.find(([k]) => Math.abs(k - km) < 0.05)?.[1](est) : undefined
+  if (f && !cutoff && same !== undefined && Math.abs(same - f.sec) < 60) return null
   return (
     <Card title={<span className="flex items-center gap-2"><Flag size={18} className="text-run" /> {t(`เวลาจบโดยประมาณ ${km} กม.`, `Estimated finish ${km} km`)}</span>}>
       {!f ? (

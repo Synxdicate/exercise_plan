@@ -286,10 +286,11 @@ export function Runs() {
             </div>
           </div>
         )}
-        <div className="flex flex-wrap gap-2">
+        {/* ประเภทการวิ่งแถวเดียว เลื่อนข้างได้ (ปัดข้างตรงนี้ไม่สลับหน้าย่อย) */}
+        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-0.5 [scrollbar-width:none]" role="group" aria-label={tr('ประเภทการวิ่ง', 'Run type')}>
           {(Object.keys(runKinds) as Run['kind'][]).map(k => (
-            <button key={k} onClick={() => setKind(k)}
-              className={cx('rounded-full px-3 py-1 text-sm font-semibold', kind === k ? 'bg-white text-accent-fill' : 'bg-black/15')}>
+            <button key={k} onClick={() => setKind(k)} aria-pressed={kind === k}
+              className={cx('shrink-0 whitespace-nowrap rounded-full px-3 py-1 text-sm font-semibold', kind === k ? 'bg-white text-accent-fill' : 'bg-black/15')}>
               {tr(runKinds[k], runKindsEn[k])}
             </button>
           ))}

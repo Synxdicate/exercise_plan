@@ -311,6 +311,7 @@ test('ทดสอบเหงื่อ: คำนวณอัตราเหง
   await seed(page)
   await nav(page, 'วิ่ง')
   await page.locator('main button', { hasText: 'สถิติ' }).first().click()
+  await page.getByRole('button', { name: 'วิธีทดสอบ' }).click() // ฟอร์มพับไว้ (ใช้ไม่บ่อย)
   await page.getByLabel('ก่อนวิ่ง').fill('65')
   await page.getByLabel('หลังวิ่ง').fill('64.2')
   await page.getByLabel('ดื่มระหว่างวิ่ง').fill('400')
@@ -833,7 +834,8 @@ test('ขึ้นสะสมของรอบเก่า (สูตรไม
     runs: [{ id: 'old', date: ymd(1), km: 2.43, seconds: 1232, kind: 'easy', source: 'gps', elev: { gain: 89, loss: 89, max: 203, min: 185 } }],
     routes: { old: { route, times, elevProfile } },
   })
-  await expect.poll(async () => ((await idb(page, 'runs')) as { elev: { v?: number } }[])[0].elev.v).toBe(2)
+  // idb อาจยังว่างช่วงแรกที่แอปย้ายข้อมูลจาก localStorage
+  await expect.poll(async () => ((await idb(page, 'runs')) as { elev?: { v?: number } }[] | null)?.[0]?.elev?.v).toBe(2)
   expect(((await idb(page, 'runs')) as { elev: { gain: number } }[])[0].elev.gain).toBeLessThan(60)
   expect(((await idb(page, 'routes')) as Record<string, { route: unknown[] }>).old.route).toHaveLength(route.length)
 })
