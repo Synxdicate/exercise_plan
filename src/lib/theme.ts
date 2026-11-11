@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { usePersisted } from './storage'
 
 export type Theme = 'system' | 'light' | 'dark'
@@ -19,18 +19,4 @@ export function useTheme() {
   }, [theme])
 
   return [theme, setTheme] as const
-}
-
-/** ตอนนี้แสดงธีมมืดอยู่ไหม (ตามที่ตั้ง หรือตามเครื่องเมื่อเลือก "ตามระบบ") เปลี่ยนตามเครื่องแบบสด */
-export function useIsDark() {
-  const [theme] = usePersisted<Theme>('theme', 'system')
-  const [sysDark, setSysDark] = useState(() => typeof matchMedia !== 'undefined' && matchMedia('(prefers-color-scheme: dark)').matches)
-  useEffect(() => {
-    if (typeof matchMedia === 'undefined') return
-    const q = matchMedia('(prefers-color-scheme: dark)')
-    const on = (e: MediaQueryListEvent) => setSysDark(e.matches)
-    q.addEventListener('change', on)
-    return () => q.removeEventListener('change', on)
-  }, [])
-  return theme === 'dark' || (theme === 'system' && sysDark)
 }

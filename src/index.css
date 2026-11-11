@@ -136,6 +136,8 @@
 
 /* ---- Leaflet ---- */
 .leaflet-container { font: inherit; background: var(--c-raised); }
+.leaflet-container .leaflet-control-attribution { background: color-mix(in srgb, var(--c-card) 85%, transparent); color: var(--c-muted); }
+.leaflet-container .leaflet-control-attribution a { color: var(--c-ink); }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(.9) contrast(.9); }
 }
