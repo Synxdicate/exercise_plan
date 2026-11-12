@@ -11,12 +11,12 @@ export async function seed(page: Page, data: Record<string, unknown> = {}) {
     return route.fulfill({ json: { elevation: lons.map(lon => 150 + Math.round(Math.max(0, Math.min(20, ((lon - 102.8299) / 0.012) * 20)))) } })
   })
   await page.goto('/')
-  await page.evaluate(d => {
+  await page.evaluate(([d, today]) => {
     localStorage.setItem('localMode', '1')
-    localStorage.setItem('lastBackup', new Date().toISOString().slice(0, 10))
+    localStorage.setItem('lastBackup', today)
     localStorage.setItem('onboarded', 'true')
     for (const [k, v] of Object.entries(d)) localStorage.setItem(k, JSON.stringify(v))
-  }, data)
+  }, [data, ymd()] as const)
   await page.reload()
 }
 
