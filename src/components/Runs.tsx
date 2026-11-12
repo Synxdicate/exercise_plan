@@ -110,7 +110,8 @@ export function Runs() {
       sec = (r.state.clock - r.state.stepT) / 1000
     } else {
       m = meters
-      sec = tRef.current?.elapsed ?? 0
+      // เวลาจริง ณ ตอนนี้ (state ค้างตอนจอดับ ทำให้เงานำ/ตามผิด)
+      sec = tRef.current?.snap().elapsed ?? 0
     }
     if (m > ghost.km * 1000) return
     const lead = ghostLead(ghost, m, sec)
@@ -198,9 +199,11 @@ export function Runs() {
   useEffect(() => onRunNoticeAction(id => {
     const tt = tRef.current
     if (!tt) return
-    if (id === 'pause' && (tt.status === 'running' || tt.status === 'autopaused')) tt.pause()
-    else if (id === 'resume' && tt.status === 'paused') tt.resume()
-    else if (id === 'skip') guideRef.current.skip(tt.meters)
+    // กดจากหน้าล็อก (จอดับ): สถานะใน state อาจยังไม่ render ใหม่ (เช่น เพิ่งกดหยุด แล้วกดวิ่งต่อจะไม่ทำงาน) อ่านจาก snap()
+    const s = tt.snap()
+    if (id === 'pause' && (s.status === 'running' || s.status === 'autopaused')) tt.pause()
+    else if (id === 'resume' && s.status === 'paused') tt.resume()
+    else if (id === 'skip') guideRef.current.skip(s.meters)
   }), [])
   useEffect(() => { if (isNative && t.status === 'running') void ensureNotifications() }, [t.status])
   // เปลี่ยนสถานะ (หยุด/วิ่งต่อ/GPS หาย/เปลี่ยนช่วง/เปิด-ปิดแจ้งเตือนสด) อัปเดตทันที
