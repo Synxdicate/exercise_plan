@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { BatteryLow, Dumbbell, MessageSquareQuote } from 'lucide-react'
+import { BatteryLow, Dumbbell, MessageSquareQuote, ShieldAlert } from 'lucide-react'
 import { easeActive, type EaseReason } from '../lib/easeOff'
 import { addDays, daysBetween, niceDate, today, weekStart, WEEKDAYS_EN, WEEKDAYS_TH } from '../lib/date'
 import { useDayDone } from '../lib/dayDone'
@@ -156,5 +156,24 @@ export function EaseOffCard({ trigger = false }: { trigger?: boolean }) {
         </Sheet>
       )}
     </>
+  )
+}
+
+/** ปวดน่อง/เอ็นร้อยหวาย/เท้าที่เพิ่งบันทึก: แผนตัด strides เนิน ช่วงเร็ว และท่ากระโดดให้เอง 7 วัน (painPlan.ts) บอกให้รู้และยกเลิกได้ */
+export function PainGuardCard() {
+  const p = useProgram()
+  const t = useT()
+  if (p.finished || !p.painUntil || easeActive(p.easeOff, today())) return null
+  return (
+    <section className="flex items-start gap-3 rounded-2xl bg-raised p-3.5 ring-1 ring-line">
+      <ShieldAlert size={18} className="mt-0.5 shrink-0 text-warn" />
+      <div className="min-w-0 flex-1 text-sm">
+        <div className="font-bold">{t(`แผนถนอมขาถึง ${niceDate(p.painUntil)}`, `Leg-friendly plan until ${niceDate(p.painUntil)}`)}</div>
+        <div className="text-muted">{t('คุณบันทึกว่าปวดน่อง เอ็นร้อยหวาย หรือเท้า แอปจึงเปลี่ยนวันที่มี strides เนิน หรือช่วงเร็วเป็นวิ่งเบา และตัดท่ากระโดดออก ถ้ายังปวดเกิน 3 จาก 10 ให้ใช้ "ช่วงนี้ไม่ไหว" ในหน้าฝึก', 'You logged calf, Achilles or foot pain, so days with strides, hills or fast work become easy runs and jumps are removed. If pain is still above 3/10, use "Not feeling 100%" on the plan tab.')}</div>
+        <div className="mt-2">
+          <Button size="sm" variant="soft" onClick={p.clearPainGuard}>{t('หายแล้ว ใช้แผนปกติ', 'Recovered: normal plan')}</Button>
+        </div>
+      </div>
+    </section>
   )
 }

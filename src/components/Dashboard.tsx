@@ -1,7 +1,7 @@
 import { ReplayCard } from './Replay'
 import { ThisWeekCard } from './ThisWeek'
 import { RaceSetupCard } from './RaceSetup'
-import { EaseOffCard, StrengthNudgeCard } from './Coach'
+import { EaseOffCard, PainGuardCard, StrengthNudgeCard } from './Coach'
 import { strengthOnly } from '../lib/sessionKind'
 import { useMemo, useState } from 'react'
 import { Check, Dumbbell, Flag, Flame, Footprints, Moon, Play } from 'lucide-react'
@@ -111,6 +111,7 @@ export function Dashboard() {
 
       {/* ช่วงไม่ไหวเปลี่ยนแผนวันนี้ อยู่ติดการ์ดวันนี้ */}
       <EaseOffCard />
+      <PainGuardCard />
       {todayPlan && (
         <Card>
           <div className="flex items-center gap-3">

@@ -1,6 +1,6 @@
 import { ReplaySoFar } from './Replay'
 import { CourseCard } from './Course'
-import { EaseOffCard } from './Coach'
+import { EaseOffCard, PainGuardCard } from './Coach'
 import { useDeferredValue, useMemo, useState } from 'react'
 import { useSwipe } from '../lib/swipe'
 
@@ -106,6 +106,7 @@ function PlanBody() {
       <Alerts />
       {/* การ์ดเตือน (ก้าวต่อไป, พลาดวิ่ง, เวทห่าง, เช็กสัปดาห์) อยู่หน้าแรกที่เดียว ไม่ซ้ำที่นี่ */}
       <EaseOffCard trigger />
+      <PainGuardCard />
       {/* โปรแกรมเป็นการตั้งค่า แถวเดียวพอ ให้ตารางสัปดาห์ขึ้นมาเห็นตั้งแต่จอแรก */}
       <button onClick={() => setPicking(true)} className="flex w-full items-center gap-3 rounded-2xl bg-card px-4 py-2.5 text-left shadow-sm ring-1 ring-line active:scale-[.99]">
         <div className="min-w-0 flex-1">

@@ -1,3 +1,5 @@
+import { applyPainGuard, painGuardUntil } from './painPlan'
+import type { Readiness } from './readiness'
 import { useEffect, useMemo } from 'react'
 import { programs, variants, withHills, weekKm, weekPlan, type LocationPref, type Mode, type ProgramId } from '../data/programs'
 import { addDays, daysBetween, today, weekStart } from './date'
@@ -102,6 +104,11 @@ export function useProgram() {
   // เส้นทางแข่งมีเนิน (เช่น เนินซึมยาว) เพิ่มการซ้อมเนินในแผน (withHills)
   const [raceHills, setRaceHills] = usePersisted('raceHills', false)
   const [easeOff, setEaseOff] = usePersisted<EaseOff | null>('easeOff', null)
+  const [readinessLog] = usePersisted<Record<string, Readiness>>('readiness', {})
+  // "หายแล้ว" บนป้าย: เก็บวันสิ้นสุดของรอบที่ปิดไว้ (บันทึกปวดใหม่ = รอบใหม่ กลับมาปรับอีก)
+  const [painOff, setPainOff] = usePersisted('painGuardOff', '')
+  const painRaw = painGuardUntil(readinessLog, today())
+  const painUntil = painRaw && painRaw !== painOff ? painRaw : null
   const [swaps, setSwaps] = usePersisted<Record<string, string>>('exerciseSwaps', {})
   const [extras, setExtras] = usePersisted<Record<string, Exercise[]>>('extraExercises', {})
   const [solo, setSolo] = usePersisted('soloMode', false)
@@ -167,7 +174,9 @@ export function useProgram() {
     const days = sizedWeek(week)
     const mv = moves[mondayOf(week)]
     const eased = (d: Day[]) => safeLayer('easeOff', () => applyEaseOff(d, mondayOf(week), easeOff), () => d)
-    const moved = (d: Day[]) => eased(safeLayer('moves', () => applyMoves(d, mv), () => d))
+    // ปวดขาช่วงล่างที่เพิ่งบันทึก: ตัด strides/เนิน/ช่วงเร็ว/ท่ากระโดด 7 วัน (หลังสลับวัน เพราะคิดตามวันที่จริง)
+    const guarded = (d: Day[]) => eased(safeLayer('pain', () => applyPainGuard(d, mondayOf(week), today(), painUntil), () => d))
+    const moved = (d: Day[]) => guarded(safeLayer('moves', () => applyMoves(d, mv), () => d))
     if (!isRace || week !== meta.weeks) return moved(days)
     const sized = raceKmOverride ? safeLayer('raceKm', () => withRaceKm(days, raceKmOverride), () => days) : days
     return moved(raceDate ? safeLayer('raceDay', () => placeRaceDay(sized, (new Date(`${raceDate}T00:00:00`).getDay() + 6) % 7), () => sized) : sized)
@@ -253,6 +262,9 @@ export function useProgram() {
       return raw < 1 ? null : raw - repeats.filter(r => r > start && r <= monday).length > meta.weeks ? null : weekAt(start, repeats, monday, meta.weeks)
     },
     plan: (week = currentWeek) => planOf(week),
+    /** แผนปรับตามอาการปวดขาช่วงล่างถึงวันนี้ (null = ไม่ได้ปรับ) */
+    painUntil,
+    clearPainGuard: () => setPainOff(painRaw ?? ''),
     /** ช่วงนี้ไม่ไหว: ปรับแผนชั่วคราว (null = กลับแผนปกติ) */
     easeOff,
     setEaseOff,

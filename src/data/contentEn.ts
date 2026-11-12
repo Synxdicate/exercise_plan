@@ -8,6 +8,8 @@ export const NOTE_EN: Record<string, string> = {
   'พักฟื้นจากป่วย หายไข้แล้วค่อยเริ่มเดินเบา ๆ ไม่ต้องรีบชดเชย': 'Recovering from illness — once the fever is gone, start with easy walks; no need to make up sessions',
   'พักฟื้นจากป่วย งดเวทจนหายดี': 'Recovering from illness — no strength work until you are well',
   'ช่วงเจ็บ: วิ่งเบาครึ่งระยะ ไม่มีช่วงเร็ว ปวดได้ไม่เกิน 3 จาก 10 และไม่แย่ลงวันรุ่งขึ้น ถ้าเกินให้หยุด แล้วใช้ปั่นจักรยาน/ว่ายน้ำแทน': 'Sore spell: easy run at half distance, no fast parts — pain up to 3/10 that isn’t worse the next day; beyond that stop and cycle or swim instead',
+  'บันทึกว่าปวดน่อง/เอ็นร้อยหวาย/เท้าใน 7 วันล่าสุด: งดช่วงเร็ว strides และเนินไว้ก่อน วิ่งเบาแทน ปวดได้ไม่เกิน 3 จาก 10 และไม่แย่ลงวันรุ่งขึ้น': 'You logged calf/Achilles/foot pain in the last 7 days: no fast work, strides or hills for now — run easy instead, pain ≤3/10 and no worse the next morning',
+  'บันทึกว่าปวดน่อง/เอ็นร้อยหวาย/เท้าใน 7 วันล่าสุด: งดท่ากระโดดไว้ก่อน เขย่งช้า ๆ ได้ถ้าปวดไม่เกิน 3 จาก 10': 'You logged calf/Achilles/foot pain in the last 7 days: no jumps for now — slow calf raises are OK if pain stays ≤3/10',
   'ช่วงเจ็บ: ลดเซ็ตลงครึ่งหนึ่ง ข้ามท่าที่ทำให้ส่วนที่เจ็บปวด': 'Sore spell: half the sets, skip moves that hurt the sore area',
   'ช่วงไม่มีเวลา: วิ่งเบาสั้นลง วิ่งน้อยดีกว่าไม่วิ่ง': 'Busy spell: shorter easy run — a little running beats none',
   'ช่วงไม่มีเวลา: ทำ 2–3 ท่าแรก ท่าละ 2 เซ็ต (~15 นาที)': 'Busy spell: first 2–3 exercises, 2 sets each (~15 min)',
