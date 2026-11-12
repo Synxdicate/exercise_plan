@@ -11,6 +11,8 @@ export type StepNow = {
   label: string; n: number; of: number; work: boolean
   /** ที่เหลือของช่วง (ข้อความ) และวินาทีที่เหลือ (ช่วงตามเวลาเท่านั้น) */
   left: string | null; leftSec: number | null
+  /** วินาทีที่เหลือแบบไม่ปัด ใช้ตั้งตัวนับถอยหลังของ Android ให้ตรงทุกครั้งที่อัปเดต (ปัดแล้วตัวนับกระตุก ±1 วิ) */
+  leftExact: number | null
   /** สัดส่วนที่ทำไปแล้วของช่วงนี้ 0–1 */
   progress: number | null
   next: string | null
@@ -33,7 +35,8 @@ export function stepNow(steps: Step[], st: GuideState, meters: number, en = fals
   const n = steps.slice(0, st.index + 1).filter(x => x.kind === 'work').length
   const usedSec = (st.clock - st.stepT) / 1000
   const usedM = meters - st.stepM
-  const leftSec = s.sec ? Math.max(0, Math.round(s.sec - usedSec)) : null
+  const leftExact = s.sec ? Math.max(0, s.sec - usedSec) : null
+  const leftSec = leftExact !== null ? Math.round(leftExact) : null
   const leftM = s.m ? Math.max(0, Math.round(s.m - usedM)) : null
   const left = leftSec !== null ? formatDuration(leftSec)
     : leftM !== null ? (leftM >= 1000 ? `${(leftM / 1000).toFixed(2)} ${en ? 'km' : 'กม.'}` : `${leftM} ${en ? 'm' : 'ม.'}`)
@@ -41,7 +44,7 @@ export function stepNow(steps: Step[], st: GuideState, meters: number, en = fals
   const progress = s.sec ? clamp01(usedSec / s.sec) : s.m ? clamp01(usedM / s.m) : null
   const nx = steps[st.index + 1]
   return {
-    label: label(s), n, of: works, work: s.kind === 'work', left, leftSec, progress,
+    label: label(s), n, of: works, work: s.kind === 'work', left, leftSec, leftExact, progress,
     next: nx ? `${label(nx)} ${amount(nx, en)}`.trim() : null,
     overall: clamp01((st.index + (progress ?? 0)) / steps.length),
   }
@@ -105,9 +108,12 @@ export function noticeText(x: NoticeInput, en = false): Notice {
       : []
   const progress = x.step?.progress ?? (x.targetKm ? clamp01(km / x.targetKm) : null)
   const t = x.now ?? 0
-  // ตัวนับเดินเองบนเครื่อง: ช่วงตามเวลา = นับถอยหลังถึงจบช่วง, นอกนั้น = เวลาวิ่งรวม (หยุดอยู่ = ไม่เดิน)
-  const chrono = !moving || !t ? null
-    : x.step?.leftSec != null ? { at: t + x.step.leftSec * 1000, down: true }
-    : { at: t - x.elapsed * 1000, down: false }
+  // ตัวนับเดินเองบนเครื่อง: ช่วงตามเวลา = นับถอยหลังถึงจบช่วง (นาฬิกาชุดซ้อมเดินต่อตอนหยุดอัตโนมัติ เช่น ยืนพัก)
+  // นอกนั้น = เวลาวิ่งรวม (หยุดอยู่ = ไม่เดิน) ใช้ค่าไม่ปัด เวลาอ้างอิงจึงเท่าเดิมทุกครั้งที่อัปเดต ตัวนับไม่กระโดด
+  const left = x.step?.leftExact ?? x.step?.leftSec
+  const chrono = !t ? null
+    : left != null && (moving || x.status === 'autopaused') ? { at: Math.round(t + left * 1000), down: true }
+    : moving ? { at: Math.round(t - x.elapsed * 1000), down: false }
+    : null
   return { title, body: lines.join('\n'), text: paceLine, actions, progress, chrono }
 }

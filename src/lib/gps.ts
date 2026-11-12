@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { BackgroundGeolocation, isNative } from './native'
+import { startNativeBeat } from './runNotice'
 
 import { haversine, roundPoint, type Point } from './geo'
 import { addSplits, TrackFilter } from './track'
@@ -113,27 +114,38 @@ export function useRunTracker(opts: Opts = {}) {
     }
   }, [])
 
-  // นาฬิกา + auto-pause
+  // นาฬิกา + auto-pause ทุกวินาที
+  // แอป Android ปิดจอ: WebView หน่วง setInterval (บางเครื่องนาทีละครั้ง) จึงมีจังหวะจากฝั่ง native (RunNotice 'beat') ด้วย
+  // เสียงนำ/แจ้งเตือนจึงตรงเวลาแม้จอดับและยืนนิ่ง (ไม่มีจุด GPS ใหม่) เรียกซ้อนกันได้ เพราะกันไว้ไม่ให้ถี่เกิน
+  const autoPauseRef = useRef(autoPause)
+  useEffect(() => { autoPauseRef.current = autoPause })
+  const lastBeat = useRef(0)
+  const beat = useCallback(() => {
+    const t = Date.now()
+    if (t - lastBeat.current < 400) return
+    lastBeat.current = t
+    const l = liveRef.current
+    if (l.status === 'idle') return
+    setNow(t)
+    if (autoPauseRef.current && l.status === 'running' && l.segStart !== null && t - l.lastMoveAt > AUTOPAUSE_AFTER_MS) {
+      update(x => ({ ...x, status: 'autopaused', activeMs: x.activeMs + Math.max(0, x.lastMoveAt - x.segStart!), segStart: null }))
+    }
+    // ไม่มีจุด GPS เข้ามานานเกิน 20 วิ ระหว่างวิ่ง (ในอาคาร/อุโมงค์/ใต้สะพาน) → แจ้งครั้งเดียว
+    const tracking = l.status === 'running' || l.status === 'autopaused'
+    if (tracking && lastFixAt.current && t - lastFixAt.current > SIGNAL_LOST_MS && !lostRef.current) {
+      lostRef.current = true
+      setSignalLost(true)
+      onEventRef.current?.('gpsLost')
+    }
+    tick()
+  }, [update, tick])
+  const ticking = live.status !== 'idle'
   useEffect(() => {
-    if (live.status === 'idle') return
-    const id = setInterval(() => {
-      const t = Date.now()
-      setNow(t)
-      const l = liveRef.current
-      if (autoPause && l.status === 'running' && l.segStart !== null && t - l.lastMoveAt > AUTOPAUSE_AFTER_MS) {
-        update(x => ({ ...x, status: 'autopaused', activeMs: x.activeMs + Math.max(0, x.lastMoveAt - x.segStart!), segStart: null }))
-      }
-      // ไม่มีจุด GPS เข้ามานานเกิน 20 วิ ระหว่างวิ่ง (ในอาคาร/อุโมงค์/ใต้สะพาน) → แจ้งครั้งเดียว
-      const tracking = l.status === 'running' || l.status === 'autopaused'
-      if (tracking && lastFixAt.current && t - lastFixAt.current > SIGNAL_LOST_MS && !lostRef.current) {
-        lostRef.current = true
-        setSignalLost(true)
-        onEventRef.current?.('gpsLost')
-      }
-      tick()
-    }, 1000)
-    return () => clearInterval(id)
-  }, [live.status, autoPause, update, tick])
+    if (!ticking) return
+    const id = setInterval(beat, 1000)
+    const stopNative = startNativeBeat(beat)
+    return () => { clearInterval(id); stopNative() }
+  }, [ticking, beat])
 
   // wake lock หลุดเมื่อสลับแอป ขอใหม่เมื่อกลับมา
   useEffect(() => {
@@ -208,22 +220,20 @@ export function useRunTracker(opts: Opts = {}) {
 
     const l = liveRef.current
     if (l.status !== 'running' && l.status !== 'autopaused') return
-    if (r.kind === 'ignored') return
+    // ทุกจุด GPS (ไม่ใช่แค่จุดยึดทุก ~26 ม.) เป็นจังหวะนาฬิกาด้วย callback ของ GPS ทำงานแม้จอดับ
     if (r.kind === 'start') {
       update(x => ({ ...x, route: [...x.route, roundPoint(r.p)], times: [...x.times, Math.round(movingMs(x) / 1000)], lastMoveAt: Date.now() }))
-      return
-    }
-    if (r.kind === 'hold') {
+    } else if (r.kind === 'hold') {
       // ยังไม่ถึงจุดยึดถัดไป แต่กำลังเคลื่อนที่ → นับว่าขยับ (ไม่ให้หยุดอัตโนมัติ / กลับมาจากหยุดอัตโนมัติ)
       if (r.moving) {
         const n = Date.now()
         update(x => (x.status === 'autopaused' ? { ...x, status: 'running', segStart: n, lastMoveAt: n } : { ...x, lastMoveAt: n }))
       }
-      return
+    } else if (r.kind !== 'ignored') {
+      addDistance(r.d, r.p, t, true)
     }
-    addDistance(r.d, r.p, t, true)
-    tick()
-  }, [update, addDistance, tick])
+    beat()
+  }, [update, addDistance, beat])
 
   const stopWatching = useCallback(() => {
     lastFixAt.current = 0
@@ -287,10 +297,18 @@ export function useRunTracker(opts: Opts = {}) {
   }
 
   const elapsed = movingMs(live, now) / 1000
+  // ค่าล่าสุดจริง ณ ตอนนี้ (อ่านจาก ref ไม่ใช่ state ที่รอ render) สำหรับแจ้งเตือน/เสียงที่ถูกเรียกตอนจอดับ
+  // ตอนจอดับ React อาจยังไม่ render ใหม่ เวลาจาก state จึงค้าง ทำให้ตัวนับบนแจ้งเตือนกระโดด
+  const snap = useCallback(() => {
+    const l = liveRef.current
+    const tracking = l.status === 'running' || l.status === 'autopaused'
+    return { status: l.status, elapsed: movingMs(l, Date.now()) / 1000, splits: l.splits, meters: l.meters, signalLost: lostRef.current && tracking }
+  }, [])
 
   return {
     ...live,
     elapsed,
+    snap,
     signalLost: signalLost && (live.status === 'running' || live.status === 'autopaused'),
     currentPace: live.status === 'running' ? currentPace : null,
     lastGap,

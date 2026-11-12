@@ -7,6 +7,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.service.notification.StatusBarNotification;
 
 import androidx.core.app.NotificationCompat;
@@ -33,6 +35,34 @@ public class RunNoticePlugin extends Plugin {
     @Override
     public void load() {
         instance = this;
+    }
+
+    // จังหวะทุกวินาทีระหว่างวิ่ง: WebView หน่วง setInterval ตอนจอดับ (บางเครื่องนาทีละครั้ง)
+    // Handler ของ native ไม่โดนหน่วง (แอปยังทำงานเพราะบริการ GPS ที่อยู่เบื้องหน้า) เสียงนำ/แจ้งเตือนจึงตรงเวลา
+    private final Handler beatHandler = new Handler(Looper.getMainLooper());
+    private boolean beating = false;
+    private final Runnable beatTask = new Runnable() {
+        @Override
+        public void run() {
+            if (!beating) return;
+            notifyListeners("beat", new JSObject());
+            beatHandler.postDelayed(this, 1000);
+        }
+    };
+
+    @PluginMethod
+    public void beat(PluginCall call) {
+        boolean on = Boolean.TRUE.equals(call.getBoolean("on", false));
+        beatHandler.removeCallbacks(beatTask);
+        beating = on;
+        if (on) beatHandler.postDelayed(beatTask, 1000);
+        call.resolve();
+    }
+
+    @Override
+    protected void handleOnDestroy() {
+        beating = false;
+        beatHandler.removeCallbacks(beatTask);
     }
 
     void onAction(String id) {

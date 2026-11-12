@@ -36,11 +36,14 @@ export function useGuide(steps: Step[] | null, paces: Paces | undefined, voice: 
     for (const e of events)
       buzz(e.type === 'done' ? 'done' : e.type === 'warn' ? 'warn' : g.steps[e.index]?.kind === 'work' ? 'hard' : 'easy')
     if (!opts.current.voice) return
-    for (const e of events) {
+    // หลายเหตุการณ์ในจังหวะเดียว (เช่น ข้ามหลายช่วง) พูดเฉพาะช่วงล่าสุด (เปลี่ยนช่วงสำคัญกว่าเตือน 10 วิ) ตัดคิวเพื่อให้ตรงเวลา
+    const last = events.findLast(x => x.type !== 'warn') ?? events.at(-1)
+    for (const e of last ? [last] : []) {
       void speak(
         e.type === 'step' ? stepAnnouncement(g.steps, e.index, opts.current.paces)
           : e.type === 'warn' ? 'อีก 10 วินาที'
             : 'จบชุดซ้อมแล้ว เก่งมาก วิ่งเบา ๆ ต่อ หรือกดพักแล้วจบการวิ่งได้เลย',
+        true,
       )
     }
   }, [])

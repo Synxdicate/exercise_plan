@@ -3,13 +3,16 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics'
 import { isNative } from './native'
 
 // เสียงพูดภาษาไทย แอปใช้ TTS ของเครื่อง (พูดได้แม้ปิดจอ), เว็บใช้ speechSynthesis
-export async function speak(text: string) {
+// ปกติต่อคิว (ไม่ตัดประโยคที่กำลังพูด) urgent = ตัดคิวพูดทันที ใช้กับเปลี่ยนช่วงของชุดซ้อม/เตือน 10 วิ
+// ที่ต้องตรงเวลา ไม่งั้นจะรอหลังเสียงบอกกิโล/โค้ชเพซที่ค้างคิวอยู่จนพูดช้าไปหลายวินาที
+export async function speak(text: string, urgent = false) {
   try {
     if (isNative) {
-      await TextToSpeech.speak({ text, lang: 'th-TH', rate: 1.0, queueStrategy: 1 })
+      await TextToSpeech.speak({ text, lang: 'th-TH', rate: 1.0, queueStrategy: urgent ? 0 : 1 })
       return
     }
     if ('speechSynthesis' in window) {
+      if (urgent) window.speechSynthesis.cancel()
       const u = new SpeechSynthesisUtterance(text)
       u.lang = 'th-TH'
       window.speechSynthesis.speak(u)

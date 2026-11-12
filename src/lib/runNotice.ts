@@ -10,6 +10,8 @@ export { noticeText, stepNow } from './runNoticeText'
 type Plugin = {
   update(o: { title: string; body: string; text?: string; actions: NoticeAction[]; progress?: number; chronoAt?: number; chronoDown?: boolean }): Promise<{ shown: boolean }>
   addListener(e: 'action', f: (d: { id: NoticeAction['id'] }) => void): Promise<{ remove: () => Promise<void> }>
+  addListener(e: 'beat', f: () => void): Promise<{ remove: () => Promise<void> }>
+  beat(o: { on: boolean }): Promise<void>
 }
 const RunNotice = registerPlugin<Plugin>('RunNotice')
 
@@ -25,4 +27,18 @@ export function onRunNoticeAction(f: (id: NoticeAction['id']) => void): () => vo
   if (!isNative) return () => {}
   const sub = RunNotice.addListener('action', d => f(d.id))
   return () => { void sub.then(s => s.remove()) }
+}
+
+/**
+ * จังหวะทุกวินาทีจากฝั่ง Android (Handler ของ native ไม่โดนหน่วงแบบ setInterval ของ WebView ตอนจอดับ)
+ * แอปรุ่นเก่าที่ยังไม่มีเมธอดนี้: เงียบไป ใช้ setInterval อย่างเดียวเหมือนเดิม
+ */
+export function startNativeBeat(f: () => void): () => void {
+  if (!isNative) return () => {}
+  const sub = RunNotice.addListener('beat', f)
+  void RunNotice.beat({ on: true }).catch(() => {})
+  return () => {
+    void RunNotice.beat({ on: false }).catch(() => {})
+    void sub.then(s => s.remove()).catch(() => {})
+  }
 }

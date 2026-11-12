@@ -55,4 +55,22 @@ describe('live notification extras', () => {
     expect(n.chrono).toEqual({ at: 2_000_000 - 1_200_000, down: false })
     expect(noticeText({ status: 'paused', signalLost: false, meters: 2500, elapsed: 1200, pace: null, kind: 'Easy', step: null, now: 2_000_000 }).chrono).toBeNull()
   })
+  it('the countdown reference stays fixed between updates (no ±1 s jumps) and keeps running while auto-paused', () => {
+    const tempo = guides.tempo('15')
+    const i = tempo.findIndex(s => s.kind === 'work')
+    // อัปเดตทุก ~1 วิ ด้วยเศษมิลลิวินาทีต่างกัน เวลาอ้างอิงของตัวนับต้องเท่าเดิม
+    const ats = [0, 1003, 1999, 3420].map(ms => {
+      const st = { started: true, index: i, clock: 300_000 + ms, stepT: 0, stepM: 0, warned: false, done: false }
+      return noticeText({ status: 'running', signalLost: false, meters: 2000, elapsed: 900, pace: 300, kind: 'Tempo', step: stepNow(tempo, st, 2000), now: 1_000_000 + ms }).chrono!.at
+    })
+    expect(new Set(ats).size).toBe(1)
+    // ยืนพัก (หยุดอัตโนมัติ) นาฬิกาชุดซ้อมยังเดิน ตัวนับถอยหลังต้องยังอยู่ แต่เวลาวิ่งรวมไม่เดิน
+    const st = { started: true, index: i, clock: 300_000, stepT: 0, stepM: 0, warned: false, done: false }
+    expect(noticeText({ status: 'autopaused', signalLost: false, meters: 2000, elapsed: 900, pace: null, kind: 'Tempo', step: stepNow(tempo, st, 2000), now: 1_000_000 }).chrono).toEqual({ at: 1_600_000, down: true })
+    expect(noticeText({ status: 'autopaused', signalLost: false, meters: 2000, elapsed: 900, pace: null, kind: 'Easy', step: null, now: 1_000_000 }).chrono).toBeNull()
+  })
+  it('the elapsed reference stays fixed while running', () => {
+    const at = (ms: number) => noticeText({ status: 'running', signalLost: false, meters: 2500, elapsed: 1200 + ms / 1000, pace: 480, kind: 'Easy', step: null, now: 2_000_000 + ms }).chrono!.at
+    expect(new Set([0, 987, 2011, 5555].map(at)).size).toBe(1)
+  })
 })

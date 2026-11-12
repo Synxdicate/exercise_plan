@@ -136,24 +136,28 @@ export function Runs() {
   const live = useRef({ at: 0, key: '' })
   const pushLive = (meters: number, pace: number | null, force = false) => {
     const tt = tRef.current
-    if (!isNative || !tt || tt.status === 'idle') return
+    if (!isNative || !tt) return
+    // อ่านค่าล่าสุดจาก ref ของตัวจับเวลา: ตอนจอดับ React อาจยังไม่ render ใหม่ ค่าจาก state จะค้าง ตัวนับบนแจ้งเตือนจึงกระโดด
+    const s = tt.snap()
+    if (s.status === 'idle') return
     // ปิดแจ้งเตือนสด: กลับเป็นข้อความเดิมของ GPS ครั้งเดียว
     if (!liveOn) {
       if (force) updateRunNotice({ title: tr('Kao กำลังบันทึกการวิ่ง', 'Kao is recording your run'), body: tr('แตะเพื่อกลับเข้าแอป', 'Tap to return to the app'), actions: [] })
       return
     }
     const r = guide.runner
-    const key = `${tt.status}|${tt.signalLost}|${r?.state.index ?? -1}`
+    const key = `${s.status}|${s.signalLost}|${r?.state.index ?? -1}`
     const now = clockNow()
-    if (!force && key === live.current.key && now - live.current.at < 5000) return
+    // อัปเดตทุกวินาที (ข้อความ "เหลือ" กับเวลารวมเดินทีละวินาที ไม่กระโดดทีละ 5 วิ) เปลี่ยนสถานะ/ช่วง = ทันที
+    if (!force && key === live.current.key && now - live.current.at < 950) return
     live.current = { at: now, key }
     const step = r ? stepNow(r.steps, r.state, meters, dt.en) : null
     const cur = r?.state.started && !r.state.done ? r.steps[r.state.index] : null
     updateRunNotice(noticeText({
-      status: tt.status, signalLost: tt.signalLost, meters, elapsed: tt.elapsed, pace, kind: tr(runKinds[kind], runKindsEn[kind]), step,
+      status: s.status, signalLost: s.signalLost, meters, elapsed: s.elapsed, pace, kind: tr(runKinds[kind], runKindsEn[kind]), step,
       target: cur?.kind === 'work' ? paceSec(cur, paces) : null,
       targetKm: !step ? planKm ?? (kind === todayRun?.runKind ? todayRun?.targetKm : undefined) ?? null : null,
-      splits: tt.splits, now,
+      splits: s.splits, now,
     }, dt.en))
   }
   const onTick = (meters: number, active: boolean, pace: number | null) => {
