@@ -728,6 +728,7 @@ test('สัปดาห์นี้: กราฟ 12 สัปดาห์ แ�
   await seed(page, { runs: [run('a', '2026-11-10', 3), run('b', '2026-11-08', 5.01, { splits: [500, 495, 480, 470, 460] }), run('c', '2026-11-03', 2.5)] })
   await expect(page.getByRole('img', { name: /ระยะวิ่ง 12 สัปดาห์ล่าสุด สัปดาห์นี้ 3\.0 กม\./ })).toBeVisible()
   const chart = page.getByRole('img', { name: /ระยะวิ่ง 12 สัปดาห์/ })
+  await chart.scrollIntoViewIfNeeded()
   const box = (await chart.boundingBox())!
   await page.mouse.move(box.x + box.width * 0.9, box.y + box.height / 2)
   await expect(page.getByText(/สัปดาห์ 2\/11/)).toBeVisible()
@@ -857,4 +858,20 @@ test('เป้าเร็วเกินจริง: การ์ดคาด
   const g = (await idb(page, 'goals')) as { race: { tenK: number } }
   expect(g.race.tenK).toBeGreaterThan(3300)
   expect(g.race.tenK).toBeLessThan(4200)
+})
+
+test('หน้าหลักขอคะแนนความเหนื่อยของการวิ่งที่ยังไม่ได้ให้ แล้วเลื่อนไปครั้งถัดไป', async ({ page }) => {
+  await seed(page, { runs: [
+    { id: 'old', date: ymd(1), km: 3, seconds: 1200, kind: 'easy', source: 'gps', splits: [] },
+    { id: 'new', date: ymd(0), km: 4, seconds: 1700, kind: 'long', source: 'gps', splits: [] },
+    { id: 'done', date: ymd(2), km: 5, seconds: 2000, kind: 'easy', source: 'gps', splits: [], rpe: 4 },
+  ] })
+  await expect(page.getByText('ค้าง 2 ครั้ง')).toBeVisible()
+  await expect(page.getByText(/วิ่งยาว 4\.00 กม\./)).toBeVisible()
+  await page.getByRole('button', { name: 'ความเหนื่อย 6' }).click()
+  await expect(page.getByText(/Easy 3\.00 กม\./)).toBeVisible()
+  await page.getByRole('button', { name: 'ความเหนื่อย 3' }).click()
+  await expect(page.getByRole('button', { name: 'ความเหนื่อย 3' })).toHaveCount(0)
+  const runs = (await idb(page, 'runs')) as { id: string; rpe?: number }[]
+  expect(Object.fromEntries(runs.map(r => [r.id, r.rpe]))).toEqual({ old: 3, new: 6, done: 4 })
 })

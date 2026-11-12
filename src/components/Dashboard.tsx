@@ -1,3 +1,4 @@
+import { RpeNudgeCard } from './RpeNudge'
 import { ReplayCard } from './Replay'
 import { ThisWeekCard } from './ThisWeek'
 import { RaceSetupCard } from './RaceSetup'
@@ -148,6 +149,7 @@ export function Dashboard() {
       <WeekCheckCard />
       <RaceSetupCard />
       <StrengthNudgeCard />
+      <RpeNudgeCard />
       <ReplayCard />
 
       {checking && todayPlan && (
