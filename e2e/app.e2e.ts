@@ -777,16 +777,16 @@ test('ปัดซ้าย/ขวาสลับหน้าย่อยขอ�
     for (let k = 1; k <= 5; k++) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: x0 + ((x1 - x0) * k) / 5, y }] })
     await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
   }
-  const pressed = (name: string) => expect(page.getByRole('button', { name, exact: true })).toHaveAttribute('aria-pressed', 'true')
-  await page.getByRole('button', { name: 'ประวัติ', exact: true }).waitFor()
-  // ตัวจับการปัดผูกใน effect หลังแท็บ render (แบบเลื่อนตามมา) เสร็จ
-  await page.waitForTimeout(150)
-  await swipe(320, 80)
-  await pressed('ประวัติ')
-  await swipe(320, 80)
-  await pressed('สถิติ')
-  await swipe(80, 320) // ปัดขวา = ย้อนหน้าย่อย ไม่ใช่ปุ่มย้อนกลับของเบราว์เซอร์ (overscroll-behavior-x: none)
-  await pressed('ประวัติ')
+  const btn = (name: string) => page.getByRole('button', { name, exact: true })
+  // ตัวจับการปัดผูกใน effect หลังแท็บ render แบบเลื่อนตามมา เครื่อง CI ช้า: ปัดซ้ำจนหน้าย่อยเปลี่ยน (ปัดเฉพาะตอนยังไม่เปลี่ยน ไม่เลยไปหน้าถัดไป)
+  const swipeTo = (x0: number, x1: number, name: string) => expect(async () => {
+    if ((await btn(name).getAttribute('aria-pressed')) !== 'true') await swipe(x0, x1)
+    await expect(btn(name)).toHaveAttribute('aria-pressed', 'true', { timeout: 500 })
+  }).toPass({ timeout: 10_000 })
+  await btn('ประวัติ').waitFor()
+  await swipeTo(320, 80, 'ประวัติ')
+  await swipeTo(320, 80, 'สถิติ')
+  await swipeTo(80, 320, 'ประวัติ') // ปัดขวา = ย้อนหน้าย่อย ไม่ใช่ปุ่มย้อนกลับของเบราว์เซอร์ (overscroll-behavior-x: none)
   expect(page.url()).toContain('#runs')
 })
 
