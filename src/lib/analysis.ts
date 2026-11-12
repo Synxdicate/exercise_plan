@@ -6,9 +6,14 @@ import { addDays, daysBetween } from './date'
 // ---------- Pace analysis ----------
 
 // ระยะสะสม (เมตร) ของแต่ละจุดบนเส้นทาง
-export function cumulative(route: Point[]) {
+// ระยะสะสมต่อเส้นทาง คิดครั้งเดียวต่อ array (สถิติดีที่สุด 6 ระยะ × ทุกการวิ่ง เคยคิดซ้ำทุกครั้ง)
+const cumCache = new WeakMap<Point[], number[]>()
+export function cumulative(route: Point[]): readonly number[] {
+  const hit = cumCache.get(route)
+  if (hit) return hit
   const d = [0]
   for (let i = 1; i < route.length; i++) d.push(d[i - 1] + haversine(route[i - 1], route[i]))
+  cumCache.set(route, d)
   return d
 }
 
@@ -26,7 +31,7 @@ export function remeasure(run: Pick<Run, 'km' | 'route' | 'times'>) {
 }
 
 /** เวลาต่อกิโลจากระยะสะสม (เมตร) และเวลาสะสมของแต่ละจุด */
-function splitsFrom(d: number[], times: number[], km: number) {
+function splitsFrom(d: readonly number[], times: number[], km: number) {
   const splits: number[] = []
   let prev = 0
   for (let i = 1, k = 1; i < d.length && k <= Math.floor(km); i++) {

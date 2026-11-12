@@ -371,7 +371,17 @@ function strengthWeek(mode: Venue, week: number): Day[] {
 }
 
 // ทั้งสองเวอร์ชันมี 7 วันเรียง จันทร์→อาทิตย์ ตรงกัน วันวิ่ง/พักเหมือนกัน ต่างกันแค่วันเวท
+// ผลเหมือนเดิมเสมอสำหรับ (โปรแกรม, สัปดาห์) จึงเก็บไว้ใช้ซ้ำ: ทุกการ์ดเรียก plan() หลายสัปดาห์ทุกครั้งที่ render
+// (โหมดผสมเรียก 7 ครั้งต่อสัปดาห์) เคยเป็นงานหลักตอนสลับแท็บ ห้ามแก้ array/object ที่ได้ไปในที่ (ทุกชั้นของ plan() สร้างของใหม่)
+const variantCache = new Map<string, Record<Mode, Day[]>>()
 export function variants(program: ProgramId, week: number): Record<Mode, Day[]> {
+  const k = `${program}|${week}`
+  let v = variantCache.get(k)
+  if (!v) variantCache.set(k, (v = buildVariants(program, week)))
+  return v
+}
+
+function buildVariants(program: ProgramId, week: number): Record<Mode, Day[]> {
   const v = program === 'physique' ? { gym: gymWeek, park: parkWeek }
     : program === 'strength' ? { gym: strengthWeek('gym', week), park: strengthWeek('park', week) }
     : program === 'start' ? { gym: startWeek('gym', week), park: startWeek('park', week) }

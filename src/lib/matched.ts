@@ -25,10 +25,19 @@ export function sampleRoute(route: Point[], n = SAMPLES): Point[] {
   return out
 }
 
+// จุดตัวอย่างของแต่ละเส้นทาง คิดครั้งเดียวต่อ array (เส้นทางไม่ถูกแก้ในที่ ตัดต่อ/วัดใหม่ได้ array ใหม่)
+// การเทียบทุกคู่ (ป้ายเจ้าถิ่นเส้นทาง) เคยคิดใหม่ทุกคู่: วิ่ง 150 ครั้ง ≈ 13 ล้านครั้ง หน้าหลักค้างเป็นสิบวินาที
+const samples = new WeakMap<Point[], Point[]>()
+const sampled = (route: Point[]) => {
+  let s = samples.get(route)
+  if (!s) samples.set(route, (s = sampleRoute(route)))
+  return s
+}
+
 export function sameRoute(a: Run, b: Run) {
   if (!a.route || !b.route || a.route.length < 5 || b.route.length < 5) return false
   if (Math.abs(a.km - b.km) / Math.max(a.km, b.km) > MAX_DIST_DIFF) return false
-  const sa = sampleRoute(a.route), sb = sampleRoute(b.route)
+  const sa = sampled(a.route), sb = sampled(b.route)
   return sa.every((p, i) => haversine(p, sb[i]) <= MAX_GAP_M)
 }
 
