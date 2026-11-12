@@ -17,6 +17,10 @@ import { ask } from '../lib/dialog'
 import { buzz, speak } from '../lib/voice'
 import { useT } from '../lib/i18n'
 
+// ท่าที่ใช้น้ำหนักภายนอกในยิม (บาร์ ดัมเบล เคเบิล เครื่อง) ไม่รวมท่าน้ำหนักตัว เช่น Pull-up, Dips
+const LOADED = /squat|deadlift|bench|press|row|curl|raise|lunge|pulldown|cable|dumbbell|machine|goblet|rdl|hip thrust|extension|fly/i
+const BODYWEIGHT = /pull-up|chin-up|dips|dip\b|push-up|plank|bug|hold|pogo|jump|nordic|walk|bird|superman|hollow|leg raise|hanging|pistol|australian|single-leg calf|glute bridge|prone/i
+
 type SetRow = { kg: string; reps: string; done: boolean }
 type Active = { key: string; startedAt: number; idx: number; rows: Record<string, SetRow[]> }
 
@@ -224,6 +228,14 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
           })()}
 
           {mode === 'gym' && isBarbell(ex.name) && <WarmupPlates workKg={parseFloat(rows[0]?.kg) || 0} />}
+          {/* ท่ายกน้ำหนักในยิมที่ยังไม่เคยใส่น้ำหนัก: ไม่มีตัวเลข แอปแนะนำเพิ่มน้ำหนักครั้งถัดไปไม่ได้ (เคยบันทึกเป็น 0 กก. ทุกเซ็ต) */}
+          {mode === 'gym' && LOADED.test(ex.name) && !BODYWEIGHT.test(ex.name) && !prev?.sets.some(x => x.kg > 0) && rows.every(r => !parseFloat(r.kg)) && (
+            <p className="mt-3 rounded-xl bg-run/10 p-3 text-xs text-run">
+              {isBarbell(ex.name)
+                ? tr('ใส่น้ำหนักที่ยกด้วย (บาร์เปล่า = 20 กก.) ครั้งแรกเริ่มเบาที่ทำได้ครบเซ็ตและยังเหลือแรง 2–3 ครั้ง ครั้งต่อไปแอปจะบอกว่าควรเพิ่มเท่าไร', 'Enter the weight you lift (empty bar = 20 kg). Start light enough to finish every set with 2–3 reps left; next time the app will tell you how much to add.')
+                : tr('ใส่น้ำหนักที่ยกด้วย ครั้งแรกเริ่มเบาที่ทำได้ครบเซ็ตและยังเหลือแรง 2–3 ครั้ง ครั้งต่อไปแอปจะบอกว่าควรเพิ่มเท่าไร', 'Enter the weight you lift. Start light enough to finish every set with 2–3 reps left; next time the app will tell you how much to add.')}
+            </p>
+          )}
 
           <div className="mt-4 space-y-2">
             <div className={cx('grid gap-2 px-1 text-xs text-muted', kgCol ? 'grid-cols-[2rem_1fr_1fr_3rem]' : 'grid-cols-[2rem_1fr_3rem]')}>
@@ -233,7 +245,7 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
               <div key={i} className={cx('grid items-center gap-2 rounded-2xl p-1 transition-colors', kgCol ? 'grid-cols-[2rem_1fr_1fr_3rem]' : 'grid-cols-[2rem_1fr_3rem]',
                 r.done ? 'bg-good/10' : i === currentSet ? 'bg-accent-soft/60' : '')}>
                 <span className="text-center font-bold text-muted">{i + 1}</span>
-                {kgCol && <Stepper value={r.kg} placeholder={prev?.sets[i]?.kg ? String(prev.sets[i].kg) : '0'} step={mode !== 'gym' ? 1 : 2.5} onChange={v => setRow(i, { kg: v })} />}
+                {kgCol && <Stepper value={r.kg} placeholder={prev?.sets[i]?.kg ? String(prev.sets[i].kg) : mode === 'gym' ? '–' : '0'} step={mode !== 'gym' ? 1 : 2.5} onChange={v => setRow(i, { kg: v })} />}
                 <Stepper value={r.reps} placeholder={targetReps(ex) || '-'} step={1} onChange={v => setRow(i, { reps: v })} />
                 <button onClick={() => completeSet(i)} aria-label={r.done ? tr('ยกเลิกเซ็ตนี้', 'Undo this set') : tr('ทำเซ็ตนี้เสร็จ', 'Complete this set')}
                   className={cx('grid size-11 place-items-center justify-self-end rounded-full transition', r.done ? 'animate-pop bg-good-fill text-white' : 'bg-raised text-muted ring-1 ring-line')}>

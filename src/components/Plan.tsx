@@ -383,7 +383,7 @@ function ExerciseRow({ e, n, onSwap, onRemove }: { e: Exercise; n: number; onSwa
       <button onClick={() => setOpen(!open)} className="flex w-full items-center gap-3 py-2.5 text-left active:scale-100">
         <span className="grid size-7 shrink-0 place-items-center rounded-full bg-raised text-xs font-bold text-muted">{n}</span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate font-semibold">{e.name}{(e.swappedFrom || e.added) && <span className="ml-1.5 text-[10px] font-normal text-run">{e.added ? t('เพิ่มเอง', 'added') : e.solo ? t('ฝึกคนเดียว', 'solo') : t('สลับแล้ว', 'swapped')}</span>}{!e.swappedFrom && needsSpotter[e.name] && <span className="ml-1.5 text-[10px] font-normal text-warn">{t('ควรมีคนช่วย', 'needs spotter')}</span>}</span>
+          <span className="block font-semibold leading-snug [overflow-wrap:anywhere]">{e.name}{(e.swappedFrom || e.added) && <span className="ml-1.5 text-[10px] font-normal text-run">{e.added ? t('เพิ่มเอง', 'added') : e.solo ? t('ฝึกคนเดียว', 'solo') : t('สลับแล้ว', 'swapped')}</span>}{!e.swappedFrom && needsSpotter[e.name] && <span className="ml-1.5 text-[10px] font-normal text-warn">{t('ควรมีคนช่วย', 'needs spotter')}</span>}</span>
           {!dt.en && <span className="block truncate text-xs text-muted">{e.th}</span>}
         </span>
         <span className="shrink-0 text-sm font-semibold tabular-nums">{e.sets}×{dt.reps(e.reps)}</span>

@@ -1,4 +1,5 @@
 import { lazy, Suspense, useMemo, useState } from 'react'
+import { planGoal } from '../lib/racePlan'
 import { Footprints, Gauge, Map as MapIcon, Plus, Trophy } from 'lucide-react'
 import { formatDuration, formatPace, uid, type Run } from '../lib/log'
 import { useT } from '../lib/i18n'
@@ -82,7 +83,18 @@ export function PaceCard({ est, runs, onTrial }: { est: Estimate | null; runs: R
             <span><b className="tabular-nums">{formatDuration(goal)}</b> · {tr('ต้องวิ่งเพซ', 'needs')} <b className="tabular-nums">{formatPace(goal, raceKm[pick])}</b> {tr('/กม.', '/km')}</span>
             <button onClick={() => setGoal(pick, null)} className="text-xs font-semibold text-muted">{tr('ลบเป้า', 'Remove goal')}</button>
           </div>
-        ) : (
+        ) : null}
+        {/* เป้าเร็วกว่าคาดการณ์เกิน 10%: แผนวันแข่ง/โค้ชใช้เป้าที่ปรับแล้วอยู่แล้ว บอกตรงนี้ด้วย และให้เปลี่ยนเป็นเป้านั้นในแตะเดียว */}
+        {goal && (() => {
+          const pg = planGoal(goal, est[pick])
+          return pg?.capped ? (
+            <div className="mt-2 flex items-center gap-2 rounded-lg bg-warn/10 p-2.5 text-xs text-warn">
+              <span className="flex-1">{tr(`เป้านี้เร็วกว่าเวลาคาดการณ์เกิน 10% แผนวันแข่งจึงใช้ ${formatDuration(pg.sec)} แทน ตั้งเป้าก้าวละขั้นช่วยให้ไม่ออกตัวเร็วเกิน`, `This goal is over 10% faster than your prediction, so race plans use ${formatDuration(pg.sec)} instead. Stepwise goals help avoid going out too fast.`)}</span>
+              <Button size="sm" variant="soft" onClick={() => setGoal(pick, pg.sec)}>{tr(`ใช้ ${formatDuration(pg.sec)}`, `Use ${formatDuration(pg.sec)}`)}</Button>
+            </div>
+          ) : null
+        })()}
+        {goal ? null : (
           <div className="mt-1.5 flex items-end gap-2">
             <TextInput className="flex-1" value={draft} onChange={setDraft} placeholder={pick === 'half' || pick === 'full' ? tr('เช่น 1:59:59', 'e.g. 1:59:59') : tr('เช่น 55:00', 'e.g. 55:00')} />
             <Button disabled={!parseDuration(draft)} onClick={saveGoal}>{tr('ตั้งเป้า', 'Set goal')}</Button>

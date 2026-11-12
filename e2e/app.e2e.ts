@@ -842,3 +842,19 @@ test('ขึ้นสะสมของรอบเก่า (สูตรไม
   expect(((await idb(page, 'runs')) as { elev: { gain: number } }[])[0].elev.gain).toBeLessThan(60)
   expect(((await idb(page, 'routes')) as Record<string, { route: unknown[] }>).old.route).toHaveLength(route.length)
 })
+
+test('เป้าเร็วเกินจริง: การ์ดคาดการณ์บอกและเปลี่ยนเป็นเป้าที่เป็นไปได้ในแตะเดียว', async ({ page }) => {
+  await seed(page, {
+    runs: [{ id: 'b', date: ymd(5), km: 10, seconds: 4200, kind: 'race', source: 'manual' }],
+    goals: { race: { tenK: 3300 } },
+  })
+  await nav(page, 'วิ่ง')
+  await page.getByRole('button', { name: 'สถิติ', exact: true }).click()
+  await page.getByRole('button', { name: /^10K/ }).first().click()
+  await expect(page.getByText(/เป้านี้เร็วกว่าเวลาคาดการณ์เกิน 10%/)).toBeVisible()
+  await page.getByRole('button', { name: /^ใช้ \d/ }).click()
+  await expect(page.getByText(/เป้านี้เร็วกว่าเวลาคาดการณ์เกิน 10%/)).toHaveCount(0)
+  const g = (await idb(page, 'goals')) as { race: { tenK: number } }
+  expect(g.race.tenK).toBeGreaterThan(3300)
+  expect(g.race.tenK).toBeLessThan(4200)
+})
