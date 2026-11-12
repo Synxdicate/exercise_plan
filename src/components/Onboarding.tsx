@@ -44,7 +44,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
     onDone()
   }
 
-  const t = targets(draft, !!programs[program].raceKm)
+  const t = targets(draft, !!programs[program].raceKm, (programs[program].raceKm ?? 0) >= 21)
 
   const Option = ({ on, onClick, title, text }: { on: boolean; onClick: () => void; title: string; text: string }) => (
     <button onClick={onClick} className={cx('flex w-full items-start gap-3 rounded-2xl p-3 text-left ring-2 transition-colors active:scale-[.99]',

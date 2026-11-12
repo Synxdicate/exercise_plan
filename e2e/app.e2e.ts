@@ -875,3 +875,20 @@ test('หน้าหลักขอคะแนนความเหนื่�
   const runs = (await idb(page, 'runs')) as { id: string; rpe?: number }[]
   expect(Object.fromEntries(runs.map(r => [r.id, r.rpe]))).toEqual({ old: 3, new: 6, done: 4 })
 })
+
+test('ประวัติวิ่ง: รวมรอบที่น่าจะเป็นการเดิน ตอบทีละรอบ', async ({ page }) => {
+  await seed(page, { runs: [
+    { id: 'w1', date: ymd(3), km: 3, seconds: 2700, kind: 'easy', source: 'gps', splits: [] },
+    { id: 'w2', date: ymd(2), km: 2, seconds: 1700, kind: 'easy', source: 'gps', splits: [] },
+    { id: 'ok', date: ymd(1), km: 3, seconds: 1440, kind: 'easy', source: 'gps', splits: [] },
+  ] })
+  await nav(page, 'วิ่ง')
+  await page.getByRole('button', { name: 'ประวัติ', exact: true }).click()
+  await expect(page.getByText('2 รอบที่น่าจะเป็นการเดิน')).toBeVisible()
+  await page.getByRole('button', { name: 'เป็นเดิน' }).first().click()
+  await expect(page.getByText('1 รอบที่น่าจะเป็นการเดิน')).toBeVisible()
+  await page.getByRole('button', { name: 'วิ่งจริง' }).click()
+  await expect(page.getByText(/รอบที่น่าจะเป็นการเดิน/)).toHaveCount(0)
+  const runs = (await idb(page, 'runs')) as { id: string; kind: string }[]
+  expect(Object.fromEntries(runs.map(r => [r.id, r.kind]))).toEqual({ w1: 'easy', w2: 'walk', ok: 'easy' })
+})

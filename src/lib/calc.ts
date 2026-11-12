@@ -36,8 +36,13 @@ export const tdee = (p: Profile) => bmr(p) * p.activity
 
 // race = อยู่ในโปรแกรมฮาล์ฟ/ฟูล: ใช้พลังงานมากขึ้น และไม่ควรกินขาด
 // (กินน้อยเกินขณะซ้อมหนักเสี่ยงภาวะพลังงานไม่พอ บาดเจ็บ/ฮอร์โมนรวน)
-export function targets(p: Profile, race = false) {
-  const activity = race ? Math.max(p.activity, 1.725) : p.activity
+/**
+ * race = อยู่ในโปรแกรมแข่ง: ไม่กินขาด (เท่าที่ใช้ขึ้นไป) และเพิ่มคาร์บ
+ * longRace = ฮาล์ฟ/ฟูล (ระยะซ้อมสูง): ใช้กิจกรรมอย่างน้อยระดับหนัก (×1.725) ด้วย
+ * 5K/10K มือใหม่ (3 วิ่ง + 2 เวท) ใช้ระดับกิจกรรมตามโปรไฟล์ เดิมบังคับ ×1.725 ทุกโปรแกรมแข่ง เป้าเกิน TDEE ที่แสดง ~280 kcal/วัน
+ */
+export function targets(p: Profile, race = false, longRace = false) {
+  const activity = race && longRace ? Math.max(p.activity, 1.725) : p.activity
   const delta = race ? Math.max(goals[p.goal].delta, 0) : goals[p.goal].delta
   const kcal = Math.round((bmr(p) * activity + delta) / 10) * 10
   // ISSN: 1.4–2.0 g/kg; ช่วงกินขาดใช้เอนไปทางสูง

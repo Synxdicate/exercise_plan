@@ -37,6 +37,7 @@ import { ReadinessSheet } from './Readiness'
 import { today, weekStart } from '../lib/date'
 import { Badge, Button, Card, Collapse, Portal, Segmented, Stat } from './ui'
 import { RunHistory } from './RunHistory'
+import { WalkReview } from './WalkReview'
 import { CrossTrainingCard } from './CrossTraining'
 import { useRaceGoals } from '../lib/useGoals'
 import { ghostLead, ghostMeters, ghostText, ghostTextEn, raceGhost, trialGhost, type Ghost as GhostTarget } from '../lib/ghost'
@@ -326,6 +327,7 @@ export function Runs() {
 
       {shownView === 'history' && (
         <>
+        <WalkReview />
         <Card title={tr('ประวัติการวิ่ง', 'Run history')} action={
           <div className="flex gap-1.5">
             <label className="inline-flex cursor-pointer items-center gap-1 rounded-full bg-raised px-3 py-1.5 text-sm font-semibold ring-1 ring-line">

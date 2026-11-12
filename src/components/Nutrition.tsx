@@ -21,8 +21,8 @@ const verdict = {
 type View = 'menu' | 'street' | 'foods'
 
 export function Nutrition({ profile, setProfile }: { profile: Profile; setProfile: (p: Profile) => void }) {
-  const { isRace } = useProgram()
-  const t = targets(profile, isRace)
+  const { isRace, raceKm } = useProgram()
+  const t = targets(profile, isRace, (raceKm ?? 0) >= 21)
   const [view, setView] = useState<View>('menu')
   useSwipe(['menu', 'street', 'foods'] as const, view, setView)
   const tr = useT()
