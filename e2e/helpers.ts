@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test'
+import { expect, type Page } from '@playwright/test'
 
 // วันที่ตามเวลาไทย (ตรงกับ timezoneId ของเบราว์เซอร์ใน playwright.config) เครื่อง CI ใช้ UTC ถ้าใช้เวลาเครื่องจะผิดวันหลังเที่ยงคืนไทย
 export const ymd = (daysAgo = 0) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(new Date(Date.now() - daysAgo * 864e5))
@@ -29,7 +29,18 @@ export const idb = (page: Page, key: string) => page.evaluate(k => new Promise(r
   }
 }), key)
 
-export const nav = (page: Page, name: string) => page.locator('nav button', { hasText: name }).click()
+/** เนื้อหาที่เพิ่งแตะเปลี่ยน render แบบเลื่อนตามมา (useDeferredValue): รอจนจอไม่อยู่ในสถานะกำลังอัปเดต
+ * (แท็บ: main[aria-busy], วันในหน้าฝึก/หน้าย่อยหน้าวิ่ง: [aria-busy]) และแท็บที่โหลดแยกไฟล์ */
+export async function settled(page: Page) {
+  // ไม่ใช้ setTimeout/rAF ในหน้า: เทสต์ที่ติดตั้ง page.clock หยุดเวลาไว้ จะรอไม่จบ
+  // เฉพาะจุดที่ render เลื่อนตามมา (การ์ดอากาศตอนโหลดก็มี aria-busy แต่ไม่เกี่ยว)
+  await expect(page.locator('main[aria-busy="true"], [data-segmented][aria-busy="true"], .grid-cols-7[aria-busy="true"], [data-tab-loading]')).toHaveCount(0)
+}
+
+export const nav = async (page: Page, name: string) => {
+  await page.locator('nav button', { hasText: name }).click()
+  await settled(page)
+}
 
 export const loopRoute = (n = 120) => {
   const route: [number, number][] = []

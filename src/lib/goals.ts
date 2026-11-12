@@ -44,10 +44,18 @@ export type Ctx = { runs: Run[]; sessions: Session[]; goalKm: number; planWeeks?
 export const STICKY = ['plan-4', 'race-finish']
 
 /** วิ่งเส้นทางเดิมกี่ครั้งมากที่สุด (เส้นทางเดียวกันตาม sameRoute) */
+// ผลต่อ array ของการวิ่ง (useRuns คืน array เดียวกันทุกการ์ด) และเทียบแต่ละคู่ครั้งเดียว (i < j)
+const repeatCache = new WeakMap<Run[], number>()
 export function mostRepeatedRoute(runs: Run[]) {
+  const hit = repeatCache.get(runs)
+  if (hit !== undefined) return hit
   const list = runsOnly(runs).filter(r => (r.route?.length ?? 0) >= 5)
-  let best = 0
-  for (const a of list) best = Math.max(best, list.filter(b => b === a || sameRoute(a, b)).length)
+  const count = list.map(() => 1)
+  for (let i = 0; i < list.length; i++)
+    for (let j = i + 1; j < list.length; j++)
+      if (sameRoute(list[i], list[j])) { count[i]++; count[j]++ }
+  const best = list.length ? Math.max(...count) : 0
+  repeatCache.set(runs, best)
   return best
 }
 
@@ -61,6 +69,12 @@ export function planStreak(weeks: { planned: number; done: number }[], min = 0.8
   return best
 }
 
+const pbCache = new WeakMap<Run[], ReturnType<typeof personalBests>>()
+const bests = (runs: Run[]) => {
+  let v = pbCache.get(runs)
+  if (!v) pbCache.set(runs, (v = personalBests(runs)))
+  return v
+}
 const totalKm = (c: Ctx) => runsOnly(c.runs).reduce((a, r) => a + r.km, 0)
 const longest = (c: Ctx) => runsOnly(c.runs).reduce((a, r) => Math.max(a, r.km), 0)
 
@@ -71,7 +85,7 @@ export const BADGES: (BadgeDef & { earned: (c: Ctx) => boolean })[] = [
   { id: 'run-10k', title: '10K', text: 'วิ่งต่อเนื่องได้ 10 กม.', icon: 'medal', earned: c => longest(c) >= 10 },
   { id: 'run-half', title: 'ฮาล์ฟมาราธอน', text: 'วิ่งได้ 21.1 กม.', icon: 'trophy', earned: c => longest(c) >= 21.0 },
   { id: 'run-full', title: 'มาราธอน', text: 'วิ่งได้ 42.2 กม.', icon: 'trophy', earned: c => longest(c) >= 42.0 },
-  { id: 'sub30-5k', title: '5K ต่ำกว่า 30 นาที', text: 'ช่วง 5 กม. ที่เร็วที่สุดต่ำกว่า 30:00', icon: 'zap', earned: c => (personalBests(c.runs).find(b => b.km === 5)?.best?.seconds ?? Infinity) < 1800 },
+  { id: 'sub30-5k', title: '5K ต่ำกว่า 30 นาที', text: 'ช่วง 5 กม. ที่เร็วที่สุดต่ำกว่า 30:00', icon: 'zap', earned: c => (bests(c.runs).find(b => b.km === 5)?.best?.seconds ?? Infinity) < 1800 },
   { id: 'km-50', title: '50 กม.', text: 'วิ่งสะสมครบ 50 กม.', icon: 'mountain', earned: c => totalKm(c) >= 50 },
   { id: 'km-100', title: '100 กม.', text: 'วิ่งสะสมครบ 100 กม.', icon: 'mountain', earned: c => totalKm(c) >= 100 },
   { id: 'km-250', title: '250 กม.', text: 'วิ่งสะสมครบ 250 กม.', icon: 'mountain', earned: c => totalKm(c) >= 250 },

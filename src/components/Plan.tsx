@@ -1,7 +1,7 @@
 import { ReplaySoFar } from './Replay'
 import { CourseCard } from './Course'
 import { EaseOffCard } from './Coach'
-import { useMemo, useState } from 'react'
+import { useDeferredValue, useMemo, useState } from 'react'
 import { useSwipe } from '../lib/swipe'
 
 const DAYS = ['0', '1', '2', '3', '4', '5', '6'] as const
@@ -63,6 +63,8 @@ function PlanBody() {
   const [, setDone] = usePersisted<Record<string, boolean>>('done', {})
   const [viewWeek, setViewWeek] = useState(p.currentWeek)
   const [selected, setSelected] = useState(todayIdx)
+  // จุดวันเปลี่ยนทันทีที่แตะ การ์ดรายละเอียดของวัน (ส่วนที่หนัก) render แบบแบ่งช่วงตามมา แตะ/ปัดต่อได้ไม่ค้าง
+  const shownSel = useDeferredValue(selected)
   useSwipe(DAYS, String(selected) as typeof DAYS[number], v => setSelected(Number(v)))
   const [picking, setPicking] = useState(false)
   const [playing, setPlaying] = useState<{ i: number; light: boolean } | null>(null)
@@ -84,18 +86,18 @@ function PlanBody() {
   const doneCount = trainingIdx.filter(isDone).length
   // ไต่ระยะหลังเริ่มกลางโปรแกรม: โน้ตของตาราง (เช่น "เริ่มวิ่ง 4 วัน") อาจไม่ตรงกับแผนที่ปรับแล้ว
   const note = days.some(d => d.note?.includes(RAMP_NOTE) || d.note === RAMP_STRIDES_NOTE) ? RAMP_NOTE : weekNote(p.program, week)
-  const day = days[selected]
+  const day = days[shownSel]
   // ทำแผนของวันอื่นวันนี้ (สลับกับวันนี้) เฉพาะสัปดาห์นี้ ทั้งสองวันยังไม่ได้ทำ และไม่ใช่วันแข่ง
   const tIdx = todayIdx()
-  const canDoToday = isThisWeek && selected !== tIdx && day.type !== 'rest' && day.runKind !== 'race' && days[tIdx]?.runKind !== 'race'
-    && !isDone(selected) && !isDone(tIdx)
+  const canDoToday = isThisWeek && shownSel !== tIdx && day.type !== 'rest' && day.runKind !== 'race' && days[tIdx]?.runKind !== 'race'
+    && !isDone(shownSel) && !isDone(tIdx)
   const doToday = async () => {
-    const b2b = backToBackRuns(applyMoves(days, [[selected, tIdx]]))
+    const b2b = backToBackRuns(applyMoves(days, [[shownSel, tIdx]]))
     if (b2b.length && !(await ask(t(
       `หลังสลับแล้วจะวิ่งติดกัน: ${b2b.map(i => `${WEEKDAYS_TH[i]}–${WEEKDAYS_TH[i + 1]}`).join(', ')} — ขาไม่ได้พักระหว่างวันวิ่ง เสี่ยงเจ็บ ลองสลับวันวิ่งอีกวันไปวันพักแทน`,
       `After the swap you'd run on back-to-back days: ${b2b.map(i => `${WEEKDAYS_EN[i]}–${WEEKDAYS_EN[i + 1]}`).join(', ')}. No rest between runs raises injury risk — consider moving the other run to a rest day.`,
     ), { title: t('วิ่งติดกันสองวัน', 'Back-to-back runs'), ok: t('สลับต่อ', 'Swap anyway') }))) return
-    p.moveDay(week, selected, tIdx)
+    p.moveDay(week, shownSel, tIdx)
     setSelected(tIdx)
   }
 
@@ -151,7 +153,7 @@ function PlanBody() {
           <span className="font-semibold">{week < 1 ? t(`ช่วงเตรียมตัว ${shortDate(p.mondayOf(week))} (แผนสัปดาห์ 1)`, `Prep week of ${shortDate(p.mondayOf(week))} (week 1 plan)`) : <>{t('สัปดาห์', 'Week')} {week} · {isThisWeek ? (p.weeksUntilStart > 0 ? t('ช่วงเตรียมตัว (ใช้แผนสัปดาห์ 1)', 'Prep (using week 1)') : t('สัปดาห์นี้', 'this week')) : week < p.currentWeek ? t(`${p.currentWeek - week} สัปดาห์ก่อน`, `${p.currentWeek - week} wk ago`) : t(`อีก ${week - p.currentWeek + p.weeksUntilStart} สัปดาห์`, `in ${week - p.currentWeek + p.weeksUntilStart} wk`)}</>}</span>
           <span className="tabular-nums text-muted">{doneCount}/{trainingIdx.length} {t('วัน', 'days')}{p.kmTarget(week) ? t(` · วิ่ง ${p.kmTarget(week)} กม.`, ` · run ${p.kmTarget(week)} km`) : ''}</span>
         </div>
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-1" aria-busy={shownSel !== selected || undefined}>
           {days.map((d, i) => {
             const st = styleOf(d)
             const on = i === selected
@@ -187,13 +189,13 @@ function PlanBody() {
       </div>
 
       {/* วันที่เลือก (ปัดซ้าย/ขวาเปลี่ยนวัน) */}
-      <DayDetail key={`${week}-${selected}-${day.location ?? ''}`} day={day} isToday={isThisWeek && selected === todayIdx()}
-        done={isDone(selected)} hint={paceHint(est, day.runKind, day.title, dt.en)} weekNoteText={note}
-        setDone={v => setDayDone(selected, v)}
-        onStart={() => setChecking(selected)}
-        onLocation={m => p.setDayLocation(week, day.movedFrom ?? selected, m)} slotId={p.doneId(week, selected)}
+      <DayDetail key={`${week}-${shownSel}-${day.location ?? ''}`} day={day} isToday={isThisWeek && shownSel === todayIdx()}
+        done={isDone(shownSel)} hint={paceHint(est, day.runKind, day.title, dt.en)} weekNoteText={note}
+        setDone={v => setDayDone(shownSel, v)}
+        onStart={() => setChecking(shownSel)}
+        onLocation={m => p.setDayLocation(week, day.movedFrom ?? shownSel, m)} slotId={p.doneId(week, shownSel)}
         onDoToday={canDoToday ? () => void doToday() : undefined}
-        date={addDays(p.mondayOf(week), selected)} />
+        date={addDays(p.mondayOf(week), shownSel)} />
 
       {/* ทั้งสัปดาห์แบบย่อ */}
       <section className="rounded-3xl bg-card p-2 shadow-sm ring-1 ring-line">

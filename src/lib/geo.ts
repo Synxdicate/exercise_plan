@@ -28,3 +28,13 @@ export function projectRoute(route: [number, number][], box: { x: number; y: num
   const oy = box.y + (box.h - (maxY - minY) * s) / 2
   return route.map((_, i) => [ox + (xs[i] - minX) * s, oy + (ys[i] - minY) * s] as const)
 }
+
+// ภาพรวมทุกเส้นทางดูที่ซูมทั้งเมือง จุดห่างกันไม่ถึง ~40 ม. มองไม่เห็นความต่าง ตัดทิ้งก่อนให้ Leaflet คำนวณตำแหน่งบนจอ
+// (วิ่ง 150 ครั้งเคยต้องคำนวณทุกจุดทุกเส้นตอนเปิดหน้าสถิติ)
+export function thinRoute(r: Point[], gap = 40): Point[] {
+  if (r.length < 3) return r
+  const out: Point[] = [r[0]]
+  for (let i = 1; i < r.length - 1; i++) if (haversine(out[out.length - 1], r[i]) >= gap) out.push(r[i])
+  out.push(r[r.length - 1])
+  return out
+}

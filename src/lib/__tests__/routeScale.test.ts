@@ -16,3 +16,17 @@ describe('route matching scales with a year of runs', () => {
     expect(ms).toBeLessThan(250)
   })
 })
+
+describe('heatmap route thinning', () => {
+  it('drops points closer than the gap but keeps both ends and the shape', async () => {
+    const { thinRoute, haversine } = await import('../geo')
+    // 5 กม. ทางตรง จุดทุก ~10 ม.
+    const r: [number, number][] = Array.from({ length: 501 }, (_, i) => [16.44 + i * 0.00009, 102.83])
+    const t = thinRoute(r)
+    expect(t[0]).toBe(r[0])
+    expect(t.at(-1)).toBe(r.at(-1))
+    expect(t.length).toBeLessThan(r.length / 3)
+    for (let i = 1; i < t.length - 1; i++) expect(haversine(t[i - 1], t[i])).toBeGreaterThanOrEqual(40)
+    expect(thinRoute(r.slice(0, 2))).toHaveLength(2)
+  })
+})

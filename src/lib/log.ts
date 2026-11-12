@@ -70,10 +70,20 @@ const useRawRuns = () => usePersisted<Run[]>('runs', [])
 const useRoutes = () => usePersisted<Routes>('routes', {})
 const stored = () => ({ runs: (readStored('runs') as Run[] | undefined) ?? [], routes: (readStored('routes') as Routes | undefined) ?? {} })
 
+// ทุกคอมโพเนนต์ที่เรียก useRuns ได้ array ชุดเดียวกัน (ข้อมูลเดิม = ผลเดิม) ผลคำนวณที่ cache ตาม array
+// (เหรียญ เส้นทางซ้ำ สถิติดีที่สุด) จึงใช้ร่วมกันได้ ไม่ต้องคิดใหม่ทุกการ์ด
+let lastJoin: { raw: unknown; routes: unknown; out: Run[] } | null = null
+function sharedJoin(raw: Parameters<typeof joinRuns>[0], routes: Parameters<typeof joinRuns>[1]) {
+  if (lastJoin && lastJoin.raw === raw && lastJoin.routes === routes) return lastJoin.out
+  const out = joinRuns(raw, routes)
+  lastJoin = { raw, routes, out }
+  return out
+}
+
 export function useRuns() {
   const [raw, setRaw] = useRawRuns()
   const [routes, setRoutes] = useRoutes()
-  const runs = useMemo(() => joinRuns(raw, routes), [raw, routes])
+  const runs = useMemo(() => sharedJoin(raw, routes), [raw, routes])
   const set = useCallback((next: Run[] | ((prev: Run[]) => Run[])) => {
     const cur = stored()
     const value = typeof next === 'function' ? next(joinRuns(cur.runs, cur.routes)) : next

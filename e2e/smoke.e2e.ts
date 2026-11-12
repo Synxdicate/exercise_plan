@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { loopRoute, seed } from './helpers'
+import { loopRoute, seed, settled } from './helpers'
 
 // เปิดทุกแท็บ (และแท็บย่อย) ในทุกโปรแกรม หลายช่วงเวลา ก่อนเริ่ม/ระหว่าง/วันแข่ง/หลังแข่ง ต้องไม่มี error
 const { route, times } = loopRoute()
@@ -17,10 +17,10 @@ for (const [program, at, raceDate] of cases) test(`smoke ${program} @ ${at}${rac
   let clicked = 0
   for (const i of [0, 1, 2, 3, 4]) {
     await page.locator('nav button').nth(i).click()
-    await expect(page.locator('[data-tab-loading]')).toHaveCount(0) // แท็บโหลดแยกไฟล์
+    await settled(page) // แท็บโหลดแยกไฟล์ + เนื้อหาแท็บ render ตามมา
     // แท็บย่อยชุดแรกของหน้า (วิ่ง: เริ่ม/ประวัติ/สถิติ, บันทึก: ปฏิทิน/เวท/ฟิตเนส/น้ำหนัก, อาหาร: เมนู/ร้าน/วัตถุดิบ)
     const subs = page.locator('main [data-segmented]').first().locator('button')
-    for (let j = 0; j < await subs.count(); j++) { await subs.nth(j).click(); clicked++ }
+    for (let j = 0; j < await subs.count(); j++) { await subs.nth(j).click(); await settled(page); clicked++ }
   }
   expect(clicked).toBeGreaterThan(8)
   await expect(page.getByText('มีบางอย่างผิดพลาด')).toHaveCount(0)
@@ -35,9 +35,9 @@ test('smoke English', async ({ page }) => {
   await seed(page, { lang: 'en', program: 'mini', programStart: '2026-11-02', raceDate: '2027-01-10', runs: runs.filter(r => r.date <= '2027-01-03') })
   for (const i of [0, 1, 2, 3, 4]) {
     await page.locator('nav button').nth(i).click()
-    await expect(page.locator('[data-tab-loading]')).toHaveCount(0)
+    await settled(page)
     const subs = page.locator('main [data-segmented]').first().locator('button')
-    for (let j = 0; j < await subs.count(); j++) await subs.nth(j).click()
+    for (let j = 0; j < await subs.count(); j++) { await subs.nth(j).click(); await settled(page) }
   }
   await expect(page.getByText('Something went wrong')).toHaveCount(0)
   expect(errors).toEqual([])
@@ -58,10 +58,10 @@ for (const at of ['2026-11-06', '2026-11-18', '2027-01-08', '2027-01-10T06:00', 
   await seed(page, { ...realistic, runs: runs.filter(r => r.date <= at.slice(0, 10)) })
   for (const i of [0, 2, 3, 4]) {
     await page.locator('nav button').nth(i).click()
-    await expect(page.locator('[data-tab-loading]')).toHaveCount(0)
+    await settled(page)
   }
   await page.locator('nav button').nth(1).click()
-  await expect(page.locator('[data-tab-loading]')).toHaveCount(0)
+  await settled(page)
   const weeks = page.locator('main .snap-start')
   const n = await weeks.count()
   expect(n).toBeGreaterThanOrEqual(10)

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState, useSyncExternalStore } from 'react'
+import { lazy, Suspense, useDeferredValue, useEffect, useState, useSyncExternalStore } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { Bell, BookOpen, Bug, Languages, Cloud, CloudOff, Download, Dumbbell, Footprints, House, LogIn, LogOut, Monitor, Moon, RefreshCw, SlidersHorizontal, Smartphone, Sun, TrendingUp, Upload, Utensils } from 'lucide-react'
 import { LogoMark } from './components/Logo'
@@ -72,6 +72,9 @@ export default function App() {
 
 function Main({ session }: { session: Session | null }) {
   const [tab, setTab] = usePersisted<Tab>('tab', 'overview')
+  // แถบล่างและหัวข้อเปลี่ยนทันทีที่แตะ เนื้อหาแท็บใหม่ render แบบแบ่งช่วง (ขัดจังหวะได้) ระหว่างนั้นยังเห็นแท็บเดิม
+  // ไม่กระพริบเป็นโครงโหลด และแตะซ้ำ/เลื่อนได้ไม่ค้าง (มือถือช้า: render แท็บใช้ 0.2–0.5 วิ)
+  const shown = useDeferredValue(tab)
   const [profile, setProfile] = usePersisted<Profile>('profile', defaultProfile)
   const [onboarded, setOnboarded] = usePersisted('onboarded', false)
   useReminderSchedule()
@@ -137,14 +140,14 @@ function Main({ session }: { session: Session | null }) {
 
       {!session && <BackupReminder />}
 
-      <main key={tab} className="animate-fade-up space-y-3 px-4 pt-1 pb-[calc(var(--sab)+6rem)]">
-        {tab === 'overview' && <Overview />}
+      <main key={shown} aria-busy={shown !== tab || undefined} className="animate-fade-up space-y-3 px-4 pt-1 pb-[calc(var(--sab)+6rem)]">
+        {shown === 'overview' && <Overview />}
         <Suspense fallback={<TabFallback />}>
-          {tab === 'plan' && <Plan />}
-          {tab === 'runs' && <Runs />}
-          {tab === 'food' && <Nutrition profile={profile} setProfile={setProfile} />}
-          {tab === 'progress' && <Progress />}
-          {tab === 'sources' && <Sources />}
+          {shown === 'plan' && <Plan />}
+          {shown === 'runs' && <Runs />}
+          {shown === 'food' && <Nutrition profile={profile} setProfile={setProfile} />}
+          {shown === 'progress' && <Progress />}
+          {shown === 'sources' && <Sources />}
         </Suspense>
         <p className="pt-2 text-center text-xs text-muted">{t('ข้อมูลเพื่อการศึกษา ไม่ใช่คำแนะนำทางการแพทย์', 'For education only, not medical advice')}</p>
       </main>

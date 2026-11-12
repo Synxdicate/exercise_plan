@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useDeferredValue, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { BellOff, BellRing, CalendarCheck, Check, CircleCheck, FileUp, Gauge, Ghost, History, Pause, Play, Plus, Satellite, TriangleAlert, Volume2, VolumeX, X } from 'lucide-react'
 import { GOOD_ACCURACY_M, useRunTracker } from '../lib/gps'
 import { useDayText } from '../lib/dayText'
@@ -85,6 +85,8 @@ export function Runs() {
   const [voice, setVoice] = usePersisted('voiceCues', true)
   // แท็บย่อยของหน้าวิ่ง (ค่าของเครื่อง) แยกเริ่มวิ่ง/ประวัติ/สถิติ ไม่ให้หน้าเดียวยาวเกินไป
   const [view, setView] = usePersisted<'start' | 'history' | 'stats'>('runsView', 'start')
+  // แถบเลือกหน้าย่อยเปลี่ยนทันที เนื้อหาหน้าย่อย render แบบแบ่งช่วงตามมา (หน้าสถิติหนัก)
+  const shownView = useDeferredValue(view)
   const [guideOn, setGuideOn] = usePersisted('guideOn', true)
   // เสียงนำใช้กับชุดซ้อมของวันนี้ เมื่อเลือกชนิดการวิ่งตรงกับแผน
   // วันแข่งตามแผนไม่มีชุดซ้อม เลือก "แข่ง" ในวันอื่นคือวิ่งทดสอบ 5K
@@ -262,13 +264,13 @@ export function Runs() {
 
   return (
     <div className="space-y-4">
-      <Segmented value={view} onChange={setView} options={[
+      <Segmented busy={shownView !== view} value={view} onChange={setView} options={[
         { value: 'start', label: <><Play size={14} /> {tr('วิ่ง', 'Run')}</> },
         { value: 'history', label: <><History size={14} /> {tr('ประวัติ', 'History')}</> },
         { value: 'stats', label: <><Gauge size={14} /> {tr('สถิติ', 'Stats')}</> },
       ]} />
 
-      {view === 'start' && (
+      {shownView === 'start' && (
       <section className="space-y-3 rounded-2xl bg-run-fill p-4 text-white shadow-sm">
         <div>
           <div className="text-sm">{tr('สัปดาห์นี้', 'This week')}</div>
@@ -309,7 +311,7 @@ export function Runs() {
       </section>
       )}
 
-      {view === 'start' && (
+      {shownView === 'start' && (
         <>
           <HeatCard />
           {heatPct > 0 && kind !== 'walk' && est && (
@@ -322,7 +324,7 @@ export function Runs() {
         </>
       )}
 
-      {view === 'history' && (
+      {shownView === 'history' && (
         <>
         <Card title={tr('ประวัติการวิ่ง', 'Run history')} action={
           <div className="flex gap-1.5">
@@ -340,7 +342,7 @@ export function Runs() {
         </>
       )}
 
-      {view === 'stats' && (
+      {shownView === 'stats' && (
         <>
           <FinishCard />
           <PaceCard est={est} runs={runs} onTrial={() => { setKind('race'); setView('start'); window.scrollTo({ top: 0, behavior: 'smooth' }) }} />

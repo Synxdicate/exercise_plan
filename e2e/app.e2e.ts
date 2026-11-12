@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { idb, loopRoute, nav, seed, ymd } from './helpers'
+import { idb, loopRoute, nav, seed, settled, ymd } from './helpers'
 
 test('โหมดไม่ล็อกอิน: onboarding, บันทึกลง IndexedDB, เตือนสำรอง, กลับไปหน้าล็อกอินได้', async ({ page }) => {
   await page.goto('/')
@@ -385,6 +385,7 @@ test('ท่าที่ไม่มีรูปถ่ายแสดงภา�
   const target = page.locator('main li button', { hasText: 'Hollow Body Hold' })
   for (const d of ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์', 'อาทิตย์']) {
     await page.locator('button', { has: page.locator('.sr-only', { hasText: new RegExp(`^${d}:`) }) }).click()
+    await settled(page)
     if (await target.count()) break
   }
   await target.first().click()
@@ -778,6 +779,8 @@ test('ปัดซ้าย/ขวาสลับหน้าย่อยขอ�
   }
   const pressed = (name: string) => expect(page.getByRole('button', { name, exact: true })).toHaveAttribute('aria-pressed', 'true')
   await page.getByRole('button', { name: 'ประวัติ', exact: true }).waitFor()
+  // ตัวจับการปัดผูกใน effect หลังแท็บ render (แบบเลื่อนตามมา) เสร็จ
+  await page.waitForTimeout(150)
   await swipe(320, 80)
   await pressed('ประวัติ')
   await swipe(320, 80)

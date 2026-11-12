@@ -1,5 +1,5 @@
 import { test } from '@playwright/test'
-import { loopRoute, seed, ymd } from './helpers'
+import { loopRoute, seed, settled, ymd } from './helpers'
 
 // ภาพหน้าจอทุกแท็บ (สว่าง/มืด, ไทย/อังกฤษ) ไว้ตรวจ UI — รันด้วย `npm run shots` เท่านั้น (CI ข้าม)
 // แยก test ต่อภาษา แต่ละ test ได้เบราว์เซอร์ใหม่ (ค่าใน IndexedDB ของรอบก่อนไม่ทับ)
@@ -13,7 +13,7 @@ for (const lang of ['th', 'en']) test(`screens ${lang}`, async ({ page }) => {
       await page.emulateMedia({ colorScheme: theme })
       for (const [i, name] of ['home', 'plan', 'runs', 'food', 'log'].entries()) {
         await page.locator('nav button').nth(i).click()
-    await page.locator('[data-tab-loading]').waitFor({ state: 'detached' }).catch(() => {})
+    await settled(page)
         await page.waitForTimeout(600)
         await page.screenshot({ path: `screens/${lang}-${theme}-${name}.png`, fullPage: true })
       }

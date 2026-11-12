@@ -65,9 +65,10 @@ export function Badge({ children, tone = 'accent' }: { children: ReactNode; tone
   return <span className={cx('inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold', tones[tone])}>{children}</span>
 }
 
-export function Segmented<T extends string>({ value, options, onChange }: { value: T; options: { value: T; label: ReactNode }[]; onChange: (v: T) => void }) {
+/** busy = เนื้อหาของตัวเลือกที่เพิ่งแตะยัง render ตามมาอยู่ (useDeferredValue) */
+export function Segmented<T extends string>({ value, options, onChange, busy }: { value: T; options: { value: T; label: ReactNode }[]; onChange: (v: T) => void; busy?: boolean }) {
   return (
-    <div data-segmented className="flex rounded-full bg-raised p-1 ring-1 ring-line">
+    <div data-segmented aria-busy={busy || undefined} className="flex rounded-full bg-raised p-1 ring-1 ring-line">
       {options.map(o => (
         <button key={o.value} onClick={() => onChange(o.value)} aria-pressed={value === o.value}
           className={cx('flex min-w-0 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-full py-2 text-sm font-semibold transition',

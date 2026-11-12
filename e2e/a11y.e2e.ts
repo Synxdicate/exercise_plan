@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
-import { loopRoute, seed, ymd } from './helpers'
+import { loopRoute, seed, settled, ymd } from './helpers'
 
 // เช็คการเข้าถึง (axe-core — ตัวเดียวกับคะแนน Accessibility ของ Lighthouse) ทุกแท็บ ทั้งธีมสว่างและมืด
 const { route, times } = loopRoute()
@@ -11,7 +11,7 @@ for (const scheme of ['light', 'dark'] as const) test(`a11y ${scheme}`, async ({
   const found: string[] = []
   for (const i of [0, 1, 2, 3, 4]) {
     await page.locator('nav button').nth(i).click()
-    await page.locator('[data-tab-loading]').waitFor({ state: 'detached' }).catch(() => {})
+    await settled(page)
     await page.waitForTimeout(400)
     const r = await new AxeBuilder({ page }).exclude('.leaflet-container').analyze()
     for (const v of r.violations.filter(v => v.impact === 'serious' || v.impact === 'critical'))
