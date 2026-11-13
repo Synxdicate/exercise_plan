@@ -892,3 +892,14 @@ test('ประวัติวิ่ง: รวมรอบที่น่าจ
   const runs = (await idb(page, 'runs')) as { id: string; kind: string }[]
   expect(Object.fromEntries(runs.map(r => [r.id, r.kind]))).toEqual({ w1: 'easy', w2: 'walk', ok: 'easy' })
 })
+
+test('หน้าหลัก: ข้อมูลที่ยังขาดพาไปกรอก และซ่อนทีละข้อได้', async ({ page }) => {
+  await seed(page, { runs: Array.from({ length: 5 }, (_, i) => ({ id: `r${i}`, date: ymd(i + 1), km: 4, seconds: 1680, kind: 'easy', source: 'gps', splits: [], rpe: 4 })) })
+  await page.getByRole('button', { name: /ข้อมูลที่ยังขาด/ }).click()
+  await page.getByRole('button', { name: 'ซ่อน ทดสอบขา (กระโดดขาเดียว เขย่งขาเดียว)' }).click()
+  await expect(page.getByText('ทดสอบขา (กระโดดขาเดียว')).toHaveCount(0)
+  expect(await idb(page, 'gapsHidden')).toEqual(['legTest'])
+  await page.getByRole('button', { name: 'เพิ่มรองเท้า' }).click()
+  await settled(page)
+  await expect(page.getByRole('button', { name: 'สถิติ', exact: true })).toHaveAttribute('aria-pressed', 'true')
+})

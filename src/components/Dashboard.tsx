@@ -1,3 +1,4 @@
+import { SetupGapsCard } from './SetupGaps'
 import { RpeNudgeCard } from './RpeNudge'
 import { ReplayCard } from './Replay'
 import { ThisWeekCard } from './ThisWeek'
@@ -170,6 +171,8 @@ export function Dashboard() {
       <MonthGoalCard />
 
       <WeekSummary />
+
+      <SetupGapsCard />
 
     </>
   )

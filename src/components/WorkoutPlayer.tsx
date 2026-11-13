@@ -1,3 +1,4 @@
+import { needsKg } from '../lib/lifts'
 import { useEffect, useState } from 'react'
 import { Check, ChevronLeft, ChevronRight, Minus, Play, Plus, SkipForward, Timer, TrendingUp, X } from 'lucide-react'
 import { yt, type Day, type Exercise } from '../data/workouts'
@@ -16,10 +17,6 @@ import { ExerciseDemo } from './ExerciseDemo'
 import { ask } from '../lib/dialog'
 import { buzz, speak } from '../lib/voice'
 import { useT } from '../lib/i18n'
-
-// ท่าที่ใช้น้ำหนักภายนอกในยิม (บาร์ ดัมเบล เคเบิล เครื่อง) ไม่รวมท่าน้ำหนักตัว เช่น Pull-up, Dips
-const LOADED = /squat|deadlift|bench|press|row|curl|raise|lunge|pulldown|cable|dumbbell|machine|goblet|rdl|hip thrust|extension|fly/i
-const BODYWEIGHT = /pull-up|chin-up|dips|dip\b|push-up|plank|bug|hold|pogo|jump|nordic|walk|bird|superman|hollow|leg raise|hanging|pistol|australian|single-leg calf|glute bridge|prone/i
 
 type SetRow = { kg: string; reps: string; done: boolean }
 type Active = { key: string; startedAt: number; idx: number; rows: Record<string, SetRow[]> }
@@ -229,7 +226,7 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
 
           {mode === 'gym' && isBarbell(ex.name) && <WarmupPlates workKg={parseFloat(rows[0]?.kg) || 0} />}
           {/* ท่ายกน้ำหนักในยิมที่ยังไม่เคยใส่น้ำหนัก: ไม่มีตัวเลข แอปแนะนำเพิ่มน้ำหนักครั้งถัดไปไม่ได้ (เคยบันทึกเป็น 0 กก. ทุกเซ็ต) */}
-          {mode === 'gym' && LOADED.test(ex.name) && !BODYWEIGHT.test(ex.name) && !prev?.sets.some(x => x.kg > 0) && rows.every(r => !parseFloat(r.kg)) && (
+          {mode === 'gym' && needsKg(ex.name) && !prev?.sets.some(x => x.kg > 0) && rows.every(r => !parseFloat(r.kg)) && (
             <p className="mt-3 rounded-xl bg-run/10 p-3 text-xs text-run">
               {isBarbell(ex.name)
                 ? tr('ใส่น้ำหนักที่ยกด้วย (บาร์เปล่า = 20 กก.) ครั้งแรกเริ่มเบาที่ทำได้ครบเซ็ตและยังเหลือแรง 2–3 ครั้ง ครั้งต่อไปแอปจะบอกว่าควรเพิ่มเท่าไร', 'Enter the weight you lift (empty bar = 20 kg). Start light enough to finish every set with 2–3 reps left; next time the app will tell you how much to add.')

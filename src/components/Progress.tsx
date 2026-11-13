@@ -25,7 +25,7 @@ import { useNav } from '../lib/nav'
 type Entry = { date: string; weight: number; waist?: number }
 
 export function Progress() {
-  const [view, setView] = useState<'workouts' | 'stats' | 'fitness' | 'body'>('workouts')
+  const [view, setView] = usePersisted<'workouts' | 'stats' | 'fitness' | 'body'>('progressView', 'workouts')
   const t = useT()
   useSwipe(['workouts', 'stats', 'fitness', 'body'] as const, view, setView)
   return (
