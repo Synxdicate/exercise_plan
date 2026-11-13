@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
 import { clearKeys, hydrate, onWrite, readStored } from './storage'
-import { mergeConflict, mergeValues } from './merge'
+import { idsOf, mergeConflict, mergeValues } from './merge'
 import { syncPhotos } from './photos'
 import { sendErrors } from './errors'
 
@@ -22,6 +22,12 @@ const savePending = () => hydrate(PENDING_KEY, [...pending])
 const BASE_KEY = 'syncBase'
 const base: Record<string, string> = { ...((readStored(BASE_KEY) as Record<string, string> | undefined) ?? {}) }
 const saveBase = () => hydrate(BASE_KEY, { ...base })
+// id ของรายการในค่าที่เห็นล่าสุด (runs, sessions, routes …) ฐานของการรวม 3 ทาง: แยก "อีกเครื่องลบ" ออกจาก "เครื่องนี้เพิ่ม"
+// (รวมแบบเดิมเอาทุก id จึงคืนชีพรอบที่อีกเครื่องลบไปแล้ว)
+const BASE_IDS_KEY = 'syncBaseIds'
+const baseIds: Record<string, string[]> = { ...((readStored(BASE_IDS_KEY) as Record<string, string[]> | undefined) ?? {}) }
+const setBaseIds = (k: string, v: unknown) => { const ids = idsOf(k, v); if (ids) baseIds[k] = ids; else delete baseIds[k] }
+const saveBaseIds = () => hydrate(BASE_IDS_KEY, { ...baseIds })
 // เทียบเป็นเวลา ไม่ใช่ข้อความ: Postgres คืน "+00:00" แต่ JS เขียน "Z" (ถ้าเทียบข้อความจะดูเหมือนชนทุกครั้ง แล้วรอบที่ลบจะกลับมาจากการรวม)
 const sameVersion = (a: string | undefined, b: string) => !!a && Date.parse(a) === Date.parse(b)
 
@@ -66,7 +72,7 @@ async function doFlush() {
     const k = r.key as string
     if (sameVersion(base[k], r.updated_at as string) || r.value === null) continue
     const local = readStored(k)
-    if (local !== null && local !== undefined) hydrate(k, mergeConflict(k, local, r.value))
+    if (local !== null && local !== undefined) hydrate(k, mergeConflict(k, local, r.value, baseIds[k]))
   }
   const cleared = keys.filter(k => readStored(k) === null)
   const sentAt = new Date().toISOString()
@@ -80,9 +86,10 @@ async function doFlush() {
     return
   }
   // ลบเฉพาะ key ที่ค่าไม่ได้เปลี่ยนระหว่างส่ง
-  rows.forEach(r => { base[r.key] = sentAt; if (readStored(r.key) === r.value) pending.delete(r.key) })
-  cleared.forEach(k => delete base[k])
+  rows.forEach(r => { base[r.key] = sentAt; setBaseIds(r.key, r.value); if (readStored(r.key) === r.value) pending.delete(r.key) })
+  cleared.forEach(k => { delete base[k]; delete baseIds[k] })
   saveBase()
+  saveBaseIds()
   cleared.forEach(k => readStored(k) === null && pending.delete(k))
   savePending()
   setStatus(pending.size ? 'saving' : 'idle')
@@ -110,8 +117,9 @@ async function pull(migrate: boolean) {
   const { data, error } = await supabase.from('user_data').select('key, value, updated_at')
   if (error) throw error
   const remote = new Map(data.map(r => [r.key as string, r.value as unknown]))
-  for (const r of data) if (!pending.has(r.key as string)) base[r.key as string] = r.updated_at as string
+  for (const r of data) if (!pending.has(r.key as string)) { base[r.key as string] = r.updated_at as string; setBaseIds(r.key as string, r.value) }
   saveBase()
+  saveBaseIds()
 
   for (const key of SYNCED_KEYS) {
     if (pending.has(key)) continue
@@ -172,7 +180,8 @@ export async function stopSync(force = false) {
 
 export function clearSyncedData() {
   for (const k of Object.keys(base)) delete base[k]
-  clearKeys([...SYNCED_KEYS, OWNER_KEY, PENDING_KEY, BASE_KEY])
+  for (const k of Object.keys(baseIds)) delete baseIds[k]
+  clearKeys([...SYNCED_KEYS, OWNER_KEY, PENDING_KEY, BASE_KEY, BASE_IDS_KEY])
 }
 
 // ---------- backup ----------

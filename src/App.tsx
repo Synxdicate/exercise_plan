@@ -1,6 +1,6 @@
 import { lazy, memo, Suspense, useDeferredValue, useEffect, useState, useSyncExternalStore } from 'react'
 import type { Session } from '@supabase/supabase-js'
-import { Bell, BookOpen, Bug, Languages, Cloud, CloudOff, Download, Dumbbell, Footprints, House, LogIn, LogOut, Monitor, Moon, RefreshCw, SlidersHorizontal, Smartphone, Sun, TrendingUp, Upload, Utensils } from 'lucide-react'
+import { Bell, BookOpen, Bug, History, Languages, Cloud, CloudOff, Download, Dumbbell, Footprints, House, LogIn, LogOut, Monitor, Moon, RefreshCw, SlidersHorizontal, Smartphone, Sun, TrendingUp, Upload, Utensils } from 'lucide-react'
 import { LogoMark } from './components/Logo'
 import { NavIcon, type NavIconName } from './components/NavIcons'
 
@@ -24,6 +24,9 @@ import { clearSyncedData, getSyncStatus, stopSync, subscribeSyncStatus } from '.
 import { restoreBackup, saveBackup } from './lib/backup'
 import type { ErrorEntry } from './lib/errors'
 import { ErrorLogSheet } from './components/ErrorLogSheet'
+import { SnapshotSheet } from './components/SnapshotSheet'
+import { takeSnapshot } from './lib/snapshots'
+import { useToday } from './lib/useToday'
 import * as idb from './lib/idb'
 import { isLocalPhoto, syncPhotos, type Photo } from './lib/photos'
 import { readStored, usePersisted } from './lib/storage'
@@ -169,6 +172,7 @@ function UserMenu({ session, onSources }: { session: Session | null; onSources: 
   const [busy, setBusy] = useState(false)
   const [programOpen, setProgramOpen] = useState(false)
   const [errorsOpen, setErrorsOpen] = useState(false)
+  const [snapsOpen, setSnapsOpen] = useState(false)
   const [errors] = usePersisted<ErrorEntry[]>('errorLog', [])
   const errorCount = errors.length
   useBackClose(() => setOpen(false), open)
@@ -294,6 +298,9 @@ function UserMenu({ session, onSources }: { session: Session | null; onSources: 
               <Upload size={16} /> {t('กู้คืนจากไฟล์สำรอง', 'Restore from backup')}
               <input type="file" accept="application/json,.json" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) void restore(f); e.target.value = '' }} />
             </label>
+            <button onClick={() => { setOpen(false); setSnapsOpen(true) }} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left hover:bg-raised">
+              <History size={16} /> {t('สำรองอัตโนมัติ 7 วัน', 'Automatic backups (7 days)')}
+            </button>
             {session ? (
               <button onClick={logout} disabled={busy} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-bad hover:bg-raised">
                 <LogOut size={16} /> {t('ออกจากระบบ', 'Sign out')}
@@ -309,6 +316,7 @@ function UserMenu({ session, onSources }: { session: Session | null; onSources: 
       )}
       {programOpen && <ProgramSheet onClose={() => setProgramOpen(false)} />}
       {errorsOpen && <ErrorLogSheet onClose={() => setErrorsOpen(false)} />}
+      {snapsOpen && <SnapshotSheet onClose={() => setSnapsOpen(false)} />}
     </div>
   )
 }
@@ -365,5 +373,11 @@ const RootEffects = memo(function RootEffects() {
   useBadgeWatcher()
   useCompactRuns()
   usePreStartCleanup()
+  // สำรองอัตโนมัติในเครื่องวันละครั้ง (หลังเปิดแอปสักพัก ไม่แย่งเวลาตอนเริ่ม) วันเปลี่ยนตอนแอปเปิดค้างก็เก็บของวันใหม่
+  const day = useToday()
+  useEffect(() => {
+    const id = setTimeout(() => void takeSnapshot(day).catch(() => {}), 8000)
+    return () => clearTimeout(id)
+  }, [day])
   return null
 })

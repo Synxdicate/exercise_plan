@@ -903,3 +903,27 @@ test('หน้าหลัก: ข้อมูลที่ยังขาดพ
   await settled(page)
   await expect(page.getByRole('button', { name: 'สถิติ', exact: true })).toHaveAttribute('aria-pressed', 'true')
 })
+
+test('สำรองอัตโนมัติในเครื่อง: ลบรอบวิ่งแล้วเอากลับมาจากสำเนาของวัน', async ({ page }) => {
+  await seed(page, { runs: [
+    { id: 'keep', date: ymd(3), km: 4, seconds: 1600, kind: 'easy', source: 'manual', rpe: 4 },
+    { id: 'lost', date: ymd(2), km: 5.2, seconds: 1800, kind: 'easy', source: 'manual', rpe: 4 },
+  ] })
+  // สำเนาเก็บหลังเปิดแอป ~8 วินาที
+  await expect.poll(() => page.evaluate(() => new Promise<number>(res => {
+    const r = indexedDB.open('exercise-plan'); r.onsuccess = () => { const k = r.result.transaction('blobs').objectStore('blobs').getAllKeys(); k.onsuccess = () => res(k.result.filter(x => String(x).startsWith('snap:')).length) }
+  })), { timeout: 15_000 }).toBe(1)
+  await nav(page, 'วิ่ง')
+  await page.getByRole('button', { name: 'ประวัติ', exact: true }).click()
+  await settled(page)
+  await page.locator('main li button', { hasText: '5.20' }).click()
+  await page.getByRole('button', { name: 'ลบ', exact: true }).click()
+  await page.getByRole('alertdialog').getByRole('button', { name: 'ลบ' }).click()
+  await expect.poll(async () => ((await idb(page, 'runs')) as { id: string }[]).map(r => r.id)).toEqual(['keep'])
+  await page.getByRole('button', { name: 'เมนูบัญชี' }).click()
+  await page.getByRole('button', { name: 'สำรองอัตโนมัติ 7 วัน' }).click()
+  await expect(page.getByText('ไม่มีในตอนนี้ 1 รายการ')).toBeVisible()
+  await page.getByRole('button', { name: 'เอากลับมา' }).click()
+  await expect(page.getByText('ครบเหมือนตอนนี้')).toBeVisible()
+  await expect.poll(async () => ((await idb(page, 'runs')) as { id: string }[]).map(r => r.id)).toEqual(['keep', 'lost'])
+})

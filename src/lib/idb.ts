@@ -43,6 +43,12 @@ export async function put(store: Store, key: string, value: unknown) {
   return done(tx)
 }
 
+/** key ทั้งหมดใน store (ไม่โหลดค่า) */
+export async function keys(store: Store): Promise<string[]> {
+  const db = await openDb()
+  return (await req(db.transaction(store, 'readonly').objectStore(store).getAllKeys())).map(String)
+}
+
 export async function get<T>(store: Store, key: string): Promise<T | undefined> {
   const db = await openDb()
   return req(db.transaction(store, 'readonly').objectStore(store).get(key)) as Promise<T | undefined>

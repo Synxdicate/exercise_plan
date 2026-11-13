@@ -84,4 +84,17 @@ describe('sync: a stale device never overwrites newer server data', () => {
     await flushAll()
     expect(db.get('raceKm')!.value).toBe(11.55)
   })
+
+  it('a run deleted on another device is not brought back by a stale device (3-way merge)', async () => {
+    // อีกเครื่องลบรอบ b ไปตอน T2; เครื่องนี้เห็นล่าสุดตอน T1 (มี a, b) แล้วแก้ RPE ของ a พร้อมเพิ่มรอบ c
+    db.set('runs', { key: 'runs', value: [run('a', '2026-11-08')], updated_at: pg(T2) })
+    const s = await boot({ owner: 'u1', runs: [run('a', '2026-11-08'), run('b', '2026-11-09')], syncBase: { runs: T1 }, syncBaseIds: { runs: ['a', 'b'] } })
+    await s.startSync('u1')
+    s.setStored('runs', [run('a', '2026-11-08', { rpe: 5 }), run('b', '2026-11-09'), run('c', '2026-11-12')])
+    await flushAll()
+    const v = db.get('runs')!.value as { id: string; rpe?: number }[]
+    expect(v.map(r => r.id)).toEqual(['a', 'c'])
+    expect(v[0].rpe).toBe(5)
+    expect(s.readStored('syncBaseIds')).toEqual({ runs: ['a', 'c'] })
+  })
 })
