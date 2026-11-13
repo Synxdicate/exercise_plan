@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
 import { clearKeys, hydrate, onWrite, readStored } from './storage'
-import { mergeValues } from './merge'
+import { mergeConflict, mergeValues } from './merge'
 import { syncPhotos } from './photos'
 import { sendErrors } from './errors'
 
@@ -18,6 +18,12 @@ const PENDING_KEY = 'pendingKeys'
 
 const pending = new Set<string>((readStored(PENDING_KEY) as string[] | undefined) ?? [])
 const savePending = () => hydrate(PENDING_KEY, [...pending])
+// เวอร์ชันบน server (updated_at) ของแต่ละ key ที่เครื่องนี้เห็นล่าสุด (ตอนดึงหรือส่ง) ใช้รู้ว่ามีเครื่องอื่นเขียนทับระหว่างนั้นไหม
+const BASE_KEY = 'syncBase'
+const base: Record<string, string> = { ...((readStored(BASE_KEY) as Record<string, string> | undefined) ?? {}) }
+const saveBase = () => hydrate(BASE_KEY, { ...base })
+// เทียบเป็นเวลา ไม่ใช่ข้อความ: Postgres คืน "+00:00" แต่ JS เขียน "Z" (ถ้าเทียบข้อความจะดูเหมือนชนทุกครั้ง แล้วรอบที่ลบจะกลับมาจากการรวม)
+const sameVersion = (a: string | undefined, b: string) => !!a && Date.parse(a) === Date.parse(b)
 
 let userId: string | null = null
 let flushTimer: ReturnType<typeof setTimeout> | undefined
@@ -49,9 +55,22 @@ async function doFlush() {
   for (const k of [...pending]) if (readStored(k) === undefined) pending.delete(k)
   const keys = [...pending]
   if (!keys.length) return savePending()
-  const cleared = keys.filter(k => readStored(k) === null)
-  const rows = keys.filter(k => readStored(k) !== null).map(key => ({ user_id: userId!, key, value: readStored(key), updated_at: new Date().toISOString() }))
   setStatus('saving')
+  // ก่อนส่ง: ถ้าค่าบน server เปลี่ยนหลังจากที่เครื่องนี้เห็นล่าสุด (อีกเครื่องเขียนมา) รวมกันก่อน ไม่ส่งทับทั้งก้อน
+  const remote = await supabase.from('user_data').select('key, value, updated_at').in('key', keys)
+  if (remote.error) {
+    setStatus('offline')
+    return
+  }
+  for (const r of remote.data ?? []) {
+    const k = r.key as string
+    if (sameVersion(base[k], r.updated_at as string) || r.value === null) continue
+    const local = readStored(k)
+    if (local !== null && local !== undefined) hydrate(k, mergeConflict(k, local, r.value))
+  }
+  const cleared = keys.filter(k => readStored(k) === null)
+  const sentAt = new Date().toISOString()
+  const rows = keys.filter(k => readStored(k) !== null).map(key => ({ user_id: userId!, key, value: readStored(key), updated_at: sentAt }))
   const [up, del] = await Promise.all([
     rows.length ? supabase.from('user_data').upsert(rows) : { error: null },
     cleared.length ? supabase.from('user_data').delete().eq('user_id', userId).in('key', cleared) : { error: null },
@@ -61,7 +80,9 @@ async function doFlush() {
     return
   }
   // ลบเฉพาะ key ที่ค่าไม่ได้เปลี่ยนระหว่างส่ง
-  rows.forEach(r => readStored(r.key) === r.value && pending.delete(r.key))
+  rows.forEach(r => { base[r.key] = sentAt; if (readStored(r.key) === r.value) pending.delete(r.key) })
+  cleared.forEach(k => delete base[k])
+  saveBase()
   cleared.forEach(k => readStored(k) === null && pending.delete(k))
   savePending()
   setStatus(pending.size ? 'saving' : 'idle')
@@ -86,9 +107,11 @@ onWrite(key => {
 // ดึงข้อมูลจาก server มาแทนของในเครื่อง (server เป็นตัวจริง) ยกเว้น key ที่ยังส่งไม่สำเร็จ
 // และครั้งแรกที่เครื่องนี้ยังไม่มีเจ้าของ: รวมข้อมูลเดิมในเครื่องขึ้นไปด้วย
 async function pull(migrate: boolean) {
-  const { data, error } = await supabase.from('user_data').select('key, value')
+  const { data, error } = await supabase.from('user_data').select('key, value, updated_at')
   if (error) throw error
   const remote = new Map(data.map(r => [r.key as string, r.value as unknown]))
+  for (const r of data) if (!pending.has(r.key as string)) base[r.key as string] = r.updated_at as string
+  saveBase()
 
   for (const key of SYNCED_KEYS) {
     if (pending.has(key)) continue
@@ -148,7 +171,8 @@ export async function stopSync(force = false) {
 }
 
 export function clearSyncedData() {
-  clearKeys([...SYNCED_KEYS, OWNER_KEY, PENDING_KEY])
+  for (const k of Object.keys(base)) delete base[k]
+  clearKeys([...SYNCED_KEYS, OWNER_KEY, PENDING_KEY, BASE_KEY])
 }
 
 // ---------- backup ----------
