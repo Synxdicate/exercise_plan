@@ -78,7 +78,7 @@ export function RunHistory({ runs, onOpen }: { runs: Run[]; onOpen: (id: string)
       )}
       {groups.slice(0, months).map(([ym, list]) => (
         <section key={ym} className="mb-1">
-          <div className="sticky top-[calc(var(--sat)+4.25rem)] z-10 -mx-1 flex items-baseline justify-between bg-card/95 px-1 py-1.5 backdrop-blur">
+          <div className="sticky top-[calc(var(--sat)+4.25rem)] z-10 -mx-1 flex items-baseline justify-between bg-card px-1 py-1.5">
             <span className="text-sm font-bold">{monthLabel(ym)}</span>
             <span className="text-xs tabular-nums text-muted">{list.length} {tr('ครั้ง', 'runs')} · {runsOnly(list).reduce((a, r) => a + r.km, 0).toFixed(1)} {tr('กม.', 'km')}</span>
           </div>

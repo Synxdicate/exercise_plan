@@ -1,4 +1,4 @@
-import { lazy, Suspense, useDeferredValue, useEffect, useState, useSyncExternalStore } from 'react'
+import { lazy, memo, Suspense, useDeferredValue, useEffect, useState, useSyncExternalStore } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { Bell, BookOpen, Bug, Languages, Cloud, CloudOff, Download, Dumbbell, Footprints, House, LogIn, LogOut, Monitor, Moon, RefreshCw, SlidersHorizontal, Smartphone, Sun, TrendingUp, Upload, Utensils } from 'lucide-react'
 import { LogoMark } from './components/Logo'
@@ -77,10 +77,6 @@ function Main({ session }: { session: Session | null }) {
   const shown = useDeferredValue(tab)
   const [profile, setProfile] = usePersisted<Profile>('profile', defaultProfile)
   const [onboarded, setOnboarded] = usePersisted('onboarded', false)
-  useReminderSchedule()
-  useBadgeWatcher()
-  useCompactRuns()
-  usePreStartCleanup()
   const update = useUpdateAvailable()
   const [dismissed, setDismissed] = usePersisted('updateDismissed', '')
   const t = useT()
@@ -117,7 +113,7 @@ function Main({ session }: { session: Session | null }) {
   return (
     <NavContext.Provider value={go}>
     <div className="mx-auto min-h-dvh max-w-lg">
-      <header className="sticky top-0 z-30 flex items-center justify-between gap-3 bg-bg/85 px-4 pb-3 pt-[calc(var(--sat)+0.75rem)] backdrop-blur">
+      <header className="sticky top-0 z-30 flex items-center justify-between gap-3 bg-bg px-4 pb-3 pt-[calc(var(--sat)+0.75rem)]">
         <button onClick={() => go('overview')} className="flex min-w-0 items-center gap-2.5 text-left">
           <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-accent-fill text-white"><LogoMark size={24} /></span>
           <span className="min-w-0">
@@ -140,19 +136,13 @@ function Main({ session }: { session: Session | null }) {
 
       {!session && <BackupReminder />}
 
+      <RootEffects />
       <main key={shown} aria-busy={shown !== tab || undefined} className="animate-fade-up space-y-3 px-4 pt-1 pb-[calc(var(--sab)+6rem)]">
-        {shown === 'overview' && <Overview />}
-        <Suspense fallback={<TabFallback />}>
-          {shown === 'plan' && <Plan />}
-          {shown === 'runs' && <Runs />}
-          {shown === 'food' && <Nutrition profile={profile} setProfile={setProfile} />}
-          {shown === 'progress' && <Progress />}
-          {shown === 'sources' && <Sources />}
-        </Suspense>
+        <TabContent tab={shown} profile={profile} setProfile={setProfile} />
         <p className="pt-2 text-center text-xs text-muted">{t('ข้อมูลเพื่อการศึกษา ไม่ใช่คำแนะนำทางการแพทย์', 'For education only, not medical advice')}</p>
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 mx-auto max-w-lg border-t border-line bg-card/95 px-2 pb-[calc(var(--sab)+0.25rem)] pt-1.5 backdrop-blur sm:bottom-4 sm:rounded-3xl sm:border sm:shadow-lg">
+      <nav className="fixed inset-x-0 bottom-0 z-40 mx-auto max-w-lg border-t border-line bg-card px-2 pb-[calc(var(--sab)+0.25rem)] pt-1.5 sm:bottom-4 sm:rounded-3xl sm:border sm:shadow-lg">
         <div className="grid grid-cols-5">
           {tabs.map(x => {
             const on = tab === x.id
@@ -245,7 +235,7 @@ function UserMenu({ session, onSources }: { session: Session | null; onSources: 
           <StatusIcon size={11} className={status === 'saving' ? 'animate-spin' : ''} />
         </span>
       </button>
-      {/* แสดงผ่าน Portal: header มี backdrop-blur ซึ่งทำให้ fixed ข้างในถูกจำกัดในกรอบ header — กดนอกเมนูเลยไม่ปิด */}
+      {/* แสดงผ่าน Portal: เมนูต้องอยู่นอก header (เคยมี backdrop-blur ที่ทำให้ fixed ข้างในถูกจำกัดในกรอบ header) — กดนอกเมนูเลยไม่ปิด */}
       {open && (
         <Portal>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
@@ -350,3 +340,30 @@ function BackupReminder() {
     </div>
   )
 }
+
+// เนื้อหาแท็บแยกเป็น memo: ตอนแตะแท็บ App เรนเดอร์ด่วน (แถบล่าง/หัว) ด้วย tab ใหม่แต่ shown ยังเป็นแท็บเดิม
+// ถ้าไม่ memo React จะเรนเดอร์แท็บเดิมทั้งหน้าซ้ำในรอบด่วนนั้น ทำให้แตะแล้วหน่วงก่อนแถบล่างเปลี่ยน
+const TabContent = memo(function TabContent({ tab, profile, setProfile }: { tab: Tab; profile: Profile; setProfile: (p: Profile | ((p: Profile) => Profile)) => void }) {
+  return (
+    <>
+      {tab === 'overview' && <Overview />}
+      <Suspense fallback={<TabFallback />}>
+        {tab === 'plan' && <Plan />}
+        {tab === 'runs' && <Runs />}
+        {tab === 'food' && <Nutrition profile={profile} setProfile={setProfile} />}
+        {tab === 'progress' && <Progress />}
+        {tab === 'sources' && <Sources />}
+      </Suspense>
+    </>
+  )
+})
+
+// งานเบื้องหลังระดับแอป แยกเป็น memo ไม่มี props: render ใหม่เฉพาะเมื่อข้อมูลที่ hook อ่านเปลี่ยน
+// (เดิมอยู่ใน Main จึงคิดเหรียญ/แผนทุกสัปดาห์ใหม่ทุกครั้งที่แตะแท็บหรือเปิดเมนู)
+const RootEffects = memo(function RootEffects() {
+  useReminderSchedule()
+  useBadgeWatcher()
+  useCompactRuns()
+  usePreStartCleanup()
+  return null
+})

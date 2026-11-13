@@ -1,7 +1,7 @@
 import { ReplaySoFar } from './Replay'
 import { CourseCard } from './Course'
 import { EaseOffCard, PainGuardCard } from './Coach'
-import { useDeferredValue, useMemo, useState } from 'react'
+import { memo, useDeferredValue, useMemo, useState } from 'react'
 import { useSwipe } from '../lib/swipe'
 
 const DAYS = ['0', '1', '2', '3', '4', '5', '6'] as const
@@ -56,6 +56,15 @@ const typeStyle = {
 }
 const styleOf = (d: Day) => (d.runKind === 'race' ? { icon: Flag, tone: 'bg-accent-fill text-white', dot: 'bg-accent-fill' } : typeStyle[d.type])
 
+// แตะวัน: รอบ render ด่วนเปลี่ยนแค่แถบวัน การ์ดที่ไม่ขึ้นกับวันที่เลือกไม่ต้อง render ซ้ำ (memo)
+const AlertsM = memo(Alerts)
+const EaseOffM = memo(EaseOffCard)
+const PainGuardM = memo(PainGuardCard)
+const CourseM = memo(CourseCard)
+const ReplayM = memo(ReplaySoFar)
+const CircuitM = memo(CircuitCard)
+const WeeklyMusclesM = memo(WeeklyMuscles)
+
 function PlanBody() {
   const t = useT()
   const dt = useDayText()
@@ -103,10 +112,10 @@ function PlanBody() {
 
   return (
     <>
-      <Alerts />
+      <AlertsM />
       {/* การ์ดเตือน (ก้าวต่อไป, พลาดวิ่ง, เวทห่าง, เช็กสัปดาห์) อยู่หน้าแรกที่เดียว ไม่ซ้ำที่นี่ */}
-      <EaseOffCard trigger />
-      <PainGuardCard />
+      <EaseOffM trigger />
+      <PainGuardM />
       {/* โปรแกรมเป็นการตั้งค่า แถวเดียวพอ ให้ตารางสัปดาห์ขึ้นมาเห็นตั้งแต่จอแรก */}
       <button onClick={() => setPicking(true)} className="flex w-full items-center gap-3 rounded-2xl bg-card px-4 py-2.5 text-left shadow-sm ring-1 ring-line active:scale-[.99]">
         <div className="min-w-0 flex-1">
@@ -190,7 +199,7 @@ function PlanBody() {
       </div>
 
       {/* วันที่เลือก (ปัดซ้าย/ขวาเปลี่ยนวัน) */}
-      <DayDetail key={`${week}-${shownSel}-${day.location ?? ''}`} day={day} isToday={isThisWeek && shownSel === todayIdx()}
+      <DayDetailM key={`${week}-${shownSel}-${day.location ?? ''}`} day={day} isToday={isThisWeek && shownSel === todayIdx()}
         done={isDone(shownSel)} hint={paceHint(est, day.runKind, day.title, dt.en)} weekNoteText={note}
         setDone={v => setDayDone(shownSel, v)}
         onStart={() => setChecking(shownSel)}
@@ -221,10 +230,10 @@ function PlanBody() {
         </ul>
       </section>
 
-      <CourseCard />
-      <ReplaySoFar />
-      <CircuitCard />
-      <WeeklyMuscles plan={days} />
+      <CourseM />
+      <ReplayM />
+      <CircuitM />
+      <WeeklyMusclesM plan={days} />
 
       {picking && <ProgramSheet onClose={() => setPicking(false)} />}
       {checking !== null && (
@@ -418,3 +427,8 @@ function ExerciseRow({ e, n, onSwap, onRemove }: { e: Exercise; n: number; onSwa
     </li>
   )
 }
+
+// การ์ดรายละเอียดวัน: callback สร้างใหม่ทุก render แต่ผลขึ้นกับค่าอื่นที่ส่งมาด้วยทั้งหมด (วัน สถานะ id ช่อง วันที่)
+// จึงเทียบเฉพาะค่าที่ไม่ใช่ฟังก์ชัน (ฟังก์ชันเทียบแค่ว่ามี/ไม่มี) ตอนแตะวันอื่นรอบด่วนจะไม่ render การ์ดเดิมซ้ำ
+const DayDetailM = memo(DayDetail, (a, b) => (Object.keys(a) as (keyof typeof a)[]).every(k =>
+  typeof a[k] === 'function' ? typeof b[k] === 'function' : Object.is(a[k], b[k])) && Object.keys(a).length === Object.keys(b).length)

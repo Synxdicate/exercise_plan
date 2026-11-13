@@ -86,6 +86,14 @@ export const attemptOf = (start: string, repeats: string[], week: number, monday
   repeats.filter(r => r > start && r <= monday && weekAt(start, repeats, r, weeks) === week).length
 
 // สถานะโปรแกรมปัจจุบัน ใช้ร่วมกันทุกหน้า
+// แผนที่คิดแล้วต่อสัปดาห์ ใช้ร่วมทั้งแอปจนกว่าข้อมูลที่แผนขึ้นกับจะเปลี่ยน (เทียบทีละค่าแบบ Object.is)
+// ชั้นของแผนคืนวัตถุใหม่เสมอและไม่มีใครแก้ผลลัพธ์ (planImmutable.test.ts) จึงแชร์อาร์เรย์เดียวกันได้
+let planCache: { deps: unknown[]; map: Map<number, Day[]> } | null = null
+function planCacheFor(deps: unknown[]) {
+  if (!planCache || planCache.deps.some((d, i) => !Object.is(d, deps[i]))) planCache = { deps, map: new Map() }
+  return planCache.map
+}
+
 export function useProgram() {
   const [stored, setProgramRaw] = usePersisted<ProgramId>('program', 'physique')
   // โปรแกรมที่แอปเวอร์ชันนี้ไม่รู้จัก (ซิงก์มาจากเครื่องที่อัปเดตแล้ว) ใช้โปรแกรมหุ่นแทนการพังทั้งแอป
@@ -168,8 +176,15 @@ export function useProgram() {
   }
 
   const easeIn = (week: number) => !!easeOff && easeOff.from <= addDays(mondayOf(week), 6) && easeOff.to >= mondayOf(week)
-  /** แผนที่แสดงจริง: sizedWeek → สลับวัน → ช่วงไม่ไหว (และย้ายวันแข่งในสัปดาห์แข่ง) */
+  // ทุกคอมโพเนนต์ที่เรียก useProgram ใช้แผนชุดเดียวกัน (การ์ดหน้าหลัก เหรียญ เป้าเดือน คิดแผนหลายสิบสัปดาห์ทุกครั้งที่ render)
+  const planMemo = planCacheFor([program, location, overrides, start, programStart, repeats, raceDate, raceKmOverride, raceHills, easeOff, painUntil, swaps, extras, solo, moves, baseline, thisMonday, today()])
   const planOf = (week: number) => {
+    let v = planMemo.get(week)
+    if (!v) planMemo.set(week, (v = buildPlan(week)))
+    return v
+  }
+  /** แผนที่แสดงจริง: sizedWeek → สลับวัน → ช่วงไม่ไหว (และย้ายวันแข่งในสัปดาห์แข่ง) */
+  const buildPlan = (week: number) => {
     // แต่ละชั้นที่อ่านข้อมูลซิงก์ (สถานที่ สลับท่า เนิน สลับวัน) ถ้าพังจากข้อมูลแปลก ๆ ให้ข้ามชั้นนั้น ไม่ให้ทั้งแอปแครช
     const days = sizedWeek(week)
     const mv = moves[mondayOf(week)]

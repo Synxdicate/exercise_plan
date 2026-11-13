@@ -144,16 +144,18 @@ export function Sheet({ onClose, children, title }: { onClose: () => void; child
 // การ์ดที่พับเก็บได้ ใช้กับเนื้อหาอ่านประกอบ ให้หน้าไม่ยาวเกินไป
 export function Disclosure({ title, summary, children, defaultOpen = false }: { title: ReactNode; summary?: ReactNode; children: ReactNode; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen)
+  // เนื้อหาที่พับอยู่ยังไม่ render จนกว่าจะเปิดครั้งแรก (บางอันคิดหนัก เช่น สรุปโปรแกรม) เปิดแล้วเก็บไว้ให้แอนิเมชันตอนพับ
+  const [mounted, setMounted] = useState(defaultOpen)
   return (
     <section className="rounded-2xl bg-card shadow-sm ring-1 ring-line">
-      <button onClick={() => setOpen(!open)} aria-expanded={open} className="flex w-full items-center gap-2 p-3.5 text-left active:scale-100">
+      <button onClick={() => { setOpen(!open); setMounted(true) }} aria-expanded={open} className="flex w-full items-center gap-2 p-3.5 text-left active:scale-100">
         <span className="min-w-0 flex-1">
           <span className="card-title block text-[15px] font-bold">{title}</span>
           {summary && !open && <span className="block truncate text-xs text-muted">{summary}</span>}
         </span>
         <ChevronDown size={18} className={cx('shrink-0 text-muted transition-transform duration-300', open && 'rotate-180')} />
       </button>
-      <Collapse open={open}><div className="px-3.5 pb-3.5">{children}</div></Collapse>
+      <Collapse open={open}><div className="px-3.5 pb-3.5">{mounted && children}</div></Collapse>
     </section>
   )
 }
