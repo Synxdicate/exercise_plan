@@ -29,13 +29,17 @@ export function RacePlan({ day, date }: { day: Day; date: string }) {
   const [course] = useRaceCourse()
   if (!key) return null
   const carbs = Math.round(profile.weightKg * (key === 'full' ? 8 : 6))
+  // คาเฟอีน 3 มก./กก. ปลายล่างของช่วงที่ได้ผล (ISSN 2021: 3–6) ปัดทีละ 25 มก.; กาแฟดำ 1 แก้ว (240 มล.) ~95 มก. (USDA)
+  const caffeine = Math.round((profile.weightKg * 3) / 25) * 25
+  const cups = Math.max(1, Math.round(caffeine / 95))
   // ข้อความไทยเป็น id ที่บันทึกใน raceChecklist — แปลเฉพาะตอนแสดง
   const items: [string, string][] = [
     ['ลดปริมาณตามแผน (taper) ไม่ซ้อมหนักเพิ่มเพื่อ "ชดเชย"', 'Taper as planned — no extra hard sessions to "make up"'],
     key === 'full' || key === 'half'
       ? [`1–2 วันก่อนแข่ง กินคาร์บ ~${carbs} ก./วัน (ข้าว เส้น ขนมปัง) ลดอาหารไขมัน/ไฟเบอร์สูง`, `1–2 days before, eat ~${carbs} g carbs/day (rice, noodles, bread), less fat/fibre`]
       : ['มื้อก่อนแข่งเป็นอาหารที่กินประจำ ย่อยง่าย', 'Pre-race meal: something familiar and easy to digest'],
-    ['นอนให้พอ 2 คืนก่อนแข่ง (คืนก่อนแข่งนอนไม่หลับไม่เป็นไร)', 'Sleep well two nights before (a restless last night is fine)'],
+    ['นอนให้พอทุกคืนในสัปดาห์แข่ง และคืนก่อนแข่งเข้านอนตามเวลาปกติ ตื่นเต้นจนหลับไม่สนิทบ้างไม่ต้องกังวล', 'Sleep enough every night of race week and go to bed at your usual time the night before — a bit of nervous sleep is normal'],
+    [`ไม่บังคับ: ถ้าดื่มกาแฟเป็นประจำและเคยลองก่อนซ้อมแล้ว คาเฟอีน ~${caffeine} มก. (กาแฟดำ ~${cups} แก้ว) 1 ชม. ก่อนปล่อยตัว ช่วยได้เล็กน้อย`, `Optional: if you drink coffee and have tried it before training, ~${caffeine} mg caffeine (~${cups} cups of black coffee) 1 h before the start gives a small boost`],
     ['ใช้รองเท้า ชุด และเจลที่เคยซ้อมแล้วเท่านั้น ห้ามของใหม่วันแข่ง', 'Only shoes, kit and gels you’ve trained with — nothing new on race day'],
     ['ซ้อมดื่มน้ำ/กินเจลระหว่างวิ่งยาวมาแล้ว', 'Practised drinking/gels on long runs'],
     ['เช็กอากาศ (หน้าวิ่ง) ร้อนมากให้ลดเป้าเวลา', 'Check the weather (runs tab); if very hot, ease the goal time'],
