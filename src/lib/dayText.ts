@@ -21,6 +21,7 @@ const TITLE_EN: [RegExp, string][] = [
   [/^ขา B — ขาเดียวและต้นขาหลัง \(สวน\)$/, 'Legs B — single-leg & hamstrings (park)'],
   [/^เวท ([AB]) — ทั้งตัว$/, 'Strength $1 — full body'],
   [/^เซอร์กิตแกนกลาง\/สะโพก$/, 'Core/hip circuit'],
+  [/^เซอร์กิตทั้งตัว$/, 'Full-body circuit'],
   [/^พัก \/ เดินเบา ๆ$/, 'Rest / easy walk'],
   [/^พัก$/, 'Rest'],
   [/^วิ่ง Easy$/, 'Easy run'],

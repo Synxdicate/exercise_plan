@@ -32,3 +32,19 @@ describe('circuits are not strength workouts', () => {
     expect(BADGES.find(b => b.id === 'first-workout')!.earned({ runs: [], sessions: sessions.slice(1), goalKm: 0 })).toBe(false)
   })
 })
+
+describe('full-body circuit', () => {
+  it('rotates upper → core → lower, every move has a demo and how-to, and fits ~15 min at 2 rounds', async () => {
+    const { fullCircuit } = await import('../circuit')
+    const { demoImages } = await import('../../data/demos')
+    const { stickDemos } = await import('../../data/stickDemos')
+    expect(fullCircuit.length % 3).toBe(0)
+    for (const s of fullCircuit) {
+      expect(demoImages(s.name) ?? stickDemos[s.name], s.name).toBeTruthy()
+      expect(s.how && s.howEn, s.name).toBeTruthy()
+    }
+    // เรียงแขน → แกนกลาง → ขา กล้ามส่วนเดิมได้พักระหว่างท่า
+    expect(fullCircuit.map(s => s.zone)).toEqual(fullCircuit.map((_, i) => (['upper', 'core', 'lower'] as const)[i % 3]))
+    expect(circuitTotal(buildCircuit(fullCircuit, 30, 15, 2))).toBeLessThanOrEqual(15 * 60)
+  })
+})

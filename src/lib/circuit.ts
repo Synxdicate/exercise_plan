@@ -1,6 +1,6 @@
 // เซอร์กิตแกนกลาง/สะโพกสำหรับนักวิ่ง: ทำท่าละ 30 วิ พัก 15 วิ วน 2 รอบ (~12 นาที) ใช้ร่างกายอย่างเดียว ทำที่ไหนก็ได้
 // โมดูลล้วน: ตารางขั้นตอน + หาว่าตอนนี้อยู่ขั้นไหนจากเวลาที่ผ่านไป
-export type Station = { name: string; th: string; en?: string; sec?: number; how?: string; howEn?: string } // sec: เวลาเฉพาะท่านี้ (ไม่ใส่ = ใช้ work), how: วิธีทำ
+export type Station = { name: string; th: string; en?: string; sec?: number; how?: string; howEn?: string; zone?: 'upper' | 'core' | 'lower' } // sec: เวลาเฉพาะท่านี้ (ไม่ใส่ = ใช้ work), how: วิธีทำ, zone: ส่วนของร่างกาย (เซอร์กิตทั้งตัว)
 export type CircuitStep = { kind: 'work' | 'rest'; sec: number; station: Station; round: number }
 
 export const coreCircuit: Station[] = [
@@ -13,6 +13,46 @@ export const coreCircuit: Station[] = [
   { name: 'Hollow Body Hold', th: 'นอนเกร็งท้องทรงเรือ' },
   { name: 'Single-leg Calf Raise', th: 'เขย่งน่องขาเดียว (สลับข้างทุก 15 วิ)', en: 'Single-leg Calf Raise (switch every 15 s)' },
 ]
+
+/**
+ * เซอร์กิตทั้งตัวแบบอยู่กับที่ (in-place circuit) สลับท่อนบน → แกนกลาง → ท่อนล่าง กล้ามส่วนเดิมได้พักระหว่างรอบ
+ * แนวจากคลิป "สร้างความแข็งแรงในการวิ่งด้วย Circuit Training" (อ.เอกวิทย์ แสวงผล, Therunningboy) ไม่ใช้อุปกรณ์ ทำที่สวนหรือบ้าน
+ * หลักฐาน: เซอร์กิตท่าพื้นฐาน 2–3 รอบ ช่วยแรงและความทนทานของกล้ามเนื้อ ทำ 2–3 ครั้ง/สัปดาห์ได้ผลมากกว่า 1 ครั้ง (Batrakoulis 2023)
+ * แต่น้ำหนักเบา ๆ แบบนี้ไม่ได้ช่วยความประหยัดแรงในการวิ่งเหมือนเวทหนัก/ท่ากระโดด (Llanos-Lagos 2024) จึงเป็นทางเลือกวันที่ไม่ได้เข้ายิม ไม่ใช่ตัวแทนวันเวท
+ */
+export const fullCircuit: Station[] = [
+  { name: 'Running Arm Swing', zone: 'upper', th: 'แกว่งแขนแบบวิ่ง', en: 'Running arm swing',
+    how: 'ยืนตรง ศอกงอประมาณ 90 องศา แกว่งแขนหน้า-หลังแรงและเร็วเหมือนวิ่งเร็ว มือไม่ข้ามกลางลำตัว ไหล่ไม่ยก ถือขวดน้ำเพิ่มน้ำหนักได้',
+    howEn: 'Stand tall, elbows ~90°, drive the arms forward and back hard and fast like sprinting — hands don’t cross the midline, shoulders stay down; hold water bottles for extra load' },
+  { name: 'Bicycle Crunch', zone: 'core', th: 'ปั่นจักรยานอากาศ', en: 'Bicycle crunch',
+    how: 'นอนหงาย มือแตะข้างหู บิดศอกไปหาเข่าฝั่งตรงข้ามสลับข้างช้า ๆ หลังล่างแนบพื้น ไม่ดึงคอ',
+    howEn: 'On your back, fingertips by the ears, rotate an elbow toward the opposite knee, alternating slowly — low back on the floor, don’t yank the neck' },
+  { name: 'Bodyweight Squat', zone: 'lower', th: 'สควอตตัวเปล่า', en: 'Bodyweight squat',
+    how: 'เท้ากว้างเท่าไหล่ นั่งลงเหมือนนั่งเก้าอี้ เข่าชี้ไปทางเดียวกับปลายเท้า ไม่หุบเข้าใน ส้นเท้าติดพื้น',
+    howEn: 'Feet shoulder-width, sit back as if onto a chair — knees track over the toes, not caving in; heels down' },
+  { name: 'Push-up', zone: 'upper', th: 'วิดพื้น', en: 'Push-up',
+    how: 'ลำตัวตรงเหมือนแพลงก์ตลอด ยังทำไม่ไหวให้วางมือบนม้านั่ง โต๊ะ หรือผนังแทนการคุกเข่า แกนกลางจะได้ทำงานแบบเดียวกับแพลงก์',
+    howEn: 'Body straight like a plank throughout; if it’s too hard, put your hands on a bench, table or wall instead of dropping to the knees, so the core works like a plank' },
+  { name: 'Mountain Climber', zone: 'core', th: 'ปีนเขา', en: 'Mountain climber',
+    how: 'ท่าแพลงก์แขนตรง มืออยู่ใต้ไหล่ ดึงเข่าเข้าหาอกสลับข้างเป็นจังหวะ สะโพกไม่โด่ง เริ่มช้า ๆ ก่อน',
+    howEn: 'High plank, hands under shoulders, drive the knees to the chest alternately — hips stay level; start slow' },
+  { name: 'Reverse Lunge', zone: 'lower', th: 'ลันจ์ถอยหลัง (สลับขา)', en: 'Reverse lunge (alternate)',
+    how: 'ถอยเท้าไปข้างหลัง ย่อจนเข่าหลังเกือบแตะพื้น ลำตัวตั้ง ดันกลับด้วยส้นเท้าหน้า สลับขา',
+    howEn: 'Step back and lower until the back knee nearly touches the floor, trunk upright, push back up through the front heel — alternate legs' },
+  { name: 'Prone Y-T-W Raise', zone: 'upper', th: 'นอนคว่ำบีบสะบัก (Y-T-W)', en: 'Prone Y-T-W raise',
+    how: 'นอนคว่ำ บีบสะบักเข้าหากันก่อน แล้วค่อยยกแขนเป็นตัว Y, T, W สลับไป ยกค้างสั้น ๆ คอยาว ไม่แหงนหน้า',
+    howEn: 'Face down, squeeze the shoulder blades together first, then lift the arms into a Y, T and W in turn with a short hold — long neck, don’t look up' },
+  { name: 'Side Plank', zone: 'core', th: 'แพลงก์ด้านข้าง (สลับข้างครึ่งเวลา)', en: 'Side plank (switch halfway)',
+    how: 'ศอกอยู่ใต้ไหล่ ยกสะโพกจนศีรษะถึงเท้าเป็นเส้นตรง ครึ่งเวลาแล้วสลับข้าง ยากไปให้วางเข่าล่าง',
+    howEn: 'Elbow under the shoulder, lift the hips so head to feet form a line — switch sides halfway; drop the bottom knee if it’s too hard' },
+  { name: 'Lateral Lunge', zone: 'lower', th: 'ลันจ์ด้านข้าง (สลับขา)', en: 'Lateral lunge (alternate)',
+    how: 'ก้าวออกด้านข้างกว้าง ๆ นั่งลงบนขาที่ก้าว อีกขาเหยียดตรง เท้าทั้งสองติดพื้น ดันกลับมายืน สลับซ้าย-ขวา',
+    howEn: 'Take a wide step to the side, sit back onto that leg with the other leg straight, both feet flat, push back to standing — alternate sides' },
+]
+
+export type CircuitKind = 'core' | 'full'
+export const CIRCUITS: Record<CircuitKind, Station[]> = { core: coreCircuit, full: fullCircuit }
+export const CIRCUIT_TITLE: Record<CircuitKind, string> = { core: 'เซอร์กิตแกนกลาง/สะโพก', full: 'เซอร์กิตทั้งตัว' }
 
 export function buildCircuit(stations: Station[], work = 30, rest = 15, rounds = 2): CircuitStep[] {
   const out: CircuitStep[] = []

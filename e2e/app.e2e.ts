@@ -420,6 +420,20 @@ test('เซอร์กิตแกนกลาง: เริ่ม ข้า�
   await expect.poll(async () => ((await idb(page, 'sessions')) as { dayKey: string }[] | null)?.[0]?.dayKey).toBe('circuit')
 })
 
+test('เซอร์กิตทั้งตัว: เลือกแบบทั้งตัว เล่นจนจบ บันทึกชื่อถูก', async ({ page }) => {
+  await seed(page)
+  await nav(page, 'ฝึก')
+  await page.getByRole('button', { name: 'ทั้งตัว', exact: true }).click()
+  await page.getByRole('button', { name: /^1 รอบ/ }).click()
+  await page.getByRole('button', { name: 'เริ่มเซอร์กิต' }).click()
+  await expect(page.getByText('แกว่งแขนแบบวิ่ง').first()).toBeVisible()
+  await expect(page.locator('svg[role=img]').first()).toBeVisible() // ภาพลายเส้นท่าแกว่งแขน
+  for (let i = 0; i < 17; i++) await page.getByRole('button', { name: 'ข้าม' }).click()
+  await expect(page.getByText('จบเซอร์กิตแล้ว')).toBeVisible()
+  await page.getByRole('button', { name: 'บันทึก', exact: true }).last().click()
+  await expect.poll(async () => ((await idb(page, 'sessions')) as { title: string }[] | null)?.[0]?.title).toBe('เซอร์กิตทั้งตัว')
+})
+
 test('ฝึกคนเดียว: สลับ Bench Press/Back Squat เป็นท่าที่ไม่ต้องมีคนช่วย', async ({ page }) => {
   await seed(page)
   await nav(page, 'ฝึก')

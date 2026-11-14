@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronDown, Pause, Play, SkipForward, Timer, X } from 'lucide-react'
-import { buildCircuit, circuitAt, circuitFit, circuitTotal, coreCircuit, type CircuitStep } from '../lib/circuit'
+import { buildCircuit, circuitAt, circuitFit, circuitTotal, CIRCUIT_TITLE, CIRCUITS, type CircuitKind, type CircuitStep } from '../lib/circuit'
 import { useProgram } from '../lib/program'
 import { useTodayIdx } from '../lib/useToday'
 import { usePersisted } from '../lib/storage'
@@ -15,9 +15,10 @@ import { cx } from '../lib/cx'
 import { Button, Card, Collapse, Portal, Segmented } from './ui'
 import { ExerciseDemo } from './ExerciseDemo'
 
-const BY_ROUNDS: Record<1 | 2, CircuitStep[]> = { 1: buildCircuit(coreCircuit, 30, 15, 1), 2: buildCircuit(coreCircuit, 30, 15, 2) }
+const stepsFor = (kind: CircuitKind) => ({ 1: buildCircuit(CIRCUITS[kind], 30, 15, 1), 2: buildCircuit(CIRCUITS[kind], 30, 15, 2) })
+const BY_KIND: Record<CircuitKind, Record<1 | 2, CircuitStep[]>> = { core: stepsFor('core'), full: stepsFor('full') }
 
-/** การ์ดในหน้าฝึก: เซอร์กิตแกนกลาง/สะโพก บอกว่าวันนี้เหมาะไหม ทำไปกี่ครั้งแล้ว และเริ่มยังไง */
+/** การ์ดในหน้าฝึก: เซอร์กิตแกนกลาง/สะโพก หรือทั้งตัว บอกว่าวันนี้เหมาะไหม ทำไปกี่ครั้งแล้ว และเริ่มยังไง */
 export function CircuitCard() {
   const [open, setOpen] = useState(false)
   const [how, setHow] = useState(false)
@@ -29,11 +30,13 @@ export function CircuitCard() {
   const thisWeek = done.filter(s => weekStart(s.date) === weekStart(today())).length
   // มือใหม่เริ่ม 1 รอบ (~6 นาที) 4 ครั้งแรก แล้วค่อยเป็น 2 รอบ
   const [rounds, setRounds] = usePersisted<1 | 2>('circuitRounds', done.length < 4 ? 1 : 2)
+  const [kind, setKind] = usePersisted<CircuitKind>('circuitKind', 'core')
+  const BY_ROUNDS = BY_KIND[kind] ?? BY_KIND.core
   const steps = BY_ROUNDS[rounds]
   const fit = p.finished ? 'good' : circuitFit(p.plan(), todayIdx)
   const doneToday = done.some(s => s.date === today())
   return (
-    <Card title={<span className="flex items-center gap-2"><Timer size={18} className="text-accent" /> {t('เซอร์กิตแกนกลาง/สะโพก', 'Core & hip circuit')}</span>}
+    <Card title={<span className="flex items-center gap-2"><Timer size={18} className="text-accent" /> {t('เซอร์กิต', 'Circuit')}</span>}
       action={<span className={cx('rounded-full px-2.5 py-1 text-xs font-semibold tabular-nums', thisWeek >= 2 ? 'bg-good/15 text-good' : 'bg-raised text-muted')}>{t(`สัปดาห์นี้ ${thisWeek}/2`, `This week ${thisWeek}/2`)}</span>}>
       <p className={cx('rounded-xl p-2.5 text-sm font-semibold', doneToday || fit === 'good' ? 'bg-good/10 text-good' : fit === 'avoid' ? 'bg-warn/10 text-warn' : 'bg-raised text-muted')}>
         {doneToday ? t('ทำแล้ววันนี้', 'Done today')
@@ -41,7 +44,12 @@ export function CircuitCard() {
           : fit === 'avoid' ? t('วันนี้เลี่ยงไว้ก่อน วันนี้หรือพรุ่งนี้มีวิ่งยาว/วิ่งหนัก ขาควรสด', 'Skip today — a long/hard run is today or tomorrow; keep your legs fresh')
           : t('วันเวทมีท่าแกนกลางอยู่แล้ว ไม่ต้องทำเพิ่ม', 'Strength days already include core work')}
       </p>
-      <div className="mt-3">
+      <div className="mt-3 space-y-2">
+        <Segmented value={kind} onChange={setKind} options={[
+          { value: 'core', label: t('แกนกลาง/สะโพก', 'Core & hip') },
+          { value: 'full', label: t('ทั้งตัว', 'Full body') },
+        ]} />
+        {kind === 'full' && <p className="text-xs text-muted">{t('9 ท่า สลับแขน แกนกลาง ขา ไม่ใช้อุปกรณ์ ใช้แทนวันที่ไปยิมไม่ได้ แต่ไม่แทนเวทหนัก', '9 moves rotating arms, core and legs, no equipment — for days you can’t get to the gym, not a replacement for heavy lifting')}</p>}
         <Segmented value={String(rounds) as '1' | '2'} onChange={v => setRounds(Number(v) as 1 | 2)} options={[
           { value: '1', label: t(`1 รอบ ~${Math.round(circuitTotal(BY_ROUNDS[1]) / 60)} นาที`, `1 round ~${Math.round(circuitTotal(BY_ROUNDS[1]) / 60)} min`) },
           { value: '2', label: t(`2 รอบ ~${Math.round(circuitTotal(BY_ROUNDS[2]) / 60)} นาที`, `2 rounds ~${Math.round(circuitTotal(BY_ROUNDS[2]) / 60)} min`) },
@@ -56,16 +64,18 @@ export function CircuitCard() {
           <li>{t('สัปดาห์ละ 2–3 ครั้ง ทำหลังวิ่งเบา (ร่างกายอุ่นแล้ว) หรือวันพัก ไม่ทำก่อนวิ่งยาว/วิ่งหนัก', '2–3×/week, after an easy run (already warm) or on a rest day — not before a long/hard run')}</li>
           <li>{t('เริ่ม 1 รอบ 2 สัปดาห์แรก แล้วค่อยเพิ่มเป็น 2 รอบ ท่าละ 30 วิ ทำไม่ไหวพักได้ ท่าต้องถูกก่อนจะเร็ว', 'Start with 1 round for 2 weeks, then 2 rounds. 30 s per move — rest if needed; form first')}</li>
           <li>{t('ทำบนเสื่อหรือพื้นนุ่ม ไม่ต้องใช้อุปกรณ์ เสียงนำบอกท่าถัดไปให้ ปิดจอได้', 'On a mat, no equipment; the voice announces each move')}</li>
+          <li>{t('ท่าละ 30 วิ เร็วแค่ไหนก็ได้ที่ยังคุมท่าได้ ไม่ต้องอัดหนักแบบ HIIT ตั้งแต่แรก ถ้าเคยเจ็บแน่นหน้าอก ใจสั่น หรือหน้ามืดตอนออกแรง ให้หยุดแล้วไปพบแพทย์ก่อน', '30 s per move at whatever pace keeps good form — no need to go all-out HIIT from day one. Chest pain, palpitations or dizziness on exertion: stop and see a doctor first')}</li>
+          {kind === 'full' && <li>{t('ทั้งตัว: เรียงแขน → แกนกลาง → ขา กล้ามส่วนเดิมได้พักระหว่างท่า (แนวจากคลิป อ.เอกวิทย์ แสวงผล) เซอร์กิตท่าพื้นฐานช่วยแรงและความทนทานของกล้ามเนื้อ ทำ 2–3 ครั้ง/สัปดาห์ได้ผลกว่า 1 ครั้ง (Batrakoulis 2023) แต่ไม่ช่วยให้วิ่งประหยัดแรงเหมือนเวทหนักหรือท่ากระโดด (Llanos-Lagos 2024)', 'Full body: arms → core → legs, so each area rests between moves. Basic-movement circuits build strength and muscular endurance, 2–3×/week more than once (Batrakoulis 2023), but don’t improve running economy the way heavy lifting or jumps do (Llanos-Lagos 2024)')}</li>}
           <li>{t('หลักฐาน: การฝึกความแข็งแรงช่วยลดการบาดเจ็บจากกีฬาโดยรวม (Lauersen 2014) แต่โปรแกรมแกนกลาง/สะโพก 10 นาทีในนักวิ่งมาราธอนมือใหม่ยังไม่เห็นผลลดเจ็บชัด (Toresdahl 2020) ทำเพื่อความแข็งแรงและท่าวิ่งที่มั่นคง ไม่ใช่เกราะกันเจ็บ', 'Evidence: strength training lowers sports injuries overall (Lauersen 2014), but a 10-min core/hip program in first-time marathoners showed no clear injury reduction (Toresdahl 2020) — do it for strength and stability, not as injury armour')}</li>
         </ul>
       </Collapse>
-      {open && <CircuitPlayer steps={steps} rounds={rounds} onClose={() => setOpen(false)} />}
+      {open && <CircuitPlayer steps={steps} rounds={rounds} title={CIRCUIT_TITLE[kind] ?? CIRCUIT_TITLE.core} onClose={() => setOpen(false)} />}
     </Card>
   )
 }
 
 /** ตัวจับเวลาทีละท่า (เสียงนำ, จอไม่ดับ) ใช้กับเซอร์กิต (บันทึกเป็นการฝึก) และดริลล์ก่อนวิ่ง (ไม่บันทึก จบแล้วไปวิ่งต่อ) */
-export function CircuitPlayer({ steps: STEPS, rounds, onClose, drills = false }: { steps: CircuitStep[]; rounds: number; onClose: () => void; drills?: boolean }) {
+export function CircuitPlayer({ steps: STEPS, rounds, onClose, drills = false, title = CIRCUIT_TITLE.core }: { steps: CircuitStep[]; rounds: number; onClose: () => void; drills?: boolean; title?: string }) {
   const tr = useT()
   const [, setSessions] = useSessions()
   const [running, setRunning] = useState(true)
@@ -105,7 +115,7 @@ export function CircuitPlayer({ steps: STEPS, rounds, onClose, drills = false }:
   }, [at, drills])
 
   const finish = () => {
-    setSessions(prev => [...prev, { id: uid(), date: today(), mode: 'park', dayKey: 'circuit', title: 'เซอร์กิตแกนกลาง/สะโพก', entries: [], rpe: 5, minutes: Math.max(1, Math.round(elapsed / 60)) }])
+    setSessions(prev => [...prev, { id: uid(), date: today(), mode: 'park', dayKey: 'circuit', title, entries: [], rpe: 5, minutes: Math.max(1, Math.round(elapsed / 60)) }])
     notify(tr('บันทึกเซอร์กิตแล้ว', 'Circuit saved'), 'good')
     onClose()
   }
