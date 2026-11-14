@@ -68,14 +68,19 @@ export function NextStepCard() {
   const t = useT()
   const dt = useDayText()
   const step = nextStep(p.program, c, p.currentWeek, p.meta.weeks, !!p.ongoing, p.raceDate && p.isRace ? p.finished : undefined)
-  if (!step || seen === `${p.program}>${step.to}`) return null
+  if (!step || seen === `${p.program}@${p.programStart}>${step.to}`) return null
   return (
     <section className="animate-fade-up rounded-2xl bg-good/10 p-3.5 ring-1 ring-good/30">
       <div className="flex items-center gap-2 font-bold text-good"><Sparkles size={18} /> {t('พร้อมไปขั้นต่อไป', 'Ready for the next step')}: {dt.program(step.to).name}</div>
       <p className="mt-1 text-sm">{step.why}</p>
-      <div className="mt-2 flex gap-2">
+      {/* เป้าหุ่นเป็นเป้าระยะยาว: เริ่มรอบใหม่ได้ น้ำหนักเวทต่อจากที่บันทึกล่าสุด (suggest ใช้ประวัติทั้งหมด) */}
+      {p.program === 'physique' && (
+        <p className="mt-1 text-xs text-muted">{t('หรือทำโปรแกรมหุ่นรอบใหม่ เริ่มสัปดาห์ 1 อีกครั้ง โดยน้ำหนักเวทต่อจากที่ยกได้ล่าสุด', 'Or start another physique round from week 1, continuing from your latest weights')}</p>
+      )}
+      <div className="mt-2 flex flex-wrap gap-2">
         <Button size="sm" variant="success" onClick={() => p.setProgram(step.to)}>{t('เปลี่ยนเลย', 'Switch')} <ArrowRight size={14} /></Button>
-        <Button size="sm" variant="soft" onClick={() => setSeen(`${p.program}>${step.to}`)}>{t('ไว้ก่อน', 'Later')}</Button>
+        {p.program === 'physique' && <Button size="sm" variant="soft" onClick={() => p.setProgram('physique')}>{t('เริ่มหุ่นรอบใหม่', 'New physique round')}</Button>}
+        <Button size="sm" variant="soft" onClick={() => setSeen(`${p.program}@${p.programStart}>${step.to}`)}>{t('ไว้ก่อน', 'Later')}</Button>
       </div>
     </section>
   )

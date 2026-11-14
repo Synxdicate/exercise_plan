@@ -927,3 +927,17 @@ test('สำรองอัตโนมัติในเครื่อง: ล
   await expect(page.getByText('ครบเหมือนตอนนี้')).toBeVisible()
   await expect.poll(async () => ((await idb(page, 'runs')) as { id: string }[]).map(r => r.id)).toEqual(['keep', 'lost'])
 })
+
+test('จบโปรแกรมหุ่นแล้วเริ่มรอบใหม่: กลับไปสัปดาห์ 1 ติ๊กของรอบก่อนไม่ค้าง', async ({ page }) => {
+  // วันจันทร์ของ 11 สัปดาห์ก่อน = ตอนนี้อยู่สัปดาห์ 12
+  const d = new Date(`${ymd(0)}T00:00:00`)
+  const monday = ymd(((d.getDay() + 6) % 7) + 77)
+  await seed(page, { program: 'physique', programStart: monday, done: { 'physique-w1-d0': true, 'physique-w1-d1': true, 'gym-w1-upperB': true } })
+  await page.getByRole('button', { name: 'เริ่มหุ่นรอบใหม่' }).click()
+  await expect(page.getByRole('button', { name: 'เริ่มหุ่นรอบใหม่' })).toHaveCount(0)
+  expect(await idb(page, 'programStart')).toBe(ymd((d.getDay() + 6) % 7))
+  const done = (await idb(page, 'done')) as Record<string, boolean>
+  expect(Object.keys(done).filter(k => !k.startsWith('old-'))).toEqual([])
+  await nav(page, 'ฝึก')
+  await expect(page.locator('main .snap-start[class*="bg-ink"]')).toContainText('1')
+})

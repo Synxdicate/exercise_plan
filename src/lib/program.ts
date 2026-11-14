@@ -3,7 +3,7 @@ import type { Readiness } from './readiness'
 import { useEffect, useMemo } from 'react'
 import { programs, variants, withHills, weekKm, weekPlan, type LocationPref, type Mode, type ProgramId } from '../data/programs'
 import { addDays, daysBetween, today, weekStart } from './date'
-import { usePersisted } from './storage'
+import { readStored, setStored, usePersisted } from './storage'
 import { homeUsable, libEx, needsSpotter } from '../data/library'
 import type { Day, Exercise } from '../data/workouts'
 import { applyMoves, type DayMoves } from './moves'
@@ -84,6 +84,14 @@ export function weekAt(start: string, repeats: string[], monday: string, weeks: 
 /** รอบที่เท่าไรของสัปดาห์ week (0 = รอบแรก) ใช้แยกติ๊กของรอบทำซ้ำ */
 export const attemptOf = (start: string, repeats: string[], week: number, monday: string, weeks: number) =>
   repeats.filter(r => r > start && r <= monday && weekAt(start, repeats, r, weeks) === week).length
+
+/** เริ่มโปรแกรมใหม่ (รวมเริ่มโปรแกรมเดิมรอบใหม่): ย้ายติ๊ก/สถานที่ของรอบก่อน (id ตามเลขสัปดาห์) ไปเป็น id เก็บถาวร
+ *  ไม่งั้นรอบใหม่จะขึ้นว่าทำแล้วตั้งแต่สัปดาห์ 1 (pure, tested) */
+export function archiveSlots<T>(map: Record<string, T>, program: string, tag: string): Record<string, T> {
+  // id ปัจจุบัน `${program}-w3-d0` / `-pre…` และ id แบบเก่าที่ isDone ยังอ่าน (`gym-w1-upperB` ของโปรแกรมหุ่น, `ten-gym-w1-…`)
+  const re = new RegExp(program === 'physique' ? '^(physique-(w-?\\d|pre)|(gym|park)-w\\d)' : `^${program}-(w-?\\d|pre|(gym|park)-w\\d)`)
+  return Object.fromEntries(Object.entries(map).map(([k, v]) => [re.test(k) ? `old-${program}-${tag}-${k}` : k, v]))
+}
 
 // สถานะโปรแกรมปัจจุบัน ใช้ร่วมกันทุกหน้า
 // แผนที่คิดแล้วต่อสัปดาห์ ใช้ร่วมทั้งแอปจนกว่าข้อมูลที่แผนขึ้นกับจะเปลี่ยน (เทียบทีละค่าแบบ Object.is)
@@ -259,6 +267,11 @@ export function useProgram() {
       setRepeats(r => (r.includes(next) ? r : [...r, next]))
     },
     setProgram(p: ProgramId) {
+      if (!programs[p].ongoing) for (const key of ['done', 'dayLocation']) {
+        const m = readStored(key) as Record<string, unknown> | undefined
+        const next = m && archiveSlots(m, p, p === program ? start : thisMonday)
+        if (next && Object.keys(next).some(k => !(k in m))) setStored(key, next)
+      }
       setProgramRaw(p)
       setManualWeek(1)
       setProgramStart(thisMonday)
