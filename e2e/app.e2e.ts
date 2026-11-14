@@ -921,7 +921,7 @@ test('สำรองอัตโนมัติในเครื่อง: ล
   await page.getByRole('alertdialog').getByRole('button', { name: 'ลบ' }).click()
   await expect.poll(async () => ((await idb(page, 'runs')) as { id: string }[]).map(r => r.id)).toEqual(['keep'])
   await page.getByRole('button', { name: 'เมนูบัญชี' }).click()
-  await page.getByRole('button', { name: 'สำรองอัตโนมัติ 7 วัน' }).click()
+  await page.getByRole('button', { name: 'เอารายการที่หายกลับมา' }).click()
   await expect(page.getByText('ไม่มีในตอนนี้ 1 รายการ')).toBeVisible()
   await page.getByRole('button', { name: 'เอากลับมา' }).click()
   await expect(page.getByText('ครบเหมือนตอนนี้')).toBeVisible()
@@ -940,4 +940,18 @@ test('จบโปรแกรมหุ่นแล้วเริ่มรอ�
   expect(Object.keys(done).filter(k => !k.startsWith('old-'))).toEqual([])
   await nav(page, 'ฝึก')
   await expect(page.locator('main .snap-start[class*="bg-ink"]')).toContainText('1')
+})
+
+test('เอารายการที่หายกลับมาจากไฟล์สำรอง: เพิ่มเฉพาะรอบที่หาย รอบใหม่ไม่ถูกทับ ค่าขึ้นสะสมสูตรเก่าที่คิดใหม่ไม่ได้ถูกลบ', async ({ page }) => {
+  await seed(page, { runs: [{ id: 'new', date: ymd(1), km: 2.5, seconds: 1500, kind: 'easy', source: 'gps', rpe: 4 }] })
+  await page.getByRole('button', { name: 'เมนูบัญชี' }).click()
+  await page.getByRole('button', { name: 'เอารายการที่หายกลับมา' }).click()
+  const file = { app: 'exercise-plan', version: 1, data: { runs: [
+    { id: 'new', date: ymd(1), km: 2.5, seconds: 1500, kind: 'easy', source: 'gps' },
+    { id: 'lost', date: ymd(4), km: 2.43, seconds: 1232, kind: 'easy', source: 'gps', rpe: 5, elev: { max: 203, min: 185, gain: 89, loss: 89 } },
+  ] } }
+  await page.locator('input[type=file]').last().setInputFiles({ name: 'kao-restore.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(file)) })
+  await expect(page.getByText('ไม่มีในตอนนี้ 1 รายการ')).toBeVisible()
+  await page.getByRole('button', { name: 'เอากลับมา' }).click()
+  await expect.poll(async () => ((await idb(page, 'runs')) as { id: string; elev?: unknown }[]).map(r => `${r.id}:${r.elev ? 'elev' : '-'}`)).toEqual(['lost:-', 'new:-'])
 })

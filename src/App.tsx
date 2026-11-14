@@ -299,7 +299,7 @@ function UserMenu({ session, onSources }: { session: Session | null; onSources: 
               <input type="file" accept="application/json,.json" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) void restore(f); e.target.value = '' }} />
             </label>
             <button onClick={() => { setOpen(false); setSnapsOpen(true) }} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left hover:bg-raised">
-              <History size={16} /> {t('สำรองอัตโนมัติ 7 วัน', 'Automatic backups (7 days)')}
+              <History size={16} /> {t('เอารายการที่หายกลับมา', 'Recover missing items')}
             </button>
             {session ? (
               <button onClick={logout} disabled={busy} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-bad hover:bg-raised">

@@ -104,13 +104,21 @@ export function useCompactRuns() {
     setRuns(prev => prev.map(r => (r.route && !isCompact(r.route) ? { ...r, route: r.route.map(roundPoint) } : r)))
   }, [raw, setRuns])
   // ขึ้นสะสมของรอบเก่าคิดจากสูตรเดิม (ไม่เกลี่ย ได้ค่าสูงเกินจริง) คิดใหม่จากโปรไฟล์ที่เก็บไว้ ไม่ต้องดึงจากเน็ตอีก
+  // รอบที่ไม่มีทั้งโปรไฟล์และเส้นทาง (เช่น กู้คืนมาโดยเส้นทางหายไปแล้ว) คิดใหม่ไม่ได้ ลบค่าเก่าทิ้ง ไม่โชว์ขึ้นสะสมที่สูงเกินจริง
   const [runs] = useRuns()
   useEffect(() => {
-    if (!runs.some(staleElev)) return
-    setRuns(prev => prev.map(r => (staleElev(r) ? { ...r, elev: elevStats(r.elevProfile!, r.km) } : r)))
+    if (!runs.some(r => staleElev(r) || orphanElev(r))) return
+    setRuns(prev => prev.map(r => {
+      if (staleElev(r)) return { ...r, elev: elevStats(r.elevProfile!, r.km) }
+      if (!orphanElev(r)) return r
+      const { elev: _drop, ...rest } = r
+      return rest
+    }))
   }, [runs, setRuns])
 }
-const staleElev = (r: Run) => !!r.elev && r.elev.v !== ELEV_V && (r.elevProfile?.length ?? 0) > 2 && r.km > 0
+const oldElev = (r: Run) => !!r.elev && r.elev.v !== ELEV_V
+const staleElev = (r: Run) => oldElev(r) && (r.elevProfile?.length ?? 0) > 2 && r.km > 0
+const orphanElev = (r: Run) => oldElev(r) && !(r.elevProfile?.length ?? 0) && !(r.route?.length ?? 0)
 export const useSessions = () => usePersisted<Session[]>('sessions', [])
 
 // คาร์ดิโอทดแทนการวิ่ง (แรงกระแทกน้อย): ได้ระบบหายใจ-หัวใจโดยไม่กระแทกข้อ ใช้เพิ่มปริมาณแอโรบิกหรือช่วงบาดเจ็บ

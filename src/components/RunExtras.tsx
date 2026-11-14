@@ -4,7 +4,7 @@ import { useProgram } from '../lib/program'
 import { addDays, shortDate, today, weekStart } from '../lib/date'
 import { isWalk, runsOnly } from '../lib/walk'
 import { cumulative, paceSeries, runHighlights } from '../lib/analysis'
-import { elevStats, fetchElevation, sampleRoute, samplesFor } from '../lib/elevation'
+import { ELEV_V, elevStats, fetchElevation, sampleRoute, samplesFor } from '../lib/elevation'
 import { atKm, findClimbs, gapPace, grades } from '../lib/grade'
 import type { Point } from '../lib/geo'
 import { formatDuration, formatPace, type Run } from '../lib/log'
@@ -49,7 +49,8 @@ export function ElevationCard({ run, onUpdate, onScrub }: { run: Run; onUpdate: 
   const hasRoute = (run.route?.length ?? 0) > 5
   const want = hasRoute ? Math.min(samplesFor(run.km), run.route!.length) : 0
   // รอบเก่าเก็บไว้ 100 จุด ดึงใหม่ให้ละเอียดขึ้นครั้งเดียว
-  const stale = !!run.elev && (run.elevProfile?.length ?? 0) === 100 && want > 110
+  // หรือขึ้นสะสมจากสูตรเก่า (ไม่เกลี่ย สูงเกินจริง) ที่ไม่มีโปรไฟล์เก็บไว้ให้คิดใหม่ (useCompactRuns คิดใหม่ได้เฉพาะรอบที่มีโปรไฟล์)
+  const stale = !!run.elev && (((run.elevProfile?.length ?? 0) === 100 && want > 110) || (run.elev.v !== ELEV_V && !(run.elevProfile?.length)))
   const update = useRef(onUpdate)
   useEffect(() => { update.current = onUpdate })
   useEffect(() => {
