@@ -24,6 +24,8 @@ import { tick } from '../lib/voice'
 import { useT } from '../lib/i18n'
 import { cx } from '../lib/cx'
 import { BodyMap } from './BodyMap'
+import { QuickStart } from './QuickStart'
+import { canQuick, quickDay } from '../lib/quickWorkout'
 import { WorkoutPlayer } from './WorkoutPlayer'
 import { ProgramSheet } from './ProgramSheet'
 import { Alerts } from './Alerts'
@@ -76,8 +78,8 @@ function PlanBody() {
   const shownSel = useDeferredValue(selected)
   useSwipe(DAYS, String(selected) as typeof DAYS[number], v => setSelected(Number(v)))
   const [picking, setPicking] = useState(false)
-  const [playing, setPlaying] = useState<{ i: number; light: boolean } | null>(null)
-  const [checking, setChecking] = useState<number | null>(null)
+  const [playing, setPlaying] = useState<{ i: number; light: boolean; quick: boolean } | null>(null)
+  const [checking, setChecking] = useState<{ i: number; quick: boolean } | null>(null)
   const [runs] = useRuns()
   const est = useMemo(() => estimate(runs), [runs])
 
@@ -202,7 +204,7 @@ function PlanBody() {
       <DayDetailM key={`${week}-${shownSel}-${day.location ?? ''}`} day={day} isToday={isThisWeek && shownSel === todayIdx()}
         done={isDone(shownSel)} hint={paceHint(est, day.runKind, day.title, dt.en)} weekNoteText={note}
         setDone={v => setDayDone(shownSel, v)}
-        onStart={() => setChecking(shownSel)}
+        onStart={quick => setChecking({ i: shownSel, quick })}
         onLocation={m => p.setDayLocation(week, day.movedFrom ?? shownSel, m)} slotId={p.doneId(week, shownSel)}
         onDoToday={canDoToday ? () => void doToday() : undefined}
         date={addDays(p.mondayOf(week), shownSel)} />
@@ -238,10 +240,10 @@ function PlanBody() {
       {picking && <ProgramSheet onClose={() => setPicking(false)} />}
       {checking !== null && (
         <ReadinessSheet kind="strength" onClose={() => setChecking(null)}
-          onProceed={light => { setPlaying({ i: checking, light }); setChecking(null) }} />
+          onProceed={light => { setPlaying({ ...checking, light }); setChecking(null) }} />
       )}
       {playing && (
-        <WorkoutPlayer day={days[playing.i]} mode={days[playing.i].location ?? 'gym'} light={playing.light} sessionKey={p.doneId(week, playing.i)}
+        <WorkoutPlayer day={playing.quick ? quickDay(days[playing.i]) : days[playing.i]} mode={days[playing.i].location ?? 'gym'} light={playing.light} quick={playing.quick} sessionKey={p.doneId(week, playing.i)}
           onClose={() => setPlaying(null)}
           onSaved={() => { setDayDone(playing.i, true); setPlaying(null) }} />
       )}
@@ -280,7 +282,7 @@ function DayMuscles({ day }: { day: Day }) {
 
 function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slotId, weekNoteText, date, onDoToday }: {
   day: Day; isToday: boolean; done: boolean; hint: string | null; weekNoteText?: string; date: string; onDoToday?: () => void
-  setDone: (v: boolean) => void; onStart: () => void; onLocation: (m: 'gym' | 'park' | 'home') => void; slotId: string
+  setDone: (v: boolean) => void; onStart: (quick: boolean) => void; onLocation: (m: 'gym' | 'park' | 'home') => void; slotId: string
 }) {
   const t = useT()
   const dt = useDayText()
@@ -354,9 +356,10 @@ function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slo
             <AddSheet where={where} existing={day.exercises.map(e => e.name)} onClose={() => setAdding(false)}
               onPick={x => { p.addExercise(day, { name: x.name, th: x.th, sets: '3', reps: x.reps, rest: '90 วิ', cue: x.cue, video: x.video }); setAdding(false) }} />
           )}
-          <Button size="lg" className="mt-3 w-full" onClick={onStart}>
+          <Button size="lg" className="mt-3 w-full" onClick={() => onStart(false)}>
             <Play size={18} fill="currentColor" /> {done ? t('ฝึกอีกครั้ง', 'Train again') : t('เริ่มฝึก', 'Start workout')}
           </Button>
+          {canQuick(day) && <QuickStart day={day} onStart={() => onStart(true)} />}
         </>
       )}
 

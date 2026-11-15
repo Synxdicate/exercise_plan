@@ -20,6 +20,8 @@ import { useDayDone } from '../lib/dayDone'
 import { useNav } from '../lib/nav'
 import { addDays, today, weekStart } from '../lib/date'
 import { formLabel, trainingLoad } from '../lib/analysis'
+import { QuickStart } from './QuickStart'
+import { canQuick, quickDay } from '../lib/quickWorkout'
 import { WorkoutPlayer } from './WorkoutPlayer'
 import { Alerts } from './Alerts'
 import { NextStepCard } from './ProgramPicker'
@@ -41,8 +43,8 @@ export function Dashboard() {
   const p = useProgram()
   const [done, setDone] = usePersisted<Record<string, boolean>>('done', {})
   const dayDone = useDayDone()
-  const [playing, setPlaying] = useState<{ day: Day; light: boolean } | null>(null)
-  const [checking, setChecking] = useState(false)
+  const [playing, setPlaying] = useState<{ day: Day; light: boolean; quick: boolean } | null>(null)
+  const [checking, setChecking] = useState<false | { quick: boolean }>(false)
   const nav = useNav()
   const t = useT()
   const dt = useDayText()
@@ -137,7 +139,10 @@ export function Dashboard() {
             </div>
           )}
           {!todayDone && todayPlan.type === 'strength' && (
-            <Button className="mt-3 w-full" onClick={() => setChecking(true)}><Play size={16} fill="currentColor" /> {t('เริ่มฝึกเลย', 'Start workout')} ({todayPlan.location === 'park' ? t('สวน', 'park') : todayPlan.location === 'home' ? t('ที่บ้าน', 'home') : t('ยิม', 'gym')})</Button>
+            <>
+              <Button className="mt-3 w-full" onClick={() => setChecking({ quick: false })}><Play size={16} fill="currentColor" /> {t('เริ่มฝึกเลย', 'Start workout')} ({todayPlan.location === 'park' ? t('สวน', 'park') : todayPlan.location === 'home' ? t('ที่บ้าน', 'home') : t('ยิม', 'gym')})</Button>
+              {canQuick(todayPlan) && <QuickStart day={todayPlan} onStart={() => setChecking({ quick: true })} />}
+            </>
           )}
           {!todayDone && todayPlan.type === 'run' && (
             <Button variant="run" className="mt-3 w-full" onClick={() => nav('runs')}><Footprints size={16} /> {t('เริ่มวิ่ง', 'Start run')}</Button>
@@ -155,10 +160,10 @@ export function Dashboard() {
 
       {checking && todayPlan && (
         <ReadinessSheet kind="strength" onClose={() => setChecking(false)}
-          onProceed={light => { setPlaying({ day: todayPlan, light }); setChecking(false) }} />
+          onProceed={light => { setPlaying({ day: checking.quick ? quickDay(todayPlan) : todayPlan, light, quick: checking.quick }); setChecking(false) }} />
       )}
       {playing && (
-        <WorkoutPlayer day={playing.day} mode={playing.day.location ?? 'gym'} light={playing.light} sessionKey={p.doneId(week, todayIdx)}
+        <WorkoutPlayer day={playing.day} mode={playing.day.location ?? 'gym'} light={playing.light} quick={playing.quick} sessionKey={p.doneId(week, todayIdx)}
           onClose={() => setPlaying(null)}
           onSaved={() => { setDone(prev => ({ ...prev, [p.doneId(week, todayIdx)]: true })); setPlaying(null) }} />
       )}

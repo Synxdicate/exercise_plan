@@ -292,7 +292,7 @@ export function Runs() {
               <div className="font-bold">{tr('แผนวันนี้', "Today's plan")}: {dt.title(todayRun)} · {todayRun.targetKm ? `${todayRun.targetKm} ${tr('กม.', 'km')}` : dt.duration(todayRun)}</div>
               <div className="">{dt.cue(todayRun.exercises[0]?.cue ?? '')}</div>
               {paceHint(est, todayRun.runKind, todayRun.title, dt.en) && <div className="font-semibold">{paceHint(est, todayRun.runKind, todayRun.title, dt.en)}</div>}
-              <CapNote day={todayRun} date={today()} className="mt-1.5 flex items-start gap-1.5 rounded-xl bg-white/20 p-2 font-semibold" />
+              <CapNote day={todayRun} date={today()} className="mt-1.5 flex items-start gap-1.5 rounded-xl bg-black/15 p-2 font-semibold" />
             </div>
           </div>
         )}

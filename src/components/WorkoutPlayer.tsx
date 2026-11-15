@@ -29,8 +29,8 @@ const targetReps = (e: Exercise) => e.reps.match(/\d+/)?.[0] ?? ''
 const holdOf = (e: Exercise) => (/วิ/.test(e.reps) ? { sec: parseInt(targetReps(e), 10) || 30, sides: /ข้าง/.test(e.reps) ? 2 : 1 } : null)
 
 /** หน้าพาฝึกทีละท่า: กรอกน้ำหนัก×ครั้ง ติ๊กเซ็ต แล้วนับเวลาพักให้อัตโนมัติ */
-export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, onSaved }: {
-  day: Day; sessionKey: string; mode: 'gym' | 'park' | 'home'; light?: boolean; onClose: () => void; onSaved: () => void
+export function WorkoutPlayer({ day, sessionKey, mode, light = false, quick = false, onClose, onSaved }: {
+  day: Day; sessionKey: string; mode: 'gym' | 'park' | 'home'; light?: boolean; quick?: boolean; onClose: () => void; onSaved: () => void
 }) {
   const dt = useDayText()
   const tr = useT()
@@ -46,16 +46,27 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
   const kgCol = mode === 'gym' || showKg
 
   // เริ่มใหม่ หรือกลับมาทำต่อจากที่ค้างไว้ (เช่น เผลอปิดหน้า)
-  const state: Active = active?.key === sessionKey ? active : {
-    key: sessionKey,
-    startedAt: now,
-    idx: 0,
-    rows: Object.fromEntries(day.exercises.map(e => {
-      const prev = lastSetsFor(sessions, e.name)?.sets
-      const kg = suggest(e, prev).kg
-      return [e.name, Array.from({ length: light ? Math.max(1, setsOf(e) - 1) : setsOf(e) }, (_, i) => ({ kg: kg ? String(kg) : prev?.[i]?.kg ? String(prev[i].kg) : '', reps: '', done: false }))]
-    })),
+  // ฉบับเต็ม/ฉบับสั้นใช้ key เดียวกัน: ท่าที่ยังไม่มีแถว (เปลี่ยนจากฉบับสั้นเป็นเต็ม) สร้างใหม่ เซ็ตที่ทำแล้วยังอยู่
+  const setCount = (e: Exercise) => (light ? Math.max(1, setsOf(e) - 1) : setsOf(e))
+  const freshRows = (list: Exercise[]) => Object.fromEntries(list.map(e => {
+    const prev = lastSetsFor(sessions, e.name)?.sets
+    const kg = suggest(e, prev).kg
+    return [e.name, Array.from({ length: setCount(e) }, (_, i) => ({ kg: kg ? String(kg) : prev?.[i]?.kg ? String(prev[i].kg) : '', reps: '', done: false }))]
+  }))
+  const resumed = active?.key === sessionKey ? active : null
+  // จำนวนเซ็ตตามฉบับที่เปิดอยู่ (ฉบับสั้น 2 เซ็ต ↔ ฉบับเต็ม) เซ็ตที่ทำแล้วไม่ตัดทิ้ง
+  const misfit = resumed ? day.exercises.filter(e => resumed.rows[e.name]?.length !== setCount(e)) : []
+  const fitted = () => {
+    const fresh = freshRows(misfit)
+    return Object.fromEntries(misfit.map(e => {
+      const had = resumed!.rows[e.name] ?? []
+      const keep = Math.max(setCount(e), had.filter(r => r.done).length)
+      return [e.name, [...had, ...fresh[e.name]].slice(0, keep)]
+    }))
   }
+  const state: Active = resumed
+    ? { ...resumed, idx: Math.min(resumed.idx, day.exercises.length - 1), rows: misfit.length ? { ...resumed.rows, ...fitted() } : resumed.rows }
+    : { key: sessionKey, startedAt: now, idx: 0, rows: freshRows(day.exercises) }
   const update = (fn: (s: Active) => Active) => setActive(fn(state))
 
   useEffect(() => {
@@ -175,7 +186,7 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, onClose, o
           <button onClick={quit} aria-label={tr('ปิด', 'Close')} className="grid size-10 place-items-center rounded-full bg-card ring-1 ring-line"><X size={18} /></button>
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-bold">{dt.title(day)}</div>
-            <div className="text-xs text-muted tabular-nums">{formatDuration((now - state.startedAt) / 1000)} · {doneCount}/{total} {tr('เซ็ต', 'sets')}{light && tr(' · โหมดเบา', ' · light mode')}</div>
+            <div className="text-xs text-muted tabular-nums">{formatDuration((now - state.startedAt) / 1000)} · {doneCount}/{total} {tr('เซ็ต', 'sets')}{light && tr(' · โหมดเบา', ' · light mode')}{quick && tr(' · ฉบับสั้น', ' · quick')}</div>
           </div>
           <Button size="sm" variant="success" onClick={finish}><Check size={16} /> {tr('จบ', 'Finish')}</Button>
         </div>

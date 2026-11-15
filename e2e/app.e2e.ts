@@ -573,6 +573,21 @@ test('พาฝึก: ปุ่มหลักทำเซ็ตเสร็จ
   await expect(page.getByRole('button', { name: /จับเวลา 30 วิ \/ ข้าง · เซ็ต 2\/2/ })).toBeVisible()
 })
 
+test('เวทฉบับสั้น: 4 ท่า ท่าละ 2 เซ็ต แล้วเปลี่ยนเป็นฉบับเต็มได้โดยเซ็ตที่ทำแล้วไม่หาย', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-11-09T08:00:00+07:00') }) // จันทร์ = เวท A
+  await seed(page, { program: 'ten', programStart: '2026-11-09', mode: 'gym', voiceCues: false })
+  await nav(page, 'ฝึก')
+  await page.getByRole('button', { name: /เวลาน้อย ทำฉบับสั้น/ }).click()
+  await page.getByRole('button', { name: 'เริ่มเลย' }).click()
+  await expect(page.getByText(/0\/8 เซ็ต · ฉบับสั้น/)).toBeVisible()
+  await page.getByRole('button', { name: /เสร็จเซ็ต 1\/2/ }).click()
+  await page.getByRole('button', { name: 'ข้ามการพัก' }).click()
+  await page.getByRole('button', { name: 'ปิด' }).first().click()
+  await page.getByRole('button', { name: 'ออก', exact: true }).click()
+  await page.getByRole('button', { name: 'เริ่มฝึก', exact: true }).click()
+  await expect(page.getByText(/· 1\/21 เซ็ต/)).toBeVisible() // ฉบับเต็ม: ท่าครบ เซ็ตครบ เซ็ตแรกที่ทำไว้ยังนับ
+})
+
 test('เส้นทางแข่งมีเนิน: ติ๊กในตั้งค่าโปรแกรมแล้ววันแข่งมีวิธีคุมแรงบนเนิน', async ({ page }) => {
   await page.clock.install({ time: new Date('2027-01-10T06:00:00+07:00') })
   await seed(page, { program: 'mini', programStart: '2026-11-02', raceDate: '2027-01-10' })
