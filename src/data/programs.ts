@@ -11,7 +11,7 @@ export type LocationPref = Mode | 'mix'
 
 // ongoing = ไม่มีวันจบ วนรอบตามสัปดาห์ในปฏิทิน (weeks = ความยาวรอบ)
 export const programs: Record<ProgramId, { name: string; short: string; weeks: number; raceKm?: number; ongoing?: boolean; summary: string }> = {
-  physique: { name: 'หุ่นลีนแบบ Tom Holland', short: 'หุ่น', weeks: 12, summary: 'เวท 3 วัน + วิ่ง 2 วัน เน้นสร้างกล้ามและลดไขมัน' },
+  physique: { name: 'หุ่นลีนแบบนักกีฬา', short: 'หุ่น', weeks: 12, summary: 'เวท 3 วัน + วิ่ง 2 วัน เน้นสร้างกล้ามและลดไขมัน' },
   start: { name: 'เริ่มวิ่ง (วิ่งสลับเดิน)', short: 'เริ่มวิ่ง', weeks: 9, summary: 'วิ่งสลับเดิน 3 วัน + เวทเบา 2 วัน จนวิ่งต่อเนื่อง 30 นาทีได้' },
   mini: { name: 'มินิมาราธอน 10.5 กม. (มือใหม่)', short: 'มินิ', weeks: 10, raceKm: 10.5, summary: 'วิ่งสลับเดิน → วิ่งต่อเนื่อง 3 วัน + เวทเบา 2 วัน (~11 → 17 กม./สัปดาห์) ใส่วันแข่งได้' },
   base: { name: 'วิ่งต่อเนื่อง (ไม่มีเป้าแข่ง)', short: 'วิ่ง', weeks: 4, ongoing: true, summary: 'วิ่ง 3 วัน + เวท 2 วัน รักษาความฟิต ไม่มีเป้าแข่ง (~12–16 กม./สัปดาห์)' },
@@ -469,7 +469,7 @@ export const programLength = (id: ProgramId) => (programs[id].ongoing ? `วน�
 
 export const locationInfo: Record<LocationPref, { label: string; text: string; labelEn: string; textEn: string }> = {
   gym: { label: 'ยิมทุกวัน', text: 'เพิ่มน้ำหนักได้ละเอียด เห็นผลเรื่องกล้ามเร็วที่สุด โดยเฉพาะขา', labelEn: 'Gym every day', textEn: 'Fine-grained loading — fastest muscle gains, especially legs' },
-  mix: { label: 'ผสม (แนะนำถ้ามีสมาชิกยิม)', text: 'วันที่มีขา/ท่าหนักไปยิม วันเวทวันสุดท้ายของสัปดาห์ไปสวน (บอดี้เวทแบบ Tom Holland)', labelEn: 'Mixed (best with a gym membership)', textEn: 'Leg/heavy days at the gym, the week’s last strength day at the park (Tom Holland-style bodyweight)' },
+  mix: { label: 'ผสม (แนะนำถ้ามีสมาชิกยิม)', text: 'วันที่มีขา/ท่าหนักไปยิม วันเวทวันสุดท้ายของสัปดาห์ไปสวน (บอดี้เวท)', labelEn: 'Mixed (best with a gym membership)', textEn: 'Leg/heavy days at the gym, the week’s last strength day at the park (bodyweight)' },
   home: { label: 'ที่บ้าน/ในห้อง', text: 'ไม่ต้องมีอุปกรณ์ ท่าที่ต้องใช้บาร์เปลี่ยนเป็น Table Row, Chair Dips, Lying Leg Raise ขาใช้ท่าขาเดียวและจังหวะลงช้า', labelEn: 'Home / indoors', textEn: 'No equipment — bar moves become Table Row, Chair Dips, Lying Leg Raise; legs use single-leg moves and slow lowering' },
   park: { label: 'สวนทุกวัน', text: 'ฟรี ใกล้บ้าน ดีมากสำหรับดึงข้อ/ดิป/วิดพื้น แต่ขาเพิ่มความหนักยาก ใช้ท่าขาเดียวและจังหวะลงช้าแทน', labelEn: 'Park every day', textEn: 'Free and close by — great for pull-ups/dips/push-ups, but legs are hard to load; use single-leg moves and slow lowering' },
 }

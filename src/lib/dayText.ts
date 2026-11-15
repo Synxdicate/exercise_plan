@@ -49,7 +49,7 @@ export const repsEn = (s: string) => s.replace(/ข้าง/g, 'side').replace(
 export const weekdayEn = (th: string) => WEEKDAYS_EN[WEEKDAYS_TH.indexOf(th)] ?? th
 
 const PROGRAMS_EN: Record<ProgramId, { name: string; short: string; summary: string }> = {
-  physique: { name: 'Lean "Tom Holland" physique', short: 'Physique', summary: '3 strength + 2 run days — build muscle, lose fat' },
+  physique: { name: 'Lean athletic physique', short: 'Physique', summary: '3 strength + 2 run days — build muscle, lose fat' },
   start: { name: 'Start running (run-walk)', short: 'Start', summary: '3 run-walk + 2 light strength days until you can run 30 min non-stop' },
   mini: { name: 'Mini marathon 10.5 km (beginner)', short: 'Mini', summary: 'Run-walk → continuous running, 3 days + 2 light strength (~11 → 17 km/week); set a race date' },
   base: { name: 'Keep running (no race)', short: 'Base', summary: '3 runs + 2 strength days to stay fit (~12–16 km/week)' },

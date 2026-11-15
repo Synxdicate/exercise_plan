@@ -19,7 +19,7 @@ export const NOTE_EN: Record<string, string> = {
   'วอร์ม 10 นาที → วิ่งเร็ว 1 นาที / จ็อกเบา 2 นาที → คูลดาวน์ 5 นาที': 'Warm up 10 min → fast 1 min / easy jog 2 min → cool down 5 min',
   'ใช้บาร์โหน/บาร์คู่ในสวน เลือกระดับท่าที่ทำได้ตามจำนวนครั้ง ถ้าทำได้เกินช่วงบนทุกเซ็ต ให้ขยับไปท่าที่ยากขึ้น': 'Use the park’s pull-up/dip bars; pick a variation you can do for the target reps; beat the top of the range on every set → move to a harder one',
   'ขาเป็นส่วนที่บอดี้เวทเพิ่มความหนักยาก ให้เน้นท่าขาเดียวและจังหวะลงช้า (3 วิ)': 'Legs are hard to load with bodyweight — focus on single-leg moves and slow lowering (3 s)',
-  'ส่วนแรกฝึกความแข็งแรง ปิดท้ายด้วย "Cindy" (5 pull-up, 10 push-up, 15 squat ให้ได้มากรอบที่สุด) ซึ่งตามที่ Men\'s Health รายงาน Tom Holland ใช้ท่านี้': 'Strength first, then finish with "Cindy" (5 pull-ups, 10 push-ups, 15 squats, as many rounds as possible), which Men’s Health reported Tom Holland uses',
+  'ส่วนแรกฝึกความแข็งแรง ปิดท้ายด้วย "Cindy" (5 pull-up, 10 push-up, 15 squat ให้ได้มากรอบที่สุด)': 'Strength first, then finish with "Cindy" (5 pull-ups, 10 push-ups, 15 squats, as many rounds as possible)',
   'มือใหม่: เลือกน้ำหนักที่เหลือแรง 3–4 ครั้ง ฝึกท่าให้ถูกก่อนเพิ่มน้ำหนัก': 'Beginner: pick weights that leave 3–4 reps in reserve; learn the form before adding weight',
   'วิ่งช้าแค่ไหนก็ได้ ขอให้พูดเป็นประโยคได้ เหนื่อยเกินให้เดินนานขึ้น': 'Run as slowly as you like as long as you can talk in sentences — too tired, walk longer',
   'ถ้าสัปดาห์ไหนยังหนักไป ทำสัปดาห์เดิมซ้ำได้ ไม่ต้องรีบ': 'If a week still feels too hard, repeat it — no rush',

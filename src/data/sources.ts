@@ -20,7 +20,7 @@ export const levelLabelEn: Record<Level, string> = {
   guideline: 'Guideline', meta: 'Meta-analysis / Review', trial: 'Trial (RCT)', cohort: 'Cohort study', database: 'Official database', media: 'Media (not research)',
 }
 export const catEn: Record<string, string> = {
-  'Tom Holland': 'Tom Holland', 'ความปลอดภัยและการฟื้นตัว': 'Safety & recovery', 'โภชนาการ': 'Nutrition', 'รูปท่า': 'Exercise images', 'วิ่ง': 'Running', 'เวทเทรนนิ่ง': 'Strength training',
+  'ความปลอดภัยและการฟื้นตัว': 'Safety & recovery', 'โภชนาการ': 'Nutrition', 'รูปท่า': 'Exercise images', 'วิ่ง': 'Running', 'เวทเทรนนิ่ง': 'Strength training',
 }
 export const levelLabel: Record<Level, string> = {
   guideline: 'แนวทางวิชาการ',
@@ -142,8 +142,4 @@ export const references: { cat: string; title: string; url: string; used: string
   { cat: 'ความปลอดภัยและการฟื้นตัว', level: 'guideline', title: 'ACSM Position Stand: Exertional Heat Illness (2007)', url: pm('17473783'), used: 'อาการ heat stroke และการวิ่งในอากาศร้อน', usedEn: 'Heat stroke signs and running in hot weather' },
   { cat: 'ความปลอดภัยและการฟื้นตัว', level: 'guideline', title: 'AASM/SRS 2015 — Recommended amount of sleep for adults', url: pm('25979105'), used: 'นอนอย่างน้อย 7 ชม./คืน', usedEn: 'Sleep at least 7 h/night' },
   { cat: 'ความปลอดภัยและการฟื้นตัว', level: 'guideline', title: 'WHO Guidelines on Physical Activity and Sedentary Behaviour (2020)', url: 'https://www.who.int/publications/i/item/9789240015128', used: 'ขั้นต่ำการออกกำลังกายแบบแอโรบิกและเวทต่อสัปดาห์', usedEn: 'Minimum weekly aerobic and strength exercise' },
-  // Tom Holland
-  { cat: 'Tom Holland', level: 'media', title: "Men's Health AU — Tom Holland's 1,500-rep bodyweight ladder", url: 'https://menshealth.com.au/?p=79796', used: 'สไตล์การฝึกบอดี้เวท/ยิมนาสติก', usedEn: 'Bodyweight/gymnastics training style' },
-  { cat: 'Tom Holland', level: 'media', title: "Men's Health AU — Tom Holland's CrossFit 'Cindy'", url: 'https://menshealth.com.au/?p=85030', used: 'ท่า Cindy ในแผนสวน', usedEn: 'The Cindy workout in the park plan' },
-  { cat: 'Tom Holland', level: 'media', title: 'Fit & Well — Tom Holland bodyweight training', url: 'https://www.fitandwell.com/news/how-tom-holland-used-bodyweight-exercises-to-get-ripped-for-spider-man-3', used: 'ข้อมูลเทรนเนอร์และรูปแบบการฝึก', usedEn: 'Trainer info and training style' },
 ]

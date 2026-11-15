@@ -46,17 +46,15 @@ export function Guide() {
         </ol>
       </Disclosure>}
 
-      <Disclosure title={t('หุ่นแบบ Tom Holland — ความจริงที่ควรรู้', 'A Tom Holland physique — the facts')} summary={t('ทำได้จริงแค่ไหน ใช้เวลานานเท่าไร', 'How realistic, how long it takes')}>
+      <Disclosure title={t('หุ่นลีนแบบนักกีฬา ความจริงที่ควรรู้', 'A lean athletic physique — the facts')} summary={t('ทำได้จริงแค่ไหน ใช้เวลานานเท่าไร', 'How realistic, how long it takes')}>
         {en ? <ul className="list-disc space-y-2 pl-5 text-sm">
-          <li>He’s about 170–173 cm and the on-screen look is <b>lean, low body fat, moderate muscle</b> — not a bodybuilder, which is a realistic target for you (165 cm / 64.5 kg)</li>
-          <li>His training focuses on <b>bodyweight, gymnastics and conditioning</b> (pull-ups, dips, push-ups) per his trainer’s interviews — with a team, a chef and full days to train before filming</li>
-          <li>Promo photos are taken at the leanest point with lighting and a pump — not an everyday state</li>
+          <li>The target is <b>lean, low body fat, moderate muscle</b> — not a bodybuilder, which is realistic for you (165 cm / 64.5 kg)</li>
+          <li>Photos you see online are usually taken at the leanest point with lighting and a pump — not an everyday state</li>
           <li>Beginners gain muscle fastest in year one, but only a few kg a year (varies a lot with genetics, sleep and food — no study gives a firm number); losing ~0.5% body weight per week keeps more muscle than cutting fast</li>
           <li>Realistic timeline: visible change in <b>8–12 weeks</b>, close to the look in <b>1–2 years</b> of consistent training</li>
         </ul> : <ul className="list-disc space-y-2 pl-5 text-sm">
-          <li>เขาสูงราว 170–173 ซม. และรูปร่างที่เห็นในหนังเป็นแบบ <b>ลีน ไขมันต่ำ กล้ามพอดี</b> ไม่ใช่สายกล้ามใหญ่ ซึ่งเป็นเป้าที่ทำได้จริงสำหรับคุณ (165 ซม. / 64.5 กก.)</li>
-          <li>การฝึกของเขาเน้น <b>บอดี้เวท ยิมนาสติก และ conditioning</b> (ดึงข้อ ดิป วิดพื้น) ตามที่เทรนเนอร์ให้สัมภาษณ์ และมีทีมงาน เชฟ และเวลาฝึกเต็มวันก่อนถ่ายทำ</li>
-          <li>ภาพโปรโมตถ่ายช่วงไขมันต่ำที่สุด พร้อมแสงและการปั๊มกล้าม ไม่ใช่สภาพทุกวัน</li>
+          <li>เป้าหมายคือรูปร่าง <b>ลีน ไขมันต่ำ กล้ามพอดี</b> ไม่ใช่สายกล้ามใหญ่ ซึ่งทำได้จริงสำหรับคุณ (165 ซม. / 64.5 กก.)</li>
+          <li>ภาพที่เห็นตามสื่อมักถ่ายช่วงไขมันต่ำที่สุด พร้อมแสงและการปั๊มกล้าม ไม่ใช่สภาพทุกวัน</li>
           <li>มือใหม่เพิ่มกล้ามได้เร็วที่สุดในปีแรก แต่เป็นหลักไม่กี่กิโลกรัมต่อปี (ตัวเลขต่างกันมากตามพันธุกรรม การนอน และอาหาร ยังไม่มีงานวิจัยที่ให้ตัวเลขแน่นอน) ส่วนการลดไขมัน ~0.5% ของน้ำหนักตัว/สัปดาห์ช่วยรักษากล้ามได้ดีกว่าการลดเร็ว</li>
           <li>เวลาที่สมเหตุสมผล: เห็นความเปลี่ยนแปลงใน <b>8–12 สัปดาห์</b> และได้รูปร่างใกล้เคียงใน <b>1–2 ปี</b> ถ้าฝึกสม่ำเสมอ</li>
         </ul>}
