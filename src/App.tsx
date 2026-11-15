@@ -108,7 +108,7 @@ function Main({ session }: { session: Session | null }) {
     return true
   })
 
-  if (!onboarded) return <Onboarding onDone={() => setOnboarded(true)} />
+  if (!onboarded) return <Onboarding onDone={() => setOnboarded(true)} onExit={session ? undefined : () => setLocalMode(false)} />
 
   const current = tabs.find(x => x.id === tab)
   const title = tab === 'sources' ? t('ความรู้และแหล่งข้อมูล', 'Knowledge & sources') : current && t(current.title[0], current.title[1])

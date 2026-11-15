@@ -64,8 +64,15 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, quick = fa
       return [e.name, [...had, ...fresh[e.name]].slice(0, keep)]
     }))
   }
-  const state: Active = resumed
-    ? { ...resumed, idx: Math.min(resumed.idx, day.exercises.length - 1), rows: misfit.length ? { ...resumed.rows, ...fitted() } : resumed.rows }
+  // สลับฉบับ: ลำดับท่าเปลี่ยน idx เดิมชี้ผิดท่า → ไปท่าแรกที่ยังทำไม่ครบ
+  const resumeIdx = (rows: Active['rows']) => {
+    if (!misfit.length) return Math.min(resumed!.idx, day.exercises.length - 1)
+    const i = day.exercises.findIndex(e => !rows[e.name]?.every(r => r.done))
+    return i < 0 ? day.exercises.length - 1 : i
+  }
+  const resumedRows = resumed && (misfit.length ? { ...resumed.rows, ...fitted() } : resumed.rows)
+  const state: Active = resumed && resumedRows
+    ? { ...resumed, idx: resumeIdx(resumedRows), rows: resumedRows }
     : { key: sessionKey, startedAt: now, idx: 0, rows: freshRows(day.exercises) }
   const update = (fn: (s: Active) => Active) => setActive(fn(state))
 

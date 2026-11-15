@@ -14,12 +14,14 @@ import { DateInput, NumberInput, SelectInput } from './Form'
 import { ProgramPicker } from './ProgramPicker'
 import { useLang, useT } from '../lib/i18n'
 import { useDayText } from '../lib/dayText'
+import { useBackClose } from '../lib/back'
 
 const STEPS = ['เช็กสุขภาพ', 'ข้อมูลร่างกาย', 'เป้าหมาย', 'สถานที่ฝึก', 'พร้อมแล้ว']
 const STEPS_EN = ['Health check', 'About you', 'Goal', 'Where you train', 'All set']
 
 /** ตั้งค่าครั้งแรกหลัง login — ถามแค่ที่จำเป็น ที่เหลือแก้ทีหลังได้ */
-export function Onboarding({ onDone }: { onDone: () => void }) {
+/** `onExit`: โหมดไม่ล็อกอิน กลับไปหน้าเข้าสู่ระบบได้จากขั้นแรก (เดิมไม่มีทางออก ปุ่มย้อนกลับ Android ย่อแอปทิ้ง) */
+export function Onboarding({ onDone, onExit }: { onDone: () => void; onExit?: () => void }) {
   const p = useProgram()
   const tr = useT()
   const en = useLang()[0] === 'en'
@@ -33,6 +35,8 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
   const [where, setWhere] = useState<LocationPref>(p.location)
   const [raceDate, setRaceDate] = useState(p.raceDate)
   const [screen, setScreen] = useState<Screening>(saved ?? emptyScreening)
+  const back = () => (step > 0 ? setStep(s => s - 1) : onExit?.())
+  useBackClose(back, step > 0 || !!onExit)
   const set = <K extends keyof Profile>(k: K, v: Profile[K]) => setDraft(d => ({ ...d, [k]: v }))
 
   const finish = () => {
@@ -133,7 +137,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
       </div>
 
       <div className="flex gap-2">
-        {step > 0 && <Button variant="soft" size="lg" onClick={() => setStep(s => s - 1)}><ArrowLeft size={18} /></Button>}
+        {(step > 0 || onExit) && <Button variant="soft" size="lg" onClick={back}><ArrowLeft size={18} /><span className="sr-only">{step > 0 ? tr('ย้อนกลับ', 'Back') : tr('กลับไปหน้าเข้าสู่ระบบ', 'Back to sign-in')}</span></Button>}
         {step < STEPS.length - 1
           ? <Button size="lg" className="flex-1" onClick={() => setStep(s => s + 1)}>{tr('ถัดไป', 'Next')} <ArrowRight size={18} /></Button>
           : <Button size="lg" variant="success" className="flex-1" onClick={finish}><Check size={18} /> {tr('เริ่มใช้งาน', 'Get started')}</Button>}
