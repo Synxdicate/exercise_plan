@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 vi.mock('../sync', () => ({ exportData: () => ({ data: {} }) }))
-import { missingItems } from '../snapshots'
+import { lostItems, lostKeys, missingItems } from '../snapshots'
 import type { Run, Session } from '../log'
 
 const run = (id: string, date: string) => ({ id, date, km: 3, seconds: 1200, kind: 'easy', source: 'gps' }) as Run
@@ -17,5 +17,18 @@ describe('missingItems', () => {
   })
   it('handles snapshots without some keys', () => {
     expect(missingItems({ runs: [], sessions: [], log: [] }, { runs: null })).toEqual({ runs: [], sessions: [], log: [] })
+  })
+})
+
+describe('lostItems (home card)', () => {
+  it('unions every snapshot without duplicates and skips items the user deleted on purpose', () => {
+    const cur = { runs: [run('a', '2026-11-08')], sessions: [], log: [] }
+    const s1 = { runs: [run('a', '2026-11-08'), run('lost', '2026-11-10')], log: [{ date: '2026-11-09', weight: 64 }] }
+    const s2 = { runs: [run('lost', '2026-11-10'), run('deleted', '2026-11-11')], sessions: [sess('w', '2026-11-12')] }
+    const m = lostItems(cur, [s1, s2], new Set(['deleted']))
+    expect(m.runs.map(r => r.id)).toEqual(['lost'])
+    expect(m.sessions.map(s => s.id)).toEqual(['w'])
+    expect(lostKeys(m)).toEqual(['lost', 'w', 'log:2026-11-09'])
+    expect(lostItems(cur, [s1, s2], new Set(lostKeys(m).concat('deleted')))).toEqual({ runs: [], sessions: [], log: [] })
   })
 })

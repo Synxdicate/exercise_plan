@@ -51,10 +51,37 @@ const current = () => ({
 })
 export const missingNow = (snap: Data) => missingItems(current(), snap)
 
-/** เอารายการที่หายกลับมา (เขียนแบบผู้ใช้แก้ จึงซิงก์ขึ้น server ด้วย) คืนจำนวนที่เพิ่ม */
-export function recover(snap: Data) {
+// รายการที่ผู้ใช้ลบเอง (ค่าของเครื่อง) การ์ดหน้าหลักไม่ทวงคืน: id รอบวิ่ง/การฝึก หรือ `log:วันที่` ของน้ำหนัก
+export const IGNORE_KEY = 'lostIgnored'
+const logKey = (e: Entry) => `log:${e.date}`
+export const ignoredNow = () => new Set((readStored(IGNORE_KEY) as string[] | undefined) ?? [])
+/** จำว่าลบเอง (เรียกตอนผู้ใช้ลบ และตอนกด "ลบเองตั้งใจ" บนการ์ด) */
+export function markDeleted(ids: string[]) {
+  if (!ids.length) return
+  setStored(IGNORE_KEY, [...new Set([...ignoredNow(), ...ids])].slice(-300))
+}
+export const markLogDeleted = (date: string) => markDeleted([`log:${date}`])
+
+/** รายการที่มีในสำเนาวันใดวันหนึ่งแต่ตอนนี้ไม่มี ยกเว้นที่ลบเอง (รวมทุกสำเนา ไม่ซ้ำ) (pure, tested) */
+export function lostItems(cur: { runs: Run[]; sessions: Session[]; log: Entry[] }, snaps: Data[], ignore: Set<string>) {
+  const runs = new Map<string, Run>(), sessions = new Map<string, Session>(), log = new Map<string, Entry>()
+  for (const s of snaps) {
+    const m = missingItems(cur, s)
+    for (const r of m.runs) if (!ignore.has(r.id) && !runs.has(r.id)) runs.set(r.id, r)
+    for (const x of m.sessions) if (!ignore.has(x.id) && !sessions.has(x.id)) sessions.set(x.id, x)
+    for (const e of m.log) if (!ignore.has(logKey(e)) && !log.has(logKey(e))) log.set(logKey(e), e)
+  }
+  return { runs: [...runs.values()], sessions: [...sessions.values()], log: [...log.values()] }
+}
+export const lostNow = (snaps: Data[]) => lostItems(current(), snaps, ignoredNow())
+/** keys ของรายการ (ใช้กับ markDeleted) */
+export const lostKeys = (m: ReturnType<typeof lostItems>) => [...m.runs.map(r => r.id), ...m.sessions.map(s => s.id), ...m.log.map(logKey)]
+
+/** เอารายการที่หายกลับมา (เขียนแบบผู้ใช้แก้ จึงซิงก์ขึ้น server ด้วย) คืนจำนวนที่เพิ่ม `skip` = ไม่เอารายการที่ลบเอง */
+export function recover(snap: Data, skip: Set<string> = new Set()) {
   const cur = current()
-  const m = missingItems(cur, snap)
+  const all = missingItems(cur, snap)
+  const m = { runs: all.runs.filter(r => !skip.has(r.id)), sessions: all.sessions.filter(s => !skip.has(s.id)), log: all.log.filter(e => !skip.has(logKey(e))) }
   const byDate = <T extends { date: string }>(xs: T[]) => xs.sort((a, b) => a.date.localeCompare(b.date))
   if (m.runs.length) {
     const routes = (readStored('routes') as Record<string, RouteData> | undefined) ?? {}

@@ -20,6 +20,7 @@ import { useDateField } from '../lib/useToday'
 import { useT } from '../lib/i18n'
 import { trNow } from '../lib/i18n'
 import { titleEn } from '../lib/dayText'
+import { markDeleted, markLogDeleted } from '../lib/snapshots'
 import { useNav } from '../lib/nav'
 
 type Entry = { date: string; weight: number; waist?: number }
@@ -96,7 +97,7 @@ function BodyLog() {
               <li key={e.date} className="flex items-center justify-between gap-2 py-2.5 text-sm">
                 <span className="text-muted">{niceDate(e.date)}</span>
                 <span className="font-semibold tabular-nums">{e.weight} {tr('กก.', 'kg')}{e.waist ? ` · ${tr('เอว', 'waist')} ${e.waist}` : ''}</span>
-                <button aria-label={tr('ลบ', 'Delete')} className="text-muted" onClick={() => setLog(prev => prev.filter(x => x.date !== e.date))}><Trash2 size={16} /></button>
+                <button aria-label={tr('ลบ', 'Delete')} className="text-muted" onClick={() => { markLogDeleted(e.date); setLog(prev => prev.filter(x => x.date !== e.date)) }}><Trash2 size={16} /></button>
               </li>
             ))}
           </ul>
@@ -200,7 +201,7 @@ function WorkoutHistory() {
                 <div className="mt-3"><PhotoStrip kind="workout" refId={s.id} date={s.date} label={trNow('รูปการฝึก', 'Workout photos')} /></div>
                 <div className="mt-2 flex gap-2">
                   <Button variant="soft" size="sm" onClick={() => setEditing(s.id)}><Pencil size={14} /> {tr('แก้ไข', 'Edit')}</Button>
-                  <Button variant="danger" size="sm" onClick={async () => (await ask(tr('ลบบันทึกการฝึกนี้?', 'Delete this workout?'), { ok: tr('ลบ', 'Delete'), danger: true })) && (setSessions(prev => prev.filter(x => x.id !== s.id)), removePhotos(s.id))}>
+                  <Button variant="danger" size="sm" onClick={async () => (await ask(tr('ลบบันทึกการฝึกนี้?', 'Delete this workout?'), { ok: tr('ลบ', 'Delete'), danger: true })) && (markDeleted([s.id]), setSessions(prev => prev.filter(x => x.id !== s.id)), removePhotos(s.id))}>
                     <Trash2 size={14} /> {tr('ลบ', 'Delete')}
                   </Button>
                 </div>

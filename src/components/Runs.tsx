@@ -15,7 +15,7 @@ import { isNative } from '../lib/native'
 import { useSwipe } from '../lib/swipe'
 import { noticeText, onRunNoticeAction, stepNow, updateRunNotice } from '../lib/runNotice'
 import { ensureNotifications } from '../lib/notify'
-import { speak, splitAnnouncement } from '../lib/voice'
+import { buzz, speak, splitAnnouncement } from '../lib/voice'
 import { useGuide } from '../lib/useGuide'
 import { guideResult, guides, paceSec } from '../lib/guide'
 import { cueText, easyBand, PaceCoach, workBand } from '../lib/coach'
@@ -29,7 +29,8 @@ import { SweatCard } from './Sweat'
 import { CooldownSheet } from './Cooldown'
 import { CapNote } from './MissedRun'
 import { FinishCard } from './Finish'
-import { longRunCap } from '../lib/missed'
+import { longRunCap, reachedText } from '../lib/missed'
+import { markDeleted } from '../lib/snapshots'
 import { useRemovePhotosFor } from '../lib/photos'
 import { HeatCard } from './Heat'
 import { heatSlowdown, useWbgtNow } from '../lib/weather'
@@ -135,6 +136,9 @@ export function Runs() {
   // พลาดวิ่งยาวมาก่อน → แผนวันนี้อาจกระโดดเกิน 110% ของครั้งที่ยาวที่สุด: จบชุดซ้อมที่เพดานแทน
   const cap = longRunCap(runs, today(), todayRun)
   const planKm = steps && steps !== TRIAL ? (cap?.cap ?? todayRun?.targetKm) : undefined
+  // วิ่งที่ไม่มีชุดซ้อมนำ (วิ่งยาว/วิ่งเบาตามแผน): ถึงระยะของวันนี้หรือเพดาน 110% แล้วบอกครั้งเดียว (ชุดซ้อมนำจบเองด้วย guide.complete)
+  const reachKm = !steps && todayRun?.type === 'run' && kind === todayRun.runKind && kind !== 'race' ? (cap?.cap ?? todayRun.targetKm) : undefined
+  const reached = useRef(false)
   // แจ้งเตือนสด (แอป Android): ช่วงที่กำลังทำ เพซ ระยะ เวลา บนแจ้งเตือนของ GPS ดูได้จากหน้าล็อก ไม่ต้องเข้าแอป
   const [liveOn, setLiveOn] = usePersisted('liveNotice', true)
   const live = useRef({ at: 0, key: '' })
@@ -168,6 +172,11 @@ export function Runs() {
     guide.onTick(meters, active)
     pushLive(meters, pace)
     if (planKm && meters >= planKm * 1000 && guide.runner?.state.started && !guide.runner.state.done) guide.complete()
+    if (reachKm && !reached.current && meters >= reachKm * 1000) {
+      reached.current = true
+      buzz('done')
+      if (voice) void speak(reachedText(reachKm, !!cap), true)
+    }
     ghostTick(meters)
     if (!voice || !coachOn || !est) return
     const r = guide.runner
@@ -227,6 +236,7 @@ export function Runs() {
     guide.reset()
     if (ghostNow && ghostOn) notify(ghostNow.lead >= 0 ? tr(`ชนะเงา ${Math.round(ghostNow.lead)} วินาที`, `Beat the ghost by ${Math.round(ghostNow.lead)} s`) : tr(`ช้ากว่าเงา ${Math.round(-ghostNow.lead)} วินาที ครั้งหน้าเอาใหม่`, `${Math.round(-ghostNow.lead)} s behind the ghost — next time`), ghostNow.lead >= 0 ? 'good' : 'info')
     resetGhost()
+    reached.current = false
     const r = t.finish()
     if (r.km < 0.05) return notify(tr('ระยะสั้นเกินไป ไม่ได้บันทึก', 'Too short — not saved'), 'bad')
     const run: Run = { id: uid(), date: today(), kind, source: 'gps', ...r, ...(done && { guide: done }) }
@@ -250,7 +260,7 @@ export function Runs() {
   if (t.status !== 'idle') return (
     <ActiveRun t={t} kind={kind} target={todayRun?.targetKm} fiveK={zoneRef} voice={voice} setVoice={setVoice} onFinish={finish} liveOn={liveOn} setLiveOn={setLiveOn}
       coachOn={coachOn && !!est} setCoachOn={est ? setCoachOn : undefined}
-      onDiscard={() => { guide.reset(); resetGhost(); t.discard() }}
+      onDiscard={() => { guide.reset(); resetGhost(); reached.current = false; t.discard() }}
       ghost={ghost && <GhostCard ghost={ghost} now={ghostNow} on={ghostOn} setOn={setGhostOn} />}
       guide={steps && (
         <GuideCard steps={steps} runner={guide.runner} meters={t.meters} paces={paces}
@@ -338,7 +348,7 @@ export function Runs() {
           </div>
         }>
           <Collapse open={manual}><ManualEntry onSave={r => { save(r); setManual(false) }} /></Collapse>
-          <RunHistory runs={runs} onOpen={setDetail} />
+          <RunHistory runs={runs} onOpen={setDetail} onRate={(id, rpe) => setRuns(prev => prev.map(x => (x.id === id ? { ...x, rpe } : x)))} />
         </Card>
         <CrossTrainingCard />
         </>
@@ -370,7 +380,7 @@ export function Runs() {
           onProceed={light => { if (light) setKind('easy'); setChecking(false); t.acquire() }} />
       )}
 
-      {open && <RunDetail run={open} runs={runs} fiveK={zoneRef} onClose={() => setDetail(null)} onUpdate={patch => setRuns(prev => prev.map(x => (x.id === open.id ? { ...x, ...patch } : x)).sort((a, b) => a.date.localeCompare(b.date)))} onDelete={() => { setRuns(prev => prev.filter(x => x.id !== open.id)); removePhotos(open.id); setDetail(null) }} />}
+      {open && <RunDetail run={open} runs={runs} fiveK={zoneRef} onClose={() => setDetail(null)} onUpdate={patch => setRuns(prev => prev.map(x => (x.id === open.id ? { ...x, ...patch } : x)).sort((a, b) => a.date.localeCompare(b.date)))} onDelete={() => { markDeleted([open.id]); setRuns(prev => prev.filter(x => x.id !== open.id)); removePhotos(open.id); setDetail(null) }} />}
     </div>
   )
 }

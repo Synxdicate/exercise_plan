@@ -3,10 +3,12 @@ import { ChevronRight, Footprints } from 'lucide-react'
 import { formatDuration, formatPace, runKinds, runKindsEn, type Run } from '../lib/log'
 import { runsOnly } from '../lib/walk'
 import { projectRoute } from '../lib/geo'
-import { monthLabel, niceDate } from '../lib/date'
+import { addDays, monthLabel, niceDate, today } from '../lib/date'
 import { cx } from '../lib/cx'
 import { useT } from '../lib/i18n'
 import { Badge } from './ui'
+import { RpePicker } from './RpePicker'
+import { isWalk } from '../lib/walk'
 
 /** เส้นทางย่อแบบภาพตัวอย่าง (แทนไอคอน) การวิ่งที่ไม่มีเส้นทางใช้ไอคอนเดิม */
 export function RoutePreview({ run, className }: { run: Run; className?: string }) {
@@ -49,7 +51,10 @@ function RouteBanner({ run }: { run: Run }) {
 const PAGE = 3 // จำนวนเดือนที่แสดงต่อครั้ง
 
 /** ประวัติการวิ่งแบ่งตามเดือน พร้อมยอดรวมรายเดือนและตัวกรองชนิด */
-export function RunHistory({ runs, onOpen }: { runs: Run[]; onOpen: (id: string) => void }) {
+/** `onRate`: รอบล่าสุด (14 วัน) ที่ยังไม่ได้ให้คะแนนความเหนื่อย ให้คะแนนจากการ์ดได้เลย ไม่ต้องเปิดรายละเอียด */
+export function RunHistory({ runs, onOpen, onRate }: { runs: Run[]; onOpen: (id: string) => void; onRate?: (id: string, rpe: number) => void }) {
+  const [rating, setRating] = useState<string | null>(null)
+  const rateFrom = addDays(today(), -14)
   const [kind, setKind] = useState<Run['kind'] | 'all'>('all')
   const tr = useT()
   const kindName = (k: Run['kind']) => tr(runKinds[k], runKindsEn[k])
@@ -104,6 +109,9 @@ export function RunHistory({ runs, onOpen }: { runs: Run[]; onOpen: (id: string)
                     </div>
                     {big && <RouteBanner run={r} />}
                   </button>
+                  {onRate && !r.rpe && !isWalk(r) && r.date >= rateFrom && (rating === r.id
+                    ? <div className="mx-1 -mt-1 rounded-b-2xl bg-raised p-3"><RpePicker onPick={v => { onRate(r.id, v); setRating(null) }} /></div>
+                    : <button onClick={() => setRating(r.id)} className="mx-1 -mt-1 w-[calc(100%-0.5rem)] rounded-b-2xl bg-raised px-3 py-2 text-left text-xs font-semibold text-run">{tr('ยังไม่ได้ให้คะแนนความเหนื่อย แตะเพื่อให้คะแนน', 'No effort rating yet: tap to rate')}</button>)}
                 </li>
               )
             })}

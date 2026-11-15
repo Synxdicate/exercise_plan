@@ -1,4 +1,5 @@
 import { applyPainGuard, painGuardUntil } from './painPlan'
+import { tendonAlarmDates, type TendonLog } from './tendon'
 import type { Readiness } from './readiness'
 import { useEffect, useMemo } from 'react'
 import { programs, variants, withHills, weekKm, weekPlan, type LocationPref, type Mode, type ProgramId } from '../data/programs'
@@ -123,7 +124,9 @@ export function useProgram() {
   const [readinessLog] = usePersisted<Record<string, Readiness>>('readiness', {})
   // "หายแล้ว" บนป้าย: เก็บวันสิ้นสุดของรอบที่ปิดไว้ (บันทึกปวดใหม่ = รอบใหม่ กลับมาปรับอีก)
   const [painOff, setPainOff] = usePersisted('painGuardOff', '')
-  const painRaw = painGuardUntil(readinessLog, today())
+  // เช็กขาตอนเช้าที่เกิน 3/10 หรือแย่ลง นับเป็นวันปวดด้วย
+  const [tendonLog] = usePersisted<TendonLog>('tendonLog', {})
+  const painRaw = painGuardUntil(readinessLog, today(), tendonAlarmDates(tendonLog))
   const painUntil = painRaw && painRaw !== painOff ? painRaw : null
   const [swaps, setSwaps] = usePersisted<Record<string, string>>('exerciseSwaps', {})
   const [extras, setExtras] = usePersisted<Record<string, Exercise[]>>('extraExercises', {})

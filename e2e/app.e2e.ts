@@ -987,3 +987,44 @@ test('เอารายการที่หายกลับมาจาก�
   await page.getByRole('button', { name: 'เอากลับมา' }).click()
   await expect.poll(async () => ((await idb(page, 'runs')) as { id: string; elev?: unknown }[]).map(r => `${r.id}:${r.elev ? 'elev' : '-'}`)).toEqual(['lost:-', 'new:-'])
 })
+
+test('เช็กขาเช้านี้: เคยปวดเอ็นร้อยหวาย + เมื่อวานวิ่ง → ถามคะแนน เกิน 3 แล้วแผนถนอมขาเปิดเอง', async ({ page }) => {
+  await seed(page, {
+    readiness: { [ymd(10)]: { sleep: 0, sore: 1, pain: true, areas: ['achilles'] } },
+    runs: [{ id: 'y', date: ymd(1), km: 6, seconds: 3100, kind: 'long', source: 'manual', rpe: 5 }],
+  })
+  await expect(page.getByText('เช็กขาเช้านี้')).toBeVisible()
+  await expect(page.getByText(/แผนถนอมขาถึง/)).toHaveCount(0)
+  await page.getByRole('button', { name: '4 จาก 10' }).click()
+  await expect(page.getByText(/เกิน 3 จาก 10 วันนี้งดวิ่ง/)).toBeVisible()
+  await expect(page.getByText(/แผนถนอมขาถึง/)).toBeVisible()
+  expect(await idb(page, 'tendonLog')).toEqual({ [ymd()]: 4 })
+  await page.getByRole('button', { name: 'รับทราบ' }).click()
+  await expect(page.getByText('เช็กขาเช้านี้')).toHaveCount(0)
+})
+
+test('การ์ดรายการที่หาย: สำเนาในเครื่องมีรอบวิ่งที่ตอนนี้ไม่มี → บอกบนหน้าหลักและเอากลับมาได้', async ({ page }) => {
+  const keep = { id: 'keep', date: ymd(3), km: 4, seconds: 1600, kind: 'easy', source: 'manual', rpe: 4 }
+  const gone = { id: 'gone', date: ymd(5), km: 5.2, seconds: 1800, kind: 'easy', source: 'manual', rpe: 4 }
+  await seed(page, { runs: [keep] })
+  await page.evaluate(([day, data]) => new Promise(res => {
+    const r = indexedDB.open('exercise-plan')
+    r.onsuccess = () => { const tx = r.result.transaction('blobs', 'readwrite'); tx.objectStore('blobs').put(data, `snap:${day}`); tx.oncomplete = res }
+  }), [ymd(4), { runs: [gone, keep] }] as const)
+  await page.reload()
+  await expect(page.getByText('พบ 1 รายการที่เคยบันทึกแต่ตอนนี้หายไป')).toBeVisible({ timeout: 10_000 })
+  await page.getByRole('button', { name: 'เอากลับมา' }).click()
+  await expect(page.getByText(/รายการที่เคยบันทึกแต่ตอนนี้หายไป/)).toHaveCount(0)
+  await expect.poll(async () => ((await idb(page, 'runs')) as { id: string }[]).map(r => r.id)).toEqual(['gone', 'keep'])
+})
+
+test('ประวัติวิ่ง: ให้คะแนนความเหนื่อยจากการ์ดได้เลย', async ({ page }) => {
+  await seed(page, { runs: [{ id: 'n', date: ymd(1), km: 3, seconds: 1300, kind: 'easy', source: 'manual' }] })
+  await nav(page, 'วิ่ง')
+  await page.getByRole('button', { name: 'ประวัติ', exact: true }).click()
+  await settled(page)
+  await page.getByRole('button', { name: /ยังไม่ได้ให้คะแนนความเหนื่อย/ }).click()
+  await page.locator('main').getByRole('button', { name: 'ความเหนื่อย 5' }).click()
+  await expect.poll(async () => ((await idb(page, 'runs')) as { rpe?: number }[])[0].rpe).toBe(5)
+  await expect(page.getByRole('button', { name: /ยังไม่ได้ให้คะแนนความเหนื่อย/ })).toHaveCount(0)
+})

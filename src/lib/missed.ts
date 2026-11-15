@@ -22,6 +22,14 @@ export function longRunCap(runs: Run[], date: string, day: Pick<Day, 'targetKm' 
   return day.targetKm > cap ? { cap, longest } : null
 }
 
+/** เสียงตอนถึงระยะของวันนี้ (วิ่งที่ไม่มีชุดซ้อมนำ เช่น วิ่งยาว) เดิมเตือนแค่หน้าเริ่มวิ่ง ระหว่างวิ่งไม่มีอะไรบอก จึงวิ่งเกินเพดานไปได้ */
+export function reachedText(km: number, capped: boolean) {
+  const k = String(+km.toFixed(1))
+  return capped
+    ? `ครบ ${k} กิโลแล้ว เป็นระยะที่ปลอดภัยสำหรับวันนี้ เพราะไม่ยาวกว่ารอบที่ไกลที่สุดในเดือนนี้เกิน 10 เปอร์เซ็นต์ จบได้เลย แล้วเดินคูลดาวน์`
+    : `ครบ ${k} กิโลตามแผนวันนี้แล้ว จบได้เลย แล้วเดินคูลดาวน์`
+}
+
 const isKey = (d: Day | undefined) => d?.type === 'run' && (d.runKind === 'long' || d.runKind === 'tempo' || d.runKind === 'interval')
 
 export type Missed =

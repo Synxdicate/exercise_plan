@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { weekPlan } from '../../data/programs'
-import { longRunCap, missedKeyRun } from '../missed'
+import { longRunCap, missedKeyRun, reachedText } from '../missed'
 import { looksLikeWalk, runsOnly } from '../walk'
 import type { Run } from '../log'
 
@@ -102,5 +102,12 @@ describe('circuitFit', () => {
     expect(circuitFit(w, 0)).toBe('skip') // วันเวท
     expect(circuitFit(w, 5)).toBe('avoid') // วันก่อนวิ่งยาว
     expect(circuitFit(w, 6)).toBe('avoid') // วันวิ่งยาว
+  })
+})
+
+describe('reachedText (spoken when an unguided planned run reaches its distance)', () => {
+  it('says the cap is the safe distance when capped, else the plan distance', () => {
+    expect(reachedText(5.5, true)).toMatch(/^ครบ 5\.5 กิโลแล้ว เป็นระยะที่ปลอดภัย/)
+    expect(reachedText(6, false)).toBe('ครบ 6 กิโลตามแผนวันนี้แล้ว จบได้เลย แล้วเดินคูลดาวน์')
   })
 })

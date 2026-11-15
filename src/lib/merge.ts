@@ -1,6 +1,6 @@
 type WithId = { id?: string; date?: string }
 
-const OBJECT_KEYS = ['done', 'dayLocation', 'readiness', 'foodLog', 'routes', 'dayMoves', 'raceChecklist', 'weekCheck']
+const OBJECT_KEYS = ['done', 'dayLocation', 'readiness', 'foodLog', 'routes', 'dayMoves', 'raceChecklist', 'weekCheck', 'tendonLog']
 
 /**
  * ค่าที่แก้ในเครื่อง (ยังไม่ได้ส่ง) ชนกับค่าบน server ที่เปลี่ยนไปหลังจากเครื่องนี้เห็นครั้งล่าสุด (อีกเครื่องเขียนมา)

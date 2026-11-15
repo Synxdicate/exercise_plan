@@ -15,10 +15,12 @@ export const PAIN_NOTES = {
   strength: 'บันทึกว่าปวดน่อง/เอ็นร้อยหวาย/เท้าใน 7 วันล่าสุด: งดท่ากระโดดไว้ก่อน เขย่งช้า ๆ (ขึ้น 3 วิ ลง 3 วิ) ได้ถ้าปวดไม่เกิน 3 จาก 10',
 }
 
-/** วันสุดท้ายที่แผนยังปรับตามอาการปวดขาช่วงล่าง (null = ไม่มีบันทึกปวดใน 7 วันล่าสุด) */
-export function painGuardUntil(log: Record<string, Readiness>, today: string): string | null {
+/** วันสุดท้ายที่แผนยังปรับตามอาการปวดขาช่วงล่าง (null = ไม่มีบันทึกปวดใน 7 วันล่าสุด)
+ * `extra`: วันที่เช็กขาตอนเช้าแล้วเกิน 3/10 หรือแย่ลง (tendon.ts) นับเหมือนบันทึกปวด */
+export function painGuardUntil(log: Record<string, Readiness>, today: string, extra: string[] = []): string | null {
   const from = addDays(today, -(PAIN_DAYS - 1))
-  const last = Object.keys(log).filter(d => d >= from && d <= today && log[d]?.pain && log[d].areas?.some(a => LOWER_LEG.includes(a))).sort().at(-1)
+  const logged = Object.keys(log).filter(d => log[d]?.pain && log[d].areas?.some(a => LOWER_LEG.includes(a)))
+  const last = [...logged, ...extra].filter(d => d >= from && d <= today).sort().at(-1)
   return last ? addDays(last, PAIN_DAYS - 1) : null
 }
 
