@@ -13,7 +13,8 @@ describe('morning leg check', () => {
     expect(tendonCheckDue([run('2026-11-14')], ach, {}, '2026-11-16')).toBe(false) // no run yesterday
     expect(tendonCheckDue([run('2026-11-15', 'walk')], ach, {}, '2026-11-16')).toBe(false)
     expect(tendonCheckDue([run('2026-12-20')], ach, {}, '2026-12-21')).toBe(false) // pain too long ago
-    expect(tendonCheckDue([run('2026-11-15')], { '2026-11-10': { sleep: 0, sore: 0, pain: true, areas: ['knee'] } }, {}, '2026-11-16')).toBe(false)
+    expect(tendonCheckDue([run('2026-11-15')], { '2026-11-10': { sleep: 0, sore: 0, pain: true, areas: ['knee'] } }, {}, '2026-11-16')).toBe(true) // knee is watched too
+    expect(tendonCheckDue([run('2026-11-15')], { '2026-11-10': { sleep: 0, sore: 0, pain: true, areas: ['back'] } }, {}, '2026-11-16')).toBe(false)
     // a non-zero morning check keeps the watch going
     expect(tendonCheckDue([run('2026-12-20')], ach, { '2026-12-01': 1 }, '2026-12-21')).toBe(true)
   })

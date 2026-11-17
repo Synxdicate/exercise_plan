@@ -50,6 +50,12 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- สายวัดชีพจรบลูทูธ (HeartRatePlugin): Android 12+ ใช้ SCAN/CONNECT ไม่ต้องใช้ตำแหน่ง รุ่นเก่าใช้ BLUETOOTH/ADMIN + ตำแหน่ง (มีอยู่แล้วสำหรับ GPS) -->
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="false" />
     <!-- นาฬิกาพักต้องเตือนตรงเวลาแม้จอดับ — Android 14+ ไม่ให้ SCHEDULE_EXACT_ALARM อัตโนมัติ
          (แอปนี้ติดตั้งเองไม่ผ่าน Play Store จึงใช้ USE_EXACT_ALARM ได้) -->
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />

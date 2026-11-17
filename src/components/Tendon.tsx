@@ -26,7 +26,7 @@ export function TendonCheckCard() {
         <Footprints size={18} className="mt-0.5 shrink-0 text-run" />
         <div className="min-w-0 flex-1 text-sm">
           <div className="font-bold">{t('เช็กขาเช้านี้', 'Morning leg check')}</div>
-          <p className="text-muted">{t('ก้าวแรกหลังตื่นนอน เจ็บหรือตึงเอ็นร้อยหวาย น่อง หรือฝ่าเท้ากี่คะแนน (0 = ไม่เจ็บ 10 = เจ็บมากที่สุด) อาการเช้าหลังวันวิ่งบอกได้ดีกว่าตอนวิ่งว่าเอ็นรับไหวไหม', 'First steps after waking: how much do your Achilles, calf or sole hurt or feel stiff (0 = none, 10 = worst)? The morning after a run tells you more than pain during it.')}</p>
+          <p className="text-muted">{t('ก้าวแรกหลังตื่นนอนหรือตอนเดินลงบันได จุดที่เคยเจ็บ (เอ็นร้อยหวาย น่อง ฝ่าเท้า หน้าแข้ง หรือเข่า) เจ็บหรือตึงกี่คะแนน (0 = ไม่เจ็บ 10 = เจ็บมากที่สุด) อาการเช้าหลังวันวิ่งบอกได้ดีกว่าตอนวิ่งว่าขารับไหวไหม', 'First steps after waking or walking down stairs: how much does the spot that hurt before (Achilles, calf, sole, shin or knee) hurt or feel stiff (0 = none, 10 = worst)? The morning after a run tells you more than pain during it.')}</p>
         </div>
       </div>
       <div className="mt-2.5 grid grid-cols-11 gap-1">

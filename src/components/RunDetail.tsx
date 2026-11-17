@@ -24,6 +24,7 @@ import { cx } from '../lib/cx'
 import { ask, notify } from '../lib/dialog'
 import { ErrorBoundary } from './ErrorBoundary'
 import { ElevationCard, RunAchievements } from './RunExtras'
+import { RunHrCard } from './Zone'
 
 const RunMap = lazy(() => import('./RunMap'))
 
@@ -151,6 +152,7 @@ export function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { r
           </div>
         )}
         {run.splits && run.splits.length > 0 && <Splits splits={run.splits} fiveK={fiveK} gap={run.elevProfile && run.elevProfile.length > 2 && (run.elev?.gain ?? 0) >= 5 ? gapSplits(run.splits, run.elevProfile, run.km) : undefined} />}
+        {run.hr && <div className="mt-3"><RunHrCard hr={run.hr} /></div>}
         <div className="mt-3"><ElevationCard run={run} onUpdate={onUpdate} onScrub={setScrub} /></div>
         <MatchedRuns run={run} runs={runs} />
         <div className="mt-3 rounded-2xl bg-raised p-3"><RpePicker value={run.rpe} onPick={rpe => onUpdate({ rpe })} /></div>

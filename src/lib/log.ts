@@ -1,3 +1,4 @@
+import type { RunHr } from './hrLog'
 import { ELEV_V, elevStats } from './elevation'
 import type { Point } from './gps'
 import { useCallback, useEffect, useMemo } from 'react'
@@ -22,6 +23,7 @@ export type Run = {
   guide?: { work: number; total: number; finished: boolean } // ทำชุดซ้อม (เสียงนำ) ได้กี่ช่วงหลัก
   elev?: { gain: number; loss: number; max: number; min: number; v?: number } // จากแผนที่ความสูง (elevation.ts)
   elevProfile?: number[] // ความสูง ~100 จุดเท่า ๆ กันตามระยะ เก็บใน routes
+  hr?: RunHr // จากสายวัดชีพจรบลูทูธ (hrLog.ts)
 }
 
 export type SetEntry = { kg: number; reps: number }

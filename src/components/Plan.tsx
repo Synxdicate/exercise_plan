@@ -1,6 +1,7 @@
 import { ReplaySoFar } from './Replay'
 import { CourseCard } from './Course'
 import { EaseOffCard, PainGuardCard } from './Coach'
+import { JumpRopeOffer } from './JumpRope'
 import { memo, useDeferredValue, useMemo, useState } from 'react'
 import { useSwipe } from '../lib/swipe'
 
@@ -326,6 +327,8 @@ function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slo
           )}
         </div>
       )}
+
+      {day.type === 'strength' && <JumpRopeOffer day={day} />}
 
       {day.movedFrom !== undefined && (
         <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-run"><ArrowLeftRight size={13} /> {t(`สลับมาจากวัน${WEEKDAYS_TH[day.movedFrom]}`, `Moved from ${WEEKDAYS_EN[day.movedFrom]}`)}</p>

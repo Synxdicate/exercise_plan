@@ -25,6 +25,11 @@ import { GuideCard } from './Guide'
 import { usePersisted } from '../lib/storage'
 import { RunFormTips } from './RunForm'
 import { DrillsCard } from './Drills'
+import { LiveHr, ZoneCard } from './Zone'
+import { HrRecorder } from '../lib/hrLog'
+import { hrNow } from '../lib/heartRate'
+import { hrMaxFor, talkCheckIndex, TALK_TEXT } from '../lib/zone'
+import { defaultProfile, type Profile } from '../lib/calc'
 import { SweatCard } from './Sweat'
 import { CooldownSheet } from './Cooldown'
 import { CapNote } from './MissedRun'
@@ -139,6 +144,13 @@ export function Runs() {
   // วิ่งที่ไม่มีชุดซ้อมนำ (วิ่งยาว/วิ่งเบาตามแผน): ถึงระยะของวันนี้หรือเพดาน 110% แล้วบอกครั้งเดียว (ชุดซ้อมนำจบเองด้วย guide.complete)
   const reachKm = !steps && todayRun?.type === 'run' && kind === todayRun.runKind && kind !== 'race' ? (cap?.cap ?? todayRun.targetKm) : undefined
   const reached = useRef(false)
+  // zone 2: เตือนให้ลองพูดทุก 10 นาทีบนวิ่งเบา/วิ่งยาวที่ไม่มีเสียงนำ (zone.ts)
+  const [talkOn] = usePersisted('talkCue', true)
+  const talkIdx = useRef(0)
+  // สายวัดชีพจร: สะสมตามเวลาวิ่งจริง เก็บกับรอบวิ่ง (hrLog.ts)
+  const [profile] = usePersisted<Profile>('profile', defaultProfile)
+  const [hrMaxStored] = usePersisted<number | null>('hrMax', null)
+  const hrRec = useRef<HrRecorder | null>(null)
   // แจ้งเตือนสด (แอป Android): ช่วงที่กำลังทำ เพซ ระยะ เวลา บนแจ้งเตือนของ GPS ดูได้จากหน้าล็อก ไม่ต้องเข้าแอป
   const [liveOn, setLiveOn] = usePersisted('liveNotice', true)
   const live = useRef({ at: 0, key: '' })
@@ -178,6 +190,20 @@ export function Runs() {
       if (voice) void speak(reachedText(reachKm, !!cap), true)
     }
     ghostTick(meters)
+    const elapsed = tRef.current?.snap().elapsed ?? 0
+    if (active) {
+      const bpm = hrNow()
+      if (bpm && !hrRec.current) hrRec.current = new HrRecorder(hrMaxFor(hrMaxStored, profile.age))
+      hrRec.current?.add(elapsed, bpm)
+    }
+    if (voice && talkOn && !steps && (kind === 'easy' || kind === 'long')) {
+      const i = talkCheckIndex(elapsed)
+      if (i > talkIdx.current) {
+        // เปิดแอปกลับมากลางรอบ (เริ่มนับใหม่): ข้ามครั้งที่เลยมาแล้ว ไม่พูดทันที
+        if (talkIdx.current > 0 || elapsed < 600 + 60) void speak(TALK_TEXT)
+        talkIdx.current = i
+      }
+    }
     if (!voice || !coachOn || !est) return
     const r = guide.runner
     const step = r && r.state.started && !r.state.done ? r.steps[r.state.index] : null
@@ -237,9 +263,12 @@ export function Runs() {
     if (ghostNow && ghostOn) notify(ghostNow.lead >= 0 ? tr(`ชนะเงา ${Math.round(ghostNow.lead)} วินาที`, `Beat the ghost by ${Math.round(ghostNow.lead)} s`) : tr(`ช้ากว่าเงา ${Math.round(-ghostNow.lead)} วินาที ครั้งหน้าเอาใหม่`, `${Math.round(-ghostNow.lead)} s behind the ghost — next time`), ghostNow.lead >= 0 ? 'good' : 'info')
     resetGhost()
     reached.current = false
+    talkIdx.current = 0
+    const hr = hrRec.current?.result()
+    hrRec.current = null
     const r = t.finish()
     if (r.km < 0.05) return notify(tr('ระยะสั้นเกินไป ไม่ได้บันทึก', 'Too short — not saved'), 'bad')
-    const run: Run = { id: uid(), date: today(), kind, source: 'gps', ...r, ...(done && { guide: done }) }
+    const run: Run = { id: uid(), date: today(), kind, source: 'gps', ...r, ...(done && { guide: done }), ...(hr && { hr }) }
     save(run)
     setCooldown(run)
   }
@@ -260,7 +289,7 @@ export function Runs() {
   if (t.status !== 'idle') return (
     <ActiveRun t={t} kind={kind} target={todayRun?.targetKm} fiveK={zoneRef} voice={voice} setVoice={setVoice} onFinish={finish} liveOn={liveOn} setLiveOn={setLiveOn}
       coachOn={coachOn && !!est} setCoachOn={est ? setCoachOn : undefined}
-      onDiscard={() => { guide.reset(); resetGhost(); reached.current = false; t.discard() }}
+      onDiscard={() => { guide.reset(); resetGhost(); reached.current = false; talkIdx.current = 0; hrRec.current = null; t.discard() }}
       ghost={ghost && <GhostCard ghost={ghost} now={ghostNow} on={ghostOn} setOn={setGhostOn} />}
       guide={steps && (
         <GuideCard steps={steps} runner={guide.runner} meters={t.meters} paces={paces}
@@ -331,6 +360,7 @@ export function Runs() {
             </p>
           )}
           {kind !== 'walk' && <DrillsCard kind={kind} />}
+          {kind !== 'walk' && <ZoneCard kind={kind} />}
           <RunFormTips />
         </>
       )}
@@ -447,6 +477,7 @@ function ActiveRun({ t, kind, target, fiveK, voice, setVoice, coachOn, setCoachO
           <Stat label={tr('เพซตอนนี้', 'Current pace')} value={t.currentPace ? formatPace(t.currentPace, 1) : '--:--'} />
         </div>
 
+        <LiveHr />
         {guide}
         {ghost}
 

@@ -1,4 +1,4 @@
-import { applyPainGuard, painGuardUntil } from './painPlan'
+import { applyPainGuard, applyReturn, legPhase, offValue } from './painPlan'
 import { tendonAlarmDates, type TendonLog } from './tendon'
 import type { Readiness } from './readiness'
 import { useEffect, useMemo } from 'react'
@@ -126,8 +126,13 @@ export function useProgram() {
   const [painOff, setPainOff] = usePersisted('painGuardOff', '')
   // เช็กขาตอนเช้าที่เกิน 3/10 หรือแย่ลง นับเป็นวันปวดด้วย
   const [tendonLog] = usePersisted<TendonLog>('tendonLog', {})
-  const painRaw = painGuardUntil(readinessLog, today(), tendonAlarmDates(tendonLog))
-  const painUntil = painRaw && painRaw !== painOff ? painRaw : null
+  // ช่วงกลับมาซ้อม (7 วันหลังช่วงถนอมขา) ปิดเองได้: เก็บวันสิ้นสุดของช่วงที่ปิด
+  const [backOff, setBackOff] = usePersisted('returnOff', '')
+  const leg = legPhase(readinessLog, today(), tendonAlarmDates(tendonLog), painOff, backOff)
+  const painRaw = leg.raw
+  const painUntil = leg.guard
+  const returnUntil = leg.back
+  const knee = leg.knee
   const [swaps, setSwaps] = usePersisted<Record<string, string>>('exerciseSwaps', {})
   const [extras, setExtras] = usePersisted<Record<string, Exercise[]>>('extraExercises', {})
   const [solo, setSolo] = usePersisted('soloMode', false)
@@ -188,7 +193,7 @@ export function useProgram() {
 
   const easeIn = (week: number) => !!easeOff && easeOff.from <= addDays(mondayOf(week), 6) && easeOff.to >= mondayOf(week)
   // ทุกคอมโพเนนต์ที่เรียก useProgram ใช้แผนชุดเดียวกัน (การ์ดหน้าหลัก เหรียญ เป้าเดือน คิดแผนหลายสิบสัปดาห์ทุกครั้งที่ render)
-  const planMemo = planCacheFor([program, location, overrides, start, programStart, repeats, raceDate, raceKmOverride, raceHills, easeOff, painUntil, swaps, extras, solo, moves, baseline, thisMonday, today()])
+  const planMemo = planCacheFor([program, location, overrides, start, programStart, repeats, raceDate, raceKmOverride, raceHills, easeOff, painUntil, returnUntil, knee, swaps, extras, solo, moves, baseline, thisMonday, today()])
   const planOf = (week: number) => {
     let v = planMemo.get(week)
     if (!v) planMemo.set(week, (v = buildPlan(week)))
@@ -201,7 +206,8 @@ export function useProgram() {
     const mv = moves[mondayOf(week)]
     const eased = (d: Day[]) => safeLayer('easeOff', () => applyEaseOff(d, mondayOf(week), easeOff), () => d)
     // ปวดขาช่วงล่างที่เพิ่งบันทึก: ตัด strides/เนิน/ช่วงเร็ว/ท่ากระโดด 7 วัน (หลังสลับวัน เพราะคิดตามวันที่จริง)
-    const guarded = (d: Day[]) => eased(safeLayer('pain', () => applyPainGuard(d, mondayOf(week), today(), painUntil), () => d))
+    // ช่วงกลับมาซ้อมหลังจากนั้น: ช่วงเร็วเป็น strides วิ่งยาว ≤90% ยังงดกระโดด
+    const guarded = (d: Day[]) => eased(safeLayer('pain', () => applyReturn(applyPainGuard(d, mondayOf(week), today(), painUntil, knee), mondayOf(week), today(), returnUntil), () => d))
     const moved = (d: Day[]) => guarded(safeLayer('moves', () => applyMoves(d, mv), () => d))
     if (!isRace || week !== meta.weeks) return moved(days)
     const sized = raceKmOverride ? safeLayer('raceKm', () => withRaceKm(days, raceKmOverride), () => days) : days
@@ -295,7 +301,14 @@ export function useProgram() {
     plan: (week = currentWeek) => planOf(week),
     /** แผนปรับตามอาการปวดขาช่วงล่างถึงวันนี้ (null = ไม่ได้ปรับ) */
     painUntil,
-    clearPainGuard: () => setPainOff(painRaw ?? ''),
+    /** แผนถนอมขาแบบเข่า (เคยบันทึกเจ็บเข่าใน 28 วัน) */
+    painKnee: knee,
+    /** "หายแล้ว": ปิดช่วงถนอมขา แล้วเริ่มช่วงกลับมาซ้อม 7 วันวันนี้ */
+    clearPainGuard: () => setPainOff(painRaw ? offValue(painRaw, today()) : ''),
+    /** ช่วงกลับมาซ้อมถึงวันนี้ (null = ไม่อยู่ในช่วงนี้) */
+    returnUntil,
+    /** ใช้แผนเต็มเลย ไม่ต้องรอช่วงกลับมาซ้อมจบ */
+    clearReturn: () => setBackOff(returnUntil ?? ''),
     /** ช่วงนี้ไม่ไหว: ปรับแผนชั่วคราว (null = กลับแผนปกติ) */
     easeOff,
     setEaseOff,

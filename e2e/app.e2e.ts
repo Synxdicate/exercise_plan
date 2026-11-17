@@ -417,7 +417,7 @@ test('เซอร์กิตแกนกลาง: เริ่ม ข้า�
   await page.getByRole('button', { name: /^2 รอบ/ }).click()
   await page.getByRole('button', { name: 'เริ่มเซอร์กิต' }).click()
   await expect(page.getByText('แพลงก์').first()).toBeVisible()
-  for (let i = 0; i < 31; i++) await page.getByRole('button', { name: 'ข้าม' }).click()
+  for (let i = 0; i < 31; i++) await page.getByRole('button', { name: 'ข้าม', exact: true }).click()
   await expect(page.getByText('จบเซอร์กิตแล้ว')).toBeVisible()
   await page.getByRole('button', { name: 'บันทึก', exact: true }).last().click() // ไม่ใช่แท็บ "บันทึก" ด้านล่าง
   await expect.poll(async () => ((await idb(page, 'sessions')) as { dayKey: string }[] | null)?.[0]?.dayKey).toBe('circuit')
@@ -431,7 +431,7 @@ test('เซอร์กิตทั้งตัว: เลือกแบบท
   await page.getByRole('button', { name: 'เริ่มเซอร์กิต' }).click()
   await expect(page.getByText('แกว่งแขนแบบวิ่ง').first()).toBeVisible()
   await expect(page.locator('svg[role=img]').first()).toBeVisible() // ภาพลายเส้นท่าแกว่งแขน
-  for (let i = 0; i < 17; i++) await page.getByRole('button', { name: 'ข้าม' }).click()
+  for (let i = 0; i < 17; i++) await page.getByRole('button', { name: 'ข้าม', exact: true }).click()
   await expect(page.getByText('จบเซอร์กิตแล้ว')).toBeVisible()
   await page.getByRole('button', { name: 'บันทึก', exact: true }).last().click()
   await expect.poll(async () => ((await idb(page, 'sessions')) as { title: string }[] | null)?.[0]?.title).toBe('เซอร์กิตทั้งตัว')
@@ -1027,4 +1027,56 @@ test('ประวัติวิ่ง: ให้คะแนนความเ
   await page.locator('main').getByRole('button', { name: 'ความเหนื่อย 5' }).click()
   await expect.poll(async () => ((await idb(page, 'runs')) as { rpe?: number }[])[0].rpe).toBe(5)
   await expect(page.getByRole('button', { name: /ยังไม่ได้ให้คะแนนความเหนื่อย/ })).toHaveCount(0)
+})
+
+test('เจ็บเข่า: แผนถนอมขาแบบเข่า → หายแล้วเริ่มช่วงกลับมาซ้อม → ใช้แผนเต็ม', async ({ page }) => {
+  await seed(page, { program: 'ten', raceDate: '2027-01-10', readiness: { [ymd(2)]: { sleep: 0, sore: 0, pain: true, areas: ['knee'] } } })
+  await expect(page.getByText(/แผนถนอมขาถึง/)).toBeVisible()
+  await expect(page.getByText(/คุณบันทึกว่าเจ็บเข่า/)).toBeVisible()
+  await page.getByRole('button', { name: 'หายแล้ว เริ่มช่วงกลับมาซ้อม' }).click()
+  await expect(page.getByText(/ช่วงกลับมาซ้อมถึง/)).toBeVisible()
+  await expect(page.getByText(/แผนถนอมขาถึง/)).toHaveCount(0)
+  await page.getByRole('button', { name: 'ใช้แผนเต็มเลย' }).click()
+  await expect(page.getByText(/ช่วงกลับมาซ้อมถึง/)).toHaveCount(0)
+})
+
+test('วันเวทที่มี Pogo Jumps: ขาพร้อมแล้วเสนอกระโดดเชือกแทน', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-11-23T08:00:00+07:00') })
+  await seed(page, { program: 'ten', raceDate: '2027-01-10', legTests: [{ id: 'l', date: '2026-11-20', calfL: 27, calfR: 26 }] })
+  await nav(page, 'ฝึก')
+  await expect(page.getByText('มีเชือกกระโดด ใช้แทน Pogo Jumps ได้')).toBeVisible()
+  await page.getByRole('button', { name: 'ใช้กระโดดเชือก' }).click()
+  await expect.poll(async () => idb(page, 'exerciseSwaps')).toEqual({ 'Pogo Jumps': 'Jump Rope' })
+  await expect(page.getByText('Jump Rope').first()).toBeVisible()
+  await expect(page.getByText('มีเชือกกระโดด ใช้แทน Pogo Jumps ได้')).toHaveCount(0)
+})
+
+test('วันเวทที่มี Pogo Jumps: ยังไม่ทดสอบเขย่ง บอกให้ทดสอบก่อน', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-11-23T08:00:00+07:00') })
+  await seed(page, { program: 'ten', raceDate: '2027-01-10' })
+  await nav(page, 'ฝึก')
+  await expect(page.getByText(/ทดสอบเขย่งขาเดียวก่อน/)).toBeVisible()
+  await expect(page.getByRole('button', { name: 'ใช้กระโดดเชือก' })).toHaveCount(0)
+})
+
+test('หน้าเริ่มวิ่ง: การ์ด zone 2 บอกช่วงชีพจรจากอายุ และปิดเสียงเตือนให้ลองพูดได้', async ({ page }) => {
+  await seed(page)
+  await nav(page, 'วิ่ง')
+  await page.getByRole('button', { name: /คุม zone 2/ }).click()
+  await expect(page.getByText(/zone 2 ≈ 116–136 ครั้ง\/นาที/)).toBeVisible()
+  await page.getByLabel(/เตือนให้ลองพูดทุก 10 นาที/).uncheck()
+  await expect.poll(async () => idb(page, 'talkCue')).toBe(false)
+  await page.getByLabel(/ชีพจรสูงสุดที่วัดได้จริง/).fill('200')
+  await expect(page.getByText(/zone 2 ≈ 120–140 ครั้ง\/นาที/)).toBeVisible()
+})
+
+test('รายละเอียดรอบวิ่งที่มีชีพจร: เฉลี่ย สูงสุด และเวลาในแต่ละโซน', async ({ page }) => {
+  const hr = { avg: 141, max: 158, zones: [60, 900, 600, 120, 0], series: [120, 135, 140, 145, 150, 148], ref: 194 }
+  await seed(page, { runs: [{ id: 'h', date: ymd(1), km: 4.1, seconds: 1700, kind: 'easy', source: 'gps', rpe: 4, hr }] })
+  await nav(page, 'วิ่ง')
+  await page.getByRole('button', { name: 'ประวัติ' }).click()
+  await page.locator('main li button', { hasText: '4.10' }).click()
+  await expect(page.getByText('ชีพจร', { exact: true })).toBeVisible()
+  await expect(page.getByText('141', { exact: true })).toBeVisible()
+  await expect(page.getByText('15 นาที')).toBeVisible()
 })

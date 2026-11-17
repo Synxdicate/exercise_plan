@@ -163,15 +163,31 @@ export function EaseOffCard({ trigger = false }: { trigger?: boolean }) {
 export function PainGuardCard() {
   const p = useProgram()
   const t = useT()
-  if (p.finished || !p.painUntil || easeActive(p.easeOff, today())) return null
+  if (p.finished || easeActive(p.easeOff, today())) return null
+  if (p.returnUntil) return (
+    <section className="flex items-start gap-3 rounded-2xl bg-raised p-3.5 ring-1 ring-line">
+      <ShieldAlert size={18} className="mt-0.5 shrink-0 text-run" />
+      <div className="min-w-0 flex-1 text-sm">
+        <div className="font-bold">{t(`ช่วงกลับมาซ้อมถึง ${niceDate(p.returnUntil)}`, `Return week until ${niceDate(p.returnUntil)}`)}</div>
+        <div className="text-muted">{t('แผนค่อย ๆ กลับเป็นปกติ ช่วงเร็วเปลี่ยนเป็นวิ่งเบาตามด้วย strides สั้น ๆ วิ่งยาวไม่เกิน 90% และยังงดท่ากระโดด ถ้าเช้าวันรุ่งขึ้นเจ็บเกิน 3 จาก 10 ให้บันทึกในแบบเช็กความพร้อม แผนจะกลับไปถนอมขาเอง', 'The plan eases back to normal: fast work becomes an easy run with short strides, long runs stay at 90% or less, and jumps stay out. If the next morning is above 3/10, log it in the readiness check and the leg-friendly plan comes back.')}</div>
+        <div className="mt-2">
+          <Button size="sm" variant="soft" onClick={p.clearReturn}>{t('ใช้แผนเต็มเลย', 'Full plan now')}</Button>
+        </div>
+      </div>
+    </section>
+  )
+  if (!p.painUntil) return null
   return (
     <section className="flex items-start gap-3 rounded-2xl bg-raised p-3.5 ring-1 ring-line">
       <ShieldAlert size={18} className="mt-0.5 shrink-0 text-warn" />
       <div className="min-w-0 flex-1 text-sm">
         <div className="font-bold">{t(`แผนถนอมขาถึง ${niceDate(p.painUntil)}`, `Leg-friendly plan until ${niceDate(p.painUntil)}`)}</div>
-        <div className="text-muted">{t('คุณบันทึกว่าปวดน่อง เอ็นร้อยหวาย หรือเท้า แอปจึงเปลี่ยนวันที่มี strides เนิน หรือช่วงเร็วเป็นวิ่งเบา และตัดท่ากระโดดออก ถ้ายังปวดเกิน 3 จาก 10 ให้ใช้ "ช่วงนี้ไม่ไหว" ในหน้าฝึก', 'You logged calf, Achilles or foot pain, so days with strides, hills or fast work become easy runs and jumps are removed. If pain is still above 3/10, use "Not feeling 100%" on the plan tab.')}</div>
+        <div className="text-muted">{p.painKnee
+          ? t('คุณบันทึกว่าเจ็บเข่า แอปจึงเปลี่ยนช่วงเร็วเป็นวิ่งเบา ลดวิ่งยาวเหลือ 80% ตัดท่ากระโดด และเพิ่มท่าสะโพกด้านข้างในวันเวท วิ่งทางราบ ถ้าเริ่มเจ็บข้างเข่าระหว่างวิ่งให้หยุด', 'You logged knee pain, so fast work becomes easy running, long runs drop to 80%, jumps are removed and side-hip work is added on strength days. Run on flat ground and stop if the side of the knee starts hurting.')
+          : t('คุณบันทึกว่าปวดน่อง เอ็นร้อยหวาย หน้าแข้ง หรือเท้า แอปจึงเปลี่ยนวันที่มี strides เนิน หรือช่วงเร็วเป็นวิ่งเบา และตัดท่ากระโดดออก', 'You logged calf, Achilles, shin or foot pain, so days with strides, hills or fast work become easy runs and jumps are removed.')}
+          {t(' ถ้ายังปวดเกิน 3 จาก 10 ให้ใช้ "ช่วงนี้ไม่ไหว" ในหน้าฝึก หลังจากนี้มีช่วงกลับมาซ้อมอีก 7 วันก่อนกลับแผนเต็ม', ' If pain is still above 3/10, use "Not feeling 100%" on the plan tab. A 7-day return week follows before the full plan.')}</div>
         <div className="mt-2">
-          <Button size="sm" variant="soft" onClick={p.clearPainGuard}>{t('หายแล้ว ใช้แผนปกติ', 'Recovered: normal plan')}</Button>
+          <Button size="sm" variant="soft" onClick={p.clearPainGuard}>{t('หายแล้ว เริ่มช่วงกลับมาซ้อม', 'Recovered: start the return week')}</Button>
         </div>
       </div>
     </section>
