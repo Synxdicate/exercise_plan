@@ -37,3 +37,11 @@ export function useRaceDrink(minutes: number, en = false) {
   if (en) return p.needMlph ? `From your sweat test: drink ~${p.per20} ml every 20 min${p.sodium ? ' + electrolytes' : ''}` : 'From your sweat test: no need to drink much at this distance — sip at aid stations'
   return p.needMlph ? `จากผลทดสอบเหงื่อ: ดื่ม ~${p.per20} มล. ทุก 20 นาที${p.sodium ? ' + เกลือแร่' : ''}` : 'จากผลทดสอบเหงื่อ: ระยะนี้ไม่จำเป็นต้องดื่มมาก จิบตามจุดให้น้ำพอ'
 }
+
+/** ต้องดื่มกี่ มล./ชม. สำหรับการวิ่ง minutes นาที จากผลทดสอบเหงื่อล่าสุด (null = ยังไม่ได้ทดสอบ) */
+export function useNeedMlph(minutes: number) {
+  const [tests] = useSweatTests()
+  const [profile] = usePersisted<Profile>('profile', defaultProfile)
+  const last = tests.at(-1)
+  return last ? drinkPlan(sweatRate(last).rateLph, last.preKg || profile.weightKg, minutes).needMlph : null
+}

@@ -12,6 +12,7 @@ import { defaultProfile, type Profile } from '../lib/calc'
 import { cx } from '../lib/cx'
 import { useLang, useT } from '../lib/i18n'
 import { useRaceDrink } from '../lib/sweat'
+import { AidPlanList } from './RaceDay'
 
 /** แผนวันแข่ง: เพซแต่ละช่วง + เวลาที่ควรถึงแต่ละจุด + เช็กลิสต์สัปดาห์แข่ง */
 export function RacePlan({ day, date }: { day: Day; date: string }) {
@@ -77,6 +78,7 @@ export function RacePlan({ day, date }: { day: Day; date: string }) {
               ))}
             </div>
             {course && day.targetKm && <CoursePacePlan course={course} km={day.targetKm} />}
+            {day.targetKm && <AidPlanList km={day.targetKm} goalSec={plan.goalSec} />}
             <p className="mt-2 text-xs">{drink ?? tr('ยังไม่ได้ทดสอบเหงื่อ ทำที่หน้าวิ่ง → สถิติ จะรู้ว่าต้องดื่มเท่าไร', 'No sweat test yet — do one in runs → stats to know how much to drink')}</p>
             {plan.fuel > 0 && <p className="mt-2 text-xs">{tr(`ดื่มน้ำทุกจุดให้น้ำ (จิบ 2–3 อึก) · เจล/คาร์บ ~${plan.fuel} ครั้ง: ครั้งแรกนาทีที่ ~45 แล้วทุก ~35 นาที`, `Drink at every aid station (2–3 sips) · ~${plan.fuel} gels/carb doses: first at ~45 min, then every ~35 min`)}</p>}
           </>

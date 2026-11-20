@@ -25,11 +25,13 @@ import { ask, notify } from '../lib/dialog'
 import { ErrorBoundary } from './ErrorBoundary'
 import { ElevationCard, RunAchievements } from './RunExtras'
 import { RunHrCard } from './Zone'
+import { RouteStopsCard } from './Stops'
+import { useStopMarks } from '../lib/useStops'
 
 const RunMap = lazy(() => import('./RunMap'))
 
 // รายละเอียดรอบวิ่ง (แยกจาก Runs.tsx): แผนที่ เพซ ความสำเร็จ ความสูง แก้ไข แชร์
-export function Map(props: { route: Point[]; position?: Point | null; follow?: boolean; className?: string; interactive?: boolean; highlight?: Point | null }) {
+export function Map(props: { route: Point[]; position?: Point | null; follow?: boolean; className?: string; interactive?: boolean; highlight?: Point | null; marks?: { at: Point; color: string }[] }) {
   return (
     <ErrorBoundary fallback={<div className={cx('grid w-full place-items-center rounded-2xl bg-raised text-sm text-muted', props.className ?? 'h-64')}>{trNow('แสดงแผนที่ไม่ได้', 'Couldn’t show the map')}</div>}>
       <Suspense fallback={<div className={cx('w-full animate-pulse rounded-2xl bg-raised', props.className ?? 'h-64')} />}>
@@ -73,6 +75,7 @@ export function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { r
   const [editing, setEditing] = useState(false)
   const [sharing, setSharing] = useState(false)
   const [scrub, setScrub] = useState<Point | null>(null)
+  const marks = useStopMarks(run.id)
   const [trimming, setTrimming] = useState(false)
   const canTrim = (run.route?.length ?? 0) > 10 && run.times?.length === run.route?.length
   useBackClose(onClose)
@@ -105,7 +108,7 @@ export function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { r
         </div>
         {sharing && <ShareRunSheet run={run} onClose={() => setSharing(false)} />}
         {trimming && <TrimSheet run={run} onClose={() => setTrimming(false)} onSave={patch => { onUpdate(patch); setTrimming(false) }} />}
-        {run.route && run.route.length > 1 && <Map route={run.route} highlight={scrub} className="mb-3 h-56" />}
+        {run.route && run.route.length > 1 && <Map route={run.route} highlight={scrub} marks={marks} className="mb-3 h-56" />}
         <div className="mb-3 grid grid-cols-3 gap-2 text-center">
           <Stat label={tr('ระยะ', 'Distance')} value={kmUp.toFixed(2)} sub={tr('กม.', 'km')} accent />
           <Stat label={tr('เวลาเคลื่อนที่', 'Moving time')} value={formatDuration(secUp)} sub={run.elapsedSeconds ? `${tr('รวม', 'total')} ${formatDuration(run.elapsedSeconds)}` : undefined} />
@@ -154,6 +157,7 @@ export function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { r
         {run.splits && run.splits.length > 0 && <Splits splits={run.splits} fiveK={fiveK} gap={run.elevProfile && run.elevProfile.length > 2 && (run.elev?.gain ?? 0) >= 5 ? gapSplits(run.splits, run.elevProfile, run.km) : undefined} />}
         {run.hr && <div className="mt-3"><RunHrCard hr={run.hr} /></div>}
         <div className="mt-3"><ElevationCard run={run} onUpdate={onUpdate} onScrub={setScrub} /></div>
+        <div className="mt-3"><RouteStopsCard run={run} onPick={setScrub} /></div>
         <MatchedRuns run={run} runs={runs} />
         <div className="mt-3 rounded-2xl bg-raised p-3"><RpePicker value={run.rpe} onPick={rpe => onUpdate({ rpe })} /></div>
         <div className="mt-3"><PhotoStrip kind="run" refId={run.id} date={run.date} label={tr('รูปการวิ่ง', 'Run photos')} /></div>

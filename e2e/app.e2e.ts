@@ -1080,3 +1080,50 @@ test('รายละเอียดรอบวิ่งที่มีชี�
   await expect(page.getByText('141', { exact: true })).toBeVisible()
   await expect(page.getByText('15 นาที')).toBeVisible()
 })
+
+test('รายละเอียดรอบวิ่ง: หาน้ำ ร้านสะดวกซื้อ และห้องน้ำบนเส้นทาง (OpenStreetMap) เรียงตามกิโล', async ({ page }) => {
+  await page.route('**/overpass-api.de/api/interpreter', route => route.fulfill({ json: { elements: [
+    { type: 'node', id: 1, lat: 16.4419, lon: 102.8419, tags: { shop: 'convenience', brand: '7-Eleven' } }, // จุดเริ่ม
+    { type: 'node', id: 2, lat: 16.4459, lon: 102.8359, tags: { amenity: 'toilets' } }, // ~1/4 รอบ
+  ] } }))
+  await seed(page, { runs: [{ id: 's', date: ymd(1), km: 3.2, seconds: 1800, kind: 'long', source: 'gps', rpe: 4, ...loopRoute() }] })
+  await nav(page, 'วิ่ง')
+  await page.getByRole('button', { name: 'ประวัติ' }).click()
+  await page.locator('main li button', { hasText: '3.20' }).click()
+  await page.getByRole('button', { name: 'หาจุดแวะ' }).click()
+  await expect(page.getByRole('button', { name: /7-Eleven/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /ห้องน้ำ/ })).toBeVisible()
+  // ร้านเดียวที่จุดเริ่ม: ทั้งรอบ 3.2 กม. ไม่มีที่เติมน้ำอีก
+  await expect(page.getByText(/ไม่มีที่เติมน้ำ/)).toBeVisible()
+  await expect.poll(async () => Object.keys((await idb(page, 'routeStops')) as object)).toEqual(['s'])
+})
+
+test('การ์ดวันแข่ง: อากาศตามปกติของเช้าวันแข่ง และดื่มเท่าไรที่แต่ละจุดให้น้ำ', async ({ page }) => {
+  const asked: string[] = []
+  let temp = 30
+  await page.route('**/archive-api.open-meteo.com/v1/archive**', route => {
+    const u = new URL(route.request().url())
+    asked.push(u.searchParams.get('start_date')!)
+    const time = Array.from({ length: 24 }, (_, h) => `${u.searchParams.get('start_date')}T${String(h).padStart(2, '0')}:00`)
+    return route.fulfill({ json: { hourly: { time, temperature_2m: time.map(() => temp), relative_humidity_2m: time.map(() => 85) } } })
+  })
+  await seed(page, {
+    program: 'ten', raceDate: '2027-01-10',
+    runs: [{ id: 'r', date: ymd(3), km: 5, seconds: 1800, kind: 'easy', source: 'manual', rpe: 4 }],
+    sweatTests: [{ id: 'w', date: ymd(5), preKg: 64.5, postKg: 62.8, drankMl: 0, minutes: 60 }],
+  })
+  await nav(page, 'ฝึก')
+  await page.getByRole('button', { name: /อากาศและจุดให้น้ำวันแข่ง/ }).click()
+  await page.getByLabel('เวลาปล่อยตัว').fill('05:30')
+  await expect(page.getByText(/เฉลี่ย 30°C/)).toBeVisible()
+  await expect(page.getByText(/เวลามักช้าลง ~\d/)).toBeVisible()
+  expect(asked.sort()[0]).toBe('2022-01-08')
+  // เปลี่ยนเวลาปล่อยตัว = ดึงใหม่ อากาศอุ่นแต่ผลต่อเวลา <1%: ไม่บอกว่า "ปกติ" ขัดกับป้ายร้อน
+  temp = 27
+  await page.getByLabel('เวลาปล่อยตัว').fill('06:00')
+  await expect(page.getByText(/เฉลี่ย 27°C/)).toBeVisible()
+  await expect(page.getByText(/ใกล้เคียงอากาศเช้าที่คุณซ้อมอยู่แล้ว/)).toBeVisible()
+  await page.getByLabel(/จุดให้น้ำ \(กม\.\)/).fill('2.5, 5, 7.5')
+  await expect.poll(async () => idb(page, 'raceAid')).toEqual([2.5, 5, 7.5])
+  await expect(page.getByText(/ดื่ม ~\d+ มล\./).first()).toBeVisible()
+})

@@ -2,6 +2,7 @@ import { ReplaySoFar } from './Replay'
 import { CourseCard } from './Course'
 import { EaseOffCard, PainGuardCard } from './Coach'
 import { JumpRopeOffer } from './JumpRope'
+import { RaceDayCard } from './RaceDay'
 import { memo, useDeferredValue, useMemo, useState } from 'react'
 import { useSwipe } from '../lib/swipe'
 
@@ -64,6 +65,7 @@ const AlertsM = memo(Alerts)
 const EaseOffM = memo(EaseOffCard)
 const PainGuardM = memo(PainGuardCard)
 const CourseM = memo(CourseCard)
+const RaceDayM = memo(RaceDayCard)
 const ReplayM = memo(ReplaySoFar)
 const CircuitM = memo(CircuitCard)
 const WeeklyMusclesM = memo(WeeklyMuscles)
@@ -234,6 +236,7 @@ function PlanBody() {
       </section>
 
       <CourseM />
+      <RaceDayM />
       <ReplayM />
       <CircuitM />
       <WeeklyMusclesM plan={days} />

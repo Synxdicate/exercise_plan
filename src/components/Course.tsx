@@ -3,10 +3,7 @@ import { FileUp, Map as MapIcon, Trash2 } from 'lucide-react'
 import { parseGpx } from '../lib/gpx'
 import { elevStats, fetchElevation, sampleRoute, samplesFor } from '../lib/elevation'
 import { coursePacePlan, findClimbs } from '../lib/grade'
-import { estimate } from '../lib/pace'
-import { planGoal, racePlan, raceKeyOf } from '../lib/racePlan'
-import { useRaceGoals } from '../lib/useGoals'
-import { formatDuration, formatPace, useRuns } from '../lib/log'
+import { formatDuration, formatPace } from '../lib/log'
 import { useProgram } from '../lib/program'
 import { useRaceCourse, type RaceCourse } from '../lib/course'
 import { useT } from '../lib/i18n'
@@ -15,17 +12,13 @@ import { cx } from '../lib/cx'
 import { Button, Disclosure } from './ui'
 import { Map } from './RunDetail'
 import { ProfileChart } from './RunExtras'
+import { useRaceGoalSec } from '../lib/raceGoal'
 
 
 /** แผนเพซรายกิโลตามเนินของสนาม — ใช้ทั้งในการ์ดเส้นทางสนามและแผนวันแข่ง */
 export function CoursePacePlan({ course, km }: { course: RaceCourse; km: number }) {
   const t = useT()
-  const [runs] = useRuns()
-  const [goals] = useRaceGoals()
-  const key = raceKeyOf(km)
-  const est = useMemo(() => (key ? estimate(runs) : null), [key, runs])
-  const g = key ? planGoal(goals[key], est?.[key]) : null
-  const goalSec = key && g ? racePlan(key, g.sec, km).goalSec : null
+  const goalSec = useRaceGoalSec(km)
   const rows = useMemo(() => (goalSec ? coursePacePlan(goalSec, km, course.profile) : []), [goalSec, km, course.profile])
   if (!goalSec) return <p className="mt-2 text-xs text-muted">{t('วิ่งให้ได้ ≥3 กม. สักครั้ง หรือตั้งเวลาเป้าหมาย แล้วแอปจะคำนวณเพซรายกิโลตามเนินของสนามให้', 'Run ≥3 km once or set a goal time to get a per-km pace plan for this course')}</p>
   return (
