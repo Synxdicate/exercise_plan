@@ -1070,6 +1070,25 @@ test('หน้าเริ่มวิ่ง: การ์ด zone 2 บอก�
   await expect(page.getByText(/zone 2 ≈ 120–140 ครั้ง\/นาที/)).toBeVisible()
 })
 
+test('หน้าเริ่มวิ่ง: นับเท้าขวา 30 วิ บันทึกรอบขา ตั้งเป้า +5% และเปิดเสียงจังหวะได้', async ({ page }) => {
+  await seed(page)
+  await nav(page, 'วิ่ง')
+  await page.getByRole('button', { name: /รอบขา \(ก้าวถี่ขึ้นช่วยเข่า\)/ }).click()
+  await page.getByLabel(/เท้าขวา 30 วิ/).fill('40')
+  await expect(page.getByText('= 160 ก้าว/นาที')).toBeVisible()
+  await page.getByRole('button', { name: 'บันทึกรอบขา' }).click()
+  await expect.poll(async () => ((await idb(page, 'cadenceLog')) as { spm: number }[] | null)?.[0]?.spm).toBe(160)
+  await expect(page.getByText('168', { exact: true })).toBeVisible()
+  await page.getByLabel(/เปิดเสียงจังหวะ 168 ครั้ง\/นาที/).check()
+  await expect.poll(async () => idb(page, 'metronome')).toBe(true)
+})
+
+test('หน้าเริ่มวิ่ง: เพิ่งเจ็บเข่า การ์ดรอบขาเปิดเองพร้อมคำแนะนำ', async ({ page }) => {
+  await seed(page, { program: 'ten', raceDate: '2027-01-10', readiness: { [ymd(2)]: { sleep: 0, sore: 0, pain: true, areas: ['knee'] } } })
+  await nav(page, 'วิ่ง')
+  await expect(page.getByText(/เพิ่งเจ็บเข่า: ลองวิ่งเบาตามจังหวะเป้า/)).toBeVisible()
+})
+
 test('รายละเอียดรอบวิ่งที่มีชีพจร: เฉลี่ย สูงสุด และเวลาในแต่ละโซน', async ({ page }) => {
   const hr = { avg: 141, max: 158, zones: [60, 900, 600, 120, 0], series: [120, 135, 140, 145, 150, 148], ref: 194 }
   await seed(page, { runs: [{ id: 'h', date: ymd(1), km: 4.1, seconds: 1700, kind: 'easy', source: 'gps', rpe: 4, hr }] })

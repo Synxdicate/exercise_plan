@@ -26,6 +26,7 @@ import { usePersisted } from '../lib/storage'
 import { RunFormTips } from './RunForm'
 import { DrillsCard } from './Drills'
 import { LiveHr, ZoneCard } from './Zone'
+import { CadenceCard, LiveCadence } from './Cadence'
 import { HrRecorder } from '../lib/hrLog'
 import { hrNow } from '../lib/heartRate'
 import { hrMaxFor, talkCheckIndex, TALK_TEXT } from '../lib/zone'
@@ -361,6 +362,7 @@ export function Runs() {
           )}
           {kind !== 'walk' && <DrillsCard kind={kind} />}
           {kind !== 'walk' && <ZoneCard kind={kind} />}
+          {kind !== 'walk' && <CadenceCard />}
           <RunFormTips />
         </>
       )}
@@ -478,6 +480,7 @@ function ActiveRun({ t, kind, target, fiveK, voice, setVoice, coachOn, setCoachO
         </div>
 
         <LiveHr />
+        {kind !== 'walk' && <LiveCadence running={t.status === 'running'} voice={voice} />}
         {guide}
         {ghost}
 
