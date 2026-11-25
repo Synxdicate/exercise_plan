@@ -64,22 +64,6 @@ export const stickDemos: Record<string, StickDemo> = {
       { head: [60, 12], shoulder: [60, 21], elbow: [67, 30], hand: [72, 39], hip: [60, 44], knee: [62, 58], foot: [63, 72], knee2: [66, 56], foot2: [72, 67], elbow2: [53, 30], hand2: [49, 39] },
     ],
   },
-  // เซอร์กิตทั้งตัว: แกว่งแขนแบบวิ่ง (ยืนนิ่ง ศอกงอ ~90 องศา แขนสลับหน้า-หลัง)
-  'Running Arm Swing': {
-    props: [{ kind: 'floor' }],
-    poses: [
-      { head: [60, 12], shoulder: [60, 21], elbow: [53, 30], hand: [59, 37], hip: [60, 44], knee: [61, 58], foot: [62, 72], knee2: [59, 58], foot2: [58, 72], elbow2: [67, 30], hand2: [73, 23] },
-      { head: [60, 12], shoulder: [60, 21], elbow: [67, 30], hand: [73, 23], hip: [60, 44], knee: [61, 58], foot: [62, 72], knee2: [59, 58], foot2: [58, 72], elbow2: [53, 30], hand2: [59, 37] },
-    ],
-  },
-  // ลันจ์ด้านข้าง (มองจากด้านหน้า): ก้าวออกขวา นั่งลงบนขาที่ก้าว ขาซ้ายเหยียดตรง มือประสานหน้าอก
-  'Lateral Lunge': {
-    props: [{ kind: 'floor' }],
-    poses: [
-      { head: [60, 12], shoulder: [60, 21], elbow: [53, 30], hand: [60, 34], hip: [60, 44], knee: [62, 58], foot: [63, 72], knee2: [58, 58], foot2: [57, 72], elbow2: [67, 30], hand2: [60, 34] },
-      { head: [80, 24], shoulder: [80, 33], elbow: [73, 41], hand: [80, 45], hip: [80, 56], knee: [92, 61], foot: [94, 72], knee2: [68, 64], foot2: [57, 72], elbow2: [87, 41], hand2: [80, 45] },
-    ],
-  },
   'Wall Sit': {
     props: [{ kind: 'wall', x: 30 }, { kind: 'floor' }],
     poses: [

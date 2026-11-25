@@ -427,10 +427,10 @@ test('เซอร์กิตทั้งตัว: เลือกแบบท
   await seed(page)
   await nav(page, 'ฝึก')
   await page.getByRole('button', { name: 'ทั้งตัว', exact: true }).click()
+  await expect(page.getByRole('button', { name: /^3 รอบ/ })).toBeVisible()
   await page.getByRole('button', { name: /^1 รอบ/ }).click()
   await page.getByRole('button', { name: 'เริ่มเซอร์กิต' }).click()
-  await expect(page.getByText('แกว่งแขนแบบวิ่ง').first()).toBeVisible()
-  await expect(page.locator('svg[role=img]').first()).toBeVisible() // ภาพลายเส้นท่าแกว่งแขน
+  await expect(page.getByText('ดึงตัวใต้โต๊ะหรือราวต่ำ').first()).toBeVisible()
   for (let i = 0; i < 17; i++) await page.getByRole('button', { name: 'ข้าม', exact: true }).click()
   await expect(page.getByText('จบเซอร์กิตแล้ว')).toBeVisible()
   await page.getByRole('button', { name: 'บันทึก', exact: true }).last().click()

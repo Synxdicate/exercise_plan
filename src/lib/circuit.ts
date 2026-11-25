@@ -15,39 +15,41 @@ export const coreCircuit: Station[] = [
 ]
 
 /**
- * เซอร์กิตทั้งตัวแบบอยู่กับที่ (in-place circuit) สลับท่อนบน → แกนกลาง → ท่อนล่าง กล้ามส่วนเดิมได้พักระหว่างรอบ
- * แนวจากคลิป "สร้างความแข็งแรงในการวิ่งด้วย Circuit Training" (อ.เอกวิทย์ แสวงผล, Therunningboy) ไม่ใช้อุปกรณ์ ทำที่สวนหรือบ้าน
- * หลักฐาน: เซอร์กิตท่าพื้นฐาน 2–3 รอบ ช่วยแรงและความทนทานของกล้ามเนื้อ ทำ 2–3 ครั้ง/สัปดาห์ได้ผลมากกว่า 1 ครั้ง (Batrakoulis 2023)
- * แต่น้ำหนักเบา ๆ แบบนี้ไม่ได้ช่วยความประหยัดแรงในการวิ่งเหมือนเวทหนัก/ท่ากระโดด (Llanos-Lagos 2024) จึงเป็นทางเลือกวันที่ไม่ได้เข้ายิม ไม่ใช่ตัวแทนวันเวท
+ * เซอร์กิตทั้งตัวแบบอยู่กับที่ (in-place circuit) สลับท่อนบน → แกนกลาง → ท่อนล่าง กล้ามส่วนเดิมได้พักระหว่างท่า ไม่ใช้อุปกรณ์ ทำที่สวนหรือบ้าน
+ * ครบทุกรูปแบบการเคลื่อนไหว: ดึง ดัน สะบัก / แกนกลางกันแอ่น กันบิด / ขาเดียว (ลันจ์) สะโพก-ต้นขาหลัง (hinge) และน่อง
+ * น่อง (โดยเฉพาะมัดใน soleus) รับแรงตอนวิ่งมากที่สุด (Dorn 2012) side plank ยกขาบนได้ = สะโพกด้านข้าง (Fredericson 2000)
+ * น้ำหนักตัวได้ผลต่อกล้ามเนื้อเมื่อทำใกล้หมดแรง (Schoenfeld 2017, Robinson 2024) ทุกท่าจึงมี "ง่ายไป" ให้ขยับขั้น
+ * หลักฐาน: เซอร์กิตท่าพื้นฐาน 2–3 รอบ ทำ 2–3 ครั้ง/สัปดาห์ได้ผลมากกว่า 1 ครั้ง (Batrakoulis 2023)
+ * แต่ไม่ได้ช่วยความประหยัดแรงในการวิ่งเหมือนเวทหนัก/ท่ากระโดด (Llanos-Lagos 2024) จึงเป็นทางเลือกวันที่ไม่ได้เข้ายิม ไม่ใช่ตัวแทนวันเวท
  */
 export const fullCircuit: Station[] = [
-  { name: 'Running Arm Swing', zone: 'upper', th: 'แกว่งแขนแบบวิ่ง', en: 'Running arm swing',
-    how: 'ยืนตรง ศอกงอประมาณ 90 องศา แกว่งแขนหน้า-หลังแรงและเร็วเหมือนวิ่งเร็ว มือไม่ข้ามกลางลำตัว ไหล่ไม่ยก ถือขวดน้ำเพิ่มน้ำหนักได้',
-    howEn: 'Stand tall, elbows ~90°, drive the arms forward and back hard and fast like sprinting — hands don’t cross the midline, shoulders stay down; hold water bottles for extra load' },
-  { name: 'Bicycle Crunch', zone: 'core', th: 'ปั่นจักรยานอากาศ', en: 'Bicycle crunch',
-    how: 'นอนหงาย มือแตะข้างหู บิดศอกไปหาเข่าฝั่งตรงข้ามสลับข้างช้า ๆ หลังล่างแนบพื้น ไม่ดึงคอ',
-    howEn: 'On your back, fingertips by the ears, rotate an elbow toward the opposite knee, alternating slowly — low back on the floor, don’t yank the neck' },
-  { name: 'Bodyweight Squat', zone: 'lower', th: 'สควอตตัวเปล่า', en: 'Bodyweight squat',
-    how: 'เท้ากว้างเท่าไหล่ นั่งลงเหมือนนั่งเก้าอี้ เข่าชี้ไปทางเดียวกับปลายเท้า ไม่หุบเข้าใน ส้นเท้าติดพื้น',
-    howEn: 'Feet shoulder-width, sit back as if onto a chair — knees track over the toes, not caving in; heels down' },
-  { name: 'Push-up', zone: 'upper', th: 'วิดพื้น', en: 'Push-up',
-    how: 'ลำตัวตรงเหมือนแพลงก์ตลอด ยังทำไม่ไหวให้วางมือบนม้านั่ง โต๊ะ หรือผนังแทนการคุกเข่า แกนกลางจะได้ทำงานแบบเดียวกับแพลงก์',
-    howEn: 'Body straight like a plank throughout; if it’s too hard, put your hands on a bench, table or wall instead of dropping to the knees, so the core works like a plank' },
-  { name: 'Mountain Climber', zone: 'core', th: 'ปีนเขา', en: 'Mountain climber',
-    how: 'ท่าแพลงก์แขนตรง มืออยู่ใต้ไหล่ ดึงเข่าเข้าหาอกสลับข้างเป็นจังหวะ สะโพกไม่โด่ง เริ่มช้า ๆ ก่อน',
-    howEn: 'High plank, hands under shoulders, drive the knees to the chest alternately — hips stay level; start slow' },
+  { name: 'Table Row', zone: 'upper', th: 'ดึงตัวใต้โต๊ะหรือราวต่ำ', en: 'Table / low-bar row',
+    how: 'นอนใต้โต๊ะที่แข็งแรงหรือราวต่ำในสวน จับขอบ ตัวตรงจากส้นเท้าถึงไหล่ ดึงอกขึ้นหาขอบ ลงช้า ๆ ไม่มีที่ให้ดึงใช้นอนคว่ำยกแขนตัว Y-T-W แทน ง่ายไป: เท้ายกสูงขึ้น หรือลงช้า 3 วิ',
+    howEn: 'Lie under a sturdy table or a low park bar, grip the edge, body straight from heels to shoulders, pull the chest up, lower slowly. Nothing to pull on: do prone Y-T-W raises. Too easy: raise the feet or take 3 s down' },
+  { name: 'Dead Bug', zone: 'core', th: 'นอนหงายยืดแขนขาสลับ', en: 'Dead bug',
+    how: 'นอนหงาย ยกแขนตรงชี้เพดาน เข่างอ 90 องศา ยืดแขนกับขาฝั่งตรงข้ามลงช้า ๆ สลับข้าง หลังล่างแนบพื้นตลอด หายใจออกตอนยืด ง่ายไป: ยืดค้าง 2 วิ',
+    howEn: 'On your back, arms to the ceiling, knees at 90°; slowly lower the opposite arm and leg, alternate — low back stays on the floor, breathe out as you reach. Too easy: hold the reach 2 s' },
   { name: 'Reverse Lunge', zone: 'lower', th: 'ลันจ์ถอยหลัง (สลับขา)', en: 'Reverse lunge (alternate)',
-    how: 'ถอยเท้าไปข้างหลัง ย่อจนเข่าหลังเกือบแตะพื้น ลำตัวตั้ง ดันกลับด้วยส้นเท้าหน้า สลับขา',
-    howEn: 'Step back and lower until the back knee nearly touches the floor, trunk upright, push back up through the front heel — alternate legs' },
-  { name: 'Prone Y-T-W Raise', zone: 'upper', th: 'นอนคว่ำบีบสะบัก (Y-T-W)', en: 'Prone Y-T-W raise',
-    how: 'นอนคว่ำ บีบสะบักเข้าหากันก่อน แล้วค่อยยกแขนเป็นตัว Y, T, W สลับไป ยกค้างสั้น ๆ คอยาว ไม่แหงนหน้า',
-    howEn: 'Face down, squeeze the shoulder blades together first, then lift the arms into a Y, T and W in turn with a short hold — long neck, don’t look up' },
+    how: 'ถอยเท้าไปข้างหลัง ย่อจนเข่าหลังเกือบแตะพื้น ลำตัวตั้ง เข่าหน้าชี้ตามปลายเท้า ดันกลับด้วยส้นเท้าหน้า สลับขา ง่ายไป: ลงช้า 3 วิ หรือถือเป้ใส่ขวดน้ำ',
+    howEn: 'Step back and lower until the back knee nearly touches the floor, trunk upright, front knee over the toes, push back through the front heel — alternate. Too easy: 3 s down or hold a loaded backpack' },
+  { name: 'Push-up', zone: 'upper', th: 'วิดพื้น', en: 'Push-up',
+    how: 'ลำตัวตรงเหมือนแพลงก์ตลอด อกลงเกือบแตะพื้น ยังทำไม่ไหวให้วางมือบนม้านั่ง โต๊ะ หรือผนังแทนการคุกเข่า ง่ายไป: วางเท้าบนม้านั่ง หรือลงช้า 3 วิ',
+    howEn: 'Body straight like a plank, chest nearly to the floor; if it’s too hard, hands on a bench, table or wall instead of the knees. Too easy: feet on a bench or 3 s down' },
   { name: 'Side Plank', zone: 'core', th: 'แพลงก์ด้านข้าง (สลับข้างครึ่งเวลา)', en: 'Side plank (switch halfway)',
-    how: 'ศอกอยู่ใต้ไหล่ ยกสะโพกจนศีรษะถึงเท้าเป็นเส้นตรง ครึ่งเวลาแล้วสลับข้าง ยากไปให้วางเข่าล่าง',
-    howEn: 'Elbow under the shoulder, lift the hips so head to feet form a line — switch sides halfway; drop the bottom knee if it’s too hard' },
-  { name: 'Lateral Lunge', zone: 'lower', th: 'ลันจ์ด้านข้าง (สลับขา)', en: 'Lateral lunge (alternate)',
-    how: 'ก้าวออกด้านข้างกว้าง ๆ นั่งลงบนขาที่ก้าว อีกขาเหยียดตรง เท้าทั้งสองติดพื้น ดันกลับมายืน สลับซ้าย-ขวา',
-    howEn: 'Take a wide step to the side, sit back onto that leg with the other leg straight, both feet flat, push back to standing — alternate sides' },
+    how: 'ศอกอยู่ใต้ไหล่ ยกสะโพกจนศีรษะถึงเท้าเป็นเส้นตรง ครึ่งเวลาแล้วสลับข้าง ยากไปให้วางเข่าล่าง ง่ายไป: ยกขาบนขึ้นลงช้า ๆ (ได้สะโพกด้านข้างด้วย ช่วยเรื่อง IT band)',
+    howEn: 'Elbow under the shoulder, lift the hips so head to feet form a line, switch sides halfway; drop the bottom knee if it’s too hard. Too easy: slowly raise and lower the top leg (works the side hip too, helps the IT band)' },
+  { name: 'Single-leg Glute Bridge', zone: 'lower', th: 'ยกสะโพกขาเดียว (สลับข้างครึ่งเวลา)', en: 'Single-leg glute bridge (switch halfway)',
+    how: 'นอนหงาย เท้าหนึ่งวางพื้น อีกขาเหยียดหรือชันเข่าขึ้น ดันส้นเท้ายกสะโพกจนลำตัวถึงเข่าเป็นเส้นตรง บีบก้นค้าง 1 วิ สะโพกไม่เอียง ครึ่งเวลาสลับข้าง ง่ายไป: วางเท้าบนม้านั่ง',
+    howEn: 'On your back, one foot down, the other leg up; drive through the heel until shoulders, hips and knee line up, squeeze 1 s, hips level — switch halfway. Too easy: foot on a bench' },
+  { name: 'Prone Y-T-W Raise', zone: 'upper', th: 'นอนคว่ำบีบสะบัก (Y-T-W)', en: 'Prone Y-T-W raise',
+    how: 'นอนคว่ำ บีบสะบักเข้าหากันก่อน แล้วค่อยยกแขนเป็นตัว Y, T, W สลับไป ยกค้างสั้น ๆ คอยาว ไม่แหงนหน้า ง่ายไป: ถือขวดน้ำ',
+    howEn: 'Face down, squeeze the shoulder blades together first, then lift the arms into a Y, T and W in turn with a short hold — long neck, don’t look up. Too easy: hold water bottles' },
+  { name: 'Mountain Climber', zone: 'core', th: 'ปีนเขา', en: 'Mountain climber',
+    how: 'ท่าแพลงก์แขนตรง มืออยู่ใต้ไหล่ ดึงเข่าเข้าหาอกสลับข้างเป็นจังหวะ สะโพกไม่โด่ง เริ่มช้า ๆ ก่อน ง่ายไป: เร็วขึ้นแต่สะโพกยังนิ่ง',
+    howEn: 'High plank, hands under shoulders, drive the knees to the chest alternately — hips stay level; start slow. Too easy: go faster with still hips' },
+  { name: 'Single-leg Calf Raise', zone: 'lower', th: 'เขย่งน่องขาเดียว (สลับข้างครึ่งเวลา)', en: 'Single-leg calf raise (switch halfway)',
+    how: 'ยืนขาเดียวบนขอบบันไดหรือพื้น มือแตะผนังทรงตัว เขย่งขึ้นสุด ลงช้า 3 วิจนส้นต่ำกว่าขอบ ครึ่งเวลาสลับข้าง ครึ่งหลังงอเข่าเล็กน้อย (น่องมัดใน) ปวดเอ็นร้อยหวายให้เขย่งสองขาแทน ง่ายไป: สะพายเป้ใส่ขวดน้ำ',
+    howEn: 'On one foot on a step edge or the floor, fingertips on a wall, rise all the way, lower over 3 s below the edge — switch halfway; bend the knee slightly for the second half (soleus). Achilles pain: use both legs. Too easy: wear a loaded backpack' },
 ]
 
 export type CircuitKind = 'core' | 'full'

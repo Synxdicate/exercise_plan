@@ -15,8 +15,9 @@ import { cx } from '../lib/cx'
 import { Button, Card, Collapse, Portal, Segmented } from './ui'
 import { ExerciseDemo } from './ExerciseDemo'
 
-const stepsFor = (kind: CircuitKind) => ({ 1: buildCircuit(CIRCUITS[kind], 30, 15, 1), 2: buildCircuit(CIRCUITS[kind], 30, 15, 2) })
-const BY_KIND: Record<CircuitKind, Record<1 | 2, CircuitStep[]>> = { core: stepsFor('core'), full: stepsFor('full') }
+type Rounds = 1 | 2 | 3
+const stepsFor = (kind: CircuitKind) => ({ 1: buildCircuit(CIRCUITS[kind], 30, 15, 1), 2: buildCircuit(CIRCUITS[kind], 30, 15, 2), 3: buildCircuit(CIRCUITS[kind], 30, 15, 3) })
+const BY_KIND: Record<CircuitKind, Record<Rounds, CircuitStep[]>> = { core: stepsFor('core'), full: stepsFor('full') }
 
 /** การ์ดในหน้าฝึก: เซอร์กิตแกนกลาง/สะโพก หรือทั้งตัว บอกว่าวันนี้เหมาะไหม ทำไปกี่ครั้งแล้ว และเริ่มยังไง */
 export function CircuitCard() {
@@ -29,10 +30,10 @@ export function CircuitCard() {
   const done = sessions.filter(s => s.dayKey === 'circuit')
   const thisWeek = done.filter(s => weekStart(s.date) === weekStart(today())).length
   // มือใหม่เริ่ม 1 รอบ (~6 นาที) 4 ครั้งแรก แล้วค่อยเป็น 2 รอบ
-  const [rounds, setRounds] = usePersisted<1 | 2>('circuitRounds', done.length < 4 ? 1 : 2)
+  const [rounds, setRounds] = usePersisted<Rounds>('circuitRounds', done.length < 4 ? 1 : 2)
   const [kind, setKind] = usePersisted<CircuitKind>('circuitKind', 'core')
   const BY_ROUNDS = BY_KIND[kind] ?? BY_KIND.core
-  const steps = BY_ROUNDS[rounds]
+  const steps = BY_ROUNDS[rounds] ?? BY_ROUNDS[2]
   const fit = p.finished ? 'good' : circuitFit(p.plan(), todayIdx)
   const doneToday = done.some(s => s.date === today())
   return (
@@ -49,10 +50,11 @@ export function CircuitCard() {
           { value: 'core', label: t('แกนกลาง/สะโพก', 'Core & hip') },
           { value: 'full', label: t('ทั้งตัว', 'Full body') },
         ]} />
-        {kind === 'full' && <p className="text-xs text-muted">{t('9 ท่า สลับแขน แกนกลาง ขา ไม่ใช้อุปกรณ์ ใช้แทนวันที่ไปยิมไม่ได้ แต่ไม่แทนเวทหนัก', '9 moves rotating arms, core and legs, no equipment — for days you can’t get to the gym, not a replacement for heavy lifting')}</p>}
-        <Segmented value={String(rounds) as '1' | '2'} onChange={v => setRounds(Number(v) as 1 | 2)} options={[
+        {kind === 'full' && <p className="text-xs text-muted">{t('9 ท่า ครบดึง ดัน แกนกลาง ขาเดียว สะโพก และน่อง ไม่ใช้อุปกรณ์ ใช้แทนวันที่ไปยิมไม่ได้ แต่ไม่แทนเวทหนัก', '9 moves covering pull, push, core, single-leg, hips and calves, no equipment — for days you can’t get to the gym, not a replacement for heavy lifting')}</p>}
+        <Segmented value={String(rounds) as '1' | '2' | '3'} onChange={v => setRounds(Number(v) as Rounds)} options={[
           { value: '1', label: t(`1 รอบ ~${Math.round(circuitTotal(BY_ROUNDS[1]) / 60)} นาที`, `1 round ~${Math.round(circuitTotal(BY_ROUNDS[1]) / 60)} min`) },
           { value: '2', label: t(`2 รอบ ~${Math.round(circuitTotal(BY_ROUNDS[2]) / 60)} นาที`, `2 rounds ~${Math.round(circuitTotal(BY_ROUNDS[2]) / 60)} min`) },
+          { value: '3', label: t(`3 รอบ ~${Math.round(circuitTotal(BY_ROUNDS[3]) / 60)} นาที`, `3 rounds ~${Math.round(circuitTotal(BY_ROUNDS[3]) / 60)} min`) },
         ]} />
       </div>
       <Button className="mt-3 w-full" onClick={() => setOpen(true)}><Play size={16} fill="currentColor" /> {t('เริ่มเซอร์กิต', 'Start circuit')}</Button>
@@ -63,9 +65,10 @@ export function CircuitCard() {
         <ul className="list-disc space-y-1 pl-5 pt-1 text-sm text-muted">
           <li>{t('สัปดาห์ละ 2–3 ครั้ง ทำหลังวิ่งเบา (ร่างกายอุ่นแล้ว) หรือวันพัก ไม่ทำก่อนวิ่งยาว/วิ่งหนัก', '2–3×/week, after an easy run (already warm) or on a rest day — not before a long/hard run')}</li>
           <li>{t('เริ่ม 1 รอบ 2 สัปดาห์แรก แล้วค่อยเพิ่มเป็น 2 รอบ ท่าละ 30 วิ ทำไม่ไหวพักได้ ท่าต้องถูกก่อนจะเร็ว', 'Start with 1 round for 2 weeks, then 2 rounds. 30 s per move — rest if needed; form first')}</li>
+          {kind === 'full' && <li>{t('ยากขึ้นทีละขั้น: ท่าไหนทำครบ 30 วิแล้วยังเหลือแรงอีกเยอะ (เกิน 3–4 ครั้ง) ให้ใช้ "ง่ายไป" ในวิธีทำของท่านั้น ท่าเดิมครบทุกท่าแล้วค่อยเพิ่มเป็น 3 รอบ ท่าน้ำหนักตัวได้ผลต่อกล้ามเมื่อทำจนใกล้หมดแรง (Schoenfeld 2017, Robinson 2024)', 'Progress step by step: if a move still leaves lots in reserve (more than 3–4 reps) after 30 s, use its "too easy" option in the how-to; once every move is like that, go to 3 rounds. Bodyweight work builds muscle when taken close to failure (Schoenfeld 2017, Robinson 2024)')}</li>}
           <li>{t('ทำบนเสื่อหรือพื้นนุ่ม ไม่ต้องใช้อุปกรณ์ เสียงนำบอกท่าถัดไปให้ ปิดจอได้', 'On a mat, no equipment; the voice announces each move')}</li>
           <li>{t('ท่าละ 30 วิ เร็วแค่ไหนก็ได้ที่ยังคุมท่าได้ ไม่ต้องอัดหนักแบบ HIIT ตั้งแต่แรก ถ้าเคยเจ็บแน่นหน้าอก ใจสั่น หรือหน้ามืดตอนออกแรง ให้หยุดแล้วไปพบแพทย์ก่อน', '30 s per move at whatever pace keeps good form — no need to go all-out HIIT from day one. Chest pain, palpitations or dizziness on exertion: stop and see a doctor first')}</li>
-          {kind === 'full' && <li>{t('ทั้งตัว: เรียงแขน → แกนกลาง → ขา กล้ามส่วนเดิมได้พักระหว่างท่า (แนวจากคลิป อ.เอกวิทย์ แสวงผล) เซอร์กิตท่าพื้นฐานช่วยแรงและความทนทานของกล้ามเนื้อ ทำ 2–3 ครั้ง/สัปดาห์ได้ผลกว่า 1 ครั้ง (Batrakoulis 2023) แต่ไม่ช่วยให้วิ่งประหยัดแรงเหมือนเวทหนักหรือท่ากระโดด (Llanos-Lagos 2024)', 'Full body: arms → core → legs, so each area rests between moves. Basic-movement circuits build strength and muscular endurance, 2–3×/week more than once (Batrakoulis 2023), but don’t improve running economy the way heavy lifting or jumps do (Llanos-Lagos 2024)')}</li>}
+          {kind === 'full' && <li>{t('ทั้งตัว: เรียงแขน → แกนกลาง → ขา กล้ามส่วนเดิมได้พักระหว่างท่า เซอร์กิตท่าพื้นฐานช่วยแรงและความทนทานของกล้ามเนื้อ ทำ 2–3 ครั้ง/สัปดาห์ได้ผลกว่า 1 ครั้ง (Batrakoulis 2023) แต่ไม่ช่วยให้วิ่งประหยัดแรงเหมือนเวทหนักหรือท่ากระโดด (Llanos-Lagos 2024)', 'Full body: arms → core → legs, so each area rests between moves. Basic-movement circuits build strength and muscular endurance, 2–3×/week more than once (Batrakoulis 2023), but don’t improve running economy the way heavy lifting or jumps do (Llanos-Lagos 2024)')}</li>}
           <li>{t('หลักฐาน: การฝึกความแข็งแรงช่วยลดการบาดเจ็บจากกีฬาโดยรวม (Lauersen 2014) แต่โปรแกรมแกนกลาง/สะโพก 10 นาทีในนักวิ่งมาราธอนมือใหม่ยังไม่เห็นผลลดเจ็บชัด (Toresdahl 2020) ทำเพื่อความแข็งแรงและท่าวิ่งที่มั่นคง ไม่ใช่เกราะกันเจ็บ', 'Evidence: strength training lowers sports injuries overall (Lauersen 2014), but a 10-min core/hip program in first-time marathoners showed no clear injury reduction (Toresdahl 2020) — do it for strength and stability, not as injury armour')}</li>
         </ul>
       </Collapse>

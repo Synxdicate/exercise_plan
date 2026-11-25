@@ -47,4 +47,17 @@ describe('full-body circuit', () => {
     expect(fullCircuit.map(s => s.zone)).toEqual(fullCircuit.map((_, i) => (['upper', 'core', 'lower'] as const)[i % 3]))
     expect(circuitTotal(buildCircuit(fullCircuit, 30, 15, 2))).toBeLessThanOrEqual(15 * 60)
   })
+  it('covers every movement pattern a runner needs and every move has a harder step', async () => {
+    const { fullCircuit } = await import('../circuit')
+    const names = fullCircuit.map(s => s.name)
+    // ดึง ดัน / ขาเดียว สะโพก-ต้นขาหลัง น่อง (น่องรับแรงตอนวิ่งมากที่สุด Dorn 2012)
+    for (const n of ['Table Row', 'Push-up', 'Reverse Lunge', 'Single-leg Glute Bridge', 'Single-leg Calf Raise']) expect(names).toContain(n)
+    // ท่าที่แทบไม่มีแรงต้านไม่นับเป็นท่าสร้างแรง
+    expect(names).not.toContain('Running Arm Swing')
+    for (const s of fullCircuit) {
+      expect(s.how, s.name).toMatch(/ง่ายไป|ยากไป/)
+      expect(s.howEn, s.name).toMatch(/Too easy|too hard/)
+    }
+    expect(circuitTotal(buildCircuit(fullCircuit, 30, 15, 3))).toBeLessThanOrEqual(21 * 60)
+  })
 })
