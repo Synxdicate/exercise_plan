@@ -468,6 +468,8 @@ test('โลโก้กลับหน้าหลัก, เมนูบัญ
   await expect(page.locator('nav')).toContainText('Home')
   await expect(page.locator('header h1')).toHaveText('Overview')
   expect(await page.evaluate(() => document.documentElement.lang)).toBe('en')
+  // การเขียน IndexedDB เป็นแบบ async รอให้ค่าลงก่อนรีโหลด (CI ช้ากว่า เคยรีโหลดก่อนเขียนเสร็จ)
+  await expect.poll(() => idb(page, 'lang')).toBe('en')
   await page.reload()
   await expect(page.locator('nav')).toContainText('Train')
 })
