@@ -12,7 +12,8 @@ import { yt, type Day, type Exercise } from '../data/workouts'
 import { locationInfo, weekNote } from '../data/programs'
 import { RAMP_NOTE, RAMP_STRIDES_NOTE } from '../lib/rampIn'
 import { dayIntensity, musclesOf, muscleNames } from '../data/muscles'
-import { useRuns } from '../lib/log'
+import { formatPace, runKinds, runKindsEn, useRuns } from '../lib/log'
+import { isWalk } from '../lib/walk'
 import { useDayText } from '../lib/dayText'
 import { estimate, paceHint } from '../lib/pace'
 import { useProgram } from '../lib/program'
@@ -284,6 +285,23 @@ function DayMuscles({ day }: { day: Day }) {
   )
 }
 
+/** วันวิ่งที่ทำแล้ว: บอกว่าวิ่งจริงแบบไหน (ติ๊กถูกเพราะมีการวิ่งวันนั้น ไม่ได้แปลว่าวิ่งตรงชนิดในแผน) */
+function ActualRun({ day, date }: { day: Day; date: string }) {
+  const t = useT()
+  const [runs] = useRuns()
+  const done = runs.filter(r => r.date === date && !isWalk(r))
+  if (!done.length) return null
+  const same = done.some(r => r.kind === day.runKind)
+  return (
+    <div className="rounded-2xl bg-raised p-3 text-sm">
+      {done.map(r => (
+        <p key={r.id}><span className="text-muted">{t('วิ่งจริง', 'Actual run')}</span> <b>{t(runKinds[r.kind], runKindsEn[r.kind])}</b> {r.km.toFixed(2)} {t('กม.', 'km')}{r.seconds ? ` · ${formatPace(r.seconds, r.km)}` : ''}</p>
+      ))}
+      {!same && <p className="mt-1 text-xs text-muted">{t('ติ๊กว่าทำแล้วเพราะวิ่งในวันนี้ แต่ชนิดไม่ตรงกับแผน', 'Ticked because you ran today, though not the planned type')}</p>}
+    </div>
+  )
+}
+
 function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slotId, weekNoteText, date, onDoToday }: {
   day: Day; isToday: boolean; done: boolean; hint: string | null; weekNoteText?: string; date: string; onDoToday?: () => void
   setDone: (v: boolean) => void; onStart: (quick: boolean) => void; onLocation: (m: 'gym' | 'park' | 'home') => void; slotId: string
@@ -376,6 +394,7 @@ function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slo
             {hint && <p className="mt-1 font-semibold text-run">{hint}</p>}
           </div>
           {!done && <CapNote day={day} date={date} />}
+          {done && <ActualRun day={day} date={date} />}
           {day.runKind === 'race' && <RacePlan day={day} date={slotId} />}
           {day.runKind && <RunTypeCard kind={day.runKind} />}
           {day.runKind !== 'race' && (

@@ -65,6 +65,8 @@ export function estimate(runs: Run[], asOf = today()) {
     from: { km: +src.km.toFixed(2), date: src.date, id: src.runId, segment: src.segment, easy: src.easy, pace: src.seconds / src.km },
     stale,
     weeklyKm,
+    // เพซวิ่งเบาปกติ (มัธยฐาน 28 วัน) ใช้ในคำแนะนำเมื่อคำนวณจากวิ่งเบา: รอบที่ใช้คำนวณคือรอบที่เร็วที่สุด ไม่ใช่รอบปกติ
+    usual: src.easy ? (easyPaceRef(runs, asOf) ?? src.seconds / src.km) : null,
     // ฟูลยังไม่น่าเชื่อถือถ้าซ้อมน้อยหรือยังไม่เคยวิ่งไกล (ระยะยาวสุดที่ใช้คำนวณ < 10 กม.)
     fullReliable: weeklyKm >= 30 && src.km >= 10,
     fiveK: t5,
@@ -108,7 +110,7 @@ export function paceHint(e: Estimate | null, kind?: string, title = '', en = fal
     if (kind === 'tempo' || kind === 'interval' || /10K|5K|ฮาล์ฟ|มาราธอน/.test(title))
       return kind === 'interval' ? tr('ช่วงเร็ว: เหนื่อย ~8/10 พูดได้แค่คำสั้น ๆ (วิ่งทดสอบ 5K แล้วจะได้เพซที่แม่น)', 'Fast reps: ~8/10 effort, a few words only (a 5K test gives exact paces)')
         : tr('Tempo: เหนื่อยแต่คุมได้ ~7/10 พูดได้เป็นคำ ๆ (วิ่งทดสอบ 5K แล้วจะได้เพซที่แม่น)', 'Tempo: comfortably hard ~7/10, short phrases (a 5K test gives exact paces)')
-    return tr(`เบา: พูดเป็นประโยคได้ ไม่เร็วกว่าวิ่งเบาปกติ (~${fmt(e.from.pace)} ${km})`, `Easy: conversational, no faster than your usual easy runs (~${fmt(e.from.pace)} ${km})`)
+    return tr(`เบา: พูดเป็นประโยคได้ ไม่เร็วกว่าวิ่งเบาปกติ (~${fmt(e.usual ?? e.from.pace)} ${km})`, `Easy: conversational, no faster than your usual easy runs (~${fmt(e.usual ?? e.from.pace)} ${km})`)
   }
   if (/10K/.test(title)) return tr(`เพซ 10K ~${fmt(e.paces.tenK)} ${km}`, `10K pace ~${fmt(e.paces.tenK)} ${km}`)
   if (/5K/.test(title)) return tr(`เพซ 5K ~${fmt(e.paces.interval)} ${km}`, `5K pace ~${fmt(e.paces.interval)} ${km}`)

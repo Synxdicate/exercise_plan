@@ -6,6 +6,7 @@ import { fetchStops, longestWaterGap, WATER_GAP_KM, type Stop, type StopKind } f
 import { STOP_COLOR, useStopsCache } from '../lib/useStops'
 import { useT } from '../lib/i18n'
 import { Button } from './ui'
+import { niceDate, today } from '../lib/date'
 
 const ICON = { water: Droplets, shop: Store, toilet: Toilet }
 const LABEL: Record<StopKind, [string, string]> = { water: ['น้ำดื่ม', 'Water'], shop: ['ร้านสะดวกซื้อ', 'Shop'], toilet: ['ห้องน้ำ', 'Toilet'] }
@@ -23,7 +24,7 @@ export function RouteStopsCard({ run, onPick }: { run: Run; onPick?: (p: Point) 
     setError(false)
     try {
       const stops = await fetchStops(run.route!, run.km)
-      setCache(prev => ({ ...prev, [run.id]: { at: new Date().toISOString().slice(0, 10), stops } }))
+      setCache(prev => ({ ...prev, [run.id]: { at: today(), stops } }))
     } catch {
       setError(true)
     } finally {
@@ -60,7 +61,7 @@ export function RouteStopsCard({ run, onPick }: { run: Run; onPick?: (p: Point) 
             </ul>
           ) : <p className="mt-2 text-sm text-muted">{t('ไม่พบจุดแวะในข้อมูลแผนที่ (ข้อมูลในบางพื้นที่ยังไม่ครบ) ควรพกน้ำไปเอง', 'No stops in the map data (some areas are incomplete); carry your own water.')}</p>}
           <div className="mt-2 flex items-center justify-between gap-2 text-[11px] text-muted">
-            <span>{t(`ข้อมูล OpenStreetMap เมื่อ ${got.at} อาจไม่ครบหรือปิดไปแล้ว`, `OpenStreetMap data from ${got.at}; may be incomplete or out of date`)}</span>
+            <span>{t(`ข้อมูล OpenStreetMap เมื่อ ${niceDate(got.at)} อาจไม่ครบหรือปิดไปแล้ว`, `OpenStreetMap data from ${niceDate(got.at)}; may be incomplete or out of date`)}</span>
             <Button size="sm" variant="soft" disabled={busy} onClick={() => void load()}>{busy ? t('กำลังหา…', 'Searching…') : t('หาใหม่', 'Refresh')}</Button>
           </div>
         </>

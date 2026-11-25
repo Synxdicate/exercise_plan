@@ -56,7 +56,26 @@ export type LegPhase = {
   raw: string | null
   /** เคยบันทึกเจ็บเข่าใน 28 วัน → ปรับแบบเข่าด้วย */
   knee: boolean
+  /** ช่วงวันที่ (รวมวันที่ผ่านไปแล้วและรอบเจ็บก่อน ๆ) ที่แผนถูกปรับ ใช้กับแผนรายวัน ไม่ให้วันที่ผ่านไปกลับเป็นแผนเดิม (เช่น interval) */
+  spans: { guard: Span[]; back: Span[] }
 }
+
+export type Span = [from: string, to: string]
+
+/** รอบเจ็บ: วันเจ็บที่ช่วง 7 วันต่อกันนับเป็นรอบเดียว (เริ่ม = วันเจ็บแรก, last = วันเจ็บสุดท้าย) เรียงจากเก่า */
+function episodes(log: Record<string, Readiness>, extra: string[], today: string) {
+  const days = [...new Set([...Object.keys(log).filter(d => isGuardPain(log[d])), ...extra])].filter(d => d <= today).sort()
+  const out: { start: string; last: string }[] = []
+  for (const d of days) {
+    const cur = out.at(-1)
+    if (cur && addDays(cur.last, PAIN_DAYS) >= d) cur.last = d
+    else out.push({ start: d, last: d })
+  }
+  return out
+}
+
+const span = (from: string | null, to: string | null): Span | null => (from && to && from <= to ? [from, to] : null)
+const minDate = (a: string, b: string) => (a < b ? a : b)
 
 /** off: `${วันสิ้นสุดช่วงถนอมขา}|${วันที่กดหายแล้ว}` (ค่าเก่ามีแค่วันสิ้นสุด = ปิดโดยไม่มีช่วงกลับมาซ้อม) */
 export const offValue = (raw: string, on: string) => `${raw}|${on}`
@@ -64,20 +83,52 @@ export const offValue = (raw: string, on: string) => `${raw}|${on}`
 /** ช่วงของขาวันนี้: ถนอมขา 7 วันจากวันที่เจ็บล่าสุด → กลับมาซ้อม 7 วัน → แผนเต็ม
  * กด "หายแล้ว" ระหว่างถนอมขา: ช่วงกลับมาซ้อมเริ่มวันนั้นเลย */
 export function legPhase(log: Record<string, Readiness>, today: string, extra: string[] = [], off = '', backOff = ''): LegPhase {
-  const end = lastPain(log, today, extra, PAIN_DAYS + RETURN_DAYS)
   const kneeFrom = addDays(today, -(KNEE_WATCH - 1))
   const knee = Object.keys(log).some(d => d >= kneeFrom && d <= today && log[d]?.pain && log[d].areas?.includes('knee'))
-  if (!end) return { guard: null, back: null, raw: null, knee }
+  const eps = episodes(log, extra, today)
+  // รอบก่อน ๆ: ถนอมขาเต็ม 7 วันหลังวันเจ็บสุดท้าย แล้วกลับมาซ้อม 7 วัน ตัดเมื่อรอบถัดไปเริ่ม (ไม่รู้ว่าเคยกดหายแล้ว เก็บไว้แค่รอบล่าสุด)
+  const guardSpans: Span[] = []
+  const backSpans: Span[] = []
+  const end = lastPain(log, today, extra, PAIN_DAYS + RETURN_DAYS)
   const [offEnd, offOn] = off.split('|')
+  const [skipEnd, skipOn] = backOff.split('|')
+  const past = end ? eps.slice(0, -1) : eps
+  past.forEach((e, i) => {
+    const cut = eps[i + 1] ? addDays(eps[i + 1].start, -1) : addDays(today, 365)
+    const gEnd = addDays(e.last, PAIN_DAYS - 1)
+    // ปุ่ม "หายแล้ว"/"ใช้แผนเต็ม" ที่กดในรอบนี้ (เก็บไว้แค่รอบล่าสุด) ยังมีผลหลังรอบจบ ไม่ให้วันที่ผ่านไปเปลี่ยนกลับ
+    const early = offEnd === gEnd && !!offOn && offOn <= gEnd
+    const bFrom = early ? offOn : addDays(gEnd, 1)
+    const bEnd = addDays(bFrom, RETURN_DAYS - 1)
+    const bTo = skipEnd === bEnd && skipOn ? addDays(skipOn, -1) : bEnd
+    const g = span(e.start, minDate(early ? addDays(offOn, -1) : gEnd, cut))
+    const b = offEnd === gEnd && !offOn ? null : span(bFrom, minDate(bTo, cut))
+    if (g) guardSpans.push(g)
+    if (b) backSpans.push(b)
+  })
+  if (!end) return { guard: null, back: null, raw: null, knee, spans: { guard: guardSpans, back: backSpans } }
   const cleared = offEnd === end
   const raw = today <= end ? end : null
   const guard = raw && !cleared ? raw : null
   // ปิดแบบเก่า (ไม่มีวันที่กด) = ไม่มีช่วงกลับมาซ้อม
   const backStart = cleared ? (offOn && offOn <= end ? offOn : null) : addDays(end, 1)
   const backEnd = backStart ? addDays(backStart, RETURN_DAYS - 1) : null
-  const back = !guard && backStart && backEnd && today >= backStart && today <= backEnd && backEnd !== backOff ? backEnd : null
-  return { guard, back, raw, knee }
+  // ปิดช่วงกลับมาซ้อม: `${วันสิ้นสุด}|${วันที่กด}` (ค่าเก่ามีแค่วันสิ้นสุด ไม่รู้วันที่กด ถือว่าปิดวันนี้)
+  const skipped = !!backEnd && skipEnd === backEnd
+  const back = !guard && backStart && backEnd && today >= backStart && today <= backEnd && !skipped ? backEnd : null
+  // ถนอมขาจริง: จากวันเจ็บแรกของรอบถึงวันสิ้นสุด หรือถึงวันก่อนกด "หายแล้ว" (ค่าเก่าไม่รู้วันที่กด: ถึงเมื่อวาน)
+  const yesterday = addDays(today, -1)
+  const guardTo = !cleared ? end : offOn ? addDays(offOn, -1) : minDate(end, yesterday)
+  const backTo = !skipped ? backEnd : skipOn ? addDays(skipOn, -1) : backEnd && minDate(backEnd, yesterday)
+  const g = span(eps.at(-1)!.start, guardTo)
+  const b = span(backStart, backTo)
+  if (g) guardSpans.push(g)
+  if (b) backSpans.push(b)
+  return { guard, back, raw, knee, spans: { guard: guardSpans, back: backSpans } }
 }
+
+/** ค่าที่เก็บเมื่อกดใช้แผนเต็มก่อนช่วงกลับมาซ้อมจบ */
+export const skipValue = (backEnd: string, on: string) => `${backEnd}|${on}`
 
 const fast = (d: Day) => d.runKind === 'tempo' || d.runKind === 'interval' || /strides|เนินสั้น/i.test(d.title)
 const quality = (d: Day) => d.runKind === 'tempo' || d.runKind === 'interval'
@@ -99,13 +150,13 @@ const toEasy = (d: Day, note: string, how: string, title = 'Easy run'): Day => (
   exercises: [{ name: title, th: how, sets: '1', reps: d.targetKm ? `${d.targetKm} กม.` : d.duration, rest: '-', cue: how, video: 'easy run zone 2 running how to' }],
 })
 
-/** ตั้งแต่วันนี้ถึง until: วัน strides/เนินสั้น/tempo/interval → วิ่งเบาระยะเดิม, วันเวทตัดท่ากระโดด
+/** ตั้งแต่ from ถึง until (ช่วงถนอมขา รวมวันที่ผ่านไปแล้ว): วัน strides/เนินสั้น/tempo/interval → วิ่งเบาระยะเดิม, วันเวทตัดท่ากระโดด
  *  knee: วิ่งยาวเหลือ 80% ทุกวันวิ่งเลี่ยงลงเนิน และวันเวทมีท่าสะโพกด้านข้าง */
-export function applyPainGuard(days: Day[], monday: string, today: string, until: string | null, knee = false): Day[] {
+export function applyPainGuard(days: Day[], monday: string, from: string, until: string | null, knee = false): Day[] {
   if (!until) return days
   return days.map((d, i) => {
     const date = addDays(monday, i)
-    if (date < today || date > until || d.runKind === 'race') return d
+    if (date < from || date > until || d.runKind === 'race') return d
     if (d.type === 'run') {
       let out = fast(d) ? toEasy(d, PAIN_NOTES.run, EASE_HOW.sore) : d
       if (!knee) return out
@@ -127,12 +178,12 @@ export function applyPainGuard(days: Day[], monday: string, today: string, until
   })
 }
 
-/** ช่วงกลับมาซ้อม (ตั้งแต่วันนี้ถึง until): tempo/interval → วิ่งเบา + strides, วิ่งยาว ≤90%, ยังงดกระโดด */
-export function applyReturn(days: Day[], monday: string, today: string, until: string | null): Day[] {
+/** ช่วงกลับมาซ้อม (ตั้งแต่ from ถึง until): tempo/interval → วิ่งเบา + strides, วิ่งยาว ≤90%, ยังงดกระโดด */
+export function applyReturn(days: Day[], monday: string, from: string, until: string | null): Day[] {
   if (!until) return days
   return days.map((d, i) => {
     const date = addDays(monday, i)
-    if (date < today || date > until || d.runKind === 'race') return d
+    if (date < from || date > until || d.runKind === 'race') return d
     if (d.type === 'run') {
       if (quality(d)) return toEasy(d, PAIN_NOTES.backRun, 'วิ่งเบา แล้ว Strides 4 × 20 วิ', 'Easy run + Strides')
       return shorten(d, 0.9, PAIN_NOTES.backLong)

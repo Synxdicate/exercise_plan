@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { variants } from '../../data/programs'
-import { applyPainGuard, applyReturn, legPhase, offValue, painGuardUntil, PAIN_NOTES } from '../painPlan'
+import { applyPainGuard, applyReturn, legPhase, offValue, painGuardUntil, PAIN_NOTES, skipValue } from '../painPlan'
+import { addDays } from '../date'
 import { noteToEn } from '../../data/contentEn'
 
 const log = (d: string, areas?: string[], pain = true) => ({ [d]: { sleep: 0, sore: 0, pain, areas } }) as never
@@ -88,7 +89,7 @@ describe('pain guard', () => {
 
   it('phases: guard 7 days → return 7 days → full plan; "recovered" starts the return week that day', () => {
     const l = log('2026-11-16', ['knee'])
-    expect(legPhase(l, '2026-11-18')).toEqual({ guard: '2026-11-22', back: null, raw: '2026-11-22', knee: true })
+    expect(legPhase(l, '2026-11-18')).toMatchObject({ guard: '2026-11-22', back: null, raw: '2026-11-22', knee: true })
     expect(legPhase(l, '2026-11-23')).toMatchObject({ guard: null, back: '2026-11-29', raw: null })
     expect(legPhase(l, '2026-11-30')).toMatchObject({ guard: null, back: null })
     // กดหายแล้ววันที่ 18: ช่วงกลับมาซ้อม 18–24
@@ -103,6 +104,37 @@ describe('pain guard', () => {
     expect(legPhase(Object.assign({}, l, log('2026-11-24', ['achilles'])), '2026-11-24')).toMatchObject({ guard: '2026-11-30', back: null })
     // เช้าเกิน 3/10 นับเป็นวันเจ็บ
     expect(legPhase({}, '2026-11-18', ['2026-11-17'])).toMatchObject({ guard: '2026-11-23', knee: false })
+  })
+
+  it('spans keep past days of the guard/return week adapted (a past interval day must not come back after the day passes)', () => {
+    const l = log('2026-11-19', ['achilles'])
+    // วันถัดจากช่วงถนอมขา: ช่วงถนอมขายังครอบ 19–25 ช่วงกลับมาซ้อม 26–2 ธ.ค.
+    expect(legPhase(l, '2026-11-26').spans).toEqual({ guard: [['2026-11-19', '2026-11-25']], back: [['2026-11-26', '2026-12-02']] })
+    const days = variants('ten', 6).gym
+    const q = days.findIndex(d => d.runKind === 'interval')
+    expect(q).toBeGreaterThan(-1)
+    // สัปดาห์ที่วัน interval ตรงกับวันที่ 24 (ผ่านไปแล้วเมื่อดูวันที่ 26) ยังเป็นวิ่งเบา
+    const monday = addDays('2026-11-24', -q)
+    expect(applyPainGuard(days, monday, '2026-11-19', '2026-11-25')[q].runKind).toBe('easy')
+    expect(applyPainGuard(days, monday, '2026-11-25', '2026-11-25')[q].runKind).toBe('interval')
+    // เจ็บต่อเนื่อง (ช่วง 7 วันต่อกัน) เริ่มนับจากวันแรก
+    const chain = Object.assign({}, log('2026-11-10', ['achilles']), log('2026-11-15', ['calf']))
+    expect(legPhase(chain, '2026-11-18').spans.guard).toEqual([['2026-11-10', '2026-11-21']])
+    // กดหายแล้ววันที่ 18: ถนอมขา 15–17 แล้วกลับมาซ้อม 18–24
+    const off = offValue('2026-11-21', '2026-11-18')
+    expect(legPhase(chain, '2026-11-20', [], off).spans).toEqual({ guard: [['2026-11-10', '2026-11-17']], back: [['2026-11-18', '2026-11-24']] })
+    // ปิดช่วงกลับมาซ้อมวันที่ 24: วันก่อนหน้ายังเป็นช่วงกลับมาซ้อม วันนั้นเป็นต้นไปแผนเต็ม
+    expect(legPhase(l, '2026-11-28', [], '', skipValue('2026-12-02', '2026-11-28'))).toMatchObject({ back: null, spans: { back: [['2026-11-26', '2026-11-27']] } })
+    // ไม่มีบันทึกเจ็บ
+    expect(legPhase({}, '2026-11-26').spans).toEqual({ guard: [], back: [] })
+    // รอบเจ็บก่อนหน้า (10 พ.ย.) ยังแสดงช่วงของมัน: ถนอมขา 10–16 กลับมาซ้อม 17–18 (ตัดเมื่อเจ็บใหม่วันที่ 19)
+    const two = Object.assign({}, log('2026-11-10', ['achilles']), l)
+    expect(legPhase(two, '2026-11-26').spans).toEqual({ guard: [['2026-11-10', '2026-11-16'], ['2026-11-19', '2026-11-25']], back: [['2026-11-17', '2026-11-18'], ['2026-11-26', '2026-12-02']] })
+    // ปุ่มที่กดไว้ยังมีผลหลังรอบจบ: กดหายแล้ววันที่ 22 และใช้แผนเต็มวันที่ 25
+    expect(legPhase(l, '2026-12-20', [], offValue('2026-11-25', '2026-11-22'), skipValue('2026-11-28', '2026-11-25')).spans)
+      .toEqual({ guard: [['2026-11-19', '2026-11-21']], back: [['2026-11-22', '2026-11-24']] })
+    // หมดทุกช่วงแล้ว: รอบเก่ายังแสดงย้อนหลัง
+    expect(legPhase(l, '2026-12-20').spans).toEqual({ guard: [['2026-11-19', '2026-11-25']], back: [['2026-11-26', '2026-12-02']] })
   })
 
   it('new notes have English', () => {

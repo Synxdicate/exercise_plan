@@ -66,4 +66,13 @@ describe('paceHint from an easy-run estimate', () => {
     expect(paceHint(hard, 'tempo', 'Tempo 15 นาที')).toMatch(/^Tempo ~8:5\d \/กม\.$/)
     expect(paceHint(hard, 'easy', 'Easy run', true)).toMatch(/^Easy \d+:\d\d–\d+:\d\d \/km$/)
   })
+  it('"usual easy pace" is the median easy pace, not the fastest run the estimate came from', async () => {
+    const { estimate, paceHint } = await import('../pace')
+    const r = (date: string, km: number, seconds: number) => ({ id: date, date, km, seconds, kind: 'easy' as const, source: 'manual' as const })
+    // รอบเร็ว 8:11 เป็นแหล่งคำนวณ แต่ปกติวิ่งเบา ~8:45
+    const e = estimate([r('2026-11-08', 5.01, 2462), r('2026-11-15', 6.03, 3168), r('2026-11-22', 4.85, 2613), r('2026-11-25', 5.03, 2586)], '2026-11-26')!
+    expect(e.from.pace).toBeCloseTo(491, 0)
+    expect(paceHint(e, 'easy', 'Easy run')).toContain('8:40')
+    expect(paceHint(e, 'easy', 'Easy run')).not.toContain('8:11')
+  })
 })

@@ -1146,3 +1146,21 @@ test('การ์ดวันแข่ง: อากาศตามปกติ
   await expect.poll(async () => idb(page, 'raceAid')).toEqual([2.5, 5, 7.5])
   await expect(page.getByText(/ดื่ม ~\d+ มล\./).first()).toBeVisible()
 })
+
+test('วันที่ผ่านไปแล้วในช่วงถนอมขายังเป็นวิ่งเบา (ไม่กลับเป็น interval แล้วติ๊กว่าทำ) และบอกว่าวิ่งจริงแบบไหน', async ({ page }) => {
+  // พฤหัส 26 พ.ย. 2026: 10K สัปดาห์ 6 วันพุธ 25 เป็น interval ในตาราง แต่เจ็บเอ็นร้อยหวาย 19 พ.ย. → ถนอมขาถึง 25
+  await page.clock.install({ time: new Date('2026-11-26T08:00:00+07:00') })
+  await seed(page, {
+    program: 'ten', raceDate: '2027-01-10',
+    readiness: { '2026-11-19': { sleep: 0, sore: 0, pain: true, areas: ['achilles'] } },
+    runs: [{ id: 'r25', date: '2026-11-25', km: 5.03, seconds: 2586, kind: 'easy', source: 'manual' }],
+  })
+  await nav(page, 'ฝึก')
+  const wed = page.getByRole('button', { name: /พุธ: / })
+  await expect(wed).toContainText('Easy run')
+  await expect(wed).not.toContainText('Interval')
+  await wed.click()
+  await settled(page)
+  await expect(page.getByText('วิ่งจริง')).toBeVisible()
+  await expect(page.getByText('5.03 กม.')).toBeVisible()
+})
