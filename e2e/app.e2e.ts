@@ -1166,3 +1166,23 @@ test('วันที่ผ่านไปแล้วในช่วงถน�
   await expect(page.getByText('วิ่งจริง')).toBeVisible()
   await expect(page.getByText('5.03 กม.')).toBeVisible()
 })
+
+test('ระยะสัปดาห์ตามที่วิ่งได้จริง และการ์ดทางไปวันแข่งไล่วิ่งยาวทีละขั้นถึงวันแข่ง', async ({ page }) => {
+  // พฤหัส 26 พ.ย. 2026: 10K สัปดาห์ 6 (ตาราง 19 กม.) แต่ 3 สัปดาห์ก่อนวิ่งได้มากสุด 10.6 กม. → ~12.7 กม. (วิ่งยาวไม่ต่ำกว่า 6 กม. ที่เคยวิ่ง เลยเกินได้นิดหน่อย)
+  await page.clock.install({ time: new Date('2026-11-26T08:00:00+07:00') })
+  const run = (date: string, km: number, kind = 'easy') => ({ id: date, date, km, seconds: Math.round(km * 520), kind, source: 'manual' })
+  await seed(page, {
+    program: 'ten', raceDate: '2027-01-10', raceKm: 11.55,
+    runs: [run('2026-11-02', 3.09), run('2026-11-06', 2.49), run('2026-11-08', 5.01, 'long'), run('2026-11-13', 2.52), run('2026-11-15', 6.03, 'long'),
+      run('2026-11-19', 4.02), run('2026-11-22', 4.85, 'long'), run('2026-11-25', 5.03)],
+  })
+  await nav(page, 'ฝึก')
+  await expect(page.getByText(/ปรับตามที่วิ่งได้จริง/).first()).toBeVisible()
+  const kmText = await page.getByText(/วิ่ง [\d.]+ กม\./).first().textContent()
+  expect(parseFloat(kmText!.match(/วิ่ง ([\d.]+) กม\./)![1])).toBeLessThanOrEqual(13)
+  await expect(page.getByRole('button', { name: /อาทิตย์: วิ่งยาว/ })).toBeVisible()
+  await page.getByRole('button', { name: /ทางไปวันแข่ง/ }).click()
+  await expect(page.getByText(/ตอนนี้ไกลสุด 6\.0 กม\./)).toBeVisible()
+  await expect(page.getByText('วันแข่ง 11.55 กม.')).toBeVisible()
+  await expect(page.getByText(/สลับเดิน 1 นาที/)).toBeVisible()
+})

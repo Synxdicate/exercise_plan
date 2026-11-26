@@ -4,6 +4,7 @@ import { hillyDownhillNote, hillyLongNote, hillyRaceNote } from './programs'
 
 export const NOTE_EN: Record<string, string> = {
   'เริ่มกลางโปรแกรม: ระยะสัปดาห์นี้ปรับให้ใกล้กับที่วิ่งอยู่จริง แล้วค่อยเพิ่มทีละ ~20% จนตามตารางทัน': 'Mid-program start: this week is sized to what you actually run, then grows ~20% a week until it meets the plan',
+  'ระยะสัปดาห์นี้ปรับตามที่วิ่งได้จริง: ไม่เกินสัปดาห์ที่วิ่งมากที่สุดใน 3 สัปดาห์ก่อน + 20% วิ่งได้ตามนี้แล้วสัปดาห์ถัดไปจะเพิ่มเอง': 'This week is sized to what you actually ran: at most your biggest week of the last 3 + 20%. Hit it and next week grows on its own',
   'เริ่มกลางโปรแกรม: สัปดาห์แรกยังไม่มีวิ่งหนัก ใช้ strides แทน': 'Mid-program start: no hard run in the first week, strides instead',
   'พักฟื้นจากป่วย หายไข้แล้วค่อยเริ่มเดินเบา ๆ ไม่ต้องรีบชดเชย': 'Recovering from illness — once the fever is gone, start with easy walks; no need to make up sessions',
   'พักฟื้นจากป่วย งดเวทจนหายดี': 'Recovering from illness — no strength work until you are well',

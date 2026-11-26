@@ -9,7 +9,8 @@ import { homeUsable, libEx, needsSpotter } from '../data/library'
 import type { Day, Exercise } from '../data/workouts'
 import { applyMoves, type DayMoves } from './moves'
 import { applyEaseOff, type EaseOff } from './easeOff'
-import { applyRampIn, rampCap, recentWeekKm } from './rampIn'
+import { longestRecent } from './missed'
+import { ACTUAL_NOTE, actualCap, applyRampIn, RAMP_NOTE, rampCap, recentWeekKm, weeklyKm } from './rampIn'
 import { runsOnly } from './walk'
 import type { Run } from './log'
 
@@ -71,6 +72,8 @@ export function applyCustom(days: Day[], program: string, swaps: Record<string, 
 }
 
 const CYCLE_EPOCH = '2024-01-01' // วันจันทร์
+// โปรแกรมที่มีตารางระยะวิ่งต่อสัปดาห์: ระยะปรับตามที่วิ่งได้จริง (start/mini เป็นวิ่งสลับเดินที่ไต่ช้าอยู่แล้ว, physique/strength ไม่มีตารางระยะ)
+const ADAPT_PROGRAMS = new Set<ProgramId>(['base', 'five', 'ten', 'half', 'full'])
 
 /**
  * เลขสัปดาห์ของโปรแกรม ณ วันจันทร์ monday: นับจากวันเริ่ม ลบสัปดาห์ที่ "ทำซ้ำ" (repeats = วันจันทร์ที่เลขสัปดาห์ไม่เดิน)
@@ -179,10 +182,18 @@ export function useProgram() {
   // เริ่มกลางโปรแกรม (วันเริ่มอยู่หลังสัปดาห์ 1 ที่นับจากวันแข่ง): จำกัดระยะตามที่วิ่งจริง แล้วไต่ขึ้น ~20%/สัปดาห์
   const rampStart = raceStart && programStart && weekStart(programStart) > raceStart ? weekStart(programStart) : null
   const baseline = useMemo(() => (rampStart ? recentWeekKm(runsOnly(rawRuns), rampStart) : 0), [rampStart, rawRuns])
+  // ระยะจริงต่อสัปดาห์ (ทุกโปรแกรมที่มีตารางระยะ): ตารางเกินที่วิ่งได้จริงมากเกิน 20% ก็ลดลงมา (สตริงไว้เทียบในแคชแผน)
+  const adapt = ADAPT_PROGRAMS.has(program)
+  const weekly = useMemo(() => (adapt ? weeklyKm(runsOnly(rawRuns), weekStart) : {}), [adapt, rawRuns])
+  const weeklyKey = useMemo(() => JSON.stringify(weekly), [weekly])
   const rampFor = (week: number) => {
-    if (!rampStart || !baseline || week >= meta.weeks) return null
-    const n = Math.round(daysBetween(rampStart, mondayOf(week)) / 7)
-    return n < 0 || n > 10 ? null : { cap: rampCap(baseline, n), first: n === 0 }
+    if (week >= meta.weeks) return null
+    const n = rampStart && baseline ? Math.round(daysBetween(rampStart, mondayOf(week)) / 7) : -1
+    const mid = n >= 0 && n <= 10 ? rampCap(baseline, n) : null
+    const act = adapt && (!rampStart || mondayOf(week) >= rampStart) ? actualCap(weekly, mondayOf(week), thisMonday) : null
+    if (mid === null && act === null) return null
+    const useAct = act !== null && (mid === null || act < mid)
+    return { cap: useAct ? act : mid!, first: n === 0, note: useAct ? ACTUAL_NOTE : RAMP_NOTE, longFloor: longestRecent(rawRuns, mondayOf(week) > thisMonday ? thisMonday : mondayOf(week)) }
   }
   /** แผนก่อนสลับวัน/ช่วงไม่ไหว: สถานที่ → สลับท่า → เนิน → ไต่ระยะ */
   const sizedWeek = (week: number) => {
@@ -191,12 +202,12 @@ export function useProgram() {
     const base = safeLayer('custom', () => applyCustom(raw, program, swaps, extras, solo), () => raw)
     const days = raceHills ? safeLayer('hills', () => withHills(base, program, w), () => base) : base
     const r = rampFor(week)
-    return r ? safeLayer('ramp', () => applyRampIn(days, r.cap, r.first), () => days) : days
+    return r ? safeLayer('ramp', () => applyRampIn(days, r.cap, r.first, r.note, r.longFloor), () => days) : days
   }
 
   const easeIn = (week: number) => !!easeOff && easeOff.from <= addDays(mondayOf(week), 6) && easeOff.to >= mondayOf(week)
   // ทุกคอมโพเนนต์ที่เรียก useProgram ใช้แผนชุดเดียวกัน (การ์ดหน้าหลัก เหรียญ เป้าเดือน คิดแผนหลายสิบสัปดาห์ทุกครั้งที่ render)
-  const planMemo = planCacheFor([program, location, overrides, start, programStart, repeats, raceDate, raceKmOverride, raceHills, easeOff, painUntil, returnUntil, guardSpan, backSpan, knee, swaps, extras, solo, moves, baseline, thisMonday, today()])
+  const planMemo = planCacheFor([program, location, overrides, start, programStart, repeats, raceDate, raceKmOverride, raceHills, easeOff, painUntil, returnUntil, guardSpan, backSpan, knee, swaps, extras, solo, moves, baseline, weeklyKey, thisMonday, today()])
   const planOf = (week: number) => {
     let v = planMemo.get(week)
     if (!v) planMemo.set(week, (v = buildPlan(week)))

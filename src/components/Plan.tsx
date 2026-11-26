@@ -3,6 +3,7 @@ import { CourseCard } from './Course'
 import { EaseOffCard, PainGuardCard } from './Coach'
 import { JumpRopeOffer } from './JumpRope'
 import { RaceDayCard } from './RaceDay'
+import { LadderCard } from './Ladder'
 import { memo, useDeferredValue, useMemo, useState } from 'react'
 import { useSwipe } from '../lib/swipe'
 
@@ -10,7 +11,7 @@ const DAYS = ['0', '1', '2', '3', '4', '5', '6'] as const
 import { ArrowDown, ArrowLeftRight, House, ArrowUp, Check, ChevronDown, ChevronRight, Dumbbell, Flag, Footprints, Moon, Play, Plus, RefreshCw, Trash2, Trees } from 'lucide-react'
 import { yt, type Day, type Exercise } from '../data/workouts'
 import { locationInfo, weekNote } from '../data/programs'
-import { RAMP_NOTE, RAMP_STRIDES_NOTE } from '../lib/rampIn'
+import { ACTUAL_NOTE, RAMP_NOTE, RAMP_STRIDES_NOTE } from '../lib/rampIn'
 import { dayIntensity, musclesOf, muscleNames } from '../data/muscles'
 import { formatPace, runKinds, runKindsEn, useRuns } from '../lib/log'
 import { isWalk } from '../lib/walk'
@@ -67,6 +68,7 @@ const EaseOffM = memo(EaseOffCard)
 const PainGuardM = memo(PainGuardCard)
 const CourseM = memo(CourseCard)
 const RaceDayM = memo(RaceDayCard)
+const LadderM = memo(LadderCard)
 const ReplayM = memo(ReplaySoFar)
 const CircuitM = memo(CircuitCard)
 const WeeklyMusclesM = memo(WeeklyMuscles)
@@ -100,7 +102,8 @@ function PlanBody() {
   const trainingIdx = days.flatMap((d, i) => (d.type !== 'rest' ? [i] : []))
   const doneCount = trainingIdx.filter(isDone).length
   // ไต่ระยะหลังเริ่มกลางโปรแกรม: โน้ตของตาราง (เช่น "เริ่มวิ่ง 4 วัน") อาจไม่ตรงกับแผนที่ปรับแล้ว
-  const note = days.some(d => d.note?.includes(RAMP_NOTE) || d.note === RAMP_STRIDES_NOTE) ? RAMP_NOTE : weekNote(p.program, week)
+  const note = days.some(d => d.note?.includes(RAMP_NOTE) || d.note === RAMP_STRIDES_NOTE) ? RAMP_NOTE
+    : days.some(d => d.note?.includes(ACTUAL_NOTE)) ? ACTUAL_NOTE : weekNote(p.program, week)
   const day = days[shownSel]
   // ทำแผนของวันอื่นวันนี้ (สลับกับวันนี้) เฉพาะสัปดาห์นี้ ทั้งสองวันยังไม่ได้ทำ และไม่ใช่วันแข่ง
   const tIdx = todayIdx()
@@ -236,6 +239,7 @@ function PlanBody() {
         </ul>
       </section>
 
+      <LadderM />
       <CourseM />
       <RaceDayM />
       <ReplayM />
