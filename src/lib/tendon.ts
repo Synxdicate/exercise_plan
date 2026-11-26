@@ -18,15 +18,17 @@ const LOWER_LEG = ['achilles', 'calf', 'foot', 'shin', 'knee']
 
 type RunLike = { date: string; kind: string }
 
-/** ควรถามเช้านี้ไหม: เมื่อวานวิ่ง (ไม่ใช่เดิน) ยังไม่ได้ตอบวันนี้ และเคยปวดขาช่วงล่างใน 28 วัน (จากแบบเช็กความพร้อมหรือการเช็กเช้าที่ไม่ใช่ 0) */
-export function tendonCheckDue(runs: RunLike[], readiness: Record<string, Readiness>, log: TendonLog, today: string) {
+/** ควรถามเช้านี้ไหม: เมื่อวานวิ่ง (ไม่ใช่เดิน) หรือทำท่าคืนสภาพเอ็นร้อยหวาย ยังไม่ได้ตอบวันนี้ และเคยปวดขาช่วงล่างใน 28 วัน
+ * (จากแบบเช็กความพร้อม การเช็กเช้าที่ไม่ใช่ 0 หรือกำลังทำโปรแกรมคืนสภาพ: rehabDates = วันที่ทำ) */
+export function tendonCheckDue(runs: RunLike[], readiness: Record<string, Readiness>, log: TendonLog, today: string, rehabDates: string[] = []) {
   if (log[today] !== undefined) return false
   const from = addDays(today, -WATCH_DAYS)
   const watching = Object.entries(readiness).some(([d, r]) => d >= from && d <= today && r.pain && r.areas?.some(a => LOWER_LEG.includes(a)))
     || Object.entries(log).some(([d, s]) => d >= from && d < today && s > 0)
+    || rehabDates.some(d => d >= from && d < today)
   if (!watching) return false
   const y = addDays(today, -1)
-  return runs.some(r => r.date === y && r.kind !== 'walk')
+  return runs.some(r => r.date === y && r.kind !== 'walk') || rehabDates.includes(y)
 }
 
 export type TendonLevel = 'none' | 'ok' | 'worse' | 'high'

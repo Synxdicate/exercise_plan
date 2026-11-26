@@ -3,6 +3,7 @@ import type { Run } from '../lib/log'
 import type { Readiness } from '../lib/readiness'
 import { TENDON_LIMIT, TENDON_TEXT, tendonCheckDue, tendonStatus, type TendonLog } from '../lib/tendon'
 import { usePersisted } from '../lib/storage'
+import type { Rehab } from '../lib/achilles'
 import { useToday } from '../lib/useToday'
 import { useT } from '../lib/i18n'
 import { cx } from '../lib/cx'
@@ -17,7 +18,8 @@ export function TendonCheckCard() {
   const [log, setLog] = usePersisted<TendonLog>('tendonLog', {})
   const [seen, setSeen] = usePersisted('tendonSeen', '')
   const status = tendonStatus(log, now)
-  const due = tendonCheckDue(runs, readiness, log, now)
+  const [rehab] = usePersisted<Rehab | null>('achillesRehab', null)
+  const due = tendonCheckDue(runs, readiness, log, now, rehab?.sessions.map(x => x.date))
   if (!due && (!status || seen === now)) return null
   const pick = (n: number) => setLog(prev => ({ ...prev, [now]: n }))
   return (

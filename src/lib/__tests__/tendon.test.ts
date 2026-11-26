@@ -17,6 +17,9 @@ describe('morning leg check', () => {
     expect(tendonCheckDue([run('2026-11-15')], { '2026-11-10': { sleep: 0, sore: 0, pain: true, areas: ['back'] } }, {}, '2026-11-16')).toBe(false)
     // a non-zero morning check keeps the watch going
     expect(tendonCheckDue([run('2026-12-20')], ach, { '2026-12-01': 1 }, '2026-12-21')).toBe(true)
+    // the morning after an Achilles rehab session, even with no run and old pain
+    expect(tendonCheckDue([], {}, {}, '2026-12-21', ['2026-12-18', '2026-12-20'])).toBe(true)
+    expect(tendonCheckDue([], {}, {}, '2026-12-22', ['2026-12-18', '2026-12-20'])).toBe(false)
   })
 
   it('≤3 and not worse is ok; worse than last time or above 3 raises the alarm', () => {

@@ -4,17 +4,35 @@ import { useProgram } from './program'
 import { usePersisted } from './storage'
 import { isNative } from './native'
 import { addDays, daysBetween, toDateStr, weekStart } from './date'
+import { tendonCheckDue, type TendonLog } from './tendon'
+import type { Readiness } from './readiness'
+import type { Run } from './log'
+import type { Rehab } from './achilles'
 
 export type ReminderSetting = { on: boolean; time: string } // time = 'HH:MM'
 
 // ค่าของแต่ละเครื่อง (ไม่ sync) เตือนเฉพาะในแอป Android
 export const useReminderSetting = () => usePersisted<ReminderSetting>('reminder', { on: true, time: '06:00' })
 
+/** เช้าที่ต้องเช็กขา: ขึ้นต้นด้วยคำถาม แล้วตามด้วยแผนวันนี้ */
+export const morningCheck = (r: Reminder): Reminder => ({
+  ...r, title: `เช็กขาเช้านี้ · ${r.title}`,
+  body: `ก้าวแรกหลังตื่นนอน จุดที่เคยเจ็บเจ็บกี่คะแนน (0–10) แตะเพื่อตอบในแอป · ${r.body}`,
+})
+
 /** ตั้งเตือน 14 วันข้างหน้าตามแผน เรียกใหม่ทุกครั้งที่เปิดแอปหรือแผนเปลี่ยน */
 export function useReminderSchedule() {
   const p = useProgram()
   const [setting] = useReminderSetting()
-  const key = `${p.program}|${p.location}|${p.currentWeek}|${p.raceDate}|${p.programStart}|${p.raceKm}|${setting.on}|${setting.time}`
+  // เช็กขาตอนเช้า (วันนี้/พรุ่งนี้): ใส่ในการเตือนตอนเช้า เพราะการ์ดอยู่หน้าหลัก ไม่เปิดแอปตอนเช้าก็ไม่เห็น
+  const [runs] = usePersisted<Run[]>('runs', [])
+  const [readiness] = usePersisted<Record<string, Readiness>>('readiness', {})
+  const [tendon] = usePersisted<TendonLog>('tendonLog', {})
+  const [rehab] = usePersisted<Rehab | null>('achillesRehab', null)
+  const now0 = toDateStr(new Date())
+  const rehabDates = rehab?.sessions.map(s => s.date) ?? []
+  const check = [0, 1].map(d => tendonCheckDue(runs, readiness, tendon, addDays(now0, d), rehabDates))
+  const key = `${p.program}|${p.location}|${p.currentWeek}|${p.raceDate}|${p.programStart}|${p.raceKm}|${setting.on}|${setting.time}|${check.join()}|${now0}`
 
   useEffect(() => {
     if (!isNative) return
@@ -30,15 +48,16 @@ export function useReminderSchedule() {
       if (week === null) continue
       const day = p.plan(week)[daysBetween(weekStart(date), date)]
       if (!day) continue
-      list.push(day.type === 'rest'
+      const r: Reminder = day.type === 'rest'
         ? { at, title: 'วันนี้วันพัก', body: 'เดินเบา ๆ ยืดเหยียด นอนให้พอ' }
         : {
           at,
           title: day.type === 'run' ? `วันนี้วิ่ง: ${day.title}` : `วันนี้ฝึก: ${day.title}`,
           body: day.type === 'run'
-            ? `${day.targetKm ? `${day.targetKm} กม.` : day.duration} — ${day.exercises[0]?.cue ?? ''}`
+            ? `${day.targetKm ? `${day.targetKm} กม.` : day.duration} ${day.exercises[0]?.cue ?? ''}`
             : `${day.location === 'park' ? 'ที่สวน' : day.location === 'home' ? 'ที่บ้าน' : 'ที่ยิม'} · ${day.duration} · ${day.exercises.length} ท่า`,
-        })
+        }
+      list.push(check[d] ? morningCheck(r) : r)
     }
     void scheduleReminders(list)
     // eslint-disable-next-line react-hooks/exhaustive-deps

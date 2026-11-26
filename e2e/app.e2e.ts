@@ -1186,3 +1186,28 @@ test('ระยะสัปดาห์ตามที่วิ่งได้�
   await expect(page.getByText('วันแข่ง 11.55 กม.')).toBeVisible()
   await expect(page.getByText(/สลับเดิน 1 นาที/)).toBeVisible()
 })
+
+test('เอ็นร้อยหวายเจ็บซ้ำ: เสนอโปรแกรมคืนสภาพ ทำขั้นแรกแล้วบันทึก และแผนงดท่ากระโดด', async ({ page }) => {
+  // จันทร์ 30 พ.ย.: เจ็บ 5 และ 12 พ.ย. ถนอมขาถึง 18 กลับมาซ้อมถึง 25 → วันนี้แผนเต็ม (จันทร์สัปดาห์ 7 มี Pogo Jumps)
+  await page.clock.install({ time: new Date('2026-11-30T08:00:00+07:00') })
+  const pain = { sleep: 0, sore: 0, pain: true, areas: ['achilles'] }
+  await seed(page, { program: 'ten', raceDate: '2027-01-10', readiness: { '2026-11-05': pain, '2026-11-12': pain } })
+  const pogoOnMonday = async () => {
+    await nav(page, 'ฝึก')
+    await page.getByRole('button', { name: /วันนี้ จันทร์: / }).click()
+    await settled(page)
+    return page.getByText('Pogo Jumps', { exact: true }).count()
+  }
+  expect(await pogoOnMonday()).toBeGreaterThan(0)
+  await nav(page, 'หน้าหลัก')
+  await expect(page.getByText('เอ็นร้อยหวายเจ็บซ้ำ: เริ่มโปรแกรมคืนสภาพ')).toBeVisible()
+  await page.getByRole('button', { name: 'เริ่มโปรแกรม' }).click()
+  await expect(page.getByText('คืนสภาพเอ็นร้อยหวาย ขั้น 1/5')).toBeVisible()
+  await expect(page.getByText('Isometric Calf Hold')).toBeVisible()
+  await page.getByRole('button', { name: 'ทำขั้นนี้ครบแล้ว' }).click()
+  await page.getByRole('button', { name: '1 จาก 10', exact: true }).click()
+  await expect(page.getByText('วันนี้ทำแล้ว')).toBeVisible()
+  await expect.poll(async () => ((await idb(page, 'achillesRehab')) as { sessions: unknown[] }).sessions.length).toBe(1)
+  expect(await pogoOnMonday()).toBe(0)
+  await expect(page.getByText(/โปรแกรมคืนสภาพเอ็นร้อยหวาย: ยังงดท่ากระโดด/)).toBeVisible()
+})

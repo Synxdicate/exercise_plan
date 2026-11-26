@@ -1,6 +1,7 @@
 import { SetupGapsCard } from './SetupGaps'
 import { RpeNudgeCard } from './RpeNudge'
 import { TendonCheckCard } from './Tendon'
+import { AchillesCard } from './Achilles'
 import { LostItemsCard } from './Lost'
 import { ReplayCard } from './Replay'
 import { ThisWeekCard } from './ThisWeek'
@@ -118,6 +119,7 @@ export function Dashboard() {
       {/* ช่วงไม่ไหวเปลี่ยนแผนวันนี้ อยู่ติดการ์ดวันนี้ */}
       <EaseOffCard />
       <TendonCheckCard />
+      <AchillesCard />
       <PainGuardCard />
       {todayPlan && (
         <Card>

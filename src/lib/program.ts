@@ -1,4 +1,5 @@
-import { applyPainGuard, applyReturn, legPhase, offValue, skipValue } from './painPlan'
+import { applyPainGuard, applyRehab, applyReturn, legPhase, offValue, skipValue } from './painPlan'
+import type { Rehab } from './achilles'
 import { tendonAlarmDates, type TendonLog } from './tendon'
 import type { Readiness } from './readiness'
 import { useEffect, useMemo } from 'react'
@@ -131,6 +132,9 @@ export function useProgram() {
   const [tendonLog] = usePersisted<TendonLog>('tendonLog', {})
   // ช่วงกลับมาซ้อม (7 วันหลังช่วงถนอมขา) ปิดเองได้: เก็บวันสิ้นสุดของช่วงที่ปิด
   const [backOff, setBackOff] = usePersisted('returnOff', '')
+  // โปรแกรมคืนสภาพเอ็นร้อยหวาย: ช่วงที่ทำอยู่ งดท่ากระโดดในวันเวท (สตริงไว้เทียบในแคชแผน)
+  const [rehab] = usePersisted<Rehab | null>('achillesRehab', null)
+  const rehabSpan = rehab ? `${rehab.start}|${rehab.done ?? rehab.off ?? ''}` : ''
   const leg = legPhase(readinessLog, today(), tendonAlarmDates(tendonLog), painOff, backOff)
   const painRaw = leg.raw
   const painUntil = leg.guard
@@ -207,7 +211,7 @@ export function useProgram() {
 
   const easeIn = (week: number) => !!easeOff && easeOff.from <= addDays(mondayOf(week), 6) && easeOff.to >= mondayOf(week)
   // ทุกคอมโพเนนต์ที่เรียก useProgram ใช้แผนชุดเดียวกัน (การ์ดหน้าหลัก เหรียญ เป้าเดือน คิดแผนหลายสิบสัปดาห์ทุกครั้งที่ render)
-  const planMemo = planCacheFor([program, location, overrides, start, programStart, repeats, raceDate, raceKmOverride, raceHills, easeOff, painUntil, returnUntil, guardSpan, backSpan, knee, swaps, extras, solo, moves, baseline, weeklyKey, thisMonday, today()])
+  const planMemo = planCacheFor([program, location, overrides, start, programStart, repeats, raceDate, raceKmOverride, raceHills, easeOff, painUntil, returnUntil, guardSpan, backSpan, rehabSpan, knee, swaps, extras, solo, moves, baseline, weeklyKey, thisMonday, today()])
   const planOf = (week: number) => {
     let v = planMemo.get(week)
     if (!v) planMemo.set(week, (v = buildPlan(week)))
@@ -227,6 +231,7 @@ export function useProgram() {
       const m = mondayOf(week)
       for (const [a, b] of spans(guardSpan)) d = applyPainGuard(d, m, a, b, knee)
       for (const [a, b] of spans(backSpan)) d = applyReturn(d, m, a, b)
+      if (rehabSpan) { const [a, b] = rehabSpan.split('|'); d = applyRehab(d, m, a, b || null) }
       return d
     }
     const guarded = (d: Day[]) => eased(safeLayer('pain', () => pain(d), () => d))

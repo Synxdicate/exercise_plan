@@ -193,3 +193,14 @@ export function applyReturn(days: Day[], monday: string, from: string, until: st
     return d
   })
 }
+
+export const REHAB_NOTE = 'โปรแกรมคืนสภาพเอ็นร้อยหวาย: ยังงดท่ากระโดดจนผ่านขั้นกระโดดเขย่ง ทำท่าของขั้นนี้ที่หน้าหลักแทน'
+
+/** โปรแกรมคืนสภาพเอ็นร้อยหวาย (achilles.ts) ตั้งแต่ from ถึง until (null = ยังทำอยู่): วันเวทไม่มีท่ากระโดด */
+export function applyRehab(days: Day[], monday: string, from: string, until: string | null): Day[] {
+  return days.map((d, i) => {
+    const date = addDays(monday, i)
+    if (date < from || (until && date > until) || d.type !== 'strength' || !d.exercises.some(e => JUMPS.has(e.name))) return d
+    return { ...d, exercises: d.exercises.filter(e => !JUMPS.has(e.name)), note: join(d.note, REHAB_NOTE) }
+  })
+}
