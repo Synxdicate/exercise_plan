@@ -121,6 +121,8 @@ export const library: Record<Pattern, LibEx[]> = {
     x('Diamond Push-up', 'วิดพื้นมือชิด', 'มือชิดใต้อก ศอกแนบลำตัว', 'diamond push up form', '8–12', 'both', m(['triceps', 'chest'], ['frontDelts'])),
   ],
   calf: [
+    // กล้ามในฝ่าเท้าไม่มีในแผนที่กล้าม นับเป็นกลุ่มน่อง/เท้า (ข้อเท้า-เท้าทำงานร่วมกัน)
+    x('Short Foot', 'เกร็งอุ้งเท้า (กล้ามในฝ่าเท้า)', 'นิ้วเท้าแบนราบกับพื้น ดึงโคนนิ้วโป้งเข้าหาส้นเท้าให้อุ้งเท้าโก่ง ไม่จิกนิ้ว ค้าง 5 วิ เริ่มนั่ง แล้วยืนสองขา ยืนขาเดียว', 'short foot exercise', '10 / ข้าง', 'both', m(['calves'])),
     x('Standing Calf Raise', 'เขย่งน่อง', 'ลงสุด ค้างบน 1 วิ', 'standing calf raise form', '12–15', 'gym'),
     x('Single-leg Calf Raise', 'เขย่งน่องขาเดียว', 'ลงช้า 3 วิ', 'single leg calf raise runners', '12–15 / ข้าง', 'both'),
     x('Seated Calf Raise', 'นั่งเขย่งน่อง', 'เข่างอ ~90° ลงสุด ค้างบน', 'seated calf raise form', '12–15', 'gym', m(['calves'])),

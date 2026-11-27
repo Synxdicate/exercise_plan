@@ -140,6 +140,7 @@ const runnerStrength: Record<Venue, [Exercise[], Exercise[]]> = {
       ex('Single-leg Calf Raise', 'เขย่งน่องขาเดียว', '3', '12–15 / ข้าง', '60 วิ', 'ลงช้า 3 วิ ช่วยกันเจ็บเอ็นร้อยหวาย', 'single leg calf raise runners'),
       ex('Banded Lateral Walk', 'เดินข้างพันยางยืดเหนือเข่า', '2', '12–15 ก้าว / ข้าง', '45 วิ', 'สะโพกด้านข้างอ่อน → สะโพกตก/เจ็บ IT band ตอนวิ่ง ไม่มียางทำนอนตะแคงยกขาแทน', 'banded lateral walk glute medius', { easier: 'Side-lying Hip Abduction' }),
       ex('Side Plank', 'แพลงก์ด้านข้าง', '2', '30–45 วิ / ข้าง', '45 วิ', 'ลำตัวตรง สะโพกไม่ตก', 'side plank proper form'),
+      ex('Short Foot', 'เกร็งอุ้งเท้า (กล้ามในฝ่าเท้า)', '2', '10 / ข้าง', '30 วิ', 'นิ้วเท้าแบนราบกับพื้น ดึงโคนนิ้วโป้งเข้าหาส้นเท้าให้อุ้งเท้าโก่ง ไม่จิกนิ้ว ค้างครั้งละ 5 วิ เริ่มนั่ง ง่ายแล้วยืนสองขา แล้วยืนขาเดียว ฝึกกล้ามในเท้าลดการบาดเจ็บจากวิ่งได้ (Taddei 2020)', 'short foot exercise'),
     ],
     [
       ex('Romanian Deadlift', 'โรมาเนียนเดดลิฟต์', '3', '6–8', '2 นาที', 'หลังตรง บาร์ชิดขา', 'romanian deadlift proper form'),
@@ -149,6 +150,7 @@ const runnerStrength: Record<Venue, [Exercise[], Exercise[]]> = {
       ex('Dips', 'ดิปบาร์คู่', '2', '6–10', '90 วิ', 'ลงจนศอก ~90°', 'how to do dips correctly'),
       ex('Seated Calf Raise', 'นั่งเขย่งน่อง (น่องมัดใน)', '2', '12–15', '60 วิ', 'เข่างอ ~90° ลงช้า น่องมัดใน (soleus) รับแรงตอนวิ่งมากที่สุด', 'seated calf raise form'),
       ex('Dead Bug', 'นอนหงายยืดแขนขาสลับ', '2', '8 / ข้าง', '45 วิ', 'หลังล่างแนบพื้นตลอด', 'dead bug exercise form'),
+      ex('Short Foot', 'เกร็งอุ้งเท้า (กล้ามในฝ่าเท้า)', '2', '10 / ข้าง', '30 วิ', 'นิ้วเท้าแบนราบกับพื้น ดึงโคนนิ้วโป้งเข้าหาส้นเท้าให้อุ้งเท้าโก่ง ไม่จิกนิ้ว ค้างครั้งละ 5 วิ เริ่มนั่ง ง่ายแล้วยืนสองขา แล้วยืนขาเดียว ฝึกกล้ามในเท้าลดการบาดเจ็บจากวิ่งได้ (Taddei 2020)', 'short foot exercise'),
     ],
   ],
   park: [
@@ -161,6 +163,7 @@ const runnerStrength: Record<Venue, [Exercise[], Exercise[]]> = {
       // สวน: ไม่ต้องใช้อุปกรณ์ มียางยืดเปลี่ยนเป็น Banded Lateral Walk ได้
       ex('Side-lying Hip Abduction', 'นอนตะแคงยกขา (สะโพกด้านข้าง)', '2', '15–20 / ข้าง', '45 วิ', 'สะโพกด้านข้างอ่อน → สะโพกตก/เจ็บ IT band ตอนวิ่ง ขาบนตรง ยกช้า ค้าง 1 วิ', 'side lying hip abduction form', { harder: 'Banded Lateral Walk (ยางยืด)' }),
       ex('Side Plank', 'แพลงก์ด้านข้าง', '2', '30–45 วิ / ข้าง', '45 วิ', 'สะโพกไม่ตก', 'side plank proper form'),
+      ex('Short Foot', 'เกร็งอุ้งเท้า (กล้ามในฝ่าเท้า)', '2', '10 / ข้าง', '30 วิ', 'นิ้วเท้าแบนราบกับพื้น ดึงโคนนิ้วโป้งเข้าหาส้นเท้าให้อุ้งเท้าโก่ง ไม่จิกนิ้ว ค้างครั้งละ 5 วิ เริ่มนั่ง ง่ายแล้วยืนสองขา แล้วยืนขาเดียว ฝึกกล้ามในเท้าลดการบาดเจ็บจากวิ่งได้ (Taddei 2020)', 'short foot exercise'),
     ],
     [
       ex('Pistol Squat progression', 'ฝึกสควอทขาเดียว (นั่งลงม้านั่ง)', '3', '5–8 / ข้าง', '90 วิ', 'ค่อย ๆ ลดความสูงม้านั่ง', 'pistol squat progression beginner'),
@@ -170,6 +173,7 @@ const runnerStrength: Record<Venue, [Exercise[], Exercise[]]> = {
       ex('Dips', 'ดิปบาร์คู่', '2', '6–10', '90 วิ', 'ลงจนศอก ~90°', 'dips progression beginner calisthenics'),
       ex('Bent-knee Calf Raise', 'เขย่งน่องงอเข่า (น่องมัดใน)', '2', '15', '60 วิ', 'งอเข่าเล็กน้อยตลอด ลงช้า 3 วิ', 'bent knee calf raise soleus'),
       ex('Hollow Body Hold', 'นอนเกร็งท้องทรงเรือ', '2', '20–40 วิ', '45 วิ', 'หลังล่างแนบพื้น', 'hollow body hold tutorial'),
+      ex('Short Foot', 'เกร็งอุ้งเท้า (กล้ามในฝ่าเท้า)', '2', '10 / ข้าง', '30 วิ', 'นิ้วเท้าแบนราบกับพื้น ดึงโคนนิ้วโป้งเข้าหาส้นเท้าให้อุ้งเท้าโก่ง ไม่จิกนิ้ว ค้างครั้งละ 5 วิ เริ่มนั่ง ง่ายแล้วยืนสองขา แล้วยืนขาเดียว ฝึกกล้ามในเท้าลดการบาดเจ็บจากวิ่งได้ (Taddei 2020)', 'short foot exercise'),
     ],
   ],
 }
@@ -187,7 +191,7 @@ const superset = (tag: string, list: Exercise[]) => list.map(e => ({ ...e, pair:
 const upperExtra: Record<Venue, [Exercise[], Exercise[]]> = {
   gym: [
     superset('upA', [fromLib('Incline DB Press', '2', '8–12', '90 วิ'), fromLib('DB Curl', '2', '10–12', '60 วิ'), fromLib('Lateral Raise', '2', '12–15', '60 วิ')]),
-    superset('upB', [fromLib('Lat Pulldown', '2', '10–12', '90 วิ'), fromLib('Triceps Pushdown', '2', '10–12', '60 วิ'), fromLib('Face Pull', '2', '12–15', '60 วิ')]),
+    superset('upB', [fromLib('Lat Pulldown', '2', '10–12', '90 วิ'), fromLib('Overhead Triceps Extension', '2', '10–15', '60 วิ'), fromLib('Face Pull', '2', '12–15', '60 วิ')]),
   ],
   park: [
     superset('upA', [fromLib('Australian Row', '2', '8–12', '90 วิ'), fromLib('Pike Push-up', '2', '6–10', '90 วิ')]),
@@ -197,7 +201,7 @@ const upperExtra: Record<Venue, [Exercise[], Exercise[]]> = {
 
 // ลำดับในวันเวทนักวิ่ง: กระโดดก่อนตอนขายังสด (แรงเด้งลดลงเมื่อกล้ามล้า) → ท่าหลักหนัก → ท่อนบนเสริม → ท่ากันเจ็บที่เบาและล้าได้
 const PLYO = new Set(['Pogo Jumps'])
-const PREHAB = new Set(['Single-leg Calf Raise', 'Seated Calf Raise', 'Bent-knee Calf Raise', 'Isometric Calf Hold', 'Banded Lateral Walk', 'Side-lying Hip Abduction', 'Side Plank', 'Dead Bug', 'Hollow Body Hold', 'Nordic Curl', 'Single-leg Glute Bridge'])
+const PREHAB = new Set(['Single-leg Calf Raise', 'Seated Calf Raise', 'Bent-knee Calf Raise', 'Isometric Calf Hold', 'Banded Lateral Walk', 'Side-lying Hip Abduction', 'Side Plank', 'Dead Bug', 'Hollow Body Hold', 'Nordic Curl', 'Single-leg Glute Bridge', 'Short Foot'])
 const ORDER: Block[] = ['plyo', 'main', 'upper', 'prehab']
 function arrange(list: Exercise[], upper: Exercise[] = []): Exercise[] {
   const tag = (e: Exercise, b: Block): Exercise => ({ ...e, block: b })

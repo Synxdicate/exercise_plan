@@ -590,7 +590,7 @@ test('เวทฉบับสั้น: 4 ท่า ท่าละ 2 เซ็
   await page.getByRole('button', { name: 'ปิด' }).first().click()
   await page.getByRole('button', { name: 'ออก', exact: true }).click()
   await page.getByRole('button', { name: 'เริ่มฝึก', exact: true }).click()
-  await expect(page.getByText(/· 1\/27 เซ็ต/)).toBeVisible() // ฉบับเต็ม (รวมท่อนบนเสริม 6 เซ็ต): ท่าครบ เซ็ตครบ เซ็ตแรกที่ทำไว้ยังนับ
+  await expect(page.getByText(/· 1\/29 เซ็ต/)).toBeVisible() // ฉบับเต็ม (รวมท่อนบนเสริม 6 เซ็ต + Short Foot 2 เซ็ต): ท่าครบ เซ็ตครบ เซ็ตแรกที่ทำไว้ยังนับ
 })
 
 test('เส้นทางแข่งมีเนิน: ติ๊กในตั้งค่าโปรแกรมแล้ววันแข่งมีวิธีคุมแรงบนเนิน', async ({ page }) => {
