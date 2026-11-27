@@ -1,6 +1,7 @@
 import { gymWeek, parkWeek, type Block, type Day, type Exercise } from './workouts'
 import { guides, type Step } from '../lib/guide'
 import { homeAlt, libEx } from './library'
+import { sessionMinutes } from '../lib/workoutTime'
 
 export type ProgramId = 'physique' | 'strength' | 'start' | 'mini' | 'base' | 'five' | 'ten' | 'half' | 'full'
 type RunProgram = Exclude<ProgramId, 'physique' | 'strength' | 'start' | 'mini'>
@@ -180,14 +181,17 @@ const fromLib = (name: string, sets: string, reps: string, rest: string): Exerci
   const l = libEx(name)!
   return ex(l.name, l.th, sets, reps, rest, l.cue, l.video)
 }
+// ทำสลับกันเป็นซูเปอร์เซ็ต: ลดเวลาโดยไม่เสียปริมาณ แรง หรือการโตของกล้าม (Zhang 2025) พักหลังครบรอบ 90 วิ
+// กล้ามแต่ละมัดจึงได้พักเกิน 90 วิ ซึ่งพักนานกว่านั้นไม่ได้ช่วยให้โตเพิ่ม (Singer 2024)
+const superset = (tag: string, list: Exercise[]) => list.map(e => ({ ...e, pair: tag, rest: '90 วิ' }))
 const upperExtra: Record<Venue, [Exercise[], Exercise[]]> = {
   gym: [
-    [fromLib('Incline DB Press', '2', '8–12', '90 วิ'), fromLib('Lateral Raise', '2', '12–15', '60 วิ'), fromLib('DB Curl', '2', '10–12', '60 วิ')],
-    [fromLib('Lat Pulldown', '2', '10–12', '90 วิ'), fromLib('Face Pull', '2', '12–15', '60 วิ'), fromLib('Triceps Pushdown', '2', '10–12', '60 วิ')],
+    superset('upA', [fromLib('Incline DB Press', '2', '8–12', '90 วิ'), fromLib('DB Curl', '2', '10–12', '60 วิ'), fromLib('Lateral Raise', '2', '12–15', '60 วิ')]),
+    superset('upB', [fromLib('Lat Pulldown', '2', '10–12', '90 วิ'), fromLib('Triceps Pushdown', '2', '10–12', '60 วิ'), fromLib('Face Pull', '2', '12–15', '60 วิ')]),
   ],
   park: [
-    [fromLib('Australian Row', '2', '8–12', '90 วิ'), fromLib('Pike Push-up', '2', '6–10', '90 วิ')],
-    [fromLib('Diamond Push-up', '2', '8–12', '90 วิ'), fromLib('Prone Y-T-W Raise', '2', '8 / ท่า', '45 วิ')],
+    superset('upA', [fromLib('Australian Row', '2', '8–12', '90 วิ'), fromLib('Pike Push-up', '2', '6–10', '90 วิ')]),
+    superset('upB', [fromLib('Diamond Push-up', '2', '8–12', '90 วิ'), fromLib('Prone Y-T-W Raise', '2', '8 / ท่า', '45 วิ')]),
   ],
 }
 
@@ -230,13 +234,13 @@ function raceWeek(program: RunProgram, mode: Venue, week: number): Day[] {
   const hillWeek = week % 2 === 0 && !taper && !w.note?.startsWith('สัปดาห์ลด')
 
   return [
-    { key: 'strA', day: 'จันทร์', title: 'เวท A — ทั้งตัว', type: 'strength', duration: taper ? '40 นาที' : '60 นาที', note: taper ? `ช่วง taper: ลดเหลือ 2 เซ็ต น้ำหนักเท่าเดิม` : strengthNote, exercises: lighten(arrange(a, u0)) },
+    { key: 'strA', day: 'จันทร์', title: 'เวท A — ทั้งตัว', type: 'strength', duration: `${sessionMinutes(lighten(arrange(a, u0)))} นาที`, note: taper ? `ช่วง taper: ลดเหลือ 2 เซ็ต น้ำหนักเท่าเดิม` : strengthNote, exercises: lighten(arrange(a, u0)) },
     // วิ่งหนักห่างจากเวทขาอย่างน้อย 48 ชม. เวทขาทำให้วิ่งได้แย่ลงได้นาน 6–48 ชม. (Doma 2017)
     runDay('easyA', 'อังคาร', 'Easy run', w.easyA, 'easy', 'วิ่งเบาระดับพูดคุยได้ (โซน E)'),
     runDay('quality', 'พุธ', w.q.title, w.q.km, w.q.kind, w.q.how, undefined, w.q.guide),
     last
       ? { key: 'strB', day: 'พฤหัสบดี', title: 'พัก / เดินเบา ๆ', type: 'rest', duration: '-', note: 'สัปดาห์แข่ง งดเวท ยืดเหยียดเบา ๆ', exercises: [] }
-      : { key: 'strB', day: 'พฤหัสบดี', title: 'เวท B — ทั้งตัว', type: 'strength', duration: taper ? '40 นาที' : '60 นาที', note: taper ? 'ช่วง taper: ลดเหลือ 2 เซ็ต' : strengthNote, exercises: lighten(arrange(b, u1)) },
+      : { key: 'strB', day: 'พฤหัสบดี', title: 'เวท B — ทั้งตัว', type: 'strength', duration: `${sessionMinutes(lighten(arrange(b, u1)))} นาที`, note: taper ? 'ช่วง taper: ลดเหลือ 2 เซ็ต' : strengthNote, exercises: lighten(arrange(b, u1)) },
     { key: 'rest', day: 'ศุกร์', title: 'พัก', type: 'rest', duration: '-', note: 'พักเต็มวัน ให้ขาสดสำหรับวิ่งเสาร์–อาทิตย์', exercises: [] },
     w.easyB > 0
       ? (hillWeek

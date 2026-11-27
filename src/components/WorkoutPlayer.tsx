@@ -6,7 +6,8 @@ import { lastSetsFor, formatDuration, uid, useSessions, type SetEntry } from '..
 import { useDayText } from '../lib/dayText'
 import { usePersisted } from '../lib/storage'
 import { today } from '../lib/date'
-import { restSeconds, suggest } from '../lib/progression'
+import { suggest } from '../lib/progression'
+import { afterSet } from '../lib/workoutTime'
 import { isBarbell, platesPerSide, warmupSets } from '../lib/plates'
 import { cancelRestEnd, scheduleRestEnd } from '../lib/notify'
 import { Badge, Button, Collapse, Portal } from './ui'
@@ -112,20 +113,18 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, quick = fa
   const completeSet = (i: number) => {
     const r = rows[i]
     if (r.done) return setRow(i, { done: false })
-    const lastOfExercise = rows.every((x, j) => j === i || x.done)
-    const advance = lastOfExercise && state.idx < day.exercises.length - 1
+    const { target, sec } = afterSet(day.exercises, state.rows, state.idx, i)
     update(s => ({
       ...s,
-      idx: advance ? s.idx + 1 : s.idx,
+      idx: target,
       rows: { ...s.rows, [ex.name]: s.rows[ex.name].map((x, j) => (j === i ? { ...x, done: true, reps: x.reps || targetReps(ex) } : x)) },
     }))
     // เซ็ตสุดท้ายของทั้งวันไม่ต้องพัก
     if (doneCount + 1 < total) {
-      const sec = restSeconds(ex.rest)
       const end = Date.now() + sec * 1000
       setRest({ end, total: sec })
       // ถ้าจอดับระหว่างพัก แจ้งเตือนของเครื่องจะเด้งตอนหมดเวลา
-      const nextName = advance ? day.exercises[state.idx + 1].name : `${ex.name} เซ็ต ${Math.min(i + 2, rows.length)}`
+      const nextName = target !== state.idx ? day.exercises[target].name : `${ex.name} เซ็ต ${Math.min(i + 2, rows.length)}`
       void scheduleRestEnd(new Date(end), nextName)
       if (voice) void speak(`พัก ${sec} วินาที ต่อไป ${nextName}`)
     } else if (voice) void speak('ครบทุกเซ็ตแล้ว เยี่ยมมาก')
@@ -226,7 +225,8 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, quick = fa
           </div>
           <div className="mt-2 flex flex-wrap gap-1.5">
             <Badge tone="muted"><b className="text-ink">{ex.sets} × {ex.reps}</b></Badge>
-            <Badge tone="muted">{tr('พัก', 'Rest')} {dt.reps(ex.rest)}</Badge>
+            <Badge tone="muted">{ex.pair ? tr('พักหลังครบรอบ', 'Rest after the round') : tr('พัก', 'Rest')} {dt.reps(ex.rest)}</Badge>
+            {ex.pair && <Badge>{tr('ซูเปอร์เซ็ต', 'Superset')}: {day.exercises.filter(e => e.pair === ex.pair && e.name !== ex.name).map(e => e.name).join(', ')}</Badge>}
           </div>
           <ExerciseDemo key={ex.name} name={ex.name} className="mt-3" />
           <p className="mt-2 text-sm text-muted">{dt.cue(ex.cue)}</p>

@@ -425,7 +425,7 @@ function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slo
 const BLOCK: Record<Block, [string, string]> = {
   plyo: ['กระโดด ทำก่อนตอนขายังสด', 'Jumps: first, while the legs are fresh'],
   main: ['ท่าหลัก', 'Main lifts'],
-  upper: ['ท่อนบนเสริม (ไม่กระทบการวิ่ง)', 'Extra upper body (doesn’t affect running)'],
+  upper: ['ท่อนบนเสริม ทำสลับกันเป็นซูเปอร์เซ็ต (ไม่กระทบการวิ่ง)', 'Extra upper body as a superset (doesn’t affect running)'],
   prehab: ['น่อง สะโพก แกนกลาง (กันเจ็บ)', 'Calves, hips, core (injury prevention)'],
 }
 
@@ -441,7 +441,16 @@ function ExerciseRow({ e, n, onSwap, onRemove }: { e: Exercise; n: number; onSwa
           <span className="block font-semibold leading-snug [overflow-wrap:anywhere]">{e.name}{(e.swappedFrom || e.added) && <span className="ml-1.5 text-[10px] font-normal text-run">{e.added ? t('เพิ่มเอง', 'added') : e.solo ? t('ฝึกคนเดียว', 'solo') : t('สลับแล้ว', 'swapped')}</span>}{!e.swappedFrom && needsSpotter[e.name] && <span className="ml-1.5 text-[10px] font-normal text-warn">{t('ควรมีคนช่วย', 'needs spotter')}</span>}</span>
           {!dt.en && <span className="block truncate text-xs text-muted">{e.th}</span>}
         </span>
-        <span className="shrink-0 text-sm font-semibold tabular-nums">{e.sets}×{dt.reps(e.reps)}</span>
+        {(() => {
+          // "12–15 ก้าว / ข้าง" กินที่จนชื่อท่าตกบรรทัด: ส่วนหลัง "/" ย้ายไปบรรทัดล่างตัวเล็ก
+          const [main, ...per] = dt.reps(e.reps).split(' / ')
+          return (
+            <span className="shrink-0 text-right text-sm font-semibold leading-tight tabular-nums">
+              {e.sets}×{main}
+              {per.length > 0 && <span className="block text-[11px] font-normal text-muted">/ {per.join(' / ')}</span>}
+            </span>
+          )
+        })()}
         <ChevronRight size={16} className={cx('shrink-0 text-muted transition-transform duration-300', open && 'rotate-90')} />
       </button>
       <Collapse open={open}>

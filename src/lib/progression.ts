@@ -37,10 +37,4 @@ export function suggest(e: Exercise, prev: SetEntry[] | undefined): Suggestion {
   return { kg: next, up: true, text: `ครั้งก่อนทำครบ ${max} ครั้งทุกเซ็ต → เพิ่มเป็น ${next} กก. แล้วเริ่มที่ ${min} ครั้ง`, textEn: `Hit ${max} reps on every set last time → go to ${next} kg and restart at ${min} reps` }
 }
 
-// เวลาพักจากข้อความในแผน: "2–3 นาที" → 150, "90 วิ" → 90
-export function restSeconds(rest: string) {
-  const nums = rest.match(/\d+/g)?.map(Number)
-  if (!nums?.length) return 60
-  const avg = nums.reduce((s, n) => s + n, 0) / nums.length
-  return Math.round(rest.includes('นาที') ? avg * 60 : avg)
-}
+export { restSeconds } from './workoutTime'
