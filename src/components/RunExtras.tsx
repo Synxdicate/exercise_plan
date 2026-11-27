@@ -25,7 +25,7 @@ export function RunAchievements({ run, runs, className = 'mb-3' }: { run: Run; r
       <ul className="space-y-1.5 text-sm">
         {list.map(a => (
           <li key={a.kind + ('label' in a ? a.label : '')} className="flex items-center gap-2.5">
-            {a.kind === 'pr' ? <span className={cx('grid size-7 shrink-0 place-items-center rounded-full text-[11px] font-extrabold', rankTone[a.rank])}>{RANK[a.rank]}</span>
+            {a.kind === 'pr' ? <span className={cx('grid size-7 shrink-0 place-items-center rounded-full text-xs font-extrabold', rankTone[a.rank])}>{RANK[a.rank]}</span>
               : <span className="grid size-7 shrink-0 place-items-center rounded-full bg-run/15 text-run">{a.kind === 'year' ? <CalendarCheck size={14} /> : a.kind === 'longest' ? <Route size={14} /> : <ChevronsRight size={14} />}</span>}
             <span className="flex-1 font-semibold">
               {a.kind === 'pr' ? (a.rank === 1 ? t(`${a.label} เร็วที่สุดของคุณ`, `${a.label} PR`) : t(`${a.label} เร็วอันดับ ${a.rank}`, `${a.rank === 2 ? '2nd' : '3rd'}-fastest ${a.label}`))
@@ -82,24 +82,24 @@ export function ElevationCard({ run, onUpdate, onScrub }: { run: Run; onUpdate: 
     <div className="mb-3 rounded-2xl bg-raised p-3">
       <div className="flex items-center gap-2 text-sm font-bold"><Mountain size={16} className="text-good" /> {t('ความสูงเส้นทาง', 'Elevation')}</div>
       <div className="mt-1 grid grid-cols-4 gap-1 text-center">
-        <div><div className="text-[11px] text-muted">{t('ขึ้นสะสม', 'Gain')}</div><div className="font-bold tabular-nums">{e.gain} {t('ม.', 'm')}</div></div>
-        <div><div className="text-[11px] text-muted">{t('ลงสะสม', 'Loss')}</div><div className="font-bold tabular-nums">{e.loss} {t('ม.', 'm')}</div></div>
-        <div><div className="text-[11px] text-muted">{t('ชันสุด', 'Steepest')}</div><div className="font-bold tabular-nums">{(steepest * 100).toFixed(1)}%</div></div>
-        <div><div className="text-[11px] text-muted">GAP</div><div className="font-bold tabular-nums">{gap ? formatPace(gap, 1) : '-'}</div></div>
+        <div><div className="text-xs text-muted">{t('ขึ้นสะสม', 'Gain')}</div><div className="font-bold tabular-nums">{e.gain} {t('ม.', 'm')}</div></div>
+        <div><div className="text-xs text-muted">{t('ลงสะสม', 'Loss')}</div><div className="font-bold tabular-nums">{e.loss} {t('ม.', 'm')}</div></div>
+        <div><div className="text-xs text-muted">{t('ชันสุด', 'Steepest')}</div><div className="font-bold tabular-nums">{(steepest * 100).toFixed(1)}%</div></div>
+        <div><div className="text-xs text-muted">GAP</div><div className="font-bold tabular-nums">{gap ? formatPace(gap, 1) : '-'}</div></div>
       </div>
       {p.length > 2 && <ProfileChart profile={p} km={run.km} series={series} onScrub={scrub} />}
       {climbs.length > 0 && (
         <ul className="mt-2 space-y-1 text-sm">
           {climbs.slice(0, 4).map((c, i) => (
             <li key={i} className="flex items-center gap-2">
-              <span className={cx('grid size-6 shrink-0 place-items-center rounded-full text-[11px] font-bold', c.avg >= 5 ? 'bg-bad/20 text-bad' : 'bg-warn/20 text-warn')}>{i + 1}</span>
+              <span className={cx('grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold', c.avg >= 5 ? 'bg-bad/20 text-bad' : 'bg-warn/20 text-warn')}>{i + 1}</span>
               <span className="flex-1">{t(`เนิน กม. ${c.fromKm.toFixed(1)}–${c.toKm.toFixed(1)}`, `Climb km ${c.fromKm.toFixed(1)}–${c.toKm.toFixed(1)}`)}</span>
               <span className="tabular-nums text-muted">+{c.gain} {t('ม.', 'm')} · {c.avg}%</span>
             </li>
           ))}
         </ul>
       )}
-      <p className="mt-2 text-[11px] text-muted">
+      <p className="mt-2 text-xs text-muted">
         {e.gain >= 10 * (run.km || 1)
           ? t('เส้นทางนี้มีเนินพอสมควร ใช้ซ้อมสนามที่เป็นเนินซึมได้ (ขึ้นเนินคุมความเหนื่อย ไม่ใช่เพซ)', 'A fairly hilly route — good practice for rolling race courses (run hills by effort, not pace)')
           : t('จากแผนที่ความสูง (~90 ม.) เห็นเนินยาว ๆ แต่ไม่เห็นเนินสั้นอย่างสะพาน', 'From a ~90 m elevation map — shows long grades, not short ones like bridges')}
@@ -165,7 +165,7 @@ export function ProfileChart({ profile: p, km, series = [], onScrub }: { profile
           </>
         )}
       </svg>
-      <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted">
+      <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted">
         <span className="flex items-center gap-1"><span className="size-2 rounded-sm bg-warn/60" /> {t('ชัน 2–5%', '2–5%')}</span>
         <span className="flex items-center gap-1"><span className="size-2 rounded-sm bg-bad/60" /> {t('ชัน ≥5%', '≥5%')}</span>
         <span className="flex items-center gap-1"><span className="size-2 rounded-sm bg-run/40" /> {t('ลงเนิน', 'downhill')}</span>
@@ -208,17 +208,17 @@ export function TrainingLog({ runs }: { runs: Run[] }) {
       <div className="mt-3 grid grid-cols-7 gap-1 text-center">
         {days.map((d, i) => (
           <div key={d.date} className="flex flex-col items-center gap-1">
-            <span className={cx('text-[11px]', d.date === today() ? 'font-bold text-ink' : 'text-muted')}>{labels[i]}</span>
+            <span className={cx('text-xs', d.date === today() ? 'font-bold text-ink' : 'text-muted')}>{labels[i]}</span>
             <span className="relative grid size-12 place-items-center">
               {d.planned > 0 && <span className="absolute rounded-full border-2 border-dashed border-run/40" style={{ width: size(d.planned), height: size(d.planned) }} />}
               {d.ran > 0 ? (
-                <span className="grid place-items-center rounded-full bg-run-fill text-[10px] font-bold text-white" style={{ width: size(d.ran), height: size(d.ran) }}>{d.ran >= 1 ? d.ran.toFixed(1) : ''}</span>
+                <span className="grid place-items-center rounded-full bg-run-fill text-[11px] font-bold text-white" style={{ width: size(d.ran), height: size(d.ran) }}>{d.ran >= 1 ? d.ran.toFixed(1) : ''}</span>
               ) : d.walked ? <span className="size-2.5 rounded-full bg-muted/60" /> : null}
             </span>
           </div>
         ))}
       </div>
-      <div className="mt-2 flex justify-center gap-4 text-[11px] text-muted">
+      <div className="mt-2 flex justify-center gap-4 text-xs text-muted">
         <span className="flex items-center gap-1"><span className="size-2.5 rounded-full bg-run-fill" /> {t('วิ่งจริง (กม.)', 'Ran (km)')}</span>
         <span className="flex items-center gap-1"><span className="size-2.5 rounded-full border border-dashed border-run/60" /> {t('แผน', 'Plan')}</span>
         <span className="flex items-center gap-1"><span className="size-2 rounded-full bg-muted/60" /> {t('เดิน', 'Walk')}</span>

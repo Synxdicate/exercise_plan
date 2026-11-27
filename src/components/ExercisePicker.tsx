@@ -76,7 +76,7 @@ export function AddSheet({ where, existing, onPick, onClose }: { where: 'gym' | 
             {picks.map(({ e, s: sg }) => (
               <li key={e.name}>
                 <Row e={e} onClick={() => onPick(e)} />
-                <p className="-mt-1 pb-2 text-[11px] text-muted">{en ? sg.whyEn : sg.why}</p>
+                <p className="-mt-1 pb-2 text-xs text-muted">{en ? sg.whyEn : sg.why}</p>
               </li>
             ))}
           </ul>

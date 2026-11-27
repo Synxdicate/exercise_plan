@@ -146,7 +146,7 @@ function PlanBody() {
         {p.prepWeeks.map(w => (
           <button key={w} onClick={() => selectWeek(w)}
             className={cx('flex min-w-14 shrink-0 snap-start flex-col items-center rounded-2xl px-3 py-1.5 ring-1', w === week ? 'bg-ink text-bg ring-ink' : 'bg-card text-muted ring-line')}>
-            <span className="text-[10px]">{t('เตรียมตัว', 'Prep')}</span>
+            <span className="text-[11px]">{t('เตรียมตัว', 'Prep')}</span>
             <span className="text-base font-bold leading-tight">{shortDate(p.mondayOf(w))}</span>
           </button>
         ))}
@@ -156,7 +156,7 @@ function PlanBody() {
             <button key={w} onClick={() => selectWeek(w)}
               className={cx('relative flex min-w-14 shrink-0 snap-start flex-col items-center rounded-2xl px-3 py-1.5 ring-1',
                 w === week ? 'bg-ink text-bg ring-ink' : 'bg-card text-ink ring-line')}>
-              <span className={cx('text-[10px]', w === week ? 'opacity-70' : w === p.currentWeek ? 'font-bold text-accent' : 'text-muted')}>
+              <span className={cx('text-[11px]', w === week ? 'opacity-70' : w === p.currentWeek ? 'font-bold text-accent' : 'text-muted')}>
                 {w === p.currentWeek ? t('สัปดาห์นี้', 'Now') : w === p.meta.weeks && p.isRace ? t('แข่ง', 'Race') : light ? t('เบา', 'Easy') : p.ongoing ? t('รอบที่', 'Cycle') : t('สัปดาห์', 'Week')}
               </span>
               <span className="text-base font-bold leading-tight">{w}</span>
@@ -180,7 +180,7 @@ function PlanBody() {
             return (
               <button key={i} onClick={() => setSelected(i)} aria-pressed={on}
                 className={cx('flex flex-col items-center gap-1 rounded-2xl py-2 transition-colors', on ? 'bg-accent-soft' : '')}>
-                <span className={cx('text-[11px] font-semibold', on ? 'text-accent' : isToday ? 'text-ink' : 'text-muted')}>{isToday ? t('วันนี้', 'Today') : t(short[i], shortEn[i])}</span>
+                <span className={cx('text-xs font-semibold', on ? 'text-accent' : isToday ? 'text-ink' : 'text-muted')}>{isToday ? t('วันนี้', 'Today') : t(short[i], shortEn[i])}</span>
                 {/* ชื่อเต็มสำหรับโปรแกรมอ่านหน้าจอ ต้องขึ้นต้นด้วยข้อความที่เห็น (WCAG 2.5.3) */}
                 <span className="sr-only">{dt.weekday(d)}: {dt.title(d)}</span>
                 <span className={cx('grid size-9 place-items-center rounded-full transition-all',
@@ -438,7 +438,7 @@ function ExerciseRow({ e, n, onSwap, onRemove }: { e: Exercise; n: number; onSwa
       <button onClick={() => setOpen(!open)} className="flex w-full items-center gap-3 py-2.5 text-left active:scale-100">
         <span className="grid size-7 shrink-0 place-items-center rounded-full bg-raised text-xs font-bold text-muted">{n}</span>
         <span className="min-w-0 flex-1">
-          <span className="block font-semibold leading-snug [overflow-wrap:anywhere]">{e.name}{(e.swappedFrom || e.added) && <span className="ml-1.5 text-[10px] font-normal text-run">{e.added ? t('เพิ่มเอง', 'added') : e.solo ? t('ฝึกคนเดียว', 'solo') : t('สลับแล้ว', 'swapped')}</span>}{!e.swappedFrom && needsSpotter[e.name] && <span className="ml-1.5 text-[10px] font-normal text-warn">{t('ควรมีคนช่วย', 'needs spotter')}</span>}</span>
+          <span className="block font-semibold leading-snug [overflow-wrap:anywhere]">{e.name}{(e.swappedFrom || e.added) && <span className="ml-1.5 text-[11px] font-normal text-run">{e.added ? t('เพิ่มเอง', 'added') : e.solo ? t('ฝึกคนเดียว', 'solo') : t('สลับแล้ว', 'swapped')}</span>}{!e.swappedFrom && needsSpotter[e.name] && <span className="ml-1.5 text-[11px] font-normal text-warn">{t('ควรมีคนช่วย', 'needs spotter')}</span>}</span>
           {!dt.en && <span className="block truncate text-xs text-muted">{e.th}</span>}
         </span>
         {(() => {
@@ -447,7 +447,7 @@ function ExerciseRow({ e, n, onSwap, onRemove }: { e: Exercise; n: number; onSwa
           return (
             <span className="shrink-0 text-right text-sm font-semibold leading-tight tabular-nums">
               {e.sets}×{main}
-              {per.length > 0 && <span className="block text-[11px] font-normal text-muted">/ {per.join(' / ')}</span>}
+              {per.length > 0 && <span className="block text-xs font-normal text-muted">/ {per.join(' / ')}</span>}
             </span>
           )
         })()}

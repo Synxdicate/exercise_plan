@@ -31,9 +31,9 @@ export function ExerciseDemo({ name, className }: { name: string; className?: st
           <img key={src} src={src} alt={`${name} ${i ? trNow('ท่าจบ', 'end') : trNow('ท่าเริ่ม', 'start')}`} loading="lazy"
             className={cx('absolute inset-0 size-full object-cover transition-opacity duration-500', frame === i ? 'opacity-100' : 'opacity-0')} />
         ))}
-        <span className="absolute bottom-1.5 left-1.5 rounded-full bg-black/55 px-2 py-0.5 text-[10px] font-semibold text-white">{frame ? trNow('ท่าจบ', 'End') : trNow('ท่าเริ่ม', 'Start')}</span>
+        <span className="absolute bottom-1.5 left-1.5 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold text-white">{frame ? trNow('ท่าจบ', 'End') : trNow('ท่าเริ่ม', 'Start')}</span>
       </div>
-      <figcaption className="mt-1 text-[10px] text-muted">{trNow('ภาพตัวอย่าง อุปกรณ์อาจต่างจากที่คุณใช้', 'Example photo — your equipment may differ')}</figcaption>
+      <figcaption className="mt-1 text-[11px] text-muted">{trNow('ภาพตัวอย่าง อุปกรณ์อาจต่างจากที่คุณใช้', 'Example photo — your equipment may differ')}</figcaption>
     </figure>
   )
 }
@@ -66,9 +66,9 @@ function StickFigure({ demo, frame, name, className }: { demo: StickDemo; frame:
           </g>
           <circle cx={p.head[0]} cy={p.head[1]} r={4.5} className="fill-ink" style={{ transition: 'all .6s ease-in-out' }} />
         </svg>
-        <span className="absolute bottom-1.5 left-1.5 rounded-full bg-black/55 px-2 py-0.5 text-[10px] font-semibold text-white">{frame ? trNow('ท่าจบ', 'End') : trNow('ท่าเริ่ม', 'Start')}</span>
+        <span className="absolute bottom-1.5 left-1.5 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold text-white">{frame ? trNow('ท่าจบ', 'End') : trNow('ท่าเริ่ม', 'Start')}</span>
       </div>
-      <figcaption className="mt-1 text-[10px] text-muted">{trNow('ภาพลายเส้นแสดงตำแหน่งคร่าว ๆ ดูท่าละเอียดในคลิป YouTube', 'Rough line drawing — see YouTube for detailed form')}</figcaption>
+      <figcaption className="mt-1 text-[11px] text-muted">{trNow('ภาพลายเส้นแสดงตำแหน่งคร่าว ๆ ดูท่าละเอียดในคลิป YouTube', 'Rough line drawing — see YouTube for detailed form')}</figcaption>
     </figure>
   )
 }

@@ -86,7 +86,7 @@ function BadgesSheet({ earned, onClose }: { earned: string[]; onClose: () => voi
                 {!on && <Lock size={11} className="absolute -bottom-0.5 -right-0.5 rounded-full bg-card p-0.5 text-muted" />}
               </span>
               <span className={cx('mt-1.5 text-xs font-bold leading-tight', !on && 'text-muted')}>{t(b.title, BADGES_EN[b.id]?.[0] ?? b.title)}</span>
-              <span className="mt-0.5 text-[10px] leading-tight text-muted">{t(b.text, BADGES_EN[b.id]?.[1] ?? b.text)}</span>
+              <span className="mt-0.5 text-[11px] leading-tight text-muted">{t(b.text, BADGES_EN[b.id]?.[1] ?? b.text)}</span>
             </li>
           )
         })}
@@ -95,14 +95,14 @@ function BadgesSheet({ earned, onClose }: { earned: string[]; onClose: () => voi
       <div className="mt-5 text-lg font-bold">{t(`สรุปปี ${+year + 543}`, `${year} summary`)}</div>
       <div className="mt-2 grid grid-cols-3 gap-2 text-center">
         {[[t('วิ่ง', 'Run'), `${y.km.toFixed(0)} ${t('กม.', 'km')}`], [t('เวลาวิ่ง', 'Run time'), formatDuration(y.seconds)], [t('ฝึกเวท', 'Strength'), `${y.workouts} ${t('ครั้ง', 'sessions')}`]].map(([l, v]) => (
-          <div key={l} className="rounded-xl bg-raised px-2 py-2"><div className="text-[11px] text-muted">{l}</div><div className="font-bold tabular-nums">{v}</div></div>
+          <div key={l} className="rounded-xl bg-raised px-2 py-2"><div className="text-xs text-muted">{l}</div><div className="font-bold tabular-nums">{v}</div></div>
         ))}
       </div>
       <div className="mt-3 flex h-24 items-end gap-1" role="img" aria-label={t('ระยะวิ่งรายเดือน', 'Monthly running distance')}>
         {months.map((km, i) => (
           <div key={i} className="flex flex-1 flex-col items-center gap-1">
             <div className="w-full rounded-t-md bg-run-fill" style={{ height: `${(km / max) * 72}px`, minHeight: km ? 2 : 0 }} title={t(`${thMonths[i]}: ${km.toFixed(1)} กม.`, `${monthLabel(`${year}-${String(i + 1).padStart(2, '0')}`).split(' ')[0]}: ${km.toFixed(1)} km`)} />
-            <span className="text-[9px] text-muted">{i + 1}</span>
+            <span className="text-[10px] text-muted">{i + 1}</span>
           </div>
         ))}
       </div>

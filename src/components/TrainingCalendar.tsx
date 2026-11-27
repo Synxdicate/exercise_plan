@@ -78,13 +78,13 @@ export function TrainingCalendar() {
       <div className="mb-2 flex items-center justify-between">
         <button onClick={() => { setYm(shiftMonth(ym, -1)); setPicked(null) }} aria-label={t('เดือนก่อน', 'Previous month')} className="grid size-8 place-items-center rounded-full ring-1 ring-line"><ChevronLeft size={16} /></button>
         <div className="text-center">
-          <div className="text-sm font-bold">{monthLabel(ym)}{ym !== now.slice(0, 7) && <button onClick={() => { setYm(now.slice(0, 7)); setPicked(null) }} className="ml-2 rounded-full bg-raised px-2 py-0.5 text-[11px] font-semibold text-run">{t('เดือนนี้', 'This month')}</button>}</div>
-          <div className="text-[11px] tabular-nums text-muted">{t(`ออกกำลังกาย ${totals.active} วัน · วิ่ง ${totals.km.toFixed(1)} กม. · เวท ${totals.sessions} ครั้ง`, `Active ${totals.active} days · ran ${totals.km.toFixed(1)} km · ${totals.sessions} strength sessions`)}</div>
+          <div className="text-sm font-bold">{monthLabel(ym)}{ym !== now.slice(0, 7) && <button onClick={() => { setYm(now.slice(0, 7)); setPicked(null) }} className="ml-2 rounded-full bg-raised px-2 py-0.5 text-xs font-semibold text-run">{t('เดือนนี้', 'This month')}</button>}</div>
+          <div className="text-xs tabular-nums text-muted">{t(`ออกกำลังกาย ${totals.active} วัน · วิ่ง ${totals.km.toFixed(1)} กม. · เวท ${totals.sessions} ครั้ง`, `Active ${totals.active} days · ran ${totals.km.toFixed(1)} km · ${totals.sessions} strength sessions`)}</div>
         </div>
         <button onClick={() => { setYm(shiftMonth(ym, 1)); setPicked(null) }} disabled={ym >= lastYm} aria-label={t('เดือนถัดไป', 'Next month')}
           className="grid size-8 place-items-center rounded-full ring-1 ring-line disabled:opacity-30"><ChevronRight size={16} /></button>
       </div>
-      <div className="grid grid-cols-7 gap-1 text-center text-[10px] text-muted">{(t('th', 'en') === 'en' ? DAYS_EN : DAYS).map((d, i) => <span key={i}>{d}</span>)}</div>
+      <div className="grid grid-cols-7 gap-1 text-center text-[11px] text-muted">{(t('th', 'en') === 'en' ? DAYS_EN : DAYS).map((d, i) => <span key={i}>{d}</span>)}</div>
       <div className="mt-1 space-y-1">
         {grid.map((row, i) => (
           <div key={i} className="grid grid-cols-7 gap-1">
@@ -103,7 +103,7 @@ export function TrainingCalendar() {
                     missed && 'border border-dashed border-muted/60', d === now && 'ring-2 ring-ink', picked === d && 'ring-2 ring-run')}>
                   <span className={cx('font-semibold tabular-nums', !ran && !lifted && 'text-muted')}>{+d.slice(8)}</span>
                   <span className="sr-only">{niceDate(d)}</span>
-                  {ran && <span className="text-[9px] font-bold tabular-nums text-run">{x!.km.toFixed(1)}</span>}
+                  {ran && <span className="text-[10px] font-bold tabular-nums text-run">{x!.km.toFixed(1)}</span>}
                   {!ran && lifted && <Dumbbell size={10} className="text-accent" />}
                   {!ran && !lifted && carded && (x?.cross.length ? <Bike size={10} className="text-run" /> : <Footprints size={10} className="text-muted" />)}
                   {ticked && <Check size={11} strokeWidth={3} className="text-good" />}
@@ -114,7 +114,7 @@ export function TrainingCalendar() {
           </div>
         ))}
       </div>
-      <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted">
+      <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted">
         <span className="flex items-center gap-1"><span className="size-2.5 rounded bg-run/30" /> {t('วิ่ง (กม.)', 'Run (km)')}</span>
         <span className="flex items-center gap-1"><span className="size-2.5 rounded bg-accent-soft" /> {t('เวท', 'Strength')}</span>
         <span className="flex items-center gap-1"><Check size={10} strokeWidth={3} className="text-good" /> {t('ติ๊กทำแล้ว', 'Ticked done')}</span>

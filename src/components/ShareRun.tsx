@@ -105,7 +105,7 @@ export function ShareRunSheet({ run, onClose }: { run: Run; onClose: () => void 
             <span className="block aspect-[4/5] w-full" style={c === 'card' ? undefined : checker}>
               {previews[c] && <img src={previews[c]!.url} alt="" className="size-full animate-fade-in" />}
             </span>
-            <span className="block truncate px-1 py-1 text-[11px] font-semibold">{tr(...LABELS[c])}</span>
+            <span className="block truncate px-1 py-1 text-xs font-semibold">{tr(...LABELS[c])}</span>
           </button>
         ))}
       </div>

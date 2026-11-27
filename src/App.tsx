@@ -122,7 +122,7 @@ function Main({ session }: { session: Session | null }) {
         <button onClick={() => go('overview')} className="flex min-w-0 items-center gap-2.5 text-left">
           <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-accent-fill text-white"><LogoMark size={24} /></span>
           <span className="min-w-0">
-            <span className="block text-[11px] font-semibold uppercase tracking-wider text-accent">Kao</span>
+            <span className="block text-xs font-semibold uppercase tracking-wider text-accent">Kao</span>
             <h1 className="truncate text-lg font-bold leading-tight">{title}</h1>
             <span className="sr-only"> — {t('กลับหน้าหลัก', 'back to home')}</span>
           </span>
@@ -153,7 +153,7 @@ function Main({ session }: { session: Session | null }) {
             const on = tab === x.id
             return (
               <button key={x.id} onClick={() => go(x.id)} aria-current={on ? 'page' : undefined}
-                className={cx('flex flex-col items-center gap-0.5 rounded-2xl py-1.5 text-[11px] font-semibold transition', on ? 'text-accent' : 'text-muted')}>
+                className={cx('flex flex-col items-center gap-0.5 rounded-2xl py-1.5 text-xs font-semibold transition', on ? 'text-accent' : 'text-muted')}>
                 <span className={cx('grid h-7 w-12 place-items-center rounded-full transition-all duration-300', on ? 'scale-100 bg-accent-soft' : 'scale-90')}>
                   <NavIcon name={NAV_ICON[x.id] ?? 'home'} active={on} />
                 </span>
@@ -281,7 +281,7 @@ function UserMenu({ session, onSources }: { session: Session | null; onSources: 
             <div className="mx-1 mb-1 grid grid-cols-3 gap-1 rounded-xl bg-raised p-1">
               {([['light', Sun, t('สว่าง', 'Light')], ['dark', Moon, t('มืด', 'Dark')], ['system', Monitor, t('ตามระบบ', 'System')]] as [Theme, typeof Sun, string][]).map(([v, Icon, label]) => (
                 <button key={v} onClick={() => setTheme(v)}
-                  className={cx('flex flex-col items-center gap-0.5 rounded-lg py-1.5 text-[11px] font-semibold transition', theme === v ? 'bg-card text-accent shadow-sm' : 'text-muted')}>
+                  className={cx('flex flex-col items-center gap-0.5 rounded-lg py-1.5 text-xs font-semibold transition', theme === v ? 'bg-card text-accent shadow-sm' : 'text-muted')}>
                   <Icon size={16} /> {label}
                 </button>
               ))}
@@ -339,7 +339,7 @@ function UserMenu({ session, onSources }: { session: Session | null; onSources: 
                 <LogIn size={16} /> {t('ล็อกอินเพื่อซิงก์และสำรองข้อมูล', 'Sign in to sync & back up')}
               </button>
             )}
-            <div className="px-3 pb-1 pt-2 text-[11px] text-muted">Kao v{APP_VERSION}</div>
+            <div className="px-3 pb-1 pt-2 text-xs text-muted">Kao v{APP_VERSION}</div>
           </div>
         </Portal>
       )}

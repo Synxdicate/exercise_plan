@@ -3,6 +3,9 @@ import { Share } from '@capacitor/share'
 import { Media } from '@capacitor-community/media'
 import { formatDuration, formatPace, runKinds, runKindsEn, type Run } from './log'
 import { trNow } from './i18n'
+
+/** ข้อความบนรูปแชร์และข้อความที่แนบไปเป็นภาษาอังกฤษเสมอ (แชร์ลงโซเชียลให้คนทั่วไปอ่าน) คงคู่ไทยไว้ในโค้ดเผื่อเปลี่ยนกลับ */
+const shareText = (_th: string, en: string) => en
 import { isNative } from './native'
 import { projectRoute } from './geo'
 import { paceSeries } from './analysis'
@@ -14,7 +17,7 @@ const FONT = "'Noto Sans Thai', ui-sans-serif, system-ui, sans-serif"
 const thMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.']
 const thaiDate = (s: string) => {
   const [y, m, d] = s.split('-').map(Number)
-  return trNow(`${d} ${thMonths[m - 1]} ${y + 543}`, `${d} ${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][m - 1]} ${y}`)
+  return shareText(`${d} ${thMonths[m - 1]} ${y + 543}`, `${d} ${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][m - 1]} ${y}`)
 }
 
 export type CardStyle = 'card' | 'white' | 'black'
@@ -101,7 +104,7 @@ export async function renderRunCard(run: Run, style: CardStyle = 'card', layout:
   g.fillStyle = '#fff'
   g.textBaseline = 'alphabetic'
   g.font = `600 44px ${FONT}`
-  g.fillText(trNow(`วิ่ง ${runKinds[run.kind]}`, `${runKindsEn[run.kind]} run`), 90, 150)
+  g.fillText(shareText(`วิ่ง ${runKinds[run.kind]}`, `${runKindsEn[run.kind]} run`), 90, 150)
   g.globalAlpha = 0.8
   g.font = `400 38px ${FONT}`
   g.fillText(thaiDate(run.date), 90, 210)
@@ -113,9 +116,9 @@ export async function renderRunCard(run: Run, style: CardStyle = 'card', layout:
   g.fillText(km, 80, yKm)
   const kmW = g.measureText(km).width
   g.font = `600 64px ${FONT}`
-  g.fillText(trNow('กม.', 'km'), 100 + kmW, yKm)
+  g.fillText(shareText('กม.', 'km'), 100 + kmW, yKm)
 
-  const stats = [[trNow('เวลา', 'Time'), formatDuration(run.seconds)], [trNow('เพซเฉลี่ย', 'Avg pace'), `${formatPace(run.seconds, run.km)} ${trNow('/กม.', '/km')}`]]
+  const stats = [[shareText('เวลา', 'Time'), formatDuration(run.seconds)], [shareText('เพซเฉลี่ย', 'Avg pace'), `${formatPace(run.seconds, run.km)} ${shareText('/กม.', '/km')}`]]
   stats.forEach(([label, value], i) => {
     const x = 90 + i * 470
     g.globalAlpha = 0.8
@@ -144,9 +147,9 @@ function drawSticker(g: CanvasRenderingContext2D, c: HTMLCanvasElement, run: Run
   g.textAlign = 'center'
   g.textBaseline = 'alphabetic'
   const stats: [string, string][] = [
-    [trNow('ระยะทาง', 'Distance'), `${run.km.toFixed(2)} ${trNow('กม.', 'km')}`],
-    [trNow('เพซ', 'Pace'), `${formatPace(run.seconds, run.km)} ${trNow('/กม.', '/km')}`],
-    [trNow('เวลา', 'Time'), formatDuration(run.seconds)],
+    [shareText('ระยะทาง', 'Distance'), `${run.km.toFixed(2)} ${shareText('กม.', 'km')}`],
+    [shareText('เพซ', 'Pace'), `${formatPace(run.seconds, run.km)} ${shareText('/กม.', '/km')}`],
+    [shareText('เวลา', 'Time'), formatDuration(run.seconds)],
   ]
   let y = hasRoute ? 150 : 330
   for (const [label, value] of stats) {
@@ -171,10 +174,10 @@ function drawSticker(g: CanvasRenderingContext2D, c: HTMLCanvasElement, run: Run
 const fileName = (run: Run, style: CardStyle = 'card') => `run-${run.date}-${run.id.slice(0, 6)}${style === 'card' ? '' : '-sticker'}.png`
 
 const statList = (run: Run): [string, string][] => [
-  [trNow('ระยะทาง', 'Distance'), `${run.km.toFixed(2)} ${trNow('กม.', 'km')}`],
-  [trNow('เพซ', 'Pace'), `${formatPace(run.seconds, run.km)} ${trNow('/กม.', '/km')}`],
-  [trNow('เวลา', 'Time'), formatDuration(run.seconds)],
-  ...(run.elev && run.elev.gain > 0 ? [[trNow('ขึ้นสะสม', 'Elev gain'), `${run.elev.gain} ${trNow('ม.', 'm')}`] as [string, string]] : []),
+  [shareText('ระยะทาง', 'Distance'), `${run.km.toFixed(2)} ${shareText('กม.', 'km')}`],
+  [shareText('เพซ', 'Pace'), `${formatPace(run.seconds, run.km)} ${shareText('/กม.', '/km')}`],
+  [shareText('เวลา', 'Time'), formatDuration(run.seconds)],
+  ...(run.elev && run.elev.gain > 0 ? [[shareText('ขึ้นสะสม', 'Elev gain'), `${run.elev.gain} ${shareText('ม.', 'm')}`] as [string, string]] : []),
 ]
 
 const footer = (g: CanvasRenderingContext2D, run: Run, y = H - 40) => {
@@ -217,7 +220,7 @@ function drawSplits(g: CanvasRenderingContext2D, run: Run, ink: string) {
   const top = (H - rowH * sp.length) / 2 + 40
   g.textAlign = 'left'
   g.font = `800 56px ${FONT}`
-  g.fillText(trNow('เพซรายกิโล', 'KM splits'), 100, top - 70)
+  g.fillText(shareText('เพซรายกิโล', 'KM splits'), 100, top - 70)
   sp.forEach((s, i) => {
     const y = top + i * rowH
     const frac = slowest === fastest ? 1 : 0.55 + (0.45 * (slowest - s)) / (slowest - fastest)
@@ -264,9 +267,9 @@ function drawTicket(g: CanvasRenderingContext2D, run: Run, ink: string) {
   g.font = `800 150px ${FONT}`
   g.fillText(run.km.toFixed(2), W / 2, by + 320)
   g.font = `600 44px ${FONT}`
-  g.fillText(trNow('กม.', 'km'), W / 2, by + 380)
+  g.fillText(shareText('กม.', 'km'), W / 2, by + 380)
   g.font = `800 64px ${FONT}`
-  g.fillText(trNow(WEEKDAY_TH[day], WEEKDAY_EN[day]), W / 2, by + 500)
+  g.fillText(shareText(WEEKDAY_TH[day], WEEKDAY_EN[day]), W / 2, by + 500)
   g.globalAlpha = 0.85
   g.font = `500 36px ${FONT}`
   g.fillText(`${thaiDate(run.date)} · ${formatDuration(run.seconds)}`, W / 2, by + 565)
@@ -282,10 +285,10 @@ function drawBig(g: CanvasRenderingContext2D, run: Run) {
   g.font = `800 ${Math.floor(300 * scale)}px ${FONT}`
   g.fillText(km, W / 2, 700)
   g.font = `700 72px ${FONT}`
-  g.fillText(trNow('กิโลเมตร', 'kilometres'), W / 2, 810)
+  g.fillText(shareText('กิโลเมตร', 'kilometres'), W / 2, 810)
   g.globalAlpha = 0.9
   g.font = `600 48px ${FONT}`
-  g.fillText(`${formatDuration(run.seconds)}  ·  ${formatPace(run.seconds, run.km)} ${trNow('/กม.', '/km')}`, W / 2, 920)
+  g.fillText(`${formatDuration(run.seconds)}  ·  ${formatPace(run.seconds, run.km)} ${shareText('/กม.', '/km')}`, W / 2, 920)
   g.globalAlpha = 1
   footer(g, run, H - 110)
 }
@@ -304,18 +307,18 @@ function drawCircle(g: CanvasRenderingContext2D, run: Run, ink: string) {
   g.stroke()
   g.textAlign = 'center'
   g.font = `700 44px ${FONT}`
-  g.fillText(trNow(`วิ่ง ${runKinds[run.kind]}`, `${runKindsEn[run.kind]} run`), cx, cy - 150)
+  g.fillText(shareText(`วิ่ง ${runKinds[run.kind]}`, `${runKindsEn[run.kind]} run`), cx, cy - 150)
   g.font = `800 190px ${FONT}`
   g.fillText(run.km.toFixed(2), cx, cy + 60)
   g.font = `600 52px ${FONT}`
-  g.fillText(trNow('กม.', 'km'), cx, cy + 140)
+  g.fillText(shareText('กม.', 'km'), cx, cy + 140)
   g.font = `800 64px ${FONT}`
   g.fillText(formatDuration(run.seconds), cx - 230, cy + r + 150)
   g.fillText(formatPace(run.seconds, run.km), cx + 230, cy + r + 150)
   g.globalAlpha = 0.85
   g.font = `500 34px ${FONT}`
-  g.fillText(trNow('เวลา', 'Time'), cx - 230, cy + r + 80)
-  g.fillText(trNow('เพซ /กม.', 'Pace /km'), cx + 230, cy + r + 80)
+  g.fillText(shareText('เวลา', 'Time'), cx - 230, cy + r + 80)
+  g.fillText(shareText('เพซ /กม.', 'Pace /km'), cx + 230, cy + r + 80)
   g.globalAlpha = 1
   footer(g, run)
 }
@@ -336,10 +339,10 @@ function drawPace(g: CanvasRenderingContext2D, run: Run, ink: string) {
     [box.x + (p.km / maxKm) * box.w, box.y + (slow === fast ? 0.5 : (p.pace - fast) / (slow - fast)) * box.h]
   g.textAlign = 'left'
   g.font = `800 56px ${FONT}`
-  g.fillText(trNow('เพซตลอดเส้นทาง', 'Pace along the run'), box.x, box.y - 90)
+  g.fillText(shareText('เพซตลอดเส้นทาง', 'Pace along the run'), box.x, box.y - 90)
   g.globalAlpha = 0.85
   g.font = `500 32px ${FONT}`
-  g.fillText(trNow(`เร็วสุด ${formatPace(fast, 1)} · ช้าสุด ${formatPace(slow, 1)} /กม.`, `Fastest ${formatPace(fast, 1)} · slowest ${formatPace(slow, 1)} /km`), box.x, box.y - 35)
+  g.fillText(shareText(`เร็วสุด ${formatPace(fast, 1)} · ช้าสุด ${formatPace(slow, 1)} /กม.`, `Fastest ${formatPace(fast, 1)} · slowest ${formatPace(slow, 1)} /km`), box.x, box.y - 35)
   g.globalAlpha = 1
   g.strokeStyle = ink
   g.lineWidth = 8
@@ -376,7 +379,7 @@ function drawBottom(g: CanvasRenderingContext2D, run: Run, ink: string) {
   const colW = (W - 120) / stats.length
   g.textAlign = 'left'
   g.font = `800 52px ${FONT}`
-  g.fillText(trNow(`วิ่ง ${runKinds[run.kind]}`, `${runKindsEn[run.kind]} run`), 60, H - 290)
+  g.fillText(shareText(`วิ่ง ${runKinds[run.kind]}`, `${runKindsEn[run.kind]} run`), 60, H - 290)
   g.fillStyle = ink
   g.fillRect(60, H - 255, W - 120, 4)
   g.textAlign = 'center'
@@ -394,7 +397,7 @@ function drawBottom(g: CanvasRenderingContext2D, run: Run, ink: string) {
 
 /** แชร์รูป: แอปใช้หน้าต่างแชร์ของ Android, เว็บใช้ Web Share ถ้ารองรับ ไม่งั้นดาวน์โหลด */
 export async function shareRunImage(run: Run, canvas: HTMLCanvasElement, style: CardStyle = 'card') {
-  const text = trNow(`วิ่ง ${run.km.toFixed(2)} กม. · ${formatDuration(run.seconds)} · เพซ ${formatPace(run.seconds, run.km)} /กม.`, `Ran ${run.km.toFixed(2)} km · ${formatDuration(run.seconds)} · pace ${formatPace(run.seconds, run.km)} /km`)
+  const text = shareText(`วิ่ง ${run.km.toFixed(2)} กม. · ${formatDuration(run.seconds)} · เพซ ${formatPace(run.seconds, run.km)} /กม.`, `Ran ${run.km.toFixed(2)} km · ${formatDuration(run.seconds)} · pace ${formatPace(run.seconds, run.km)} /km`)
   if (isNative) {
     const data = canvas.toDataURL('image/png').split(',')[1]
     const { uri } = await Filesystem.writeFile({ path: fileName(run, style), data, directory: Directory.Cache })

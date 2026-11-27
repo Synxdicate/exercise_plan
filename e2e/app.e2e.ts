@@ -1237,3 +1237,12 @@ test('เกี่ยวกับและความเป็นส่วน�
   expect(await idb(page, 'runs')).toBeFalsy()
 })
 
+
+test('แท็บวิ่งเปิดที่หน้า "วิ่ง" ทุกครั้ง ไม่ค้างที่ประวัติจากครั้งก่อน', async ({ page }) => {
+  await seed(page, { runs: [{ id: 'r1', date: ymd(1), km: 3, seconds: 1200, kind: 'easy' }] })
+  await nav(page, 'วิ่ง')
+  await page.getByRole('button', { name: 'ประวัติ' }).click()
+  await nav(page, 'หน้าหลัก')
+  await nav(page, 'วิ่ง')
+  await expect(page.getByRole('button', { name: /^วิ่ง$/ }).first()).toHaveAttribute('aria-pressed', 'true')
+})

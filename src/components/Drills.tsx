@@ -63,7 +63,7 @@ export function DrillsCard({ kind }: { kind: Run['kind'] }) {
             ))}
           </ol>
           <Button variant="run" className="mt-2 w-full" onClick={() => setPlaying(true)}><Play size={16} fill="currentColor" /> {t('เริ่มดริลล์ (มีเสียงนำ)', 'Start drills (voice-guided)')}</Button>
-          <p className="mt-2 text-[11px] text-muted">{t('ดริลล์เป็นการวอร์มอัพและฝึกจังหวะ งานวิจัยพบว่าช่วยให้ก้าวสั้นลง ถี่ขึ้นได้ แต่ไม่ได้ทำให้วิ่งประหยัดแรงขึ้นทันที ความเร็วยังมาจากการซ้อมตามแผน (Fradkin 2010, Craighead 2014, Yamaguchi 2015)', 'Drills are a warm-up and rhythm practice — studies show they can shorten and quicken your stride but don’t instantly improve economy; speed still comes from the training plan (Fradkin 2010, Craighead 2014, Yamaguchi 2015)')}</p>
+          <p className="mt-2 text-xs text-muted">{t('ดริลล์เป็นการวอร์มอัพและฝึกจังหวะ งานวิจัยพบว่าช่วยให้ก้าวสั้นลง ถี่ขึ้นได้ แต่ไม่ได้ทำให้วิ่งประหยัดแรงขึ้นทันที ความเร็วยังมาจากการซ้อมตามแผน (Fradkin 2010, Craighead 2014, Yamaguchi 2015)', 'Drills are a warm-up and rhythm practice — studies show they can shorten and quicken your stride but don’t instantly improve economy; speed still comes from the training plan (Fradkin 2010, Craighead 2014, Yamaguchi 2015)')}</p>
         </div>
       </Collapse>
       {playing && <CircuitPlayer drills steps={SETS[set]} rounds={1} onClose={() => setPlaying(false)} />}

@@ -53,7 +53,7 @@ export function PaceChart({ series, avg, fiveK }: { series: { km: number; pace: 
         {[lo + 10, (lo + hi) / 2, hi - 10].map(v => (
           <g key={v}>
             <line x1={padL} x2={W} y1={y(v)} y2={y(v)} className="stroke-line" />
-            <text x={padL - 4} y={y(v) + 3} textAnchor="end" className="fill-muted text-[9px]">{formatPace(v, 1)}</text>
+            <text x={padL - 4} y={y(v) + 3} textAnchor="end" className="fill-muted text-[10px]">{formatPace(v, 1)}</text>
           </g>
         ))}
         <line x1={padL} x2={W} y1={y(avg)} y2={y(avg)} className="stroke-muted" strokeDasharray="4 4" />
@@ -61,7 +61,7 @@ export function PaceChart({ series, avg, fiveK }: { series: { km: number; pace: 
           <path key={i} d={s.d} fill="none" stroke={s.zone ? zoneInfo(s.zone).color : 'var(--c-run)'} strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
         ))}
         {Array.from({ length: Math.floor(maxKm) + 1 }, (_, k) => k).filter(k => k > 0).map(k => (
-          <text key={k} x={x(k)} y={H - 4} textAnchor="middle" className="fill-muted text-[9px]">{k}</text>
+          <text key={k} x={x(k)} y={H - 4} textAnchor="middle" className="fill-muted text-[10px]">{k}</text>
         ))}
         {h && (
           <g>
@@ -107,7 +107,7 @@ export function FitnessChart({ days }: { days: LoadDay[] }) {
       <svg viewBox={`0 0 ${W} ${H}`} className="block w-full touch-none" role="img" aria-label={tr('กราฟความฟิต ความล้า และฟอร์ม', 'Fitness, fatigue and form chart')}
         onPointerMove={onMove} onPointerDown={onMove} onPointerLeave={() => setHover(null)}>
         <line x1={padL} x2={W} y1={top} y2={top} className="stroke-line" />
-        <text x={padL - 4} y={y(max / 1.1) + 3} textAnchor="end" className="fill-muted text-[9px]">{Math.round(max / 1.1)}</text>
+        <text x={padL - 4} y={y(max / 1.1) + 3} textAnchor="end" className="fill-muted text-[10px]">{Math.round(max / 1.1)}</text>
         <line x1={padL} x2={W} y1={fy0} y2={fy0} className="stroke-line" />
         {days.map((d, i) => {
           const hgt = (Math.abs(d.form) / fMax) * (formH / 2)
@@ -117,7 +117,7 @@ export function FitnessChart({ days }: { days: LoadDay[] }) {
         <path d={line('fatigue')} fill="none" className="stroke-accent" strokeWidth={2} strokeLinejoin="round" />
         <path d={line('fitness')} fill="none" className="stroke-run" strokeWidth={2.5} strokeLinejoin="round" />
         {[0, Math.floor(days.length / 2), days.length - 1].map(i => (
-          <text key={i} x={x(i)} y={H - 4} textAnchor={i === 0 ? 'start' : i === days.length - 1 ? 'end' : 'middle'} className="fill-muted text-[9px]">{shortDate(days[i].date)}</text>
+          <text key={i} x={x(i)} y={H - 4} textAnchor={i === 0 ? 'start' : i === days.length - 1 ? 'end' : 'middle'} className="fill-muted text-[10px]">{shortDate(days[i].date)}</text>
         ))}
         {hover !== null && <line x1={x(hover)} x2={x(hover)} y1={padT} y2={H - padB} className="stroke-ink/40" />}
       </svg>
@@ -146,10 +146,10 @@ export function ZoneBar({ series, fiveK }: { series: { km: number; pace: number 
           <span key={z.id} title={`${z.id} ${z.label}: ${Math.round(z.pct * 100)}%`} style={{ width: `${z.pct * 100}%`, background: z.color }} />
         ))}
       </div>
-      <ul className="mt-2 grid grid-cols-5 gap-1 text-center text-[10px] leading-tight">
+      <ul className="mt-2 grid grid-cols-5 gap-1 text-center text-[11px] leading-tight">
         {zones.map(z => (
           <li key={z.id} className={cx(z.pct < 0.005 && 'opacity-40')}>
-            <span className="mx-auto mb-0.5 grid size-5 place-items-center rounded-md text-[10px] font-bold text-white" style={{ background: z.color }}>{z.id}</span>
+            <span className="mx-auto mb-0.5 grid size-5 place-items-center rounded-md text-[11px] font-bold text-white" style={{ background: z.color }}>{z.id}</span>
             <span className="block font-semibold">{z.label}</span>
             <span className="block tabular-nums text-muted">{Math.round(z.pct * 100)}%</span>
           </li>
@@ -167,7 +167,7 @@ export function ZoneLegend({ fiveK }: { fiveK: number }) {
     <ul className="space-y-1 text-xs">
       {ZONES.map((z, i) => (
         <li key={z.id} className="flex items-center gap-2">
-          <span className="grid size-5 shrink-0 place-items-center rounded-md text-[10px] font-bold text-white" style={{ background: z.color }}>{z.id}</span>
+          <span className="grid size-5 shrink-0 place-items-center rounded-md text-[11px] font-bold text-white" style={{ background: z.color }}>{z.id}</span>
           <span className="w-16 font-semibold">{z.label}</span>
           <span className="flex-1 text-muted">{tr(z.desc, z.descEn)}</span>
           <span className="tabular-nums">{i === 0 ? `${tr('ช้ากว่า', 'slower than')} ${fmt(bounds[0])}` : i === 4 ? `${tr('เร็วกว่า', 'faster than')} ${fmt(bounds[3])}` : `${fmt(bounds[i])}–${fmt(bounds[i - 1])}`}</span>

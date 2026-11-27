@@ -57,7 +57,7 @@ export function Splits({ splits, fiveK, gap }: { splits: number[]; fiveK?: numbe
               <span className={cx('block h-full rounded-full', !fiveK && (s === fastest ? 'bg-good-fill' : 'bg-run-fill'))}
                 style={{ width: `${slowest === fastest ? 100 : 40 + 60 * ((slowest - s) / (slowest - fastest))}%`, background: fiveK ? zoneInfo(zoneOf(s, fiveK)).color : undefined }} />
             </span>
-            <span className="text-center text-[10px] font-bold" style={{ color: fiveK ? zoneInfo(zoneOf(s, fiveK)).color : undefined }}>{fiveK ? zoneOf(s, fiveK) : ''}</span>
+            <span className="text-center text-[11px] font-bold" style={{ color: fiveK ? zoneInfo(zoneOf(s, fiveK)).color : undefined }}>{fiveK ? zoneOf(s, fiveK) : ''}</span>
             <span className={cx('text-right tabular-nums', s === fastest && 'font-bold')}>{formatPace(s, 1)}</span>
             {gap && <span className="text-right text-xs tabular-nums text-muted">{gap[i] ? formatPace(gap[i]!, 1) : '–'}</span>}
           </li>
@@ -146,11 +146,11 @@ export function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { r
           <div className="mb-3 grid grid-cols-2 gap-2">
             <div className="rounded-xl bg-raised px-3 py-2">
               <div className={cx('text-sm font-bold', saText.c)}>{saText.t}</div>
-              <div className="text-[11px] leading-snug text-muted">{saText.d}</div>
+              <div className="text-xs leading-snug text-muted">{saText.d}</div>
             </div>
             <div className="rounded-xl bg-raised px-3 py-2">
               <div className="text-sm font-bold">{tr('ความสม่ำเสมอ', 'Consistency')} {sa.cv < 3 ? tr('ดีมาก', 'great') : sa.cv < 6 ? tr('ดี', 'good') : tr('แกว่ง', 'uneven')}</div>
-              <div className="text-[11px] leading-snug text-muted">{tr(`เพซรายกิโลต่างกันเฉลี่ย ${sa.cv.toFixed(1)}% · เร็วสุด กม. ${sa.fastest + 1}`, `Km paces vary ${sa.cv.toFixed(1)}% on average · fastest km ${sa.fastest + 1}`)}</div>
+              <div className="text-xs leading-snug text-muted">{tr(`เพซรายกิโลต่างกันเฉลี่ย ${sa.cv.toFixed(1)}% · เร็วสุด กม. ${sa.fastest + 1}`, `Km paces vary ${sa.cv.toFixed(1)}% on average · fastest km ${sa.fastest + 1}`)}</div>
             </div>
           </div>
         )}

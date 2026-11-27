@@ -63,11 +63,11 @@ export function PaceCard({ est, runs, onTrial }: { est: Estimate | null; runs: R
               <div className="text-xs text-muted">{tr(raceLabel[k], raceLabelEn[k])}{k === 'full' && !est.fullReliable && tr(' (ค่าคร่าว ๆ)', ' (rough)')}</div>
               <div className="text-lg font-bold tabular-nums">{formatDuration(est[k])}</div>
               {g ? (
-                <div className={cx('text-[11px] font-semibold tabular-nums', est[k] <= g ? 'text-good' : 'text-warn')}>
+                <div className={cx('text-xs font-semibold tabular-nums', est[k] <= g ? 'text-good' : 'text-warn')}>
                   {est[k] <= g ? tr(`ถึงเป้า ${formatDuration(g)} แล้ว`, `Goal ${formatDuration(g)} reached`) : tr(`ขาดอีก ${formatDuration(est[k] - g)} ถึงเป้า`, `${formatDuration(est[k] - g)} off the goal`)}
                 </div>
               ) : Math.abs(diff) >= 1 && (
-                <div className={cx('text-[11px] font-semibold tabular-nums', diff < 0 ? 'text-good' : 'text-warn')}>
+                <div className={cx('text-xs font-semibold tabular-nums', diff < 0 ? 'text-good' : 'text-warn')}>
                   {tr(`${diff < 0 ? 'เร็วขึ้น' : 'ช้าลง'} ${formatDuration(Math.abs(diff))} ใน 4 สัปดาห์`, `${formatDuration(Math.abs(diff))} ${diff < 0 ? 'faster' : 'slower'} in 4 weeks`)}
                 </div>
               )}
@@ -143,12 +143,12 @@ function TrendLine({ points, goal }: { points: { date: string; v: number | null 
   const last = pts.at(-1)!
   return (
     <div className="mt-3">
-      <div className="mb-1 flex justify-between text-[11px] text-muted"><span>{tr('12 สัปดาห์ก่อน', '12 weeks ago')}</span><span>{tr('วันนี้', 'Today')}</span></div>
+      <div className="mb-1 flex justify-between text-xs text-muted"><span>{tr('12 สัปดาห์ก่อน', '12 weeks ago')}</span><span>{tr('วันนี้', 'Today')}</span></div>
       <svg viewBox={`0 0 ${W} ${H}`} className="block w-full" role="img" aria-label={tr('แนวโน้มเวลาคาดการณ์', 'Prediction trend')}>
         {goal ? (
           <g>
             <line x1={0} x2={W} y1={y(goal)} y2={y(goal)} className="stroke-good" strokeDasharray="5 4" strokeWidth={1.5} />
-            <text x={W - 2} y={y(goal) - 4} textAnchor="end" className="fill-good text-[9px] font-semibold">{tr('เป้า', 'Goal')}</text>
+            <text x={W - 2} y={y(goal) - 4} textAnchor="end" className="fill-good text-[10px] font-semibold">{tr('เป้า', 'Goal')}</text>
           </g>
         ) : <line x1={0} x2={W} y1={H / 2} y2={H / 2} className="stroke-line" strokeDasharray="3 4" />}
         <path d={path} fill="none" className="stroke-run" strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
@@ -192,7 +192,7 @@ export function BestEfforts({ runs }: { runs: Run[] }) {
               <ol className="mt-1.5 space-y-1 rounded-xl bg-raised p-2 text-xs">
                 {p.top.map((x, i) => (
                   <li key={x.id} className="flex items-center gap-2">
-                    <span className={cx('grid size-5 place-items-center rounded-full text-[10px] font-bold', i === 0 ? 'bg-warn text-white' : 'bg-body')}>{i + 1}</span>
+                    <span className={cx('grid size-5 place-items-center rounded-full text-[11px] font-bold', i === 0 ? 'bg-warn text-white' : 'bg-body')}>{i + 1}</span>
                     <span className="flex-1 text-muted">{shortDate(x.date)}</span>
                     <span className="font-semibold tabular-nums">{formatDuration(x.seconds)}</span>
                   </li>
@@ -202,7 +202,7 @@ export function BestEfforts({ runs }: { runs: Run[] }) {
           </li>
         ))}
       </ul>
-      <p className="mt-1 text-[11px] text-muted">{tr('ช่วงที่เร็วที่สุดจากทุกการวิ่ง ไม่ต้องวิ่งระยะนั้นพอดี', 'Fastest segments from any run — no need to run that exact distance')}</p>
+      <p className="mt-1 text-xs text-muted">{tr('ช่วงที่เร็วที่สุดจากทุกการวิ่ง ไม่ต้องวิ่งระยะนั้นพอดี', 'Fastest segments from any run — no need to run that exact distance')}</p>
     </Card>
   )
 }
@@ -297,11 +297,11 @@ export function IntensityCard({ runs, fiveK }: { runs: Run[]; fiveK?: number }) 
         <div className="h-full flex-1 bg-accent-fill" />
         <div className="absolute inset-y-0 w-0.5 bg-ink" style={{ left: '80%' }} />
       </div>
-      <div className="mt-1 flex justify-between text-[11px] text-muted">
+      <div className="mt-1 flex justify-between text-xs text-muted">
         <span>{tr('เบา', 'Easy')} {formatDuration(s.easySec)}</span><span>{tr('หนัก', 'Hard')} {formatDuration(s.hardSec)}</span>
       </div>
       <p className={cx('mt-2 text-sm font-semibold', verdict.tone)}>{tr(verdict.th, verdict.en)}</p>
-      <p className="mt-1 text-[11px] text-muted">{s.by === 'pace'
+      <p className="mt-1 text-xs text-muted">{s.by === 'pace'
         ? tr('นับเวลาจริงในแต่ละโซนเพซจากเส้นทาง GPS (เบา = โซน E)', 'Real time in each pace zone from the GPS track (easy = zone E)')
         : tr('ตอนนี้นับตามชนิดการวิ่ง (tempo/interval/แข่ง = หนัก) เพราะยังไม่มีเพซ 5K ที่แม่น วิ่งทดสอบ 5K แล้วจะนับตามโซนเพซจริง', 'Counted by run type for now (tempo/interval/race = hard) — no reliable 5K pace yet; after a 5K test it uses real pace zones')}</p>
     </Card>

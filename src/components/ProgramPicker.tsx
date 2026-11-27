@@ -32,7 +32,7 @@ export function ProgramPicker({ value, onChange }: { value: ProgramId; onChange:
         <span className="min-w-0 flex-1">
           <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <b>{dt.program(id).name}</b>
-            {id === rec && <span className="flex items-center gap-1 rounded-full bg-accent-fill px-2 py-0.5 text-[11px] font-bold text-white"><Sparkles size={11} /> {t('แนะนำ', 'Recommended')}</span>}
+            {id === rec && <span className="flex items-center gap-1 rounded-full bg-accent-fill px-2 py-0.5 text-xs font-bold text-white"><Sparkles size={11} /> {t('แนะนำ', 'Recommended')}</span>}
           </span>
           <span className="block text-xs text-muted">{dt.en ? `${programs[id].weeks} weeks${programs[id].ongoing ? ' (repeating)' : ''}` : programLength(id)} · {dt.program(id).summary}</span>
           {!ready && <span className="mt-1 block text-xs font-semibold text-warn">{t(`ยังไม่พร้อม: ต้อง${NEEDS[id]!.text}ได้ก่อน`, 'Not ready yet — build up first')}</span>}

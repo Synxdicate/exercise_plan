@@ -92,7 +92,11 @@ export function Runs() {
   const [cooldown, setCooldown] = useState<Run | null>(null)
   const [voice, setVoice] = usePersisted('voiceCues', true)
   // แท็บย่อยของหน้าวิ่ง (ค่าของเครื่อง) แยกเริ่มวิ่ง/ประวัติ/สถิติ ไม่ให้หน้าเดียวยาวเกินไป
-  const [view, setView] = usePersisted<'start' | 'history' | 'stats'>('runsView', 'start')
+  // เปิดแท็บวิ่งทุกครั้งเริ่มที่ "วิ่ง" (เดิมจำหน้าย่อยล่าสุด ผู้ใช้กดแท็บแล้วไปโผล่ประวัติ/สถิติบ่อย)
+  // runsView = หน้าย่อยที่การ์ดอื่นขอให้เปิด (เช่น ไปเพิ่มรองเท้า → สถิติ) ใช้ครั้งเดียวแล้วคืนเป็น start
+  const [asked, setAsked] = usePersisted<'start' | 'history' | 'stats'>('runsView', 'start')
+  const [view, setView] = useState(asked)
+  useEffect(() => { if (asked !== 'start') setAsked('start') }, [asked, setAsked])
   // แถบเลือกหน้าย่อยเปลี่ยนทันที เนื้อหาหน้าย่อย render แบบแบ่งช่วงตามมา (หน้าสถิติหนัก)
   const shownView = useDeferredValue(view)
   const [guideOn, setGuideOn] = usePersisted('guideOn', true)
@@ -583,7 +587,7 @@ function GhostCard({ ghost, now, on, setOn }: { ghost: GhostTarget; now: { lead:
             {now && <span className="absolute top-1/2 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-muted/60 ring-2 ring-card transition-[left] duration-1000 ease-linear" style={{ left: pos(now.ghostM) }} />}
             {now && <span className="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent-fill ring-2 ring-card transition-[left] duration-1000 ease-linear" style={{ left: pos(now.m) }} />}
           </div>
-          <div className="mt-1 flex justify-between text-[10px] text-muted"><span>0</span><span>{ghost.km} {tr('กม.', 'km')}</span></div>
+          <div className="mt-1 flex justify-between text-[11px] text-muted"><span>0</span><span>{ghost.km} {tr('กม.', 'km')}</span></div>
         </>
       )}
     </div>

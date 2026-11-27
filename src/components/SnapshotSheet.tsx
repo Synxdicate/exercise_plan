@@ -60,7 +60,7 @@ function SnapItem({ label, data, onDone }: { label: string; data: Record<string,
             {m.sessions.map(x => <li key={x.id}>{x.title || t('การฝึก', 'Workout')} · {niceDate(x.date)}</li>)}
             {m.log.map(e => <li key={e.date}>{t('น้ำหนัก', 'Weight')} {e.weight} {t('กก.', 'kg')} · {niceDate(e.date)}</li>)}
           </ul>
-          <p className="mt-1.5 text-[11px] text-muted">{t('รวมรายการที่คุณลบเองด้วย ถ้าลบเองตั้งใจไม่ต้องเอากลับมา', 'This includes anything you deleted on purpose')}</p>
+          <p className="mt-1.5 text-xs text-muted">{t('รวมรายการที่คุณลบเองด้วย ถ้าลบเองตั้งใจไม่ต้องเอากลับมา', 'This includes anything you deleted on purpose')}</p>
           <Button size="sm" variant="soft" className="mt-2" onClick={() => { const k = recover(data); notify(t(`เอากลับมาแล้ว ${k} รายการ`, `Restored ${k} item${k === 1 ? '' : 's'}`), 'good'); onDone() }}>
             {t('เอากลับมา', 'Bring back')}
           </Button>

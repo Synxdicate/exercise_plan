@@ -63,7 +63,7 @@ export function AuthGate({ children }: { children: (session: Session | null) => 
             <h1 className="text-xl font-bold">{trNow('ซิงก์ข้อมูลไม่สำเร็จ', 'Sync failed')}</h1>
             <p className="text-sm text-bad">{state.message}</p>
             <button className="inline-flex items-center justify-center gap-2 rounded-full bg-accent-fill px-4 py-3 font-semibold text-white disabled:opacity-50 active:scale-[.98]" onClick={() => location.reload()}>{trNow('ลองใหม่', 'Try again')}</button>
-            <button className="p-1 text-run" onClick={() => supabase.auth.signOut()}>{trNow('ออกจากระบบ', 'Log out')}</button>
+            <button className="px-1 py-2 text-run" onClick={() => supabase.auth.signOut()}>{trNow('ออกจากระบบ', 'Log out')}</button>
           </div>
         </div>
       )

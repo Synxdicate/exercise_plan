@@ -60,7 +60,7 @@ export function RouteStopsCard({ run, onPick }: { run: Run; onPick?: (p: Point) 
               {got.stops.slice(0, 30).map((s, i) => <StopRow key={i} s={s} onPick={onPick} />)}
             </ul>
           ) : <p className="mt-2 text-sm text-muted">{t('ไม่พบจุดแวะในข้อมูลแผนที่ (ข้อมูลในบางพื้นที่ยังไม่ครบ) ควรพกน้ำไปเอง', 'No stops in the map data (some areas are incomplete); carry your own water.')}</p>}
-          <div className="mt-2 flex items-center justify-between gap-2 text-[11px] text-muted">
+          <div className="mt-2 flex items-center justify-between gap-2 text-xs text-muted">
             <span>{t(`ข้อมูล OpenStreetMap เมื่อ ${niceDate(got.at)} อาจไม่ครบหรือปิดไปแล้ว`, `OpenStreetMap data from ${niceDate(got.at)}; may be incomplete or out of date`)}</span>
             <Button size="sm" variant="soft" disabled={busy} onClick={() => void load()}>{busy ? t('กำลังหา…', 'Searching…') : t('หาใหม่', 'Refresh')}</Button>
           </div>

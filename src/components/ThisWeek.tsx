@@ -59,7 +59,7 @@ export function ThisWeekCard() {
         {/* ระยะสัปดาห์นี้อยู่ในวงแหวนบนหัวหน้าแรกแล้ว ที่นี่แสดงสิ่งที่ไม่ซ้ำ: เวลา ขึ้นสะสม และค่าเฉลี่ย 4 สัปดาห์ก่อน */}
         {[[t('เวลา', 'Time'), formatDuration(cur.seconds), ''], [t('ขึ้นสะสม', 'Elevation'), cur.elevRuns ? `${cur.gain}` : '-', cur.elevRuns ? t('ม.', 'm') : ''], [t('เฉลี่ย 4 สัปดาห์', '4-week avg'), avg4.toFixed(1), t('กม.', 'km')]].map(([l, v, u]) => (
           <div key={l}>
-            <div className="text-[11px] text-muted">{l}</div>
+            <div className="text-xs text-muted">{l}</div>
             <div className="text-xl font-extrabold tabular-nums">{v}<span className="ml-0.5 text-xs font-normal text-muted">{u}</span></div>
           </div>
         ))}
@@ -85,10 +85,10 @@ export function ThisWeekCard() {
         {ticks.map(v => (
           <g key={v}>
             <line x1={L} x2={W - R} y1={y(v)} y2={y(v)} className="stroke-line" strokeWidth="1" />
-            <text x={L - 6} y={y(v) + 3} textAnchor="end" className="fill-muted text-[9px] tabular-nums">{v}</text>
+            <text x={L - 6} y={y(v) + 3} textAnchor="end" className="fill-muted text-[10px] tabular-nums">{v}</text>
           </g>
         ))}
-        {labels.map(l => <text key={l.i} x={x(l.i)} y={H - 5} textAnchor="middle" className="fill-muted text-[9px]">{l.text}</text>)}
+        {labels.map(l => <text key={l.i} x={x(l.i)} y={H - 5} textAnchor="middle" className="fill-muted text-[10px]">{l.text}</text>)}
         <line x1={x(sel)} x2={x(sel)} y1={T - 4} y2={H - B} className="stroke-muted" strokeWidth="1" strokeDasharray="2 2" />
         <path d={area} className="fill-run" opacity="0.1" />
         {plan && <path d={plan} fill="none" className="stroke-muted" strokeWidth="2" strokeDasharray="4 3" strokeLinejoin="round" />}

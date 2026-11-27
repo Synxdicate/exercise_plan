@@ -90,11 +90,11 @@ export function Login() {
         <div className="flex justify-between gap-2 text-sm has-[>:only-child]:justify-center">
           {mode === 'signin' ? (
             <>
-              <button className="p-1 text-run" onClick={() => setMode('signup')}>{t('ยังไม่มีบัญชี? สมัคร', 'No account? Sign up')}</button>
-              <button className="p-1 text-run" onClick={() => setMode('reset')}>{t('ลืมรหัสผ่าน', 'Forgot password')}</button>
+              <button className="px-1 py-2 text-run" onClick={() => setMode('signup')}>{t('ยังไม่มีบัญชี? สมัคร', 'No account? Sign up')}</button>
+              <button className="px-1 py-2 text-run" onClick={() => setMode('reset')}>{t('ลืมรหัสผ่าน', 'Forgot password')}</button>
             </>
           ) : (
-            <button className="p-1 text-run" onClick={() => setMode('signin')}>{t('กลับไปเข้าสู่ระบบ', 'Back to sign in')}</button>
+            <button className="px-1 py-2 text-run" onClick={() => setMode('signin')}>{t('กลับไปเข้าสู่ระบบ', 'Back to sign in')}</button>
           )}
         </div>
       </div>

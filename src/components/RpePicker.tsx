@@ -19,7 +19,7 @@ export function RpePicker({ value, onPick }: { value?: number; onPick: (v: numbe
           </button>
         ))}
       </div>
-      <div className="mt-1 flex justify-between text-[10px] text-muted">{[1, 3, 5, 7, 10].map(n => <span key={n}>{t(...labels[n])}</span>)}</div>
+      <div className="mt-1 flex justify-between text-[11px] text-muted">{[1, 3, 5, 7, 10].map(n => <span key={n}>{t(...labels[n])}</span>)}</div>
     </div>
   )
 }

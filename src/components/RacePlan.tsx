@@ -72,7 +72,7 @@ export function RacePlan({ day, date }: { day: Day; date: string }) {
             <div className="mt-2 grid grid-cols-3 gap-1.5 text-center">
               {plan.splits.map(s => (
                 <div key={s.km} className="rounded-lg bg-card px-1 py-1.5 ring-1 ring-line">
-                  <div className="text-[10px] text-muted">{tr('กม.', 'km')} {+s.km.toFixed(1)}</div>
+                  <div className="text-[11px] text-muted">{tr('กม.', 'km')} {+s.km.toFixed(1)}</div>
                   <div className="text-xs font-bold tabular-nums">{formatDuration(s.at)}</div>
                 </div>
               ))}

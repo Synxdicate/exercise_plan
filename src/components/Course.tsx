@@ -39,7 +39,7 @@ export function CoursePacePlan({ course, km }: { course: RaceCourse; km: number 
           </li>
         ))}
       </ul>
-      <p className="mt-2 text-[11px] text-muted">{t('ใช้แรงเท่า ๆ กันทั้งสนาม: ขึ้นเนินช้าลง ลงเนินเร็วขึ้นเล็กน้อย (ไม่ปล่อยเต็มที่) 2 กม. แรกช้ากว่าเล็กน้อย รวมแล้วเท่าเวลาเป้า (Minetti 2002)', 'Even effort across the course: slower uphill, a little faster downhill (not all-out), easier first 2 km, adding up to the goal time (Minetti 2002)')}</p>
+      <p className="mt-2 text-xs text-muted">{t('ใช้แรงเท่า ๆ กันทั้งสนาม: ขึ้นเนินช้าลง ลงเนินเร็วขึ้นเล็กน้อย (ไม่ปล่อยเต็มที่) 2 กม. แรกช้ากว่าเล็กน้อย รวมแล้วเท่าเวลาเป้า (Minetti 2002)', 'Even effort across the course: slower uphill, a little faster downhill (not all-out), easier first 2 km, adding up to the goal time (Minetti 2002)')}</p>
     </div>
   )
 }
@@ -85,9 +85,9 @@ export function CourseCard() {
           <div className="mb-2 text-sm font-semibold">{course.name}</div>
           <Map route={course.route} className="h-44" />
           <div className="mt-2 grid grid-cols-3 gap-1 text-center">
-            <div><div className="text-[11px] text-muted">{t('ระยะ', 'Distance')}</div><div className="font-bold tabular-nums">{course.km.toFixed(2)}</div></div>
-            <div><div className="text-[11px] text-muted">{t('ขึ้นสะสม', 'Gain')}</div><div className="font-bold tabular-nums">{course.gain} {t('ม.', 'm')}</div></div>
-            <div><div className="text-[11px] text-muted">{t('ลงสะสม', 'Loss')}</div><div className="font-bold tabular-nums">{course.loss} {t('ม.', 'm')}</div></div>
+            <div><div className="text-xs text-muted">{t('ระยะ', 'Distance')}</div><div className="font-bold tabular-nums">{course.km.toFixed(2)}</div></div>
+            <div><div className="text-xs text-muted">{t('ขึ้นสะสม', 'Gain')}</div><div className="font-bold tabular-nums">{course.gain} {t('ม.', 'm')}</div></div>
+            <div><div className="text-xs text-muted">{t('ลงสะสม', 'Loss')}</div><div className="font-bold tabular-nums">{course.loss} {t('ม.', 'm')}</div></div>
           </div>
           {Math.abs(course.km - km) > 0.3 && <p className="mt-2 rounded-xl bg-warn/15 p-2 text-xs text-warn">{t(`ไฟล์ยาว ${course.km.toFixed(2)} กม. แต่ระยะงานคือ ${km} กม. แอปยืดเนินตามสัดส่วนให้`, `The file is ${course.km.toFixed(2)} km but the race is ${km} km; hills are scaled to fit`)}</p>}
           <ProfileChart profile={course.profile} km={km} />
@@ -95,7 +95,7 @@ export function CourseCard() {
             <ul className="mt-2 space-y-1 text-sm">
               {climbs.slice(0, 5).map((c, i) => (
                 <li key={i} className="flex items-center gap-2">
-                  <span className={cx('grid size-6 shrink-0 place-items-center rounded-full text-[11px] font-bold', c.avg >= 5 ? 'bg-bad/20 text-bad' : 'bg-warn/20 text-warn')}>{i + 1}</span>
+                  <span className={cx('grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold', c.avg >= 5 ? 'bg-bad/20 text-bad' : 'bg-warn/20 text-warn')}>{i + 1}</span>
                   <span className="flex-1">{t(`เนิน กม. ${(c.fromKm * km / course.km).toFixed(1)}–${(c.toKm * km / course.km).toFixed(1)}`, `Climb km ${(c.fromKm * km / course.km).toFixed(1)}–${(c.toKm * km / course.km).toFixed(1)}`)}</span>
                   <span className="tabular-nums text-muted">+{c.gain} {t('ม.', 'm')} · {c.avg}%</span>
                 </li>

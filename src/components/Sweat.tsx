@@ -55,7 +55,7 @@ export function SweatCard() {
           <NumberInput label={tr('เวลาวิ่ง', 'Run time')} unit={tr('นาที', 'min')} value={d.min} onChange={set('min')} />
         </div>
         <Button className="mt-2 w-full" disabled={!valid} onClick={save}>{tr('บันทึกผลทดสอบ', 'Save result')}</Button>
-        <p className="mt-2 text-[11px] text-muted">{tr('หลักการ: ระหว่างวิ่งไม่ให้น้ำหนักลดเกิน 2% และไม่ดื่มเกินที่เสีย (ACSM 2007) · อากาศต่างกันมาก อัตราเหงื่อก็ต่าง ทดสอบซ้ำในวันที่อากาศใกล้วันแข่ง', 'Rule: lose no more than 2% body mass and never drink more than you sweat (ACSM 2007) · sweat rate changes with weather; retest in race-like conditions')}</p>
+        <p className="mt-2 text-xs text-muted">{tr('หลักการ: ระหว่างวิ่งไม่ให้น้ำหนักลดเกิน 2% และไม่ดื่มเกินที่เสีย (ACSM 2007) · อากาศต่างกันมาก อัตราเหงื่อก็ต่าง ทดสอบซ้ำในวันที่อากาศใกล้วันแข่ง', 'Rule: lose no more than 2% body mass and never drink more than you sweat (ACSM 2007) · sweat rate changes with weather; retest in race-like conditions')}</p>
       </Disclosure>
     </Card>
   )

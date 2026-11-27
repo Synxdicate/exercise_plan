@@ -384,7 +384,7 @@ function WarmupPlates({ workKg }: { workKg: number }) {
             </li>
           ))}
         </ul>
-        <p className="mt-2 text-[11px] text-muted">{tr('พักสั้น ๆ ระหว่างเซ็ตวอร์มอัพ ไม่ต้องบันทึก', 'Short rests between warm-up sets; no need to log them')}</p>
+        <p className="mt-2 text-xs text-muted">{tr('พักสั้น ๆ ระหว่างเซ็ตวอร์มอัพ ไม่ต้องบันทึก', 'Short rests between warm-up sets; no need to log them')}</p>
       </Collapse>
     </div>
   )

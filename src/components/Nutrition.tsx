@@ -34,9 +34,9 @@ export function Nutrition({ profile, setProfile }: { profile: Profile; setProfil
       <section className="grid grid-cols-4 divide-x divide-line rounded-2xl bg-card py-2.5 text-center shadow-sm ring-1 ring-line">
         {[[tr('พลังงาน', 'Energy'), t.kcal, 'kcal', true], [tr('โปรตีน', 'Protein'), t.protein, tr('ก.', 'g'), true], [tr('ไขมัน', 'Fat'), t.fat, tr('ก.', 'g'), false], [tr('คาร์บ', 'Carbs'), t.carbs, tr('ก.', 'g'), false]].map(([l, v, u, a]) => (
           <div key={String(l)} className="px-1">
-            <div className="text-[11px] text-muted">{l}</div>
+            <div className="text-xs text-muted">{l}</div>
             <div className={cx('text-lg font-bold leading-tight tabular-nums', !!a && 'text-accent')}>{v}</div>
-            <div className="text-[10px] text-muted">{u}/{tr('วัน', 'day')}</div>
+            <div className="text-[11px] text-muted">{u}/{tr('วัน', 'day')}</div>
           </div>
         ))}
       </section>

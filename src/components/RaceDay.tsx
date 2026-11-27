@@ -114,7 +114,7 @@ export function RaceDayCard() {
                   : <p className="mt-1 text-muted">{heatLevel(c.wbgt) === 'ok'
                     ? t('อากาศเย็นสบายสำหรับวิ่ง ไม่ต้องปรับเป้าเพราะความร้อน', 'Cool running weather; no heat adjustment needed')
                     : t('ใกล้เคียงอากาศเช้าที่คุณซ้อมอยู่แล้ว ผลต่อเวลาน้อยกว่า 1% ไม่ต้องปรับเป้า แต่ดื่มน้ำตามแผน', 'Close to the mornings you already train in; under 1% effect on time, so keep the goal but drink to plan')}</p>}
-                <p className="mt-1 text-[11px] text-muted">{t(`ค่าเฉลี่ยจากข้อมูลอากาศย้อนหลัง ${CLIMATE_YEARS} ปี (±2 วัน) ที่${course ? 'จุดปล่อยตัวของสนาม' : 'กรุงเทพฯ (นำเข้าเส้นทางสนามเพื่อใช้พิกัดจริง)'} ไม่ใช่พยากรณ์ ช่วง 3 วันก่อนแข่งดูการ์ดอากาศหน้าหลัก`, `Average of ${CLIMATE_YEARS} years (±2 days) at ${course ? 'the course start' : 'Bangkok (import the course for the real spot)'}, not a forecast. In the last 3 days check the weather card on home`)}</p>
+                <p className="mt-1 text-xs text-muted">{t(`ค่าเฉลี่ยจากข้อมูลอากาศย้อนหลัง ${CLIMATE_YEARS} ปี (±2 วัน) ที่${course ? 'จุดปล่อยตัวของสนาม' : 'กรุงเทพฯ (นำเข้าเส้นทางสนามเพื่อใช้พิกัดจริง)'} ไม่ใช่พยากรณ์ ช่วง 3 วันก่อนแข่งดูการ์ดอากาศหน้าหลัก`, `Average of ${CLIMATE_YEARS} years (±2 days) at ${course ? 'the course start' : 'Bangkok (import the course for the real spot)'}, not a forecast. In the last 3 days check the weather card on home`)}</p>
               </>
             )}
           </div>

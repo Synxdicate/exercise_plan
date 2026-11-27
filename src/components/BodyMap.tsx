@@ -100,7 +100,7 @@ export function BodyMap({ intensity, label: labelProp, size = 'md' }: Props) {
       </div>
       <p className="mt-1 min-h-5 text-center text-sm font-semibold">{hover ? label(hover) : <span className="font-normal text-muted">{t('แตะที่กล้ามเนื้อเพื่อดูรายละเอียด', 'Tap a muscle for details')}</span>}</p>
       {size === 'md' && (
-        <div className="mx-auto mt-2 flex max-w-60 items-center gap-2 text-[11px] text-muted">
+        <div className="mx-auto mt-2 flex max-w-60 items-center gap-2 text-xs text-muted">
           <span>{t('น้อย', 'Less')}</span>
           <span className="h-2 flex-1 rounded-full" style={{ background: `linear-gradient(to right, ${heat(0)}, ${heat(0.01)}, ${heat(0.5)}, ${heat(1)})` }} />
           <span>{t('ครบเป้า', 'Target')}</span>

@@ -99,7 +99,7 @@ export function CooldownSheet({ run, onUpdate, onDone }: { run: Run; onUpdate: (
             <ul className="mt-2 space-y-1.5 text-sm">
               {stretches.map(([name, how, nameEn, howEn]) => <li key={name}><b>{t(name, nameEn)}</b> <span className="text-muted">— {t(how, howEn)} · {t('ค้าง 30 วิ/ข้าง', 'hold 30 s/side')}</span></li>)}
             </ul>
-            <p className="mt-2 text-[11px] text-muted">{t('ยืดเพื่อความสบายตัว ไม่ได้ช่วยลดปวดเมื่อยมากนัก', "Stretch for comfort — it doesn't reduce soreness much")}</p>
+            <p className="mt-2 text-xs text-muted">{t('ยืดเพื่อความสบายตัว ไม่ได้ช่วยลดปวดเมื่อยมากนัก', "Stretch for comfort — it doesn't reduce soreness much")}</p>
           </Collapse>
         </div>
         <Button size="lg" className="w-full" onClick={onDone}>{t('ดูสรุปการวิ่ง', 'View run summary')}</Button>

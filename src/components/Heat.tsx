@@ -54,7 +54,7 @@ export function HeatCard({ initialDay = 'today' }: { initialDay?: 'today' | 'tom
       <button onClick={() => setOpen(!open)} aria-expanded={open} className="flex w-full items-center gap-3 text-left active:scale-100">
         <span className={cx('flex size-11 shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl text-center leading-none', tone[level])}>
           <span className="text-base font-extrabold tabular-nums">{cur.wbgt.toFixed(0)}°</span>
-          <span className="text-[9px] font-bold">WBGT</span>
+          <span className="text-[10px] font-bold">WBGT</span>
         </span>
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-1.5 text-sm font-bold"><Thermometer size={14} className="text-warn" /> {t(heatAdvice[level].label, heatAdvice[level].labelEn)} · {cur.temp.toFixed(0)}°C {t('ชื้น', 'RH')} {cur.rh}%</span>
@@ -64,7 +64,7 @@ export function HeatCard({ initialDay = 'today' }: { initialDay?: 'today' | 'tom
         <ChevronDown size={18} className={cx('shrink-0 text-muted transition-transform duration-300', open && 'rotate-180')} />
       </button>
       {place && (
-        <div className="mt-2 flex items-center gap-1 text-[11px] text-muted">
+        <div className="mt-2 flex items-center gap-1 text-xs text-muted">
           <MapPin size={12} className="shrink-0" />
           <span className="truncate">{place.name}{!place.precise && t(' (ค่าเริ่มต้น)', ' (default)')}</span>
         </div>
@@ -91,10 +91,10 @@ export function HeatCard({ initialDay = 'today' }: { initialDay?: 'today' | 'tom
                     style={{ height: `${Math.min(100, Math.max(15, ((h.wbgt - 18) / 16) * 100))}%` }} />
                 ))}
               </div>
-              <div className="mt-1 flex justify-between text-[10px] text-muted"><span>05:00</span><span>13:00</span><span>21:00</span></div>
+              <div className="mt-1 flex justify-between text-[11px] text-muted"><span>05:00</span><span>13:00</span><span>21:00</span></div>
             </div>
           )}
-          <p className="mt-2 text-[11px] text-muted">{t('WBGT ในที่ร่ม (ประมาณ) กลางแดดร้อนกว่านี้ ~2–3° · PM2.5 เป็นค่าพยากรณ์รายชั่วโมง (µg/m³) เทียบเกณฑ์กรมควบคุมมลพิษ', 'Shade WBGT (estimate) — ~2–3° hotter in the sun · PM2.5 is an hourly forecast (µg/m³) against Thai PCD bands')}</p>
+          <p className="mt-2 text-xs text-muted">{t('WBGT ในที่ร่ม (ประมาณ) กลางแดดร้อนกว่านี้ ~2–3° · PM2.5 เป็นค่าพยากรณ์รายชั่วโมง (µg/m³) เทียบเกณฑ์กรมควบคุมมลพิษ', 'Shade WBGT (estimate) — ~2–3° hotter in the sun · PM2.5 is an hourly forecast (µg/m³) against Thai PCD bands')}</p>
         </div>
       </Collapse>
     </section>

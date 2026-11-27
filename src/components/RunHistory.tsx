@@ -102,8 +102,8 @@ export function RunHistory({ runs, onOpen, onRate }: { runs: Run[]; onOpen: (id:
                     <div className="mt-1.5 grid grid-cols-3 gap-2">
                       {[[tr('ระยะ', 'Distance'), r.km.toFixed(2), tr('กม.', 'km')], [tr('เพซ', 'Pace'), formatPace(r.seconds, r.km), tr('/กม.', '/km')], [tr('เวลา', 'Time'), formatDuration(r.seconds), '']].map(([l, v, u]) => (
                         <div key={l}>
-                          <div className="text-[11px] text-muted">{l}</div>
-                          <div className="text-lg font-extrabold leading-tight tabular-nums">{v}<span className="ml-0.5 text-[11px] font-normal text-muted">{u}</span></div>
+                          <div className="text-xs text-muted">{l}</div>
+                          <div className="text-lg font-extrabold leading-tight tabular-nums">{v}<span className="ml-0.5 text-xs font-normal text-muted">{u}</span></div>
                         </div>
                       ))}
                     </div>

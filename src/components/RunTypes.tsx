@@ -159,9 +159,9 @@ export function RunTypeCard({ kind, compact, defaultOpen = false }: { kind: Run[
               <animateMotion dur={`${info.lap}s`} repeatCount="indefinite" path={line} begin="1.2s" />
             </circle>
           )}
-          <text x={PAD} y={10} className="fill-muted text-[9px]">{tr('หนัก', 'Hard')}</text>
-          <text x={PAD} y={H - 1} className="fill-muted text-[9px]">{tr('เบา', 'Easy')}</text>
-          <text x={W - PAD} y={H - 1} textAnchor="end" className="fill-muted text-[9px]">{tr('เวลา →', 'Time →')}</text>
+          <text x={PAD} y={10} className="fill-muted text-[10px]">{tr('หนัก', 'Hard')}</text>
+          <text x={PAD} y={H - 1} className="fill-muted text-[10px]">{tr('เบา', 'Easy')}</text>
+          <text x={W - PAD} y={H - 1} textAnchor="end" className="fill-muted text-[10px]">{tr('เวลา →', 'Time →')}</text>
         </svg>
       </div>
 
