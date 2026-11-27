@@ -7,12 +7,12 @@
   --sab: max(env(safe-area-inset-bottom), var(--safe-area-inset-bottom, 0px));
   /* โซนเพซ (ช้า → เร็ว) — ผ่าน validate_palette ของ dataviz ทั้งสองโหมด (CVD + normal-vision) */
   --z-e: #2a78d6; --z-m: #1baf7a; --z-t: #eda100; --z-i: #d55181; --z-r: #6250d6;
-  --c-bg: #f3f4f6;
+  --c-bg: #eef1f6;
   --c-card: #ffffff;
-  --c-raised: #f8f9fb;
+  --c-raised: #f6f8fb;
   --c-ink: #0f1217;
   --c-muted: #646b78;
-  --c-line: #e5e7eb;
+  --c-line: #dde3ec;
   --c-accent: #d01544;
   --c-accent-soft: #ffe4e9;
   --c-good: #047857;
@@ -31,12 +31,12 @@
 /* โหมดมืด: ตามระบบ (ถ้าผู้ใช้ไม่ได้เลือกสว่าง) หรือเลือกมืดเอง — data-theme ตั้งใน index.html/ThemeToggle */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --c-bg: #0a0c0f;
-    --c-card: #14171c;
-    --c-raised: #1b1f26;
+    --c-bg: #0b0e13;
+    --c-card: #141921;
+    --c-raised: #1b212b;
     --c-ink: #eef0f3;
     --c-muted: #9aa2ae;
-    --c-line: #262b33;
+    --c-line: #252d39;
     --c-accent: #fb3b64;
     --c-accent-soft: #3b1420;
     --c-good: #34d399;
@@ -54,12 +54,12 @@
   }
 }
 :root[data-theme="dark"] {
-  --c-bg: #0a0c0f;
-  --c-card: #14171c;
-  --c-raised: #1b1f26;
+  --c-bg: #0b0e13;
+  --c-card: #141921;
+  --c-raised: #1b212b;
   --c-ink: #eef0f3;
   --c-muted: #9aa2ae;
-  --c-line: #262b33;
+  --c-line: #252d39;
   --c-accent: #fb3b64;
   --c-accent-soft: #3b1420;
   --c-good: #34d399;
@@ -108,10 +108,20 @@
   @keyframes fade-in { from { opacity: 0; } }
   @keyframes sheet-up { from { transform: translateY(100%); } to { transform: none; } }
   @keyframes pop { 0% { transform: scale(.6); } 100% { transform: scale(1); } }
+  --animate-nav-pop: nav-pop .42s cubic-bezier(.2,.9,.3,1.4) both;
+  @keyframes nav-pop { 0% { transform: scale(.75) translateY(2px); } 60% { transform: scale(1.12) translateY(-1px); } 100% { transform: scale(1); } }
+  --animate-shimmer: shimmer 1.3s linear infinite;
+  @keyframes shimmer { from { background-position: 150% 0; } to { background-position: -50% 0; } }
   @keyframes reveal { from { transform: scaleX(0); } to { transform: scaleX(1); } }
   --animate-ring: ring-in .9s cubic-bezier(.2,.8,.2,1) both;
   @keyframes ring-in { from { stroke-dasharray: 0 999; } }
   @keyframes beat { 0%, 100% { transform: scale(1); } 15% { transform: scale(1.25); } 30% { transform: scale(1); } 45% { transform: scale(1.15); } }
+}
+
+/* โครงรอโหลด: แถบแสงวิ่งผ่าน แทนการกะพริบ */
+@utility skeleton {
+  background: linear-gradient(90deg, var(--c-raised) 30%, color-mix(in oklab, var(--c-card) 60%, var(--c-raised)) 50%, var(--c-raised) 70%) 0 0 / 200% 100%;
+  animation: var(--animate-shimmer);
 }
 
 /* ทยอยแสดงการ์ดทีละใบ */

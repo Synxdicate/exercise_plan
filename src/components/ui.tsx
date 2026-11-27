@@ -159,3 +159,9 @@ export function Disclosure({ title, summary, children, defaultOpen = false }: { 
     </section>
   )
 }
+
+/** หัวข้อกลุ่มการ์ด: แบ่งหน้าเป็นช่วง ๆ (สิ่งที่ต้องทำ → เครื่องมือ → สรุป) ให้กวาดตาหาของได้เร็ว */
+export function SectionLabel({ children }: { children: ReactNode }) {
+  return <h2 className="px-1 pt-3 text-xs font-bold uppercase tracking-wide text-muted">{children}</h2>
+}
+

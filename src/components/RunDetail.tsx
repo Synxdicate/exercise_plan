@@ -35,7 +35,7 @@ const RunMap = lazy(() => import('./RunMap'))
 export function Map(props: { route: Point[]; position?: Point | null; follow?: boolean; className?: string; interactive?: boolean; highlight?: Point | null; marks?: { at: Point; color: string }[] }) {
   return (
     <ErrorBoundary fallback={<div className={cx('grid w-full place-items-center rounded-2xl bg-raised text-sm text-muted', props.className ?? 'h-64')}>{trNow('แสดงแผนที่ไม่ได้', 'Couldn’t show the map')}</div>}>
-      <Suspense fallback={<div className={cx('w-full animate-pulse rounded-2xl bg-raised', props.className ?? 'h-64')} />}>
+      <Suspense fallback={<div className={cx('w-full skeleton rounded-2xl', props.className ?? 'h-64')} />}>
         <RunMap {...props} />
       </Suspense>
     </ErrorBoundary>

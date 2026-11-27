@@ -38,7 +38,7 @@ import { CrossInstead } from './CrossInstead'
 import { WeeklyMuscles } from './WeeklyMuscles'
 import { RunTypeCard } from './RunTypes'
 import { ReadinessSheet } from './Readiness'
-import { Badge, Button, Collapse, Meter, Segmented } from './ui'
+import { Badge, Button, Collapse, Meter, SectionLabel, Segmented } from './ui'
 import { AddSheet, SwapSheet } from './ExercisePicker'
 import { needsSpotter } from '../data/library'
 import { RacePlan } from './RacePlan'
@@ -145,7 +145,7 @@ function PlanBody() {
       <div className="-mx-4 flex snap-x scroll-px-4 gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
         {p.prepWeeks.map(w => (
           <button key={w} onClick={() => selectWeek(w)}
-            className={cx('flex min-w-14 shrink-0 snap-start flex-col items-center rounded-2xl px-3 py-1.5 ring-1', w === week ? 'bg-ink text-bg ring-ink' : 'bg-card text-muted ring-line')}>
+            className={cx('flex min-w-14 shrink-0 snap-start flex-col items-center rounded-2xl px-3 py-1.5 ring-1', w === week ? 'bg-accent-fill text-white ring-accent' : 'bg-card text-muted ring-line')}>
             <span className="text-[11px]">{t('เตรียมตัว', 'Prep')}</span>
             <span className="text-base font-bold leading-tight">{shortDate(p.mondayOf(w))}</span>
           </button>
@@ -155,8 +155,8 @@ function PlanBody() {
           return (
             <button key={w} onClick={() => selectWeek(w)}
               className={cx('relative flex min-w-14 shrink-0 snap-start flex-col items-center rounded-2xl px-3 py-1.5 ring-1',
-                w === week ? 'bg-ink text-bg ring-ink' : 'bg-card text-ink ring-line')}>
-              <span className={cx('text-[11px]', w === week ? 'opacity-70' : w === p.currentWeek ? 'font-bold text-accent' : 'text-muted')}>
+                w === week ? 'bg-accent-fill text-white ring-accent' : 'bg-card text-ink ring-line')}>
+              <span className={cx('text-[11px]', w === week ? 'text-white' : w === p.currentWeek ? 'font-bold text-accent' : 'text-muted')}>
                 {w === p.currentWeek ? t('สัปดาห์นี้', 'Now') : w === p.meta.weeks && p.isRace ? t('แข่ง', 'Race') : light ? t('เบา', 'Easy') : p.ongoing ? t('รอบที่', 'Cycle') : t('สัปดาห์', 'Week')}
               </span>
               <span className="text-base font-bold leading-tight">{w}</span>
@@ -239,12 +239,14 @@ function PlanBody() {
         </ul>
       </section>
 
+      {p.isRace && !p.finished && <SectionLabel>{t('เตรียมวันแข่ง', 'Race prep')}</SectionLabel>}
       <LadderM />
       <CourseM />
       <RaceDayM />
-      <ReplayM />
+      <SectionLabel>{t('ฝึกเสริมและภาพรวม', 'Extras & overview')}</SectionLabel>
       <CircuitM />
       <WeeklyMusclesM plan={days} />
+      <ReplayM />
 
       {picking && <ProgramSheet onClose={() => setPicking(false)} />}
       {checking !== null && (

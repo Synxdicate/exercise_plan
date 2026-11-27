@@ -122,8 +122,8 @@ function Main({ session }: { session: Session | null }) {
         <button onClick={() => go('overview')} className="flex min-w-0 items-center gap-2.5 text-left">
           <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-accent-fill text-white"><LogoMark size={24} /></span>
           <span className="min-w-0">
-            <span className="block text-xs font-semibold uppercase tracking-wider text-accent">Kao</span>
-            <h1 className="truncate text-lg font-bold leading-tight">{title}</h1>
+            <span className="sr-only">Kao </span>
+            <h1 className="truncate text-xl font-extrabold leading-tight tracking-tight">{title}</h1>
             <span className="sr-only"> — {t('กลับหน้าหลัก', 'back to home')}</span>
           </span>
         </button>
@@ -142,7 +142,7 @@ function Main({ session }: { session: Session | null }) {
       {!session && <BackupReminder />}
 
       <RootEffects />
-      <main key={shown} aria-busy={shown !== tab || undefined} className="animate-fade-up space-y-3 px-4 pt-1 pb-[calc(var(--sab)+6rem)]">
+      <main key={shown} aria-busy={shown !== tab || undefined} className="stagger space-y-3 px-4 pt-1 pb-[calc(var(--sab)+6rem)]">
         <TabContent tab={shown} profile={profile} setProfile={setProfile} />
         <p className="pt-2 text-center text-xs text-muted">{t('ข้อมูลเพื่อการศึกษา ไม่ใช่คำแนะนำทางการแพทย์', 'For education only, not medical advice')}</p>
       </main>
@@ -154,8 +154,11 @@ function Main({ session }: { session: Session | null }) {
             return (
               <button key={x.id} onClick={() => go(x.id)} aria-current={on ? 'page' : undefined}
                 className={cx('flex flex-col items-center gap-0.5 rounded-2xl py-1.5 text-xs font-semibold transition', on ? 'text-accent' : 'text-muted')}>
-                <span className={cx('grid h-7 w-12 place-items-center rounded-full transition-all duration-300', on ? 'scale-100 bg-accent-soft' : 'scale-90')}>
-                  <NavIcon name={NAV_ICON[x.id] ?? 'home'} active={on} />
+                <span className={cx('grid h-8 w-14 place-items-center rounded-full transition-all duration-300', on ? 'bg-accent-soft' : 'bg-transparent')}>
+                  {/* key เปลี่ยนตอนถูกเลือก ให้ไอคอนเด้งทุกครั้งที่กดเข้าแท็บ */}
+                  <span key={on ? 'on' : 'off'} className={cx('grid place-items-center', on && 'animate-nav-pop')}>
+                    <NavIcon name={NAV_ICON[x.id] ?? 'home'} active={on} size={24} />
+                  </span>
                 </span>
                 {t(x.label[0], x.label[1])}
               </button>

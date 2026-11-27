@@ -3,10 +3,12 @@
 Renders the glyph with headless Chrome, then composes the PNGs with PIL.
 Usage: python3 scripts/make-icons.py"""
 import os, subprocess, tempfile
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-RED, LIGHT, DARK = (225, 29, 72), (243, 244, 246), (10, 12, 15)
+RED, LIGHT, DARK = (225, 29, 72), (238, 241, 246), (11, 14, 19)
+# ไล่สีโทนเดียวกันบนไอคอน (บนสว่าง ล่างเข้ม) ให้มีมิติ ไม่ใช่สีแบน
+TOP, BOTTOM = (243, 56, 95), (196, 16, 60)
 RES = os.path.join(ROOT, 'android/app/src/main/res')
 
 def render_glyph(px=2048):
@@ -43,13 +45,43 @@ def icon(size, shape, ratio):
     if shape == 'circle': d.ellipse((0, 0, big - 1, big - 1), fill=255)
     elif shape == 'round': d.rounded_rectangle((0, 0, big - 1, big - 1), radius=round(big * 0.22), fill=255)
     else: d.rectangle((0, 0, big, big), fill=255)
-    im.paste(Image.new('RGBA', (big, big), RED + (255,)), (0, 0), mask)
-    paste_center(im, glyph(round(big * ratio)))
+    im.paste(gradient(big), (0, 0), mask)
+    shadowed(im, round(big * ratio))
     return im.resize((size, size), Image.LANCZOS)
+
+def gradient(n):
+    """ไล่สีแนวทแยงจากมุมซ้ายบน (สว่าง) ไปขวาล่าง (เข้ม)"""
+    g = Image.new('RGBA', (n, n))
+    px = g.load()
+    for yy in range(0, n, 2):
+        for xx in range(0, n, 2):
+            t = (xx + yy) / (2 * n)
+            c = tuple(round(TOP[i] + (BOTTOM[i] - TOP[i]) * t) for i in range(3)) + (255,)
+            px[xx, yy] = c
+            if xx + 1 < n: px[xx + 1, yy] = c
+            if yy + 1 < n:
+                px[xx, yy + 1] = c
+                if xx + 1 < n: px[xx + 1, yy + 1] = c
+    return g
+
+def shadowed(base, box):
+    """รองเท้าสีขาว + เงานุ่มด้านล่างเล็กน้อย"""
+    g = glyph(box)
+    sh = glyph(box, (90, 0, 20))
+    a = sh.split()[3].point(lambda v: v * 0.35)
+    sh.putalpha(a)
+    pad = box // 10
+    layer = Image.new('RGBA', (g.width + pad * 2, g.height + pad * 2), (0, 0, 0, 0))
+    layer.alpha_composite(sh, (pad, pad + box // 40))
+    layer = layer.filter(ImageFilter.GaussianBlur(box / 60))
+    x, y = (base.width - g.width) // 2, (base.height - g.height) // 2
+    base.alpha_composite(layer, (x - pad, y - pad))
+    base.alpha_composite(g, (x, y))
+    return base
 
 def foreground(size):
     im = Image.new('RGBA', (size * 4, size * 4), (0, 0, 0, 0))
-    return paste_center(im, glyph(round(size * 4 * 0.5))).resize((size, size), Image.LANCZOS)
+    return shadowed(im, round(size * 4 * 0.5)).resize((size, size), Image.LANCZOS)
 
 def splash(w, h, bg):
     im = Image.new('RGBA', (w, h), bg + (255,))
@@ -58,7 +90,7 @@ def splash(w, h, bg):
 # sources in assets/
 icon(1024, 'square', 0.74).convert('RGB').save(os.path.join(ROOT, 'assets/icon-only.png'))
 foreground(1024).save(os.path.join(ROOT, 'assets/icon-foreground.png'))
-Image.new('RGB', (1024, 1024), RED).save(os.path.join(ROOT, 'assets/icon-background.png'))
+gradient(1024).convert('RGB').save(os.path.join(ROOT, 'assets/icon-background.png'))
 splash(2732, 2732, LIGHT).save(os.path.join(ROOT, 'assets/splash.png'))
 splash(2732, 2732, DARK).save(os.path.join(ROOT, 'assets/splash-dark.png'))
 

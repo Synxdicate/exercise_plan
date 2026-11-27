@@ -42,7 +42,7 @@ import { HeatCard } from './Heat'
 import { heatSlowdown, useWbgtNow } from '../lib/weather'
 import { ReadinessSheet } from './Readiness'
 import { today, weekStart } from '../lib/date'
-import { Badge, Button, Card, Collapse, Portal, Segmented, Stat } from './ui'
+import { Badge, Button, Card, Collapse, Portal, SectionLabel, Segmented, Stat } from './ui'
 import { RunHistory } from './RunHistory'
 import { WalkReview } from './WalkReview'
 import { CrossTrainingCard } from './CrossTraining'
@@ -364,6 +364,7 @@ export function Runs() {
               {tr(`ร้อนกว่าปกติ (WBGT ${Math.round(wbgtNow!)}°) วันนี้โค้ชเพซตั้งเป้าช้าลง ${heatPct}% ให้ได้ผลการซ้อมเท่าเดิม`, `Hotter than usual (WBGT ${Math.round(wbgtNow!)}°) — the pace coach targets ${heatPct}% slower today for the same training effect`)}
             </p>
           )}
+          <SectionLabel>{tr('ก่อนออกวิ่ง (ไม่บังคับ)', 'Before you go (optional)')}</SectionLabel>
           {kind !== 'walk' && <DrillsCard kind={kind} />}
           {kind !== 'walk' && <ZoneCard kind={kind} />}
           {kind !== 'walk' && <CadenceCard />}

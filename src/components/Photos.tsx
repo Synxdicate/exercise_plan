@@ -32,7 +32,7 @@ function Viewer({ p, onClose }: { p: Photo; onClose: () => void }) {
   }
   return (
     <Sheet onClose={onClose} title={shortDate(p.date)}>
-      {url ? <img src={url} alt="" className="w-full rounded-2xl" /> : <div className="aspect-[3/4] animate-pulse rounded-2xl bg-raised" />}
+      {url ? <img src={url} alt="" className="w-full rounded-2xl" /> : <div className="aspect-[3/4] skeleton rounded-2xl" />}
       <button onClick={remove} className="mt-3 flex items-center gap-1.5 text-sm font-semibold text-bad"><Trash2 size={15} /> {trNow('ลบรูป', 'Delete photo')}</button>
     </Sheet>
   )

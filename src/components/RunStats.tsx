@@ -270,7 +270,7 @@ export function HeatmapCard({ runs }: { runs: Run[] }) {
   if (routes.length < 2) return null
   return (
     <Card title={<span className="flex items-center gap-2"><MapIcon size={18} className="text-run" /> {tr('แผนที่การวิ่งทั้งหมด', 'All-runs map')}</span>}>
-      <Suspense fallback={<div className="h-72 w-full animate-pulse rounded-2xl bg-raised" />}>
+      <Suspense fallback={<div className="h-72 w-full skeleton rounded-2xl" />}>
         <RouteHeatmap routes={routes} />
       </Suspense>
       <p className="mt-2 text-xs text-muted">{tr(`${routes.length} เส้นทาง ทางที่วิ่งบ่อยเส้นจะเข้มขึ้น`, `${routes.length} routes — frequent paths are darker`)}{hidden ? tr(` (ไม่รวม ${hidden} ครั้งที่วิ่งที่อื่น)`, ` (excluding ${hidden} runs elsewhere)`) : ''}</p>

@@ -22,12 +22,12 @@ Semantic tokens only — never raw Tailwind palette colors. Dark mode redefines 
 
 | Token | Light | Dark | Use |
 |---|---|---|---|
-| `bg` | `#f3f4f6` | `#0a0c0f` | page background |
-| `card` | `#ffffff` | `#14171c` | cards, sheets |
-| `raised` | `#f8f9fb` | `#1b1f26` | inner panels, soft buttons, stat tiles |
+| `bg` | `#eef1f6` | `#0b0e13` | page background (cool blue-gray, chosen 2026-11-28 so white cards stand out) |
+| `card` | `#ffffff` | `#141921` | cards, sheets |
+| `raised` | `#f6f8fb` | `#1b212b` | inner panels, soft buttons, stat tiles |
 | `ink` | `#0f1217` | `#eef0f3` | primary text |
 | `muted` | `#646b78` | `#9aa2ae` | secondary text, labels |
-| `line` | `#e5e7eb` | `#262b33` | 1 px rings and dividers |
+| `line` | `#dde3ec` | `#252d39` | 1 px rings and dividers |
 | `accent` | `#d01544` | `#fb3b64` | brand red: text/icons on light/dark surfaces |
 | `accent-fill` | `#d01544` | `#e11d48` | filled red (primary button, hero card) with white text |
 | `accent-soft` | `#ffe4e9` | `#3b1420` | selected row, current set |
@@ -68,6 +68,10 @@ Rules:
 - **Sheet** — bottom sheet with drag-to-close, rendered through `Portal`.
 - Forms: `TextInput`, `NumberInput` (unit suffix, optional stepper), `SelectInput`, `DateInput` from `Form.tsx`.
 
+## Page structure
+
+- Each screen reads top-down: today's action → tools → progress/summary. Groups are separated by `SectionLabel` (small muted uppercase heading) instead of more cards.
+
 ## Lists of exercises
 
 - Row: number bubble · English name (600) + Thai description (muted, truncated) · `sets×reps` right-aligned, tabular; a per-side suffix (`/ ข้าง`) drops to a small second line so names don't wrap.
@@ -75,11 +79,11 @@ Rules:
 
 ## Motion
 
-- Short fades/slides (`animate-fade-up`, `animate-sheet-up`), press-scale on buttons, `stagger` for lists, ring fill on home. Everything off under `prefers-reduced-motion`.
+- Short fades/slides (`animate-fade-up`, `animate-sheet-up`), press-scale on buttons, `stagger` on every tab's cards (on `<main>`), ring fill + count-up numbers on home, `animate-nav-pop` when a tab is selected, `skeleton` shimmer for loading placeholders (no pulsing). Everything off under `prefers-reduced-motion`.
 
 ## Iconography & imagery
 
-- `lucide-react` icons, 16–20 px, stroke style. Bottom-nav icons are custom duotone (`NavIcons.tsx`); the logo is a tilted running shoe (`LogoMark`).
+- `lucide-react` icons, 16–20 px, stroke style. Bottom-nav icons are custom duotone (`NavIcons.tsx`); the logo is a tilted running shoe (`LogoMark`). The launcher icon uses a tonal red diagonal gradient (#F3385F → #C4103C) with a soft shadow under the shoe (`scripts/make-icons.py`, adaptive background `drawable/ic_launcher_bg.xml`).
 - Exercise demos: real start/end photos (free-exercise-db) or two-pose stick figures; no stock lifestyle photos.
 
 ## Don't

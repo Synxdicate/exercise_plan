@@ -983,7 +983,7 @@ test('จบโปรแกรมหุ่นแล้วเริ่มรอ�
   const done = (await idb(page, 'done')) as Record<string, boolean>
   expect(Object.keys(done).filter(k => !k.startsWith('old-'))).toEqual([])
   await nav(page, 'ฝึก')
-  await expect(page.locator('main .snap-start[class*="bg-ink"]')).toContainText('1')
+  await expect(page.locator('main .snap-start[class*="bg-accent-fill"]')).toContainText('1')
 })
 
 test('เอารายการที่หายกลับมาจากไฟล์สำรอง: เพิ่มเฉพาะรอบที่หาย รอบใหม่ไม่ถูกทับ ค่าขึ้นสะสมสูตรเก่าที่คิดใหม่ไม่ได้ถูกลบ', async ({ page }) => {

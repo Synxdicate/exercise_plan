@@ -31,10 +31,10 @@ export function HeatCard({ initialDay = 'today' }: { initialDay?: 'today' | 'tom
   // โครงเดียวกับการ์ดจริง (สูงเท่ากัน) หน้าไม่กระโดดตอนโหลดเสร็จ
   if (!hours) return (
     <section className="flex items-center gap-3 rounded-2xl bg-card p-3.5 shadow-sm ring-1 ring-line" aria-busy>
-      <span className="size-11 shrink-0 animate-pulse rounded-xl bg-raised" />
+      <span className="skeleton size-11 shrink-0 rounded-xl" />
       <span className="flex-1 space-y-1.5">
         <span className="flex items-center gap-1.5 text-sm text-muted"><Thermometer size={14} /> {t('กำลังโหลดสภาพอากาศ…', 'Loading weather…')}</span>
-        <span className="block h-3 w-2/3 animate-pulse rounded bg-raised" />
+        <span className="block h-3 w-2/3 skeleton rounded" />
       </span>
     </section>
   )

@@ -34,8 +34,9 @@ import { HeatCard } from './Heat'
 import { MonthGoalCard } from './Goals'
 import { WeekSummary } from './WeekSummary'
 import { ReadinessSheet } from './Readiness'
-import { Button, Card } from './ui'
+import { Button, Card, SectionLabel } from './ui'
 import { cx } from '../lib/cx'
+import { useCountUp } from '../lib/useCountUp'
 import { useT } from '../lib/i18n'
 
 
@@ -177,6 +178,7 @@ export function Dashboard() {
       {todayPlan?.type === 'run' ? <HeatCard /> : tomorrow?.type === 'run' && !p.finished && <HeatCard initialDay="tomorrow" />}
 
       {/* สิ่งที่ต้องทำวันนี้อยู่บนสุด เป้าเดือน/สรุปสัปดาห์ที่แล้วเป็นข้อมูลประกอบ */}
+      <SectionLabel>{t('ความคืบหน้า', 'Progress')}</SectionLabel>
       <ThisWeekCard />
 
       <MonthGoalCard />
@@ -193,6 +195,10 @@ function Ring({ value, max, label, text }: { value: number; max: number; label: 
   const r = 30
   const c = 2 * Math.PI * r
   const pct = Math.min(1, max ? value / max : 0)
+  // ตัวเลขนับขึ้นพร้อมวงแหวน (เลขหน้า "/" ใช้ทศนิยมเท่าข้อความเดิม)
+  const up = useCountUp(value)
+  const lead = text.match(/^[\d.]+/)?.[0]
+  const counted = lead ? text.replace(lead, up.toFixed(lead.split('.')[1]?.length ?? 0)) : text
   return (
     <div className="flex flex-col items-center gap-1 rounded-xl bg-black/15 p-2.5 text-center">
       <svg viewBox="0 0 72 72" className="size-11 shrink-0" aria-hidden>
@@ -201,7 +207,7 @@ function Ring({ value, max, label, text }: { value: number; max: number; label: 
           strokeDasharray={`${c * pct} ${c}`} transform="rotate(-90 36 36)" className="animate-ring" />}
       </svg>
       <div>
-        <div className="text-base font-extrabold tabular-nums">{text}</div>
+        <div className="text-base font-extrabold tabular-nums">{counted}</div>
         <div className="text-xs">{label}</div>
       </div>
     </div>
