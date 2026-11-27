@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { Activity, ExternalLink } from 'lucide-react'
-import { LAST, logRehab, rehabDue, rehabNext, rehabToday, settle, STAGE_DAYS, STAGE_SESSIONS, STAGES, startRehab, type Rehab } from '../lib/achilles'
+import { LAST, logRehab, rehabDue, rehabNext, rehabSince, rehabToday, settle, STAGE_DAYS, STAGE_SESSIONS, STAGES, startRehab, type Rehab } from '../lib/achilles'
 import type { Readiness } from '../lib/readiness'
 import type { TendonLog } from '../lib/tendon'
 import { TENDON_LIMIT } from '../lib/tendon'
@@ -40,8 +40,10 @@ export function AchillesCard() {
     </section>
   )
 
-  if (!rehab || rehab.off) {
-    const offered = rehabDue(readiness, tendon, today) && !(later && today < addDays(later, 14)) && !(rehab?.off && today < addDays(rehab.off, 14))
+  // จบหรือหยุดโปรแกรมไปแล้ว: เสนอใหม่เมื่อกลับมาปวดซ้ำหลังวันนั้น
+  const again = !!rehab?.done && rehabDue(readiness, tendon, today, rehab.done)
+  if (!rehab || rehab.off || again) {
+    const offered = rehabDue(readiness, tendon, today, rehabSince(rehab)) && !(later && today < addDays(later, 14))
     if (!offered) return null
     return box(<>
       <div className="font-bold">{t('เอ็นร้อยหวายเจ็บซ้ำ: เริ่มโปรแกรมคืนสภาพ', 'Achilles keeps hurting: start a rehab program')}</div>

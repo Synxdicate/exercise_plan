@@ -590,7 +590,7 @@ test('เวทฉบับสั้น: 4 ท่า ท่าละ 2 เซ็
   await page.getByRole('button', { name: 'ปิด' }).first().click()
   await page.getByRole('button', { name: 'ออก', exact: true }).click()
   await page.getByRole('button', { name: 'เริ่มฝึก', exact: true }).click()
-  await expect(page.getByText(/· 1\/21 เซ็ต/)).toBeVisible() // ฉบับเต็ม: ท่าครบ เซ็ตครบ เซ็ตแรกที่ทำไว้ยังนับ
+  await expect(page.getByText(/· 1\/27 เซ็ต/)).toBeVisible() // ฉบับเต็ม (รวมท่อนบนเสริม 6 เซ็ต): ท่าครบ เซ็ตครบ เซ็ตแรกที่ทำไว้ยังนับ
 })
 
 test('เส้นทางแข่งมีเนิน: ติ๊กในตั้งค่าโปรแกรมแล้ววันแข่งมีวิธีคุมแรงบนเนิน', async ({ page }) => {
@@ -1188,7 +1188,7 @@ test('ระยะสัปดาห์ตามที่วิ่งได้�
 })
 
 test('เอ็นร้อยหวายเจ็บซ้ำ: เสนอโปรแกรมคืนสภาพ ทำขั้นแรกแล้วบันทึก และแผนงดท่ากระโดด', async ({ page }) => {
-  // จันทร์ 30 พ.ย.: เจ็บ 5 และ 12 พ.ย. ถนอมขาถึง 18 กลับมาซ้อมถึง 25 → วันนี้แผนเต็ม (จันทร์สัปดาห์ 7 มี Pogo Jumps)
+  // จันทร์ 30 พ.ย.: เจ็บ 5 และ 12 พ.ย. ถนอมขาถึง 18 กลับมาซ้อมถึง 25 → จันทร์สัปดาห์ 7 ปกติมี Pogo Jumps แต่ปวดซ้ำแล้ว งดตั้งแต่ก่อนกดเริ่มโปรแกรม
   await page.clock.install({ time: new Date('2026-11-30T08:00:00+07:00') })
   const pain = { sleep: 0, sore: 0, pain: true, areas: ['achilles'] }
   await seed(page, { program: 'ten', raceDate: '2027-01-10', readiness: { '2026-11-05': pain, '2026-11-12': pain } })
@@ -1198,7 +1198,8 @@ test('เอ็นร้อยหวายเจ็บซ้ำ: เสนอโ
     await settled(page)
     return page.getByText('Pogo Jumps', { exact: true }).count()
   }
-  expect(await pogoOnMonday()).toBeGreaterThan(0)
+  expect(await pogoOnMonday()).toBe(0)
+  await expect(page.getByText(/เอ็นร้อยหวายเจ็บซ้ำ: งดท่ากระโดดไว้ก่อน/)).toBeVisible()
   await nav(page, 'หน้าหลัก')
   await expect(page.getByText('เอ็นร้อยหวายเจ็บซ้ำ: เริ่มโปรแกรมคืนสภาพ')).toBeVisible()
   await page.getByRole('button', { name: 'เริ่มโปรแกรม' }).click()

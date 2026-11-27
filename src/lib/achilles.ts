@@ -35,11 +35,34 @@ export const STAGE_DAYS = 6
 const TRIGGER = 2
 const WATCH = 28
 
-/** ควรเสนอโปรแกรม: ปวดเอ็นร้อยหวาย/น่องซ้ำ (≥2 วันใน 28 วัน) หรือเช็กขาตอนเช้าเกิน 3/10 */
-export function rehabDue(readiness: Record<string, Readiness>, tendon: TendonLog, today: string) {
+/** วันที่นับเป็นปวดซ้ำ: ปวดเอ็นร้อยหวาย/น่องในเช็กความพร้อม หรือเช็กขาตอนเช้าเกิน 3/10 ใน 28 วัน (หลัง since ถ้ามี) */
+function painDays(readiness: Record<string, Readiness>, tendon: TendonLog, today: string, since = '') {
   const from = addDays(today, -(WATCH - 1))
-  const days = Object.entries(readiness).filter(([d, r]) => d >= from && d <= today && r.pain && r.areas?.some(a => a === 'achilles' || a === 'calf'))
-  return days.length >= TRIGGER || Object.entries(tendon).some(([d, s]) => d >= from && d <= today && s > TENDON_LIMIT)
+  const ok = (d: string) => d >= from && d <= today && d > since
+  const ready = Object.entries(readiness).filter(([d, r]) => ok(d) && r.pain && r.areas?.some(a => a === 'achilles' || a === 'calf')).map(([d]) => d)
+  const morning = Object.entries(tendon).filter(([d, s]) => ok(d) && s > TENDON_LIMIT).map(([d]) => d)
+  return { ready, morning }
+}
+
+/** ควรเสนอโปรแกรม: ปวดเอ็นร้อยหวาย/น่องซ้ำ (≥2 วันใน 28 วัน) หรือเช็กขาตอนเช้าเกิน 3/10 (since: นับเฉพาะหลังวันจบ/หยุดโปรแกรมครั้งก่อน) */
+export function rehabDue(readiness: Record<string, Readiness>, tendon: TendonLog, today: string, since = '') {
+  const { ready, morning } = painDays(readiness, tendon, today, since)
+  return ready.length >= TRIGGER || morning.length > 0
+}
+
+/** เวลานับปวดซ้ำรอบใหม่: หลังจบหรือหยุดโปรแกรมครั้งก่อน */
+export const rehabSince = (r: Rehab | null | undefined) => r?.done ?? r?.off ?? ''
+
+/**
+ * ปวดซ้ำแล้วแต่ยังไม่ได้เริ่มโปรแกรม (หรือจบ/หยุดไปแล้วและกลับมาปวดใหม่): งดท่ากระโดดตั้งแต่วันปวดแรกที่นับ
+ * ท่ากระโดดให้แรงเอ็นสูงสุด (~7 เท่าน้ำหนักตัว, Baxter 2021) ไม่ควรรอให้กดเริ่มโปรแกรมก่อน คืน null เมื่อไม่ต้องงด
+ */
+export function rehabWaitFrom(r: Rehab | null | undefined, readiness: Record<string, Readiness>, tendon: TendonLog, today: string): string | null {
+  if (rehabActive(r)) return null
+  const since = rehabSince(r)
+  if (!rehabDue(readiness, tendon, today, since)) return null
+  const { ready, morning } = painDays(readiness, tendon, today, since)
+  return [...ready, ...morning].sort()[0]
 }
 
 export const startRehab = (today: string): Rehab => ({ start: today, stage: 0, stageStart: today, sessions: [] })

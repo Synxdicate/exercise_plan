@@ -4,12 +4,12 @@ import { EaseOffCard, PainGuardCard } from './Coach'
 import { JumpRopeOffer } from './JumpRope'
 import { RaceDayCard } from './RaceDay'
 import { LadderCard } from './Ladder'
-import { memo, useDeferredValue, useMemo, useState } from 'react'
+import { Fragment, memo, useDeferredValue, useMemo, useState } from 'react'
 import { useSwipe } from '../lib/swipe'
 
 const DAYS = ['0', '1', '2', '3', '4', '5', '6'] as const
 import { ArrowDown, ArrowLeftRight, House, ArrowUp, Check, ChevronDown, ChevronRight, Dumbbell, Flag, Footprints, Moon, Play, Plus, RefreshCw, Trash2, Trees } from 'lucide-react'
-import { yt, type Day, type Exercise } from '../data/workouts'
+import { yt, type Block, type Day, type Exercise } from '../data/workouts'
 import { locationInfo, weekNote } from '../data/programs'
 import { ACTUAL_NOTE, RAMP_NOTE, RAMP_STRIDES_NOTE } from '../lib/rampIn'
 import { dayIntensity, musclesOf, muscleNames } from '../data/muscles'
@@ -369,9 +369,15 @@ function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slo
         <>
           <DayMuscles day={day} />
           <ul className="mt-2 divide-y divide-line">
-            {day.exercises.map((e, i) => (
-              <ExerciseRow key={e.name} e={e} n={i + 1} onSwap={() => setSwapping(e)} onRemove={() => p.removeExercise(day, e.name)} />
-            ))}
+            {day.exercises.map((e, i) => {
+              const head = e.block && e.block !== day.exercises[i - 1]?.block ? BLOCK[e.block] : null
+              return (
+                <Fragment key={e.name}>
+                  {head && <li className="pt-3 pb-1 text-xs font-semibold text-muted">{t(head[0], head[1])}</li>}
+                  <ExerciseRow e={e} n={i + 1} onSwap={() => setSwapping(e)} onRemove={() => p.removeExercise(day, e.name)} />
+                </Fragment>
+              )
+            })}
           </ul>
           <button onClick={() => setAdding(true)} className="mt-1 flex items-center gap-1.5 py-1.5 text-sm font-semibold text-run">
             <Plus size={15} /> {t('เพิ่มท่า', 'Add exercise')}
@@ -413,6 +419,14 @@ function DayDetail({ day, isToday, done, hint, setDone, onStart, onLocation, slo
       )}
     </article>
   )
+}
+
+/** หัวข้อหมวดท่าในวันเวทนักวิ่ง (Exercise.block) */
+const BLOCK: Record<Block, [string, string]> = {
+  plyo: ['กระโดด ทำก่อนตอนขายังสด', 'Jumps: first, while the legs are fresh'],
+  main: ['ท่าหลัก', 'Main lifts'],
+  upper: ['ท่อนบนเสริม (ไม่กระทบการวิ่ง)', 'Extra upper body (doesn’t affect running)'],
+  prehab: ['น่อง สะโพก แกนกลาง (กันเจ็บ)', 'Calves, hips, core (injury prevention)'],
 }
 
 function ExerciseRow({ e, n, onSwap, onRemove }: { e: Exercise; n: number; onSwap: () => void; onRemove: () => void }) {

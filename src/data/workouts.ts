@@ -3,6 +3,9 @@ export const yt = (q: string) =>
 
 import { guides, type Step } from '../lib/guide'
 
+/** กระโดด → ท่าหลัก → ท่อนบนเสริม → กันเจ็บ (น่อง สะโพก แกนกลาง) */
+export type Block = 'plyo' | 'main' | 'upper' | 'prehab'
+
 export type Exercise = {
   name: string
   th: string
@@ -16,6 +19,7 @@ export type Exercise = {
   swappedFrom?: string // ผู้ใช้สลับมาจากท่านี้ (ดู useProgram)
   solo?: boolean // สลับอัตโนมัติเพราะโหมดฝึกคนเดียว (ท่าเดิมต้องมีคนช่วย)
   added?: boolean // ผู้ใช้เพิ่มเอง
+  block?: Block // วันเวทนักวิ่ง: หมวดของท่า (หัวข้อในรายการ) ดู arrange ใน programs.ts
 }
 
 export type Day = {

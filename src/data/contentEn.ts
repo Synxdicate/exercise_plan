@@ -103,6 +103,7 @@ export const CUE_EN: Record<string, string> = {
   'เก้าอี้ไม่มีล้อ ชิดผนัง ลงจนศอก ~90° ไหล่ไม่ห่อ': 'Chair without wheels, against a wall, lower until elbows are ~90°, shoulders not hunched',
   'ยกแขน-อก-ขาพร้อมกัน ค้าง 2 วิ คอตรง': 'Lift arms, chest and legs together, hold 2 s, neck neutral',
   'หลังล่างแนบพื้น ลงช้า ไม่ให้ขาแตะพื้น': 'Lower back on the floor, lower slowly, don’t let the legs touch down',
+  'เอ็นร้อยหวายเจ็บซ้ำ: งดท่ากระโดดไว้ก่อน เริ่มโปรแกรมคืนสภาพได้ที่หน้าหลัก': 'Achilles keeps hurting: jumps are out for now; start the rehab program from Home',
   'ดึงเป้ใส่ขวดน้ำแขนเดียว ไม่มีเป้ใช้ Superman 5 ครั้งแทน': 'One-arm row with a water-bottle backpack; no backpack: 5 Superman reps instead',
   'ใส่ขวดน้ำในเป้ให้หนักพอทำได้ 10–15 ครั้ง มือกับเข่าข้างหนึ่งวางบนเตียงหรือเก้าอี้ หลังตรง ดึงศอกไปทางสะโพก ลงช้า': 'Load a backpack with water bottles so 10–15 reps are hard, one hand and knee on a bed or chair, back flat, pull the elbow toward the hip, lower slowly',
   'หนักแต่เหลือแรง 2–3 ครั้ง ไม่เล่นจนหมด': 'Heavy but leave 2–3 reps in reserve, never to failure',

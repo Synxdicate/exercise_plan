@@ -19,6 +19,14 @@ export function suggest(e: Exercise, prev: SetEntry[] | undefined): Suggestion {
   const lastKg = Math.max(...prev.map(s => s.kg))
   const allHit = prev.length >= sets && prev.every(s => s.reps >= max)
 
+  // ทำได้ไม่ถึงครึ่งของช่วงล่างทุกเซ็ต: หนักเกิน กล้ามได้ผลดีเมื่อทำได้ในช่วงที่ตั้งไว้ใกล้หมดแรง (Schoenfeld 2017)
+  const best = Math.max(...prev.map(s => s.reps))
+  // ท่าน้ำหนักตัวที่มีท่าง่ายกว่า (ไม่มี easier = อาจแค่ยังไม่ได้ใส่น้ำหนัก ไม่เดาว่ายากเกิน)
+  if (min >= 4 && best < min / 2 && (lastKg > 0 || e.easier))
+    return lastKg > 0
+      ? { kg: Math.round(lastKg * 0.85 / 2.5) * 2.5 || null, up: false, text: `ครั้งก่อนได้สูงสุด ${best} ครั้ง น้อยกว่าช่วง ${e.reps} มาก ลดน้ำหนักลง ~15% ให้ทำได้ ${min} ครั้งขึ้นไป`, textEn: `Best set last time was ${best} reps, well under ${repsEn(e.reps)}. Drop the weight ~15% so you get at least ${min}` }
+      : { kg: null, up: false, text: `ครั้งก่อนได้สูงสุด ${best} ครั้ง ยังยากเกินช่วง ${e.reps} ใช้ ${e.easier} แทนก่อน (กดสลับท่า) จนทำได้ ${min} ครั้ง`, textEn: `Best set last time was ${best} reps, too hard for ${repsEn(e.reps)}. Use ${e.easier} for now (swap) until you get ${min}` }
+
   if (!allHit)
     return { kg: lastKg || null, up: false, text: `ใช้ ${lastKg ? `${lastKg} กก.` : 'ท่าเดิม'} ต่อ พยายามเพิ่ม 1 ครั้งในเซ็ตที่ยังไม่ถึง ${max}`, textEn: `Stay at ${lastKg ? `${lastKg} kg` : 'this variation'}; add 1 rep to sets below ${max}` }
 

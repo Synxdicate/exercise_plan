@@ -232,6 +232,8 @@ export function WorkoutPlayer({ day, sessionKey, mode, light = false, quick = fa
           <p className="mt-2 text-sm text-muted">{dt.cue(ex.cue)}</p>
           {prev && <p className="mt-1 text-xs text-muted">{tr('ครั้งก่อน', 'Last time')} ({prev.date}): {prev.sets.map(s => (s.kg ? `${s.kg}×${s.reps}` : `${s.reps}`)).join(' · ')}</p>}
           {(() => {
+            // ครั้งแรกในยิมที่มีป้าย "ใส่น้ำหนักที่ยกด้วย" อยู่แล้ว: ไม่ต้องซ้ำคำแนะนำครั้งแรก
+            if (!prev && mode === 'gym' && needsKg(ex.name)) return null
             const sg = suggest(ex, prev?.sets)
             // ไม่มีน้ำหนัก (บอดี้เวท): คำแนะนำเรื่องเลือกน้ำหนักไม่ตรง เพิ่มความยากด้วยจังหวะ/ท่าแทน
             if (!kgCol && !sg.up && /น้ำหนัก/.test(sg.text)) { sg.text = `ทำ ${ex.reps} ให้ท่าถูก เหลือแรงอีก 2–3 ครั้ง ทำครบช่วงบนได้ทุกเซ็ตแล้วค่อยเพิ่มความยาก (ลงช้าลง หรือท่ายากขึ้น)`; sg.textEn = `Do ${dt.reps(ex.reps)} with good form and 2–3 reps left — once every set hits the top of the range, make it harder (slower lowering or a harder variation)` }

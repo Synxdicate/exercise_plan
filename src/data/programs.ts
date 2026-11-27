@@ -1,4 +1,4 @@
-import { gymWeek, parkWeek, type Day, type Exercise } from './workouts'
+import { gymWeek, parkWeek, type Block, type Day, type Exercise } from './workouts'
 import { guides, type Step } from '../lib/guide'
 import { homeAlt, libEx } from './library'
 
@@ -173,6 +173,34 @@ const runnerStrength: Record<Venue, [Exercise[], Exercise[]]> = {
   ],
 }
 
+// ท่อนบนเพิ่มสำหรับเป้าหมายหุ่น: เวทท่อนบนแทบไม่รบกวนการวิ่ง ที่รบกวนคือเวทขา (Wilson 2012)
+// กล้ามโตต้อง ~10 เซ็ต/กล้าม/สัปดาห์ขึ้นไป (Schoenfeld 2017) ท่าหลักของ A+B ให้อก/หลังแค่ ~5–6 เซ็ต จึงเพิ่มท่าละ 2 เซ็ต ไม่แตะเวทขา
+// ใส่เฉพาะโปรแกรมแข่ง/วิ่งพื้นฐาน (มือใหม่ start/mini ยังไม่ใส่) และงดช่วง taper
+const fromLib = (name: string, sets: string, reps: string, rest: string): Exercise => {
+  const l = libEx(name)!
+  return ex(l.name, l.th, sets, reps, rest, l.cue, l.video)
+}
+const upperExtra: Record<Venue, [Exercise[], Exercise[]]> = {
+  gym: [
+    [fromLib('Incline DB Press', '2', '8–12', '90 วิ'), fromLib('Lateral Raise', '2', '12–15', '60 วิ'), fromLib('DB Curl', '2', '10–12', '60 วิ')],
+    [fromLib('Lat Pulldown', '2', '10–12', '90 วิ'), fromLib('Face Pull', '2', '12–15', '60 วิ'), fromLib('Triceps Pushdown', '2', '10–12', '60 วิ')],
+  ],
+  park: [
+    [fromLib('Australian Row', '2', '8–12', '90 วิ'), fromLib('Pike Push-up', '2', '6–10', '90 วิ')],
+    [fromLib('Diamond Push-up', '2', '8–12', '90 วิ'), fromLib('Prone Y-T-W Raise', '2', '8 / ท่า', '45 วิ')],
+  ],
+}
+
+// ลำดับในวันเวทนักวิ่ง: กระโดดก่อนตอนขายังสด (แรงเด้งลดลงเมื่อกล้ามล้า) → ท่าหลักหนัก → ท่อนบนเสริม → ท่ากันเจ็บที่เบาและล้าได้
+const PLYO = new Set(['Pogo Jumps'])
+const PREHAB = new Set(['Single-leg Calf Raise', 'Seated Calf Raise', 'Bent-knee Calf Raise', 'Isometric Calf Hold', 'Banded Lateral Walk', 'Side-lying Hip Abduction', 'Side Plank', 'Dead Bug', 'Hollow Body Hold', 'Nordic Curl', 'Single-leg Glute Bridge'])
+const ORDER: Block[] = ['plyo', 'main', 'upper', 'prehab']
+function arrange(list: Exercise[], upper: Exercise[] = []): Exercise[] {
+  const tag = (e: Exercise, b: Block): Exercise => ({ ...e, block: b })
+  const all = [...list.map(e => tag(e, PLYO.has(e.name) ? 'plyo' : PREHAB.has(e.name) ? 'prehab' : 'main')), ...upper.map(e => tag(e, 'upper'))]
+  return ORDER.flatMap(b => all.filter(e => e.block === b))
+}
+
 const calfHold = ex('Isometric Calf Hold', 'ยืนเขย่งค้าง (ฝึกเอ็นร้อยหวาย)', '3', '30–45 วิ / ข้าง', '60 วิ', 'เขย่งขาเดียวครึ่งทาง ค้างนิ่ง เตรียมเอ็นก่อนเริ่มท่ากระโดด ถือดัมเบล/เป้เพิ่มน้ำหนักได้', 'isometric calf raise hold achilles')
 const nordic = ex('Nordic Curl', 'นอร์ดิกเคิร์ล (ใช้ยางยืดช่วยพยุงก่อน)', '2', '4–6', '2 นาที', 'เกี่ยวเท้าใต้ม้านั่ง/ให้คนจับ ค่อย ๆ ล้มไปข้างหน้าช้าที่สุด ใช้มือรับ เริ่มด้วยยางยืดคล้องอกกับเสาช่วยพยุง ตะคริวให้หยุด', 'nordic hamstring curl band assisted')
 
@@ -185,7 +213,10 @@ function raceWeek(program: RunProgram, mode: Venue, week: number): Day[] {
   const w = table[Math.min(Math.max(week, 1), table.length) - 1]
   const last = !!programs[program].raceKm && week === table.length
   const taper = last || (w.note?.startsWith('Taper') ?? false)
-  const [a0, b0] = runnerStrength[mode]
+  const [r0, r1] = runnerStrength[mode]
+  const [u0, u1] = taper || last ? [[], []] : upperExtra[mode]
+  // ท่อนบนต่อท้ายท่าหลัก (ฉบับย่อยังเลือกท่าหลักก่อนตามลำดับความสำคัญ)
+  const a0 = r0, b0 = r1
   // เอ็นก่อนกระโดด (อ.เอกวิทย์): สัปดาห์ 1–3 เขย่งค้าง (isometric) ให้เอ็นรับโหลด เอ็นปรับตัวกับแรงค้างนาน ๆ (Bohm 2015)
   // แล้วค่อยกระโดดเขย่ง (pogo) ตั้งแต่สัปดาห์ 4 ท่ากระโดดช่วยความประหยัดแรงวิ่งที่ความเร็ว ≤12 กม./ชม. (Llanos-Lagos 2024, Rønnestad & Mujika 2014)
   // การค้างนิ่งไม่ช่วยความประหยัดแรงโดยตรง ใส่ไว้เพื่อเตรียมเอ็นก่อนกระโดดเท่านั้น
@@ -199,13 +230,13 @@ function raceWeek(program: RunProgram, mode: Venue, week: number): Day[] {
   const hillWeek = week % 2 === 0 && !taper && !w.note?.startsWith('สัปดาห์ลด')
 
   return [
-    { key: 'strA', day: 'จันทร์', title: 'เวท A — ทั้งตัว', type: 'strength', duration: '45 นาที', note: taper ? `ช่วง taper: ลดเหลือ 2 เซ็ต น้ำหนักเท่าเดิม` : strengthNote, exercises: lighten(a) },
+    { key: 'strA', day: 'จันทร์', title: 'เวท A — ทั้งตัว', type: 'strength', duration: taper ? '40 นาที' : '60 นาที', note: taper ? `ช่วง taper: ลดเหลือ 2 เซ็ต น้ำหนักเท่าเดิม` : strengthNote, exercises: lighten(arrange(a, u0)) },
     // วิ่งหนักห่างจากเวทขาอย่างน้อย 48 ชม. เวทขาทำให้วิ่งได้แย่ลงได้นาน 6–48 ชม. (Doma 2017)
     runDay('easyA', 'อังคาร', 'Easy run', w.easyA, 'easy', 'วิ่งเบาระดับพูดคุยได้ (โซน E)'),
     runDay('quality', 'พุธ', w.q.title, w.q.km, w.q.kind, w.q.how, undefined, w.q.guide),
     last
       ? { key: 'strB', day: 'พฤหัสบดี', title: 'พัก / เดินเบา ๆ', type: 'rest', duration: '-', note: 'สัปดาห์แข่ง งดเวท ยืดเหยียดเบา ๆ', exercises: [] }
-      : { key: 'strB', day: 'พฤหัสบดี', title: 'เวท B — ทั้งตัว', type: 'strength', duration: '45 นาที', note: taper ? 'ช่วง taper: ลดเหลือ 2 เซ็ต' : strengthNote, exercises: lighten(b) },
+      : { key: 'strB', day: 'พฤหัสบดี', title: 'เวท B — ทั้งตัว', type: 'strength', duration: taper ? '40 นาที' : '60 นาที', note: taper ? 'ช่วง taper: ลดเหลือ 2 เซ็ต' : strengthNote, exercises: lighten(arrange(b, u1)) },
     { key: 'rest', day: 'ศุกร์', title: 'พัก', type: 'rest', duration: '-', note: 'พักเต็มวัน ให้ขาสดสำหรับวิ่งเสาร์–อาทิตย์', exercises: [] },
     w.easyB > 0
       ? (hillWeek
@@ -276,11 +307,11 @@ function startWeek(mode: Venue, week: number): Day[] {
     }
   }
   return [
-    { key: 'strA', day: 'จันทร์', title: 'เวท A — ทั้งตัว', type: 'strength', duration: '35 นาที', note, exercises: light(a) },
+    { key: 'strA', day: 'จันทร์', title: 'เวท A — ทั้งตัว', type: 'strength', duration: '35 นาที', note, exercises: light(arrange(a)) },
     rw('rw1', 'อังคาร', 0),
     restDay('rest1', 'พุธ'),
     rw('rw2', 'พฤหัสบดี', 1),
-    { key: 'strB', day: 'ศุกร์', title: 'เวท B — ทั้งตัว', type: 'strength', duration: '35 นาที', note, exercises: light(b) },
+    { key: 'strB', day: 'ศุกร์', title: 'เวท B — ทั้งตัว', type: 'strength', duration: '35 นาที', note, exercises: light(arrange(b)) },
     restDay('rest2', 'เสาร์'),
     rw('rw3', 'อาทิตย์', 2),
   ]
@@ -316,13 +347,13 @@ function miniWeek(mode: Venue, week: number): Day[] {
     ? runDay(key, day, `วิ่งสลับเดิน ${km} กม.`, km, 'easy', `${ratio} จนครบระยะ (วิ่งช้าพูดเป็นประโยคได้)`, w.note, guides.runWalk(km, w.run, w.walk))
     : runDay(key, day, 'Easy run', km, 'easy', 'วิ่งเบาระดับพูดคุยได้ (โซน E)', w.note)
   return [
-    { key: 'strA', day: 'จันทร์', title: 'เวท A — ทั้งตัว', type: 'strength', duration: '35 นาที', note, exercises: light([...a, calfHold]) },
+    { key: 'strA', day: 'จันทร์', title: 'เวท A — ทั้งตัว', type: 'strength', duration: '35 นาที', note, exercises: light(arrange([...a, calfHold])) },
     easy('easyA', 'อังคาร', w.easy),
     restDay('rest1', 'พุธ'),
     last ? runDay('easyB', 'พฤหัสบดี', 'Easy run', 2.5, 'easy', 'วิ่งเบาสั้น ๆ ให้ขาตื่นตัว', w.note) : easy('easyB', 'พฤหัสบดี', w.easy),
     last
       ? { key: 'strB', day: 'ศุกร์', title: 'พัก / เดินเบา ๆ', type: 'rest', duration: '-', note: 'สัปดาห์แข่ง งดเวท', exercises: [] }
-      : { key: 'strB', day: 'ศุกร์', title: 'เวท B — ทั้งตัว', type: 'strength', duration: '35 นาที', note, exercises: light(b) },
+      : { key: 'strB', day: 'ศุกร์', title: 'เวท B — ทั้งตัว', type: 'strength', duration: '35 นาที', note, exercises: light(arrange(b)) },
     restDay('rest2', 'เสาร์'),
     last
       ? runDay('long', 'อาทิตย์', 'วันแข่ง มินิมาราธอน 10.5 กม.', w.long, 'race', 'วิ่ง 8 นาที เดิน 1 นาทีตั้งแต่ต้น ออกตัวช้ากว่าที่รู้สึกว่าไหว ดื่มน้ำทุกจุด', w.note)

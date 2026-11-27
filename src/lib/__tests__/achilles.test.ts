@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { LAST, logRehab, rehabActive, rehabDue, rehabNext, rehabToday, settle, STAGES, startRehab, type Rehab } from '../achilles'
+import { LAST, logRehab, rehabActive, rehabDue, rehabNext, rehabToday, rehabWaitFrom, settle, STAGES, startRehab, type Rehab } from '../achilles'
 import { addDays } from '../date'
 import { noteToEn } from '../../data/contentEn'
-import { REHAB_NOTE, applyRehab } from '../painPlan'
+import { REHAB_NOTE, REHAB_WAIT_NOTE, applyRehab } from '../painPlan'
 import { variants } from '../../data/programs'
 
 const pain = (d: string, areas: string[]) => ({ [d]: { sleep: 0, sore: 0, pain: true, areas } }) as Record<string, never>
@@ -16,6 +16,15 @@ function run(r: Rehab, from: string, n: number, p = 1, tests = calf('2026-11-01'
 }
 
 describe('Achilles rehab', () => {
+  it('drops jumps from the first pain day while rehab is due but not started, and counts only new pain after it ends', () => {
+    const two = { ...pain('2026-11-10', ['achilles']), ...pain('2026-11-19', ['calf']) }
+    expect(rehabWaitFrom(null, two, {}, '2026-11-26')).toBe('2026-11-10')
+    expect(rehabWaitFrom(startRehab('2026-11-20'), two, {}, '2026-11-26')).toBeNull()
+    expect(rehabWaitFrom({ ...startRehab('2026-11-01'), done: '2026-11-15' }, two, {}, '2026-11-26')).toBeNull()
+    expect(rehabWaitFrom({ ...startRehab('2026-11-01'), off: '2026-11-15' }, two, { '2026-11-25': 5 }, '2026-11-26')).toBe('2026-11-19')
+    expect(rehabDue(two, {}, '2026-11-26', '2026-11-15')).toBe(false)
+    expect(noteToEn(REHAB_WAIT_NOTE)).not.toMatch(/[฀-๿]/)
+  })
   it('is offered after 2 Achilles/calf pain days in 28 days or a morning check over 3', () => {
     expect(rehabDue(pain('2026-11-10', ['achilles']), {}, '2026-11-26')).toBe(false)
     expect(rehabDue({ ...pain('2026-11-10', ['achilles']), ...pain('2026-11-19', ['calf']) }, {}, '2026-11-26')).toBe(true)

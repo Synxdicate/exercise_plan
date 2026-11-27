@@ -15,6 +15,14 @@ describe('double progression', () => {
     expect(s).toMatchObject({ kg: 40, up: false })
   })
 
+  it('ทำได้ไม่ถึงครึ่งของช่วงล่าง → ลดน้ำหนัก หรือใช้ท่าที่ง่ายกว่า', () => {
+    expect(suggest(ex('Bench Press', '3', '8–12'), [{ kg: 40, reps: 3 }, { kg: 40, reps: 2 }])).toMatchObject({ kg: 35, up: false })
+    const pu = suggest(ex('Pull-up', '3', '5–8', { easier: 'Lat pulldown' }), [{ kg: 0, reps: 2 }, { kg: 0, reps: 1 }, { kg: 0, reps: 1 }])
+    expect(pu.text).toContain('Lat pulldown')
+    // ไม่มีท่าง่ายกว่าและ 0 กก. (อาจแค่ยังไม่ได้ใส่น้ำหนัก): ไม่เดาว่ายากเกิน
+    expect(suggest(ex('Seated Calf Raise', '2', '12–15'), [{ kg: 0, reps: 5 }]).text).not.toContain('ยากเกิน')
+  })
+
   it('ครบทุกเซ็ต → +2.5 กก. (ช่วงบน)', () => {
     const s = suggest(ex('Bench Press'), [{ kg: 40, reps: 8 }, { kg: 40, reps: 8 }, { kg: 40, reps: 9 }])
     expect(s).toMatchObject({ kg: 42.5, up: true })

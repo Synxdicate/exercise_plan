@@ -1,5 +1,5 @@
-import { applyPainGuard, applyRehab, applyReturn, legPhase, offValue, skipValue } from './painPlan'
-import type { Rehab } from './achilles'
+import { applyPainGuard, applyRehab, applyReturn, legPhase, offValue, REHAB_WAIT_NOTE, skipValue } from './painPlan'
+import { rehabWaitFrom, type Rehab } from './achilles'
 import { tendonAlarmDates, type TendonLog } from './tendon'
 import type { Readiness } from './readiness'
 import { useEffect, useMemo } from 'react'
@@ -134,7 +134,9 @@ export function useProgram() {
   const [backOff, setBackOff] = usePersisted('returnOff', '')
   // โปรแกรมคืนสภาพเอ็นร้อยหวาย: ช่วงที่ทำอยู่ งดท่ากระโดดในวันเวท (สตริงไว้เทียบในแคชแผน)
   const [rehab] = usePersisted<Rehab | null>('achillesRehab', null)
-  const rehabSpan = rehab ? `${rehab.start}|${rehab.done ?? rehab.off ?? ''}` : ''
+  // ปวดซ้ำแต่ยังไม่เริ่มโปรแกรม: งดท่ากระโดดตั้งแต่วันปวดแรก (ต่อท้ายด้วย |w)
+  const rehabWait = rehabWaitFrom(rehab, readinessLog, tendonLog, today())
+  const rehabSpan = [rehab ? `${rehab.start}|${rehab.done ?? rehab.off ?? ''}` : '', rehabWait ? `${rehabWait}||w` : ''].filter(Boolean).join(';')
   const leg = legPhase(readinessLog, today(), tendonAlarmDates(tendonLog), painOff, backOff)
   const painRaw = leg.raw
   const painUntil = leg.guard
@@ -231,7 +233,7 @@ export function useProgram() {
       const m = mondayOf(week)
       for (const [a, b] of spans(guardSpan)) d = applyPainGuard(d, m, a, b, knee)
       for (const [a, b] of spans(backSpan)) d = applyReturn(d, m, a, b)
-      if (rehabSpan) { const [a, b] = rehabSpan.split('|'); d = applyRehab(d, m, a, b || null) }
+      for (const sp of rehabSpan ? rehabSpan.split(';') : []) { const [a, b, w] = sp.split('|'); d = applyRehab(d, m, a, b || null, w ? REHAB_WAIT_NOTE : undefined) }
       return d
     }
     const guarded = (d: Day[]) => eased(safeLayer('pain', () => pain(d), () => d))
