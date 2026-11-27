@@ -433,14 +433,14 @@ function homeWeek(days: Day[]): Day[] {
     if (d.type !== 'strength') return d
     const used = new Set(d.exercises.map(e => e.name))
     const exercises = d.exercises.map(e => {
-      if (e.name === 'Cindy (AMRAP)') return { ...e, th: '5 ดึงตัวใต้โต๊ะ + 10 วิดพื้น + 15 สควอท วนให้ได้มากรอบที่สุด', cue: 'ไม่มีโต๊ะที่แข็งแรง: ใช้ Superman 5 ครั้งแทนการดึง' }
+      if (e.name === 'Cindy (AMRAP)') return { ...e, th: '5 ดึงเป้ (ข้างละ) + 10 วิดพื้น + 15 สควอท วนให้ได้มากรอบที่สุด', cue: 'ดึงเป้ใส่ขวดน้ำแขนเดียว ไม่มีเป้ใช้ Superman 5 ครั้งแทน' }
       const alts = homeAlt[e.name]
       if (!alts) return e
       const to = alts.find(a => !used.has(a)) ?? alts[alts.length - 1]
       used.add(to)
       const lib = libEx(to)!
       const timed = (r: string) => /วิ/.test(r)
-      return { ...e, name: lib.name, th: lib.th, cue: lib.cue, video: lib.video, easier: undefined, harder: undefined, reps: timed(e.reps) === timed(lib.reps) ? e.reps : lib.reps }
+      return { ...e, name: lib.name, th: lib.th, cue: lib.cue, video: lib.video, easier: undefined, harder: undefined, reps: timed(e.reps) !== timed(lib.reps) || (/ข้าง/.test(lib.reps) && !/ข้าง/.test(e.reps)) ? lib.reps : e.reps }
     })
     return { ...d, title: d.title.replace('(สวน)', '(ที่บ้าน)'), exercises }
   })
@@ -470,7 +470,7 @@ export const programLength = (id: ProgramId) => (programs[id].ongoing ? `วน�
 export const locationInfo: Record<LocationPref, { label: string; text: string; labelEn: string; textEn: string }> = {
   gym: { label: 'ยิมทุกวัน', text: 'เพิ่มน้ำหนักได้ละเอียด เห็นผลเรื่องกล้ามเร็วที่สุด โดยเฉพาะขา', labelEn: 'Gym every day', textEn: 'Fine-grained loading — fastest muscle gains, especially legs' },
   mix: { label: 'ผสม (แนะนำถ้ามีสมาชิกยิม)', text: 'วันที่มีขา/ท่าหนักไปยิม วันเวทวันสุดท้ายของสัปดาห์ไปสวน (บอดี้เวท)', labelEn: 'Mixed (best with a gym membership)', textEn: 'Leg/heavy days at the gym, the week’s last strength day at the park (bodyweight)' },
-  home: { label: 'ที่บ้าน/ในห้อง', text: 'ไม่ต้องมีอุปกรณ์ ท่าที่ต้องใช้บาร์เปลี่ยนเป็น Table Row, Chair Dips, Lying Leg Raise ขาใช้ท่าขาเดียวและจังหวะลงช้า', labelEn: 'Home / indoors', textEn: 'No equipment — bar moves become Table Row, Chair Dips, Lying Leg Raise; legs use single-leg moves and slow lowering' },
+  home: { label: 'ที่บ้าน/ในห้อง', text: 'ไม่ต้องมีอุปกรณ์ ท่าที่ต้องใช้บาร์เปลี่ยนเป็น Backpack Row (เป้ใส่ขวดน้ำ), Chair Dips, Lying Leg Raise ขาใช้ท่าขาเดียวและจังหวะลงช้า', labelEn: 'Home / indoors', textEn: 'No equipment — bar moves become Backpack Row (water-bottle backpack), Chair Dips, Lying Leg Raise; legs use single-leg moves and slow lowering' },
   park: { label: 'สวนทุกวัน', text: 'ฟรี ใกล้บ้าน ดีมากสำหรับดึงข้อ/ดิป/วิดพื้น แต่ขาเพิ่มความหนักยาก ใช้ท่าขาเดียวและจังหวะลงช้าแทน', labelEn: 'Park every day', textEn: 'Free and close by — great for pull-ups/dips/push-ups, but legs are hard to load; use single-leg moves and slow lowering' },
 }
 

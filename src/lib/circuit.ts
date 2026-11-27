@@ -23,9 +23,9 @@ export const coreCircuit: Station[] = [
  * แต่ไม่ได้ช่วยความประหยัดแรงในการวิ่งเหมือนเวทหนัก/ท่ากระโดด (Llanos-Lagos 2024) จึงเป็นทางเลือกวันที่ไม่ได้เข้ายิม ไม่ใช่ตัวแทนวันเวท
  */
 export const fullCircuit: Station[] = [
-  { name: 'Table Row', zone: 'upper', th: 'ดึงตัวใต้โต๊ะหรือราวต่ำ', en: 'Table / low-bar row',
-    how: 'นอนใต้โต๊ะที่แข็งแรงหรือราวต่ำในสวน จับขอบ ตัวตรงจากส้นเท้าถึงไหล่ ดึงอกขึ้นหาขอบ ลงช้า ๆ ไม่มีที่ให้ดึงใช้นอนคว่ำยกแขนตัว Y-T-W แทน ง่ายไป: เท้ายกสูงขึ้น หรือลงช้า 3 วิ',
-    howEn: 'Lie under a sturdy table or a low park bar, grip the edge, body straight from heels to shoulders, pull the chest up, lower slowly. Nothing to pull on: do prone Y-T-W raises. Too easy: raise the feet or take 3 s down' },
+  { name: 'Backpack Row', zone: 'upper', th: 'ดึงเป้แขนเดียว (สลับข้างครึ่งเวลา)', en: 'Backpack row (switch halfway)',
+    how: 'ใส่ขวดน้ำในเป้ มือกับเข่าข้างหนึ่งวางบนเตียงหรือเก้าอี้ หลังตรง ดึงศอกไปทางสะโพกจนเป้ชิดเอว ลงช้า ๆ ครึ่งเวลาสลับข้าง ไม่มีเป้ใช้นอนคว่ำยกแขนตัว Y-T-W แทน ง่ายไป: ใส่ขวดเพิ่ม หรือค้างบนสุด 2 วิ',
+    howEn: 'Water bottles in a backpack, one hand and knee on a bed or chair, back flat, pull the elbow to the hip until the pack touches the waist, lower slowly; switch halfway. No backpack: prone Y-T-W raises. Too easy: add bottles or hold 2 s at the top' },
   { name: 'Dead Bug', zone: 'core', th: 'นอนหงายยืดแขนขาสลับ', en: 'Dead bug',
     how: 'นอนหงาย ยกแขนตรงชี้เพดาน เข่างอ 90 องศา ยืดแขนกับขาฝั่งตรงข้ามลงช้า ๆ สลับข้าง หลังล่างแนบพื้นตลอด หายใจออกตอนยืด ง่ายไป: ยืดค้าง 2 วิ',
     howEn: 'On your back, arms to the ceiling, knees at 90°; slowly lower the opposite arm and leg, alternate — low back stays on the floor, breathe out as you reach. Too easy: hold the reach 2 s' },

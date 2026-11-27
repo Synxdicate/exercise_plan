@@ -51,7 +51,7 @@ describe('full-body circuit', () => {
     const { fullCircuit } = await import('../circuit')
     const names = fullCircuit.map(s => s.name)
     // ดึง ดัน / ขาเดียว สะโพก-ต้นขาหลัง น่อง (น่องรับแรงตอนวิ่งมากที่สุด Dorn 2012)
-    for (const n of ['Table Row', 'Push-up', 'Reverse Lunge', 'Single-leg Glute Bridge', 'Single-leg Calf Raise']) expect(names).toContain(n)
+    for (const n of ['Backpack Row', 'Push-up', 'Reverse Lunge', 'Single-leg Glute Bridge', 'Single-leg Calf Raise']) expect(names).toContain(n)
     // ท่าที่แทบไม่มีแรงต้านไม่นับเป็นท่าสร้างแรง
     expect(names).not.toContain('Running Arm Swing')
     for (const s of fullCircuit) {

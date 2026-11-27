@@ -88,6 +88,7 @@ export const library: Record<Pattern, LibEx[]> = {
     x('Pike Push-up', 'วิดพื้นสะโพกสูง', 'ศีรษะลงหน้ามือ เป็นสามเหลี่ยม', 'pike push up tutorial', '6–10', 'both'),
   ],
   hpull: [
+    x('Backpack Row', 'ดึงเป้แขนเดียว', 'ใส่ขวดน้ำในเป้ให้หนักพอทำได้ 10–15 ครั้ง มือกับเข่าข้างหนึ่งวางบนเตียงหรือเก้าอี้ หลังตรง ดึงศอกไปทางสะโพก ลงช้า', 'backpack row at home', '10–15 / ข้าง', 'both', m(['lats', 'upperBack'], ['biceps', 'rearDelts'])),
     x('Table Row', 'ดึงตัวใต้โต๊ะ', 'ใช้โต๊ะที่แข็งแรงไม่ล้ม จับขอบโต๊ะ ตัวตรง ดึงอกขึ้นหาขอบ ไม่มีโต๊ะเหมาะใช้ Superman แทน', 'table inverted row at home', '8–12', 'both', m(['upperBack', 'lats'], ['biceps', 'rearDelts'])),
     x('Seated Cable Row', 'ดึงเคเบิลนั่ง', 'ดึงศอกไปหลัง อกยืด', 'seated cable row proper form', '8–12', 'gym'),
     x('One-arm DB Row', 'ดึงดัมเบลแขนเดียว', 'มือ-เข่าพาดม้านั่ง ดึงศอกไปทางสะโพก', 'one arm dumbbell row form', '8–12 / ข้าง', 'gym', m(['lats', 'upperBack'], ['biceps', 'rearDelts'])),
@@ -185,10 +186,10 @@ export function alternatives(name: string, where: 'gym' | 'park' | 'home') {
 
 /** ท่าที่ต้องใช้บาร์ (สวน/ยิม) → ท่าแทนที่ทำในห้องได้ ตามลำดับ (เลือกตัวแรกที่ยังไม่ซ้ำในวันนั้น) */
 export const homeAlt: Record<string, string[]> = {
-  'Pull-up': ['Table Row', 'Superman'],
-  'Chin-up': ['Table Row', 'Superman'],
-  'Negative Pull-up': ['Table Row', 'Superman'],
-  'Australian Row': ['Table Row', 'Superman'],
+  'Pull-up': ['Backpack Row', 'Superman'],
+  'Chin-up': ['Backpack Row', 'Superman'],
+  'Negative Pull-up': ['Backpack Row', 'Superman'],
+  'Australian Row': ['Backpack Row', 'Superman'],
   'Dips': ['Chair Dips', 'Diamond Push-up'],
   'Straight Bar Dip': ['Chair Dips', 'Diamond Push-up'],
   'Hanging Knee/Leg Raise': ['Lying Leg Raise', 'Hollow Body Hold'],

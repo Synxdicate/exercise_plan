@@ -48,7 +48,7 @@ const realistic = {
   program: 'mini', programStart: '2026-11-02', raceDate: '2027-01-10', mode: 'mix', raceHills: true, raceKm: 11.55, raceCutoff: 120, soloMode: true,
   dayLocation: { 'mini-w1-d1': 'home', 'mini-w1-d4': 'park', 'mini-w2-d4': 'home', 'mini-w5-d0': 'home' },
   dayMoves: { '2026-11-02': [[1, 0]], '2026-11-16': [[4, 3], [0, 6]] },
-  exerciseSwaps: { 'Table Row': 'Australian Row', 'Hollow Body Hold': 'Ab Wheel Rollout', 'Seated Cable Row': 'Australian Row' },
+  exerciseSwaps: { 'Backpack Row': 'Australian Row', 'Hollow Body Hold': 'Ab Wheel Rollout', 'Seated Cable Row': 'Australian Row' },
   done: { 'mini-w1-d0': true, 'mini-w2-d4': false },
 }
 for (const at of ['2026-11-06', '2026-11-18', '2027-01-08', '2027-01-10T06:00', '2027-01-15']) test(`smoke realistic settings @ ${at}`, async ({ page }) => {

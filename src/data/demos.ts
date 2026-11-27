@@ -5,6 +5,7 @@ const demos: Record<string, string> = {
   'Archer / Decline Push-up': 'Decline_Push-Up',
   'Australian Row': 'Inverted_Row',
   'Table Row': 'Inverted_Row',
+  'Backpack Row': 'One-Arm_Dumbbell_Row',
   'Chair Dips': 'Bench_Dips',
   'Lying Leg Raise': 'Flat_Bench_Lying_Leg_Raise',
   'Superman': 'Superman',

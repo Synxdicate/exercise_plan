@@ -430,7 +430,7 @@ test('เซอร์กิตทั้งตัว: เลือกแบบท
   await expect(page.getByRole('button', { name: /^3 รอบ/ })).toBeVisible()
   await page.getByRole('button', { name: /^1 รอบ/ }).click()
   await page.getByRole('button', { name: 'เริ่มเซอร์กิต' }).click()
-  await expect(page.getByText('ดึงตัวใต้โต๊ะหรือราวต่ำ').first()).toBeVisible()
+  await expect(page.getByText('ดึงเป้แขนเดียว (สลับข้างครึ่งเวลา)').first()).toBeVisible()
   for (let i = 0; i < 17; i++) await page.getByRole('button', { name: 'ข้าม', exact: true }).click()
   await expect(page.getByText('จบเซอร์กิตแล้ว')).toBeVisible()
   await page.getByRole('button', { name: 'บันทึก', exact: true }).last().click()
@@ -562,7 +562,7 @@ test('พาฝึก: ปุ่มหลักทำเซ็ตเสร็จ
   await page.clock.install({ time: new Date('2026-11-02T08:00:00+07:00') })
   await seed(page, { program: 'mini', programStart: '2026-11-02', dayLocation: { 'mini-w1-d0': 'home' }, voiceCues: false })
   await nav(page, 'ฝึก')
-  await expect(page.getByText('Table Row').first()).toBeVisible() // ที่บ้าน: ดึงข้อ → Table Row
+  await expect(page.getByText('Backpack Row').first()).toBeVisible() // ที่บ้าน: ดึงข้อ → Backpack Row
   await page.getByRole('button', { name: 'เริ่มฝึก', exact: true }).click()
   await page.getByRole('button', { name: 'เริ่มเลย' }).click()
   await page.getByRole('button', { name: /เสร็จเซ็ต 1\/2/ }).click()
