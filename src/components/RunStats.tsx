@@ -132,7 +132,8 @@ export function PaceCard({ est, runs, onTrial }: { est: Estimate | null; runs: R
 function TrendLine({ points, goal }: { points: { date: string; v: number | null }[]; goal?: number }) {
   const tr = useT()
   const pts = points.filter((p): p is { date: string; v: number } => p.v !== null)
-  if (pts.length < 2) return null
+  // ต้องมีอย่างน้อย 3 สัปดาห์ เส้นเดียวสั้น ๆ ที่ขอบขวาดูเหมือนกราฟเสีย
+  if (pts.length < 3) return null
   const W = 320, H = 70, pad = 6
   const vs = pts.map(p => p.v)
   const lo = Math.min(...vs, goal ?? Infinity), hi = Math.max(...vs, goal ?? -Infinity)

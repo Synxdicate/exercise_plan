@@ -1,4 +1,5 @@
 import { paceTicks } from '../lib/paceTicks'
+import { niceTicks } from '../lib/weekly'
 import { useState } from 'react'
 import type { LoadDay } from '../lib/analysis'
 import { formatPace } from '../lib/log'
@@ -108,7 +109,14 @@ export function FitnessChart({ days }: { days: LoadDay[] }) {
       <svg viewBox={`0 0 ${W} ${H}`} className="block w-full touch-none" role="img" aria-label={tr('กราฟความฟิต ความล้า และฟอร์ม', 'Fitness, fatigue and form chart')}
         onPointerMove={onMove} onPointerDown={onMove} onPointerLeave={() => setHover(null)}>
         <line x1={padL} x2={W} y1={top} y2={top} className="stroke-line" />
-        <text x={padL - 4} y={y(max / 1.1) + 3} textAnchor="end" className="fill-muted text-[10px]">{Math.round(max / 1.1)}</text>
+        {/* เส้นแกนตัวเลขกลม (0, 20, 40 …) แทนตัวเลขเดียวลอย ๆ */}
+        {niceTicks(max / 1.1, 2).filter(v => v > 0 && v <= max).map(v => (
+          <g key={v}>
+            <line x1={padL} x2={W} y1={y(v)} y2={y(v)} className="stroke-line" strokeDasharray="2 4" />
+            <text x={padL - 4} y={y(v) + 3} textAnchor="end" className="fill-muted text-[10px]">{v}</text>
+          </g>
+        ))}
+        <text x={padL - 4} y={top + 3} textAnchor="end" className="fill-muted text-[10px]">0</text>
         <line x1={padL} x2={W} y1={fy0} y2={fy0} className="stroke-line" />
         {days.map((d, i) => {
           const hgt = (Math.abs(d.form) / fMax) * (formH / 2)
