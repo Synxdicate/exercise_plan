@@ -10,7 +10,7 @@ A personal, Thai-language workout + nutrition planner (Vite + React 19 + TypeScr
 
 Env: `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` in `.env.local` (see `.env.example`) and in Vercel project env vars. `src/lib/supabase.ts` throws at startup if missing.
 
-The owner: male, 20 y/o, 165 cm, 64.5 kg, currently jogs 2.5–5 km 2–3×/week, lives in Thailand, goal is a lean athletic physique (no celebrity names in the app — removed in v2.77.2), trains at a gym or a public park. These are the defaults in `src/lib/calc.ts`.
+The owner: male, 20 y/o, 165 cm, 64.5 kg, currently jogs 2.5–5 km 2–3×/week, lives in Thailand, goal is a lean athletic physique (no celebrity names in the app — removed in v2.77.2), trains at a gym or a public park. These are the defaults in `src/lib/calc.ts`. Since v2.88.0 friends use the app too: onboarding starts body fields blank for a new user (the storage cache holds `defaultProfile` itself, so "new" = `readStored('profile')` missing or `=== defaultProfile`), `Profile.sex` (missing = male) switches Mifflin's +5/−161, `AboutSheet` (account menu + login footer) states the health disclaimer, what is stored, who can access it and the outside services, and "delete my data" (`deleteServerData` in `src/lib/account.ts`: photos folder + all `user_data` rows, after `stopSync(true)`, then sign-out; local mode just `clearSyncedData()`). `DESIGN.md` is the design contract (tokens, type, components, don'ts) — keep it in sync with `index.css`/`ui.tsx`; OpenDesign (installed outside the repo at `~/tools/open-design`, MCP server `open-design` for Claude Code, daemon `~/tools/bin/opendesign --no-open`) reads it for mockups.
 
 ## Commands
 

@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react'
 import { LogoMark } from './Logo'
 import { locationInfo, programs, type LocationPref, type ProgramId } from '../data/programs'
-import { activityLevels, defaultProfile, goals, targets, type Profile } from '../lib/calc'
+import { activityLevels, defaultProfile, goals, sexes, targets, type Profile } from '../lib/calc'
 import { useProgram } from '../lib/program'
-import { usePersisted } from '../lib/storage'
+import { readStored, usePersisted } from '../lib/storage'
 import { cx } from '../lib/cx'
 import { Button, Stat } from './ui'
 import { ScreeningForm } from './Screening'
@@ -30,7 +30,13 @@ export function Onboarding({ onDone, onExit }: { onDone: () => void; onExit?: ()
   const [profile, setProfile] = usePersisted<Profile>('profile', defaultProfile)
   const [step, setStep] = useState(0)
   const [saved, setSaved] = useScreening()
-  const [draft, setDraft] = useState(profile)
+  // ผู้ใช้ใหม่ (ยังไม่เคยบันทึกข้อมูลร่างกาย): ช่องว่างให้กรอกเอง ไม่เติมค่าตั้งต้นให้เหมือนเป็นข้อมูลของคนอื่น
+  const [draft, setDraft] = useState<Profile>(() => {
+    // แคชเก็บค่าตั้งต้น (defaultProfile ตัวเดียวกัน) ไว้ด้วย จึงเทียบด้วยตัวอ้างอิง
+    const stored = readStored('profile')
+    return stored && stored !== defaultProfile ? profile : { ...profile, age: 0, heightCm: 0, weightKg: 0 }
+  })
+  const bodyOk = draft.age >= 13 && draft.age <= 100 && draft.heightCm >= 120 && draft.heightCm <= 230 && draft.weightKg >= 30 && draft.weightKg <= 250
   const [program, setProgram] = useState<ProgramId>(p.program)
   const [where, setWhere] = useState<LocationPref>(p.location)
   const [raceDate, setRaceDate] = useState(p.raceDate)
@@ -88,10 +94,12 @@ export function Onboarding({ onDone, onExit }: { onDone: () => void; onExit?: ()
           <>
             <p className="text-sm text-muted">{tr('ใช้คำนวณแคลอรี่และโปรตีนที่ควรกินต่อวัน', 'Used to work out your daily calories and protein')}</p>
             <div className="grid grid-cols-3 gap-2.5">
-              <NumberInput label={tr('อายุ', 'Age')} unit={tr('ปี', 'y')} value={draft.age} onChange={v => set('age', +v)} />
-              <NumberInput label={tr('ส่วนสูง', 'Height')} unit={tr('ซม.', 'cm')} value={draft.heightCm} onChange={v => set('heightCm', +v)} />
-              <NumberInput label={tr('น้ำหนัก', 'Weight')} unit={tr('กก.', 'kg')} step={0.1} value={draft.weightKg} onChange={v => set('weightKg', +v)} />
+              <NumberInput label={tr('อายุ', 'Age')} unit={tr('ปี', 'y')} value={draft.age || ''} onChange={v => set('age', +v)} />
+              <NumberInput label={tr('ส่วนสูง', 'Height')} unit={tr('ซม.', 'cm')} value={draft.heightCm || ''} onChange={v => set('heightCm', +v)} />
+              <NumberInput label={tr('น้ำหนัก', 'Weight')} unit={tr('กก.', 'kg')} step={0.1} value={draft.weightKg || ''} onChange={v => set('weightKg', +v)} />
             </div>
+            <SelectInput label={tr('เพศ (ใช้คำนวณพลังงาน)', 'Sex (for the energy estimate)')} value={draft.sex ?? 'male'} onChange={v => set('sex', v)}
+              options={sexes.map(x => ({ value: x.value, label: en ? x.labelEn : x.label }))} />
             <SelectInput label={tr('อยากให้รูปร่างเปลี่ยนแบบไหน', 'Body goal')} value={draft.goal} onChange={v => set('goal', v)}
               options={Object.entries(goals).map(([k, g]) => ({ value: k as Profile['goal'], label: en ? g.labelEn : g.label }))} />
             <SelectInput label={tr('ออกกำลังกายกี่วันต่อสัปดาห์', 'Training days per week')} value={draft.activity} onChange={v => set('activity', v)}
@@ -139,7 +147,7 @@ export function Onboarding({ onDone, onExit }: { onDone: () => void; onExit?: ()
       <div className="flex gap-2">
         {(step > 0 || onExit) && <Button variant="soft" size="lg" onClick={back}><ArrowLeft size={18} /><span className="sr-only">{step > 0 ? tr('ย้อนกลับ', 'Back') : tr('กลับไปหน้าเข้าสู่ระบบ', 'Back to sign-in')}</span></Button>}
         {step < STEPS.length - 1
-          ? <Button size="lg" className="flex-1" onClick={() => setStep(s => s + 1)}>{tr('ถัดไป', 'Next')} <ArrowRight size={18} /></Button>
+          ? <Button size="lg" className="flex-1" disabled={step === 1 && !bodyOk} onClick={() => setStep(s => s + 1)}>{tr('ถัดไป', 'Next')} <ArrowRight size={18} /></Button>
           : <Button size="lg" variant="success" className="flex-1" onClick={finish}><Check size={18} /> {tr('เริ่มใช้งาน', 'Get started')}</Button>}
       </div>
     </div>

@@ -4,6 +4,8 @@ import { bmr, defaultProfile, targets, tdee } from '../calc'
 describe('calc', () => {
   it('Mifflin-St Jeor สำหรับชาย 20 ปี 165 ซม. 64.5 กก.', () => {
     expect(bmr(defaultProfile)).toBeCloseTo(1581.25)
+    // หญิง −161 แทน +5 (Mifflin 1990)
+    expect(bmr({ ...defaultProfile, sex: 'female' })).toBeCloseTo(1581.25 - 166)
   })
 
   it('โปรแกรมหุ่น (recomp) กินขาดเล็กน้อย', () => {

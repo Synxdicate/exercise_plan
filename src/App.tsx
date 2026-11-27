@@ -1,6 +1,6 @@
 import { lazy, memo, Suspense, useDeferredValue, useEffect, useState, useSyncExternalStore } from 'react'
 import type { Session } from '@supabase/supabase-js'
-import { Bell, BookOpen, Bug, History, Languages, Cloud, CloudOff, Download, Dumbbell, Footprints, House, LogIn, LogOut, Monitor, Moon, RefreshCw, SlidersHorizontal, Smartphone, Sun, TrendingUp, Upload, Utensils } from 'lucide-react'
+import { Bell, BookOpen, Bug, Info, History, Languages, Cloud, CloudOff, Download, Dumbbell, Footprints, House, LogIn, LogOut, Monitor, Moon, RefreshCw, SlidersHorizontal, Smartphone, Sun, TrendingUp, Upload, Utensils } from 'lucide-react'
 import { LogoMark } from './components/Logo'
 import { NavIcon, type NavIconName } from './components/NavIcons'
 
@@ -24,6 +24,8 @@ import { clearSyncedData, getSyncStatus, stopSync, subscribeSyncStatus } from '.
 import { restoreBackup, saveBackup } from './lib/backup'
 import type { ErrorEntry } from './lib/errors'
 import { ErrorLogSheet } from './components/ErrorLogSheet'
+import { AboutSheet } from './components/AboutSheet'
+import { deleteServerData } from './lib/account'
 import { SnapshotSheet } from './components/SnapshotSheet'
 import { takeSnapshot } from './lib/snapshots'
 import { useToday } from './lib/useToday'
@@ -172,6 +174,7 @@ function UserMenu({ session, onSources }: { session: Session | null; onSources: 
   const [busy, setBusy] = useState(false)
   const [programOpen, setProgramOpen] = useState(false)
   const [errorsOpen, setErrorsOpen] = useState(false)
+  const [aboutOpen, setAboutOpen] = useState(false)
   const [snapsOpen, setSnapsOpen] = useState(false)
   const [errors] = usePersisted<ErrorEntry[]>('errorLog', [])
   const errorCount = errors.length
@@ -200,6 +203,29 @@ function UserMenu({ session, onSources }: { session: Session | null; onSources: 
       setTimeout(clearSyncedData, 0)
     }
     setBusy(false)
+  }
+
+  // ลบข้อมูลของฉัน: ล็อกอิน = หยุดซิงก์ (ทิ้งของที่ค้างส่ง) → ลบบน server → ออกจากระบบ → ล้างในเครื่อง / ไม่ล็อกอิน = ล้างในเครื่อง
+  const deleteAll = async () => {
+    if (!(await ask(session
+      ? t('ข้อมูลทั้งหมดของบัญชีนี้บน server และในเครื่องนี้จะถูกลบถาวร', 'All of this account’s data on the server and on this device will be permanently deleted.')
+      : t('ข้อมูลทั้งหมดในเครื่องนี้จะถูกลบถาวร', 'All data on this device will be permanently deleted.'),
+    { title: t('ลบข้อมูลทั้งหมด?', 'Delete all data?'), ok: t('ลบถาวร', 'Delete'), danger: true }))) return
+    try {
+      if (session) {
+        await stopSync(true)
+        await deleteServerData(session.user.id)
+      }
+      await idb.clear('blobs').catch(() => {})
+      setAboutOpen(false)
+      if (session) {
+        const { error } = await supabase.auth.signOut()
+        if (error) await supabase.auth.signOut({ scope: 'local' })
+        setTimeout(clearSyncedData, 0)
+      } else clearSyncedData() // onboarded หายไป แอปกลับไปหน้าตั้งค่าครั้งแรกเอง
+    } catch (e) {
+      notify(t('ลบไม่สำเร็จ ลองใหม่เมื่อออนไลน์', 'Couldn’t delete; try again when online') + (e instanceof Error ? ` (${e.message})` : ''), 'bad')
+    }
   }
 
   const download = async () => {
@@ -288,8 +314,11 @@ function UserMenu({ session, onSources }: { session: Session | null; onSources: 
             <button onClick={() => { setOpen(false); onSources() }} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left hover:bg-raised">
               <BookOpen size={16} /> {t('ความรู้และแหล่งข้อมูล', 'Knowledge & sources')}
             </button>
+            <button onClick={() => { setOpen(false); setAboutOpen(true) }} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left hover:bg-raised">
+              <Info size={16} /> {t('เกี่ยวกับและความเป็นส่วนตัว', 'About & privacy')}
+            </button>
             <button onClick={() => { setOpen(false); setErrorsOpen(true) }} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left hover:bg-raised">
-              <Bug size={16} /> {t('ปัญหาที่พบ', 'Error log')}{errorCount ? ` (${errorCount})` : ''}
+              <Bug size={16} /> {t('รายงานข้อผิดพลาด', 'Error reports')}{errorCount ? ` (${errorCount})` : ''}
             </button>
             <button onClick={download} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left hover:bg-raised">
               <Download size={16} /> {t('สำรองข้อมูล (ไฟล์ JSON)', 'Back up (JSON file)')}
@@ -316,6 +345,7 @@ function UserMenu({ session, onSources }: { session: Session | null; onSources: 
       )}
       {programOpen && <ProgramSheet onClose={() => setProgramOpen(false)} />}
       {errorsOpen && <ErrorLogSheet onClose={() => setErrorsOpen(false)} />}
+      {aboutOpen && <AboutSheet onClose={() => setAboutOpen(false)} onDelete={deleteAll} signedIn={!!session} />}
       {snapsOpen && <SnapshotSheet onClose={() => setSnapsOpen(false)} />}
     </div>
   )

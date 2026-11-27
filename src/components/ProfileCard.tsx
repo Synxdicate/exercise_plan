@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ChevronDown } from 'lucide-react'
-import { activityLevels, bmi, bmr, goals, tdee, type Profile } from '../lib/calc'
+import { activityLevels, bmi, bmr, goals, sexes, tdee, type Profile } from '../lib/calc'
 import { cx } from '../lib/cx'
 import { Card, Stat } from './ui'
 import { useLang, useT } from '../lib/i18n'
@@ -22,6 +22,8 @@ export function ProfileCard({ profile, setProfile }: { profile: Profile; setProf
           <NumberInput label={tr('อายุ', 'Age')} unit={tr('ปี', 'y')} value={profile.age} onChange={v => set('age', +v)} />
           <NumberInput label={tr('ส่วนสูง', 'Height')} unit={tr('ซม.', 'cm')} value={profile.heightCm} onChange={v => set('heightCm', +v)} />
           <NumberInput label={tr('น้ำหนัก', 'Weight')} unit={tr('กก.', 'kg')} step={0.1} value={profile.weightKg} onChange={v => set('weightKg', +v)} />
+          <SelectInput label={tr('เพศ', 'Sex')} className="col-span-3" value={profile.sex ?? 'male'} onChange={v => set('sex', v)}
+            options={sexes.map(x => ({ value: x.value, label: en ? x.labelEn : x.label }))} />
           <SelectInput label={tr('กิจกรรม', 'Activity')} className="col-span-3" value={profile.activity} onChange={v => set('activity', v)}
             options={activityLevels.map(a => ({ value: a.value, label: en ? a.labelEn : a.label }))} />
           <SelectInput label={tr('เป้าหมาย', 'Goal')} className="col-span-3" value={profile.goal} onChange={v => set('goal', v)}

@@ -4,6 +4,8 @@ export type Profile = {
   weightKg: number
   activity: number
   goal: 'cut' | 'recomp' | 'lean-bulk'
+  /** ไม่มี = ชาย (ข้อมูลก่อน v2.88.0) */
+  sex?: 'male' | 'female'
 }
 
 export const defaultProfile: Profile = {
@@ -21,16 +23,21 @@ export const activityLevels = [
   { value: 1.725, label: 'ออกกำลังกายหนัก 6–7 วัน/สัปดาห์', labelEn: 'Hard exercise 6–7 days/week' },
 ]
 
+export const sexes = [
+  { value: 'male' as const, label: 'ชาย', labelEn: 'Male' },
+  { value: 'female' as const, label: 'หญิง', labelEn: 'Female' },
+]
+
 export const goals = {
-  cut: { label: 'ลดไขมันให้เห็นซิกแพค', labelEn: 'Cut (visible abs)', delta: -400 },
+  cut: { label: 'ลดไขมัน', labelEn: 'Cut (lose fat)', delta: -400 },
   recomp: { label: 'Recomp (ลดไขมัน + เพิ่มกล้ามช้า ๆ)', labelEn: 'Recomp (lose fat + slowly gain muscle)', delta: -250 },
   'lean-bulk': { label: 'เพิ่มกล้าม (Lean bulk)', labelEn: 'Lean bulk (gain muscle)', delta: 250 },
 } as const
 
 export const bmi = (p: Profile) => p.weightKg / (p.heightCm / 100) ** 2
 
-// Mifflin-St Jeor (ผู้ชาย)
-export const bmr = (p: Profile) => 10 * p.weightKg + 6.25 * p.heightCm - 5 * p.age + 5
+// Mifflin-St Jeor: ชาย +5 หญิง −161 (Mifflin 1990)
+export const bmr = (p: Profile) => 10 * p.weightKg + 6.25 * p.heightCm - 5 * p.age + (p.sex === 'female' ? -161 : 5)
 
 export const tdee = (p: Profile) => bmr(p) * p.activity
 

@@ -8,6 +8,7 @@ import { setLocalMode } from '../lib/localMode'
 import { TextInput } from './Form'
 import { useLang, useT, type Lang } from '../lib/i18n'
 import { cx } from '../lib/cx'
+import { AboutSheet } from './AboutSheet'
 
 type Mode = 'signin' | 'signup' | 'reset'
 
@@ -27,6 +28,7 @@ export function Login() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
+  const [about, setAbout] = useState(false)
   const t = useT()
 
   const run = async (fn: () => Promise<{ error: { message: string } | null }>, ok?: string) => {
@@ -57,6 +59,7 @@ export function Login() {
       <div className="w-full max-w-sm rounded-3xl bg-card p-6 shadow-sm ring-1 ring-line flex flex-col gap-3 text-center">
         <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-accent-fill text-white"><LogoMark size={34} /></div>
         <h1 className="text-2xl font-extrabold text-accent">Kao</h1>
+        <p className="-mt-2 text-sm font-semibold">{t('แผนวิ่งและเวทเทรนนิ่งอิงงานวิจัย', 'Evidence-based running and strength plans')}</p>
         <p className="text-sm text-muted">{t('เข้าสู่ระบบเพื่อบันทึกการฝึกและซิงก์ข้ามมือถือ/คอม', 'Sign in to log your training and sync across phone/computer')}</p>
 
         {mode !== 'reset' && (
@@ -99,6 +102,11 @@ export function Login() {
         <span className="flex items-center gap-2 font-semibold"><Smartphone size={16} /> {t('ใช้แบบไม่ล็อกอิน', 'Use without signing in')}</span>
         <span className="text-xs text-muted">{t('เก็บข้อมูลในเครื่อง ล็อกอินทีหลังได้', 'Data stays on this device; you can sign in later')}</span>
       </button>
+      <p className="max-w-sm text-center text-xs text-muted">
+        {t('การใช้งานแอปถือว่ารับทราบ', 'By using the app you acknowledge the')}{' '}
+        <button onClick={() => setAbout(true)} className="font-semibold text-run underline">{t('ข้อจำกัดด้านสุขภาพและนโยบายความเป็นส่วนตัว', 'health disclaimer and privacy policy')}</button>
+      </p>
+      {about && <AboutSheet onClose={() => setAbout(false)} />}
     </div>
   )
 }
