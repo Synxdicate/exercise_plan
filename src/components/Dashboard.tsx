@@ -34,7 +34,7 @@ import { HeatCard } from './Heat'
 import { MonthGoalCard } from './Goals'
 import { WeekSummary } from './WeekSummary'
 import { ReadinessSheet } from './Readiness'
-import { Button, Card, SectionLabel } from './ui'
+import { Button, Card, CardGroup, SectionLabel } from './ui'
 import { cx } from '../lib/cx'
 import { useCountUp } from '../lib/useCountUp'
 import { useT } from '../lib/i18n'
@@ -86,7 +86,7 @@ export function Dashboard() {
     <>
       {/* ลำดับ: ความปลอดภัย → สัปดาห์นี้ → วันนี้ต้องทำอะไร → คำแนะนำอื่น ๆ (เปิดแอปแล้วเห็นสิ่งที่ต้องทำโดยไม่ต้องเลื่อน) */}
       <Alerts />
-      <section className="rounded-2xl bg-accent-fill p-4 text-white shadow-sm">
+      <section className="rounded-2xl bg-hero p-4 text-white shadow-sm ring-1 ring-white/5">
         <div className="flex items-center justify-between">
           <div>
             <div className="text-sm">{dt.program(p.program).short} · {p.ongoing ? t(`สัปดาห์ที่ ${week} ของรอบ`, `Cycle week ${week}`)
@@ -103,11 +103,11 @@ export function Dashboard() {
           <div className="flex flex-col items-end gap-1">
             {/* streak นับสัปดาห์ที่ฝึก ≥3 ครั้ง ยังเป็น 0 ไม่ต้องแสดง เพราะวงด้านล่างบอกความคืบหน้าสัปดาห์นี้อยู่แล้ว */}
             {streak > 0 && (
-              <div className="flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm font-semibold">
+              <div className="flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-sm font-semibold">
                 <Flame size={16} /> {t(`ต่อเนื่อง ${streak} สัปดาห์`, `${streak}-week streak`)}
               </div>
             )}
-            {form && <button onClick={() => nav('progress')} className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">{t('ฟอร์ม', 'Form')}: {t(form.label, form.labelEn)}</button>}
+            {form && <button onClick={() => nav('progress')} className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold">{t('ฟอร์ม', 'Form')}: {t(form.label, form.labelEn)}</button>}
           </div>
         </div>
         <div className="mt-3 grid grid-cols-3 gap-2">
@@ -183,9 +183,10 @@ export function Dashboard() {
 
       <MonthGoalCard />
 
-      <WeekSummary />
-
-      <SetupGapsCard />
+      <CardGroup>
+        <WeekSummary />
+        <SetupGapsCard />
+      </CardGroup>
 
     </>
   )
@@ -200,10 +201,10 @@ function Ring({ value, max, label, text }: { value: number; max: number; label: 
   const lead = text.match(/^[\d.]+/)?.[0]
   const counted = lead ? text.replace(lead, up.toFixed(lead.split('.')[1]?.length ?? 0)) : text
   return (
-    <div className="flex flex-col items-center gap-1 rounded-xl bg-black/15 p-2.5 text-center">
+    <div className="flex flex-col items-center gap-1 rounded-xl bg-white/[.07] p-2.5 text-center">
       <svg viewBox="0 0 72 72" className="size-11 shrink-0" aria-hidden>
-        <circle cx="36" cy="36" r={r} fill="none" stroke="rgb(255 255 255 / .25)" strokeWidth="8" />
-        {pct > 0 && <circle cx="36" cy="36" r={r} fill="none" stroke="white" strokeWidth="8" strokeLinecap="round"
+        <circle cx="36" cy="36" r={r} fill="none" stroke="rgb(255 255 255 / .14)" strokeWidth="8" />
+        {pct > 0 && <circle cx="36" cy="36" r={r} fill="none" stroke="var(--c-hero-accent)" strokeWidth="8" strokeLinecap="round"
           strokeDasharray={`${c * pct} ${c}`} transform="rotate(-90 36 36)" className="animate-ring" />}
       </svg>
       <div>

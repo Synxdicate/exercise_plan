@@ -6,6 +6,7 @@ import type { Run } from '../lib/log'
 import { useT } from '../lib/i18n'
 import { cx } from '../lib/cx'
 import { Button, Collapse, Segmented } from './ui'
+import { CARD, useInGroup } from '../lib/cardGroup'
 import { CircuitPlayer } from './CircuitPlayer'
 import { ExerciseDemo } from './ExerciseDemo'
 
@@ -15,6 +16,7 @@ const QUALITY: Run['kind'][] = ['tempo', 'interval', 'race']
 /** ดริลล์ก่อนวิ่ง: เลือกชุดตามประเภทการวิ่งที่เลือก แล้วเล่นทีละท่าพร้อมเสียงนำ */
 export function DrillsCard({ kind }: { kind: Run['kind'] }) {
   const t = useT()
+  const inGroup = useInGroup()
   const suggested = QUALITY.includes(kind) ? 'quality' : 'easy'
   const [picked, setPicked] = useState<'easy' | 'quality' | null>(null)
   const set = picked ?? suggested
@@ -24,7 +26,7 @@ export function DrillsCard({ kind }: { kind: Run['kind'] }) {
   const list = set === 'quality' ? qualityDrills : easyDrills
   const min = (s: keyof typeof SETS) => Math.round(circuitTotal(SETS[s]) / 60)
   return (
-    <section className="rounded-2xl bg-card p-3.5 shadow-sm ring-1 ring-line">
+    <section className={cx(!inGroup && CARD, 'p-3.5')}>
       <button onClick={() => setOpen(!open)} aria-expanded={open} className="flex w-full items-center gap-3 text-left active:scale-100">
         <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-run/10 text-run"><Zap size={20} /></span>
         <span className="min-w-0 flex-1">

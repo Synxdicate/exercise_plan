@@ -25,6 +25,10 @@
   --c-bad-fill: #dc2626;
   --c-body: #e3e6eb;
   --c-body-line: #cdd2da;
+  /* การ์ดหัวหน้า (สรุปสัปดาห์/เริ่มวิ่ง): พื้นเข้มทั้งสองโหมด สีแบรนด์ใช้เป็นเส้น/ตัวเน้นบนพื้นนี้ */
+  --c-hero: #111827;
+  --c-hero-accent: #fb3b64;
+  --c-hero-run: #60a5fa;
   color-scheme: light;
 }
 
@@ -49,6 +53,7 @@
     --c-bad-fill: #dc2626;
     --c-body: #262b33;
     --c-body-line: #353b45;
+    --c-hero: #1b212b;
     --z-e: #3987e5; --z-m: #199e70; --z-t: #c98500; --z-i: #d55181; --z-r: #9085e9;
     color-scheme: dark;
   }
@@ -72,6 +77,7 @@
   --c-bad-fill: #dc2626;
   --c-body: #262b33;
   --c-body-line: #353b45;
+  --c-hero: #1b212b;
   --z-e: #3987e5; --z-m: #199e70; --z-t: #c98500; --z-i: #d55181; --z-r: #9085e9;
   color-scheme: dark;
 }
@@ -93,6 +99,9 @@
   /* พื้นทึบที่มีตัวอักษรขาว: เข้มพอให้ผ่าน WCAG 4.5:1 ทั้งสองธีม (สีสว่างของธีมมืดใช้กับตัวอักษรบนพื้นมืดเท่านั้น) */
   --color-accent-fill: var(--c-accent-fill);
   --color-run-fill: var(--c-run-fill);
+  --color-hero: var(--c-hero);
+  --color-hero-accent: var(--c-hero-accent);
+  --color-hero-run: var(--c-hero-run);
   --color-good-fill: var(--c-good-fill);
   --color-bad-fill: var(--c-bad-fill);
   --color-body: var(--c-body);

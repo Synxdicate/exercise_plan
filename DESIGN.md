@@ -11,7 +11,7 @@ The brand contract for Kao screens. Code is the source of truth: tokens live in 
 ## Principles
 
 1. **Today first.** The top of every tab answers "what do I do now?" with one primary action. Reading material goes behind a `Disclosure`.
-2. **One primary button per screen.** Red pill (`bg-accent-fill`, white text). Everything else is `soft` or a text link.
+2. **One primary button per screen.** Red pill (`bg-accent-fill`, white text). Large surfaces stay neutral or dark (`hero`), never solid red/blue. Everything else is `soft` or a text link.
 3. **Numbers are the hero.** Large, `tabular-nums`, bold; labels small and muted under or beside them.
 4. **Explain, don't decorate.** No gradients on surfaces, no glassmorphism on scrolling bars, no stock illustrations. Icons only where they carry meaning.
 5. **Evidence is visible.** Coaching text names its source (e.g. "Taddei 2020"); the Sources page lists it.
@@ -36,6 +36,7 @@ Semantic tokens only — never raw Tailwind palette colors. Dark mode redefines 
 | `good` / `good-fill` | `#047857` | `#34d399` / `#047857` | done, on track, finish |
 | `warn` | `#9a4508` | `#fbbf24` | caution (heat, caps, pain guard) |
 | `bad` / `bad-fill` | `#b91c1c` / `#dc2626` | `#f87171` / `#dc2626` | stop, delete, high pain |
+| `hero` | `#111827` | `#1b212b` | the one big summary card per screen (home week, runs start); white text, rings/bars in `hero-accent` `#fb3b64` / `hero-run` `#60a5fa` |
 | `body` / `body-line` | `#e3e6eb` / `#cdd2da` | `#262b33` / `#353b45` | body-map silhouette |
 
 Rules:
@@ -71,6 +72,8 @@ Rules:
 ## Page structure
 
 - Each screen reads top-down: today's action → tools → progress/summary. Groups are separated by `SectionLabel` (small muted uppercase heading) instead of more cards.
+- Cards only for things you act on or open (week summary, today's session, a run, a day). Secondary tools/info that sit together go in one `CardGroup`: a single card whose children render as rows split by dividers (`Card`/`Disclosure` drop their own frame inside it).
+- Red is for actions and identity (primary button, active tab, logo, strength), not for big surfaces; the big summary card is dark `hero`.
 
 ## Lists of exercises
 

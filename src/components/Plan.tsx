@@ -38,7 +38,7 @@ import { CrossInstead } from './CrossInstead'
 import { WeeklyMuscles } from './WeeklyMuscles'
 import { RunTypeCard } from './RunTypes'
 import { ReadinessSheet } from './Readiness'
-import { Badge, Button, Collapse, Meter, SectionLabel, Segmented } from './ui'
+import { Badge, Button, Collapse, CardGroup, Meter, SectionLabel, Segmented } from './ui'
 import { AddSheet, SwapSheet } from './ExercisePicker'
 import { needsSpotter } from '../data/library'
 import { RacePlan } from './RacePlan'
@@ -240,9 +240,11 @@ function PlanBody() {
       </section>
 
       {p.isRace && !p.finished && <SectionLabel>{t('เตรียมวันแข่ง', 'Race prep')}</SectionLabel>}
-      <LadderM />
-      <CourseM />
-      <RaceDayM />
+      <CardGroup>
+        <LadderM />
+        <CourseM />
+        <RaceDayM />
+      </CardGroup>
       <SectionLabel>{t('ฝึกเสริมและภาพรวม', 'Extras & overview')}</SectionLabel>
       <CircuitM />
       <WeeklyMusclesM plan={days} />

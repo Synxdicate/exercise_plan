@@ -3,12 +3,23 @@ import { ChevronDown, X } from 'lucide-react'
 import { createPortal } from 'react-dom'
 
 import { cx } from '../lib/cx'
+import { CARD, GroupCtx, useInGroup } from '../lib/cardGroup'
 import { trNow } from '../lib/i18n'
 import { useBackClose } from '../lib/back'
 
-export function Card({ children, className, title, action }: { children: ReactNode; className?: string; title?: ReactNode; action?: ReactNode }) {
+/** รวมการ์ดรองหลายใบเป็นการ์ดเดียวคั่นด้วยเส้น (ลดจำนวนก้อนบนจอ) การ์ดลูกที่ไม่แสดงอะไร (null) หายไปเอง ไม่มีลูกเลยก็ซ่อนทั้งกลุ่ม */
+export function CardGroup({ children }: { children: ReactNode }) {
   return (
-    <section className={cx('rounded-2xl bg-card p-3.5 shadow-sm ring-1 ring-line', className)}>
+    <GroupCtx.Provider value={true}>
+      <div className={cx(CARD, 'divide-y divide-line overflow-hidden empty:hidden')}>{children}</div>
+    </GroupCtx.Provider>
+  )
+}
+
+export function Card({ children, className, title, action }: { children: ReactNode; className?: string; title?: ReactNode; action?: ReactNode }) {
+  const inGroup = useInGroup()
+  return (
+    <section className={cx(!inGroup && CARD, 'p-3.5', className)}>
       {(title || action) && (
         <div className="mb-2.5 flex items-center justify-between gap-2">
           {title && <h2 className="card-title text-[15px] font-bold">{title}</h2>}
@@ -146,8 +157,9 @@ export function Disclosure({ title, summary, children, defaultOpen = false }: { 
   const [open, setOpen] = useState(defaultOpen)
   // เนื้อหาที่พับอยู่ยังไม่ render จนกว่าจะเปิดครั้งแรก (บางอันคิดหนัก เช่น สรุปโปรแกรม) เปิดแล้วเก็บไว้ให้แอนิเมชันตอนพับ
   const [mounted, setMounted] = useState(defaultOpen)
+  const inGroup = useInGroup()
   return (
-    <section className="rounded-2xl bg-card shadow-sm ring-1 ring-line">
+    <section className={cx(!inGroup && CARD)}>
       <button onClick={() => { setOpen(!open); setMounted(true) }} aria-expanded={open} className="flex w-full items-center gap-2 p-3.5 text-left active:scale-100">
         <span className="min-w-0 flex-1">
           <span className="card-title block text-[15px] font-bold">{title}</span>

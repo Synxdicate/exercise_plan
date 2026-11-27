@@ -42,7 +42,7 @@ import { HeatCard } from './Heat'
 import { heatSlowdown, useWbgtNow } from '../lib/weather'
 import { ReadinessSheet } from './Readiness'
 import { today, weekStart } from '../lib/date'
-import { Badge, Button, Card, Collapse, Portal, SectionLabel, Segmented, Stat } from './ui'
+import { Badge, Button, Card, Collapse, Portal, CardGroup, SectionLabel, Segmented, Stat } from './ui'
 import { RunHistory } from './RunHistory'
 import { WalkReview } from './WalkReview'
 import { CrossTrainingCard } from './CrossTraining'
@@ -316,27 +316,27 @@ export function Runs() {
       ]} />
 
       {shownView === 'start' && (
-      <section className="space-y-3 rounded-2xl bg-run-fill p-4 text-white shadow-sm">
+      <section className="space-y-3 rounded-2xl bg-hero p-4 text-white shadow-sm ring-1 ring-white/5">
         <div>
           <div className="text-sm">{tr('สัปดาห์นี้', 'This week')}</div>
           <div className="text-4xl font-extrabold tabular-nums">{kmThisWeek.toFixed(1)}<span className="ml-1 text-xl font-semibold">{target ? `/ ${target} ${tr('กม.', 'km')}` : tr('กม.', 'km')}</span></div>
         </div>
-        <div className="h-2 overflow-hidden rounded-full bg-white/25">
-          <div className="h-full rounded-full bg-white" style={{ width: `${target ? Math.min(100, (kmThisWeek / target) * 100) : 0}%` }} />
+        <div className="h-2 overflow-hidden rounded-full bg-white/15">
+          <div className="h-full rounded-full bg-hero-run" style={{ width: `${target ? Math.min(100, (kmThisWeek / target) * 100) : 0}%` }} />
         </div>
         {todayRun && kmToday > 0 && (
-          <div className="flex items-center gap-2 rounded-2xl bg-black/15 p-3 text-sm font-bold">
+          <div className="flex items-center gap-2 rounded-2xl bg-white/[.07] p-3 text-sm font-bold">
             <CircleCheck size={18} className="shrink-0" /> {tr(`วันนี้วิ่งแล้ว ${kmToday.toFixed(2)} กม.`, `Ran ${kmToday.toFixed(2)} km today`)} · {dt.title(todayRun)}
           </div>
         )}
         {todayRun && !kmToday && (
-          <div className="flex items-start gap-2 rounded-2xl bg-black/15 p-3 text-sm">
+          <div className="flex items-start gap-2 rounded-2xl bg-white/[.07] p-3 text-sm">
             <CalendarCheck size={18} className="mt-0.5 shrink-0" />
             <div>
               <div className="font-bold">{tr('แผนวันนี้', "Today's plan")}: {dt.title(todayRun)} · {todayRun.targetKm ? `${todayRun.targetKm} ${tr('กม.', 'km')}` : dt.duration(todayRun)}</div>
               <div className="">{dt.cue(todayRun.exercises[0]?.cue ?? '')}</div>
               {paceHint(est, todayRun.runKind, todayRun.title, dt.en) && <div className="font-semibold">{paceHint(est, todayRun.runKind, todayRun.title, dt.en)}</div>}
-              <CapNote day={todayRun} date={today()} className="mt-1.5 flex items-start gap-1.5 rounded-xl bg-black/15 p-2 font-semibold" />
+              <CapNote day={todayRun} date={today()} className="mt-1.5 flex items-start gap-1.5 rounded-xl bg-white/[.07] p-2 font-semibold" />
             </div>
           </div>
         )}
@@ -344,7 +344,7 @@ export function Runs() {
         <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-0.5 [scrollbar-width:none]" role="group" aria-label={tr('ประเภทการวิ่ง', 'Run type')}>
           {(Object.keys(runKinds) as Run['kind'][]).map(k => (
             <button key={k} onClick={() => setKind(k)} aria-pressed={kind === k}
-              className={cx('shrink-0 whitespace-nowrap rounded-full px-3 py-1 text-sm font-semibold', kind === k ? 'bg-white text-accent-fill' : 'bg-black/15')}>
+              className={cx('shrink-0 whitespace-nowrap rounded-full px-3 py-1 text-sm font-semibold', kind === k ? 'bg-white text-accent-fill' : 'bg-white/[.07]')}>
               {tr(runKinds[k], runKindsEn[k])}
             </button>
           ))}
@@ -365,10 +365,12 @@ export function Runs() {
             </p>
           )}
           <SectionLabel>{tr('ก่อนออกวิ่ง (ไม่บังคับ)', 'Before you go (optional)')}</SectionLabel>
-          {kind !== 'walk' && <DrillsCard kind={kind} />}
-          {kind !== 'walk' && <ZoneCard kind={kind} />}
-          {kind !== 'walk' && <CadenceCard />}
-          <RunFormTips />
+          <CardGroup>
+            {kind !== 'walk' && <DrillsCard kind={kind} />}
+            {kind !== 'walk' && <ZoneCard kind={kind} />}
+            {kind !== 'walk' && <CadenceCard />}
+            <RunFormTips />
+          </CardGroup>
         </>
       )}
 
