@@ -3,7 +3,7 @@ import { lazy, Suspense, useState } from 'react'
 import { FileDown, ListChecks, Pencil, Scissors, Share2, Trash2, X } from 'lucide-react'
 import { type Point } from '../lib/gps'
 import { formatDuration, formatPace, runKinds, runKindsEn, type Run } from '../lib/log'
-import { trNow, useT } from '../lib/i18n'
+import { trNow, useLang, useT } from '../lib/i18n'
 import { looksLikeWalk } from '../lib/walk'
 import { saveGpx } from '../lib/gpxFile'
 import { useShoes } from '../lib/shoes'
@@ -21,6 +21,7 @@ import { MatchedRuns } from './Matched'
 import { useCountUp } from '../lib/useCountUp'
 import { DateInput, NumberInput, SelectInput } from './Form'
 import { cx } from '../lib/cx'
+import { runTitle, startTime } from '../lib/runTitle'
 import { ask, notify } from '../lib/dialog'
 import { ErrorBoundary } from './ErrorBoundary'
 import { ElevationCard, RunAchievements } from './RunExtras'
@@ -69,6 +70,7 @@ export function Splits({ splits, fiveK, gap }: { splits: number[]; fiveK?: numbe
 
 export function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { run: Run; runs: Run[]; fiveK?: number; onClose: () => void; onDelete: () => void; onUpdate: (patch: Partial<Run>) => void }) {
   const tr = useT()
+  const en = useLang()[0] === 'en'
   const kmUp = useCountUp(run.km)
   const fix = remeasure(run)
   const secUp = useCountUp(run.seconds)
@@ -95,8 +97,8 @@ export function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { r
       <div className="max-h-[92dvh] w-full max-w-lg animate-sheet-up overflow-y-auto rounded-t-3xl bg-card p-4 pb-[calc(var(--sab)+1rem)] sm:animate-fade-up sm:rounded-3xl" onClick={e => e.stopPropagation()}>
         <div className="mb-3 flex items-center justify-between">
           <div>
-            <div className="font-bold">{tr(runKinds[run.kind], runKindsEn[run.kind])} · {niceDate(run.date)}</div>
-            <div className="text-xs text-muted">{run.source === 'gps' ? tr('บันทึกด้วย GPS', 'Recorded with GPS') : run.source === 'gpx' ? tr('นำเข้าจากไฟล์ GPX', 'Imported from GPX') : tr('กรอกเอง', 'Entered manually')}</div>
+            <div className="text-lg font-bold leading-tight">{runTitle(run, en)}</div>
+            <div className="text-xs text-muted">{niceDate(run.date)}{startTime(run) ? ` · ${startTime(run)}` : ''} · {run.source === 'gps' ? tr('บันทึกด้วย GPS', 'Recorded with GPS') : run.source === 'gpx' ? tr('นำเข้าจากไฟล์ GPX', 'Imported from GPX') : tr('กรอกเอง', 'Entered manually')}</div>
           </div>
           <span className="flex gap-2">
             {run.route && run.route.length > 1 && (
@@ -114,6 +116,24 @@ export function RunDetail({ run, runs, fiveK, onClose, onDelete, onUpdate }: { r
           <Stat label={tr('เวลาเคลื่อนที่', 'Moving time')} value={formatDuration(secUp)} sub={run.elapsedSeconds ? `${tr('รวม', 'total')} ${formatDuration(run.elapsedSeconds)}` : undefined} />
           <Stat label={tr('เพซเฉลี่ย', 'Avg pace')} value={formatPace(run.seconds, run.km)} sub={tr('นาที/กม.', 'min/km')} />
         </div>
+        {/* ตัวเลขรองแถวเดียว แสดงเฉพาะที่มีข้อมูล */}
+        {(() => {
+          const extra = [
+            run.elev && run.elev.gain > 0 ? [tr('ขึ้นสะสม', 'Elev gain'), `${run.elev.gain} ${tr('ม.', 'm')}`] : null,
+            run.hr?.avg ? [tr('ชีพจรเฉลี่ย', 'Avg HR'), `${run.hr.avg} bpm`] : null,
+            run.rpe ? [tr('ความเหนื่อย', 'Effort'), `${run.rpe}/10`] : null,
+          ].filter(Boolean) as [string, string][]
+          return extra.length > 0 && (
+            <div className="mb-3 flex divide-x divide-line rounded-xl bg-raised py-2 text-center">
+              {extra.map(([l, v]) => (
+                <div key={l} className="min-w-0 flex-1 px-1">
+                  <div className="truncate text-xs text-muted">{l}</div>
+                  <div className="truncate text-sm font-bold tabular-nums">{v}</div>
+                </div>
+              ))}
+            </div>
+          )
+        })()}
         {run.guide && (
           <p className={cx('mb-3 flex items-center gap-2 rounded-xl p-2.5 text-sm font-semibold', run.guide.finished ? 'bg-good/15 text-good' : 'bg-raised text-ink')}>
             <ListChecks size={16} className="shrink-0" />

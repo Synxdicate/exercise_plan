@@ -4,9 +4,9 @@ import { formatDuration, formatPace, runKinds, runKindsEn, type Run } from '../l
 import { runsOnly } from '../lib/walk'
 import { projectRoute } from '../lib/geo'
 import { addDays, monthLabel, niceDate, today } from '../lib/date'
+import { runTitle, startTime } from '../lib/runTitle'
 import { cx } from '../lib/cx'
-import { useT } from '../lib/i18n'
-import { Badge } from './ui'
+import { useLang, useT } from '../lib/i18n'
 import { RpePicker } from './RpePicker'
 import { isWalk } from '../lib/walk'
 
@@ -57,6 +57,7 @@ export function RunHistory({ runs, onOpen, onRate }: { runs: Run[]; onOpen: (id:
   const rateFrom = addDays(today(), -14)
   const [kind, setKind] = useState<Run['kind'] | 'all'>('all')
   const tr = useT()
+  const en = useLang()[0] === 'en'
   const kindName = (k: Run['kind']) => tr(runKinds[k], runKindsEn[k])
   const [months, setMonths] = useState(PAGE)
   const kinds = useMemo(() => [...new Set(runs.map(r => r.kind))], [runs])
@@ -83,23 +84,25 @@ export function RunHistory({ runs, onOpen, onRate }: { runs: Run[]; onOpen: (id:
       )}
       {groups.slice(0, months).map(([ym, list]) => (
         <section key={ym} className="mb-1">
-          <div className="sticky top-[calc(var(--sat)+4.25rem)] z-10 -mx-1 flex items-baseline justify-between bg-card px-1 py-1.5">
+          <div className="sticky top-[calc(var(--sat)+4.25rem)] z-10 -mx-1 flex items-baseline justify-between bg-bg px-1 py-2">
             <span className="text-sm font-bold">{monthLabel(ym)}</span>
             <span className="text-xs tabular-nums text-muted">{list.length} {tr('ครั้ง', 'runs')} · {runsOnly(list).reduce((a, r) => a + r.km, 0).toFixed(1)} {tr('กม.', 'km')}</span>
           </div>
-          <ul className="space-y-2">
+          <ul className="space-y-3">
             {list.map(r => {
               const big = (r.route?.length ?? 0) >= 10
               return (
                 <li key={r.id}>
-                  <button onClick={() => onOpen(r.id)} className="w-full rounded-2xl bg-card p-3 text-left ring-1 ring-line">
-                    <div className="flex items-center gap-2">
-                      {!big && <RoutePreview run={r} className="size-8 rounded-xl" />}
-                      <span className="min-w-0 flex-1 truncate text-xs text-muted">{niceDate(r.date)}</span>
-                      <Badge tone="run">{kindName(r.kind)}</Badge>
-                      <ChevronRight size={16} className="text-muted" />
+                  <button onClick={() => onOpen(r.id)} className="w-full rounded-2xl bg-card p-3.5 text-left shadow-sm ring-1 ring-line">
+                    <div className="flex items-center gap-2.5">
+                      {!big && <RoutePreview run={r} className="size-9 rounded-xl" />}
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate font-bold">{runTitle(r, en)}</span>
+                        <span className="block truncate text-xs text-muted">{niceDate(r.date)}{startTime(r) ? ` · ${startTime(r)}` : ''}</span>
+                      </span>
+                      <ChevronRight size={16} className="shrink-0 text-muted" />
                     </div>
-                    <div className="mt-1.5 grid grid-cols-3 gap-2">
+                    <div className="mt-2.5 grid grid-cols-3 gap-2">
                       {[[tr('ระยะ', 'Distance'), r.km.toFixed(2), tr('กม.', 'km')], [tr('เพซ', 'Pace'), formatPace(r.seconds, r.km), tr('/กม.', '/km')], [tr('เวลา', 'Time'), formatDuration(r.seconds), '']].map(([l, v, u]) => (
                         <div key={l}>
                           <div className="text-xs text-muted">{l}</div>

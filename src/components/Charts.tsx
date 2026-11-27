@@ -1,3 +1,4 @@
+import { paceTicks } from '../lib/paceTicks'
 import { useState } from 'react'
 import type { LoadDay } from '../lib/analysis'
 import { formatPace } from '../lib/log'
@@ -50,7 +51,7 @@ export function PaceChart({ series, avg, fiveK }: { series: { km: number; pace: 
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="block w-full touch-none" role="img" aria-label={tr('กราฟเพซตามระยะทาง', 'Pace by distance chart')}
         onPointerMove={onMove} onPointerDown={onMove} onPointerLeave={() => setHover(null)}>
-        {[lo + 10, (lo + hi) / 2, hi - 10].map(v => (
+        {paceTicks(lo, hi).map(v => (
           <g key={v}>
             <line x1={padL} x2={W} y1={y(v)} y2={y(v)} className="stroke-line" />
             <text x={padL - 4} y={y(v) + 3} textAnchor="end" className="fill-muted text-[10px]">{formatPace(v, 1)}</text>

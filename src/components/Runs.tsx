@@ -374,18 +374,19 @@ export function Runs() {
       {shownView === 'history' && (
         <>
         <WalkReview />
-        <Card title={tr('ประวัติการวิ่ง', 'Run history')} action={
-          <div className="flex gap-1.5">
-            <label className="inline-flex cursor-pointer items-center gap-1 rounded-full bg-raised px-3 py-1.5 text-sm font-semibold ring-1 ring-line">
+        {/* ฟีดการวิ่งวางบนพื้นหลังโดยตรง (ไม่ซ้อนการ์ดในการ์ด) */}
+        <section>
+          <div className="mb-2 flex items-center gap-2">
+            <h2 className="flex-1 text-lg font-bold">{tr('ประวัติการวิ่ง', 'Run history')}</h2>
+            <label className="inline-flex cursor-pointer items-center gap-1 rounded-full bg-card px-3 py-1.5 text-sm font-semibold ring-1 ring-line">
               <FileUp size={14} /> GPX
               <input type="file" accept=".gpx,application/gpx+xml" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) void importGpx(f); e.target.value = '' }} />
             </label>
-            <Button variant="soft" size="sm" onClick={() => setManual(!manual)}><Plus size={14} /> {tr('กรอกเอง', 'Add manually')}</Button>
+            <Button variant="soft" size="sm" className="bg-card" onClick={() => setManual(!manual)}><Plus size={14} /> {tr('กรอกเอง', 'Add manually')}</Button>
           </div>
-        }>
-          <Collapse open={manual}><ManualEntry onSave={r => { save(r); setManual(false) }} /></Collapse>
+          <Collapse open={manual}><Card className="mb-3"><ManualEntry onSave={r => { save(r); setManual(false) }} /></Card></Collapse>
           <RunHistory runs={runs} onOpen={setDetail} onRate={(id, rpe) => setRuns(prev => prev.map(x => (x.id === id ? { ...x, rpe } : x)))} />
-        </Card>
+        </section>
         <CrossTrainingCard />
         </>
       )}
