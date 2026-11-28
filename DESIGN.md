@@ -36,7 +36,7 @@ Semantic tokens only — never raw Tailwind palette colors. Dark mode redefines 
 | `good` / `good-fill` | `#047857` | `#34d399` / `#047857` | done, on track, finish |
 | `warn` | `#9a4508` | `#fbbf24` | caution (heat, caps, pain guard) |
 | `bad` / `bad-fill` | `#b91c1c` / `#dc2626` | `#f87171` / `#dc2626` | stop, delete, high pain |
-| `hero` | `#111827` | `#1b212b` | the one big summary card per screen (home week, runs start); white text, rings/bars in `hero-accent` `#fb3b64` / `hero-run` `#60a5fa` |
+| `hero` | `#111827` | `#1b212b` | the one big summary card per screen (home week, runs start, food today); white text, rings/bars in `hero-accent` `#fb3b64` / `hero-run` `#60a5fa` |
 | `body` / `body-line` | `#e3e6eb` / `#cdd2da` | `#262b33` / `#353b45` | body-map silhouette |
 
 Rules:

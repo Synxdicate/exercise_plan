@@ -12,7 +12,7 @@ type Item = { id: string; name: string; protein: number; kcal: number }
 type MealSet = { id: string; name: string; items: Omit<Item, 'id'>[] }
 
 /** บันทึกโปรตีน/แคลอรี่วันนี้ ค้นหาเมนู หรือแตะจากรายการที่กินล่าสุด */
-export function FoodLog({ proteinTarget, kcalTarget }: { proteinTarget: number; kcalTarget: number }) {
+export function FoodLog({ proteinTarget, kcalTarget, fat, carbs, note }: { proteinTarget: number; kcalTarget: number; fat: number; carbs: number; note?: string }) {
   const tr = useT()
   const [log, setLog] = usePersisted<Record<string, Item[]>>('foodLog', {})
   const [q, setQ] = useState('')
@@ -59,13 +59,23 @@ export function FoodLog({ proteinTarget, kcalTarget }: { proteinTarget: number; 
   const openCustom = () => { setName(q.trim()); setCustom(true); setQ('') }
 
   return (
-    <Card title={tr('วันนี้กินไปแล้ว', 'Eaten today')}>
-      <div className="grid grid-cols-2 gap-3">
-        <Bar label={tr('โปรตีน', 'Protein')} value={p} max={proteinTarget} unit={tr('ก.', 'g')} tone="bg-accent-fill" />
-        <Bar label={tr('พลังงาน', 'Energy')} value={k} max={kcalTarget} unit="kcal" tone="bg-run-fill" />
+    <>
+    {/* การ์ดหลักของหน้า: วันนี้กินไปเท่าไรเทียบเป้า (เป้าไขมัน/คาร์บอยู่บรรทัดล่าง ไม่ต้องมีการ์ดเป้าแยก) */}
+    <section className="rounded-2xl bg-hero p-4 text-white shadow-sm ring-1 ring-white/5">
+      <h2 className="text-sm">{tr('วันนี้กินไปแล้ว', 'Eaten today')}</h2>
+      <div className="mt-2 grid grid-cols-2 gap-3">
+        <Bar label={tr('โปรตีน', 'Protein')} value={p} max={proteinTarget} unit={tr('ก.', 'g')} tone="bg-hero-accent" />
+        <Bar label={tr('พลังงาน', 'Energy')} value={k} max={kcalTarget} unit="kcal" tone="bg-hero-run" />
       </div>
+      <p className="mt-3 text-xs">
+        {p >= proteinTarget ? tr('โปรตีนถึงเป้าแล้ว', 'Protein goal reached') : tr(`ขาดโปรตีนอีก ${Math.round(proteinTarget - p)} ก.`, `${Math.round(proteinTarget - p)} g protein to go`)}
+        <span className="opacity-80"> · {tr(`ไขมัน ~${fat} ก. คาร์บ ~${carbs} ก. ต่อวัน`, `fat ~${fat} g, carbs ~${carbs} g a day`)}</span>
+      </p>
+      {note && <p className="mt-2 rounded-xl bg-white/[.07] px-3 py-2 text-xs">{note}</p>}
+    </section>
 
-      <TextInput className="mt-3" value={q} onChange={setQ} placeholder={tr('ค้นหาเมนู เช่น กะเพรา, ไข่, ลาบ', 'Search food e.g. kaprao, egg, larb')} icon={<Search size={16} />} />
+    <Card title={tr('เพิ่มอาหาร', 'Add food')}>
+      <TextInput value={q} onChange={setQ} placeholder={tr('ค้นหาเมนู เช่น กะเพรา, ไข่, ลาบ', 'Search food e.g. kaprao, egg, larb')} icon={<Search size={16} />} />
 
       {q.trim() ? (
         <ul className="mt-2 divide-y divide-line">
@@ -157,6 +167,7 @@ export function FoodLog({ proteinTarget, kcalTarget }: { proteinTarget: number; 
         )
       )}
     </Card>
+    </>
   )
 }
 
@@ -165,10 +176,10 @@ function Bar({ label, value, max, unit, tone }: { label: string; value: number; 
   const pct = Math.min(100, (value / max) * 100)
   return (
     <div>
-      <div className="flex items-baseline justify-between text-xs text-muted"><span>{label}</span><span>{tr('เป้า', 'Goal')} {max}</span></div>
-      <div className="text-xl font-bold tabular-nums">{Math.round(value)}<span className="ml-1 text-xs font-normal text-muted">{unit}</span></div>
-      <div className="mt-1 h-2 overflow-hidden rounded-full bg-body">
-        <div className={`h-full rounded-full transition-[width] duration-500 ${value >= max ? 'bg-good-fill' : tone}`} style={{ width: `${pct}%` }} />
+      <div className="flex items-baseline justify-between text-xs"><span>{label}</span><span className="opacity-80">{tr('เป้า', 'Goal')} {max}</span></div>
+      <div className="text-2xl font-extrabold tabular-nums">{Math.round(value)}<span className="ml-1 text-xs font-normal">{unit}</span></div>
+      <div className="mt-1 h-2 overflow-hidden rounded-full bg-white/15">
+        <div className={`h-full rounded-full transition-[width] duration-500 ${tone}`} style={{ width: `${pct}%` }} />
       </div>
     </div>
   )

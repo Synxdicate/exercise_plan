@@ -4,7 +4,7 @@ import { Search } from 'lucide-react'
 import { carbFoods, extraFoods, nutritionRules, nutritionRulesEn, proteinFoods, sampleDays, searchFoods, streetDishes, type Food } from '../data/nutrition'
 import { targets, type Profile } from '../lib/calc'
 import { useProgram } from '../lib/program'
-import { Badge, Card, Segmented } from './ui'
+import { Badge, Card, Disclosure, SectionLabel, Segmented } from './ui'
 import { cx } from '../lib/cx'
 import { FoodLog } from './FoodLog'
 import { TextInput } from './Form'
@@ -31,22 +31,13 @@ export function Nutrition({ profile, setProfile }: { profile: Profile; setProfil
 
   return (
     <>
-      <section className="grid grid-cols-4 divide-x divide-line rounded-2xl bg-card py-2.5 text-center shadow-sm ring-1 ring-line">
-        {[[tr('พลังงาน', 'Energy'), t.kcal, 'kcal', true], [tr('โปรตีน', 'Protein'), t.protein, tr('ก.', 'g'), true], [tr('ไขมัน', 'Fat'), t.fat, tr('ก.', 'g'), false], [tr('คาร์บ', 'Carbs'), t.carbs, tr('ก.', 'g'), false]].map(([l, v, u, a]) => (
-          <div key={String(l)} className="px-1">
-            <div className="text-xs text-muted">{l}</div>
-            <div className={cx('text-lg font-bold leading-tight tabular-nums', !!a && 'text-accent')}>{v}</div>
-            <div className="text-[11px] text-muted">{u}/{tr('วัน', 'day')}</div>
-          </div>
-        ))}
-      </section>
+      <FoodLog proteinTarget={t.protein} kcalTarget={t.kcal} fat={t.fat} carbs={t.carbs}
+        note={t.raceAdjusted ? tr('อยู่ในโปรแกรมวิ่ง: กินเท่าที่ใช้ (ไม่กินขาด) และเพิ่มคาร์บ เพื่อฟื้นตัวทัน', 'On a running program: eat at maintenance (no deficit) and add carbs to recover in time') : undefined} />
 
-      {t.raceAdjusted && <p className="rounded-xl bg-run/10 px-3 py-2 text-xs text-run">{tr('อยู่ในโปรแกรมวิ่ง: กินเท่าที่ใช้ (ไม่กินขาด) และเพิ่มคาร์บ เพื่อฟื้นตัวทัน', 'On a running program: eat at maintenance (no deficit) and add carbs to recover in time')}</p>}
-
-      <FoodLog proteinTarget={t.protein} kcalTarget={t.kcal} />
-
+      <SectionLabel>{tr('ร่างกายและเป้า', 'Body & targets')}</SectionLabel>
       <ProfileCard profile={profile} setProfile={setProfile} />
 
+      <SectionLabel>{tr('กินอะไรดี', 'What to eat')}</SectionLabel>
       <div className="space-y-4">
       <Segmented value={view} onChange={setView} options={[
         { value: 'menu', label: tr('เมนูตัวอย่าง', 'Sample menus') },
@@ -79,9 +70,9 @@ export function Nutrition({ profile, setProfile }: { profile: Profile; setProfil
             )
           })}
           <p className="px-2 text-xs text-muted">{tr('ปรับขนาดข้าวให้ตรงเป้าแคลอรี่ของคุณ: ข้าว 1 ทัพพี ≈ 80 kcal', 'Adjust rice to your calorie target: 1 scoop of rice ≈ 80 kcal')}</p>
-          <Card title={tr('กฎง่าย ๆ', 'Simple rules')}>
+          <Disclosure title={tr('กฎง่าย ๆ', 'Simple rules')} summary={tr(`${nutritionRules.length} ข้อที่ใช้ได้ทุกวัน`, `${nutritionRules.length} everyday rules`)}>
             <ul className="list-disc space-y-1.5 pl-5 text-sm">{nutritionRules.map((r, i) => <li key={r}>{tr(r, nutritionRulesEn[i])}</li>)}</ul>
-          </Card>
+          </Disclosure>
         </>
       )}
 
